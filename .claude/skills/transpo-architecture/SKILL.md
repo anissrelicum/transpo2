@@ -42,6 +42,15 @@ transpo/
 └── turbo.json / pnpm-workspace.yaml
 ```
 
+## Exécution — TOUT passe par Docker (règle stricte)
+Aucune dépendance n'est installée ni lancée sur la machine hôte : base, back, fronts, migrations, tests tournent **en conteneur**.
+- **`docker-compose.yml`** (dev) orchestre au minimum : `postgres` (avec volume persistant), `api` (NestJS, hot-reload via volume monté), les apps web Next.js, un `mailhog`/stub pour les e-mails, et un service `db-migrate`. Les apps RN (Expo) se lancent via un conteneur outillé ou le tunnel Expo — documenter la commande.
+- **Un `Dockerfile` par app** (`apps/*/Dockerfile`), multi-stage (build → runtime léger). Images de base épinglées (pas de `latest`).
+- **Commandes canoniques** : `docker compose up` (dev), `docker compose run --rm db-migrate` (migrations), `docker compose run --rm api pnpm test` (tests), `docker compose run --rm e2e` (E2E). Ne jamais documenter un `npm run` à exécuter hors conteneur.
+- **Postgres schema-per-tenant** : le conteneur `postgres` héberge `platform` + les schémas de tenants ; le seed de dev provisionne 1-2 tenants de démo.
+- **Parité dev/CI/prod** : la CI réutilise les mêmes images/compose ; le `.env.example` documente toutes les variables. Secrets hors du repo.
+- **Definition of Done** inclut : « démarre proprement via `docker compose up` depuis un clone neuf, sans installer quoi que ce soit sur l'hôte ». Voir `DEFINITION-OF-DONE.md`.
+
 ## Multi-tenant : workspace = schéma Postgres = tenant
 - **Un schéma Postgres par tenant** (ex. `tenant_casaexpress`). Un schéma `public` (ou `platform`) pour les tables globales : `tenants`, `plans`, `platform_invoices`, comptes super-admin.
 - **Provisioning d'un tenant** = créer le schéma + appliquer les migrations métier dessus + insérer la ligne dans `platform.tenants`. C'est l'action derrière « Provisionner un tenant » (Console SaaS).
