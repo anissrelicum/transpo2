@@ -1,0 +1,620 @@
+<title>Prompt Claude Design — Écrans manquants Transpo</title>
+<style>
+  :root {
+    --bg: #f6f7fa;
+    --surface: #ffffff;
+    --surface-2: #eef1f6;
+    --code-bg: #f2f4f9;
+    --border: #dde1ea;
+    --border-strong: #cdd3df;
+    --text: #191d26;
+    --muted: #5a6473;
+    --faint: #8a93a3;
+    --accent: #3e63dd;
+    --accent-ink: #2f49a8;
+    --accent-wash: #eaeefc;
+    --p0: #cf2f43;
+    --p0-wash: #fbecee;
+    --p1: #b0680a;
+    --p1-wash: #fbf1e2;
+    --p2: #5a6473;
+    --p2-wash: #eceef3;
+    --shadow: 0 1px 2px rgba(20,30,60,.04), 0 8px 24px -12px rgba(20,30,60,.14);
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121419;
+      --surface: #1a1d24;
+      --surface-2: #22262f;
+      --code-bg: #1e222b;
+      --border: #2a2f3a;
+      --border-strong: #363c49;
+      --text: #e7eaf1;
+      --muted: #9aa3b2;
+      --faint: #6d7686;
+      --accent: #829cf3;
+      --accent-ink: #a7b8f7;
+      --accent-wash: #1f2740;
+      --p0: #f2818f;
+      --p0-wash: #3a2026;
+      --p1: #e0a24e;
+      --p1-wash: #372a17;
+      --p2: #9aa3b2;
+      --p2-wash: #262b34;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121419;
+    --surface: #1a1d24;
+    --surface-2: #22262f;
+    --code-bg: #1e222b;
+    --border: #2a2f3a;
+    --border-strong: #363c49;
+    --text: #e7eaf1;
+    --muted: #9aa3b2;
+    --faint: #6d7686;
+    --accent: #829cf3;
+    --accent-ink: #a7b8f7;
+    --accent-wash: #1f2740;
+    --p0: #f2818f;
+    --p0-wash: #3a2026;
+    --p1: #e0a24e;
+    --p1-wash: #372a17;
+    --p2: #9aa3b2;
+    --p2-wash: #262b34;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.6);
+  }
+  :root[data-theme="light"] {
+    --bg: #f6f7fa;
+    --surface: #ffffff;
+    --surface-2: #eef1f6;
+    --code-bg: #f2f4f9;
+    --border: #dde1ea;
+    --border-strong: #cdd3df;
+    --text: #191d26;
+    --muted: #5a6473;
+    --faint: #8a93a3;
+    --accent: #3e63dd;
+    --accent-ink: #2f49a8;
+    --accent-wash: #eaeefc;
+    --p0: #cf2f43;
+    --p0-wash: #fbecee;
+    --p1: #b0680a;
+    --p1-wash: #fbf1e2;
+    --p2: #5a6473;
+    --p2-wash: #eceef3;
+    --shadow: 0 1px 2px rgba(20,30,60,.04), 0 8px 24px -12px rgba(20,30,60,.14);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 820px; margin: 0 auto; padding: clamp(24px, 5vw, 64px) clamp(18px, 4vw, 40px) 120px; }
+
+  /* Header */
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 14px;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(28px, 5.5vw, 44px);
+    line-height: 1.1;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+    margin: 0 0 16px;
+  }
+  .lede { font-size: 17px; color: var(--muted); max-width: 62ch; margin: 0 0 28px; }
+  .lede code { font-family: var(--mono); font-size: .88em; background: var(--surface-2); padding: 1px 6px; border-radius: 5px; }
+
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 40px; }
+  .btn {
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 550;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
+    padding: 9px 16px;
+    border-radius: 9px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background .15s, border-color .15s, transform .05s;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn:active { transform: translateY(1px); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  :root[data-theme="dark"] .btn.primary, .btn.primary { color: #fff; }
+  @media (prefers-color-scheme: dark) { .btn.primary { color: #0e1017; } }
+  :root[data-theme="dark"] .btn.primary { color: #0e1017; }
+  :root[data-theme="light"] .btn.primary { color: #fff; }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn svg { width: 15px; height: 15px; }
+
+  /* Context callout */
+  .context {
+    background: var(--accent-wash);
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 40px;
+    position: relative;
+  }
+  .context h2 { margin: 0 0 10px; font-size: 15px; font-family: var(--sans); letter-spacing: .01em; }
+  .context p { margin: 0 0 10px; font-size: 14.5px; color: var(--muted); }
+  .context ul { margin: 0; padding-left: 20px; font-size: 14px; color: var(--muted); }
+  .context li { margin-bottom: 5px; }
+  .context code, .card-body code { font-family: var(--mono); font-size: .86em; background: color-mix(in srgb, var(--text) 8%, transparent); padding: 1px 5px; border-radius: 4px; }
+
+  /* Priority legend / table */
+  .legend { margin-bottom: 44px; }
+  .legend h2, .section-label {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin: 0 0 16px;
+    font-weight: 500;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  th, td { text-align: left; padding: 11px 12px; border-bottom: 1px solid var(--border); }
+  th { font-weight: 600; color: var(--muted); font-size: 12.5px; letter-spacing: .02em; }
+  td:first-child { font-family: var(--mono); color: var(--faint); width: 34px; }
+  td:last-child, th:last-child { text-align: right; white-space: nowrap; }
+  .pill {
+    display: inline-block;
+    font-size: 11.5px;
+    font-weight: 650;
+    padding: 3px 9px;
+    border-radius: 999px;
+    letter-spacing: .02em;
+  }
+  .p0 { background: var(--p0-wash); color: var(--p0); }
+  .p1 { background: var(--p1-wash); color: var(--p1); }
+  .p2 { background: var(--p2-wash); color: var(--p2); }
+
+  /* Prompt sections */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    margin-bottom: 18px;
+    overflow: hidden;
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-num {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-wash);
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+    flex: 0 0 30px;
+  }
+  .card-title { font-size: 16px; font-weight: 600; margin: 0; flex: 1; letter-spacing: -.005em; }
+  .card-copy {
+    font-family: var(--sans);
+    font-size: 12.5px;
+    font-weight: 550;
+    border: 1px solid var(--border-strong);
+    background: transparent;
+    color: var(--muted);
+    padding: 6px 11px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: all .15s;
+    flex: 0 0 auto;
+  }
+  .card-copy:hover { border-color: var(--accent); color: var(--accent); }
+  .card-copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .card-copy svg { width: 13px; height: 13px; }
+  .card-copy.done { color: #17924a; border-color: #17924a; }
+  @media (prefers-color-scheme: dark) { .card-copy.done { color: #4ecb81; border-color: #4ecb81; } }
+  :root[data-theme="dark"] .card-copy.done { color: #4ecb81; border-color: #4ecb81; }
+  :root[data-theme="light"] .card-copy.done { color: #17924a; border-color: #17924a; }
+
+  .card-body { padding: 16px 18px 20px; }
+  .card-body p { margin: 0 0 12px; font-size: 14.5px; }
+  .card-body p:last-child { margin-bottom: 0; }
+  .card-body ul { margin: 0 0 12px; padding-left: 20px; font-size: 14px; }
+  .card-body li { margin-bottom: 5px; }
+  .card-body strong { font-weight: 650; }
+  .flag { color: var(--p0); font-weight: 650; }
+
+  .raw { display: none; white-space: pre-wrap; }
+
+  /* Toast */
+  #toast {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--text);
+    color: var(--bg);
+    padding: 11px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 550;
+    box-shadow: 0 8px 30px -8px rgba(0,0,0,.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s, transform .2s;
+    z-index: 50;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+  .footnote { margin-top: 40px; font-size: 13px; color: var(--faint); border-top: 1px solid var(--border); padding-top: 20px; }
+  .footnote code { font-family: var(--mono); background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">Transpo · Prompt de production</p>
+  <h1>Écrans manquants à générer dans Claude Design</h1>
+  <p class="lede">Prompt structuré à coller dans Claude Design, sur le projet <code>Transpo — Prompts Claude Design</code>. Envoie-le en entier, ou section par section — chaque bloc est autonome. Garde toujours le bloc <strong>Contexte</strong> en tête si tu fractionnes.</p>
+
+  <div class="toolbar">
+    <button class="btn primary" id="copyAll">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Copier tout le prompt
+    </button>
+    <button class="btn" id="themeToggle" aria-label="Basculer le thème">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      Thème
+    </button>
+  </div>
+
+  <!-- CONTEXT -->
+  <div class="context">
+    <h2>Contexte — à conserver en tête pour tous les écrans</h2>
+    <p>Complète le projet Transpo (plateforme de livraison last-mile marocaine) avec les écrans manquants ci-dessous. Respecte impérativement les conventions déjà en place :</p>
+    <ul>
+      <li>React + Radix UI Themes ; <code>accentColor="indigo"</code>, <code>grayColor="slate"</code>, <code>radius="medium"</code>, <code>panelBackground="solid"</code>.</li>
+      <li>Bibliothèque partagée <code>window.Transpo</code> : réutilise <code>StatusBadge</code>, <code>money()</code> (<code>1 250,00 DH</code>), <code>LeafletMap</code>, <code>PageHeader</code>, <code>KPI</code>, <code>EmptyState</code>, <code>Field</code>, <code>Shell</code>, le cycle <code>STATUS</code>, <code>GOALS</code>, <code>DRIVERS</code>, <code>ORDERS</code>.</li>
+      <li>Données marocaines (Casablanca, Rabat, Marrakech… ; devise DH). Bilingue <strong>FR/AR avec RTL</strong> pour livreur, client, marchand.</li>
+      <li>Thème clair/sombre partout. Cibles ≥ 44 px, action principale en bas sur mobile. Cadres mobiles 390×844, consoles desktop en <code>Shell</code>.</li>
+      <li>Ajoute chaque écran au lanceur <code>transpo/home.jsx</code> dans la bonne section de profil.</li>
+    </ul>
+    <button class="card-copy" data-copy-ctx style="margin-top:14px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Copier le contexte
+    </button>
+    <pre class="raw" id="raw-ctx">Contexte (à conserver en tête pour tous les écrans ci-dessous)
+
+Complète le projet Transpo (plateforme de livraison last-mile marocaine) avec les écrans manquants listés plus bas. Respecte impérativement les conventions déjà en place dans le projet :
+
+- React + Radix UI Themes, thème accentColor="indigo", grayColor="slate", radius="medium", panelBackground="solid".
+- Bibliothèque partagée window.Transpo (transpo/lib.jsx) : réutilise StatusBadge, money() (format 1 250,00 DH), LeafletMap, PageHeader, KPI, EmptyState, ErrorState, Field, Shell, le cycle de vie STATUS (PROGRAMMEE→NOUVELLE→ASSIGNEE→RETRAIT→RECUPEREE→LIVRAISON→LIVREE, + ECHOUEE/RETOUR/ANNULEE), GOALS, DRIVERS, ORDERS.
+- Données de démonstration marocaines (Casablanca, Rabat, Marrakech, Tanger, Fès ; noms comme Youssef Benali, Salma Idrissi ; devise DH).
+- Bilingue FR/AR avec RTL complet pour tout écran exposé au livreur, au client ou au marchand.
+- Thème clair/sombre sur chaque interface. Cibles tactiles ≥ 44 px, action principale collée en bas sur mobile.
+- Cadres mobiles = 390×844. Consoles desktop = layout Shell avec sidebar.
+- Ajoute chaque nouvel écran au lanceur transpo/home.jsx dans la bonne section de profil.</pre>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <h2>9 manques + 3 corrections de cohérence</h2>
+    <div style="overflow-x:auto;">
+    <table>
+      <thead><tr><th>#</th><th>Écran manquant</th><th>Priorité</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Authentification (Console, Marchand, SaaS + 2FA + SSO)</td><td><span class="pill p0">P0</span></td></tr>
+        <tr><td>2</td><td>Onboarding / recrutement livreur</td><td><span class="pill p0">P0</span></td></tr>
+        <tr><td>3</td><td>« Ma caisse » intégrée au flux livreur</td><td><span class="pill p0">P0</span></td></tr>
+        <tr><td>4</td><td>Reversement COD → marchand</td><td><span class="pill p0">P0</span></td></tr>
+        <tr><td>5</td><td>Remboursement si COD déjà encaissé</td><td><span class="pill p1">P1</span></td></tr>
+        <tr><td>6</td><td>Centre de notifications admin</td><td><span class="pill p1">P1</span></td></tr>
+        <tr><td>7</td><td>Chat support client final</td><td><span class="pill p1">P1</span></td></tr>
+        <tr><td>8</td><td>Conséquence du choix de créneau</td><td><span class="pill p2">P2</span></td></tr>
+        <tr><td>9</td><td>Modération des avis clients</td><td><span class="pill p2">P2</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <p class="section-label">Les écrans, un par un</p>
+
+  <!-- 1 -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-num">1</span>
+      <h3 class="card-title">Authentification — tous profils sauf livreur</h3>
+      <button class="card-copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copier</button>
+    </div>
+    <div class="card-body">
+      <p>Crée les écrans de connexion manquants pour la <strong>Console transport</strong> (admin/dispatcher), le <strong>Portail marchand</strong> et la <strong>Console SaaS</strong> :</p>
+      <ul>
+        <li>Login (email + mot de passe, « mot de passe oublié »).</li>
+        <li>Mot de passe oublié (email → confirmation d'envoi).</li>
+        <li>Double authentification (2FA) : code à 6 chiffres.</li>
+        <li>Console SaaS / plan Grand Compte : variante <strong>SSO / SAML</strong>.</li>
+      </ul>
+      <p>Style cohérent avec l'écran de login livreur existant (logo indigo, cadre centré).</p>
+      <pre class="raw">1. Authentification (tous profils sauf livreur, qui l'a déjà)
+
+Crée les écrans de connexion manquants pour la Console transport (admin/dispatcher), le Portail marchand et la Console SaaS :
+- Écran de login (email + mot de passe, « mot de passe oublié », bouton principal).
+- Écran mot de passe oublié (saisie email → confirmation d'envoi).
+- Écran de double authentification (2FA) : saisie d'un code à 6 chiffres.
+- Pour la Console SaaS / plan Grand Compte : une variante SSO / SAML (bouton « Se connecter avec le SSO de mon organisation »).
+Style cohérent avec l'écran de login livreur existant (logo indigo, cadre centré).</pre>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-num">2</span>
+      <h3 class="card-title">Onboarding / recrutement livreur (mobile)</h3>
+      <button class="card-copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copier</button>
+    </div>
+    <div class="card-body">
+      <p>Parcours d'inscription d'un nouveau livreur avant son premier shift (cadre 390×844) :</p>
+      <ul>
+        <li>Saisie identité + téléphone.</li>
+        <li>Upload documents (permis recto/verso, carte grise, assurance) avec états : à fournir / en vérification / validé / refusé.</li>
+        <li>Choix contrat (Salarié / Freelance) et véhicule.</li>
+        <li>Écran d'attente de validation.</li>
+      </ul>
+      <p>Réutilise les statuts de documents de l'écran « Mes documents » existant.</p>
+      <pre class="raw">2. Onboarding / recrutement livreur (mobile, 390×844)
+
+Parcours d'inscription d'un nouveau livreur avant son premier shift :
+- Saisie identité + téléphone.
+- Upload des documents (permis de conduire recto/verso, carte grise, attestation d'assurance) avec états : à fournir / en vérification / validé / refusé.
+- Choix du type de contrat (Salarié / Freelance) et du véhicule.
+- Écran d'attente de validation (« Votre dossier est en cours de vérification »).
+Réutilise les statuts de documents déjà présents dans l'écran « Mes documents » du livreur.</pre>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-num">3</span>
+      <h3 class="card-title">Ma caisse — à intégrer au flux livreur</h3>
+      <button class="card-copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copier</button>
+    </div>
+    <div class="card-body">
+      <p>Un écran « Ma caisse » existe en démo autonome mais <span class="flag">n'est pas dans la navigation</span> de l'app livreur. Intègre-le (depuis le Profil et/ou l'onglet Shift) :</p>
+      <ul>
+        <li>Cash en main cumulé depuis le dernier dépôt.</li>
+        <li>Plafond avec barre colorée (vert → ambre 60 % → rouge 85 %) et alerte.</li>
+        <li>Liste des COD encaissés depuis le dernier dépôt.</li>
+        <li>Action « Déposer en agence » → bordereau, remise à zéro.</li>
+      </ul>
+      <p>Doit être consultable <strong>en cours de shift</strong>, pas seulement à la clôture.</p>
+      <pre class="raw">3. Ma caisse — livreur (mobile) — à intégrer au flux principal
+
+Un écran « Ma caisse » existe déjà en démo autonome (MobileCash) mais n'est pas dans la navigation de l'app livreur. Intègre-le au parcours livreur (accessible depuis le Profil et/ou l'onglet Shift) :
+- Cash en main cumulé depuis le dernier dépôt.
+- Plafond de cash avec barre de progression colorée (vert → ambre 60 % → rouge 85 %) et alerte à l'approche.
+- Liste des COD encaissés depuis le dernier dépôt.
+- Action « Déposer en agence » → génère un bordereau, remet la caisse à zéro.
+Doit être consultable en cours de shift, pas seulement à la clôture.</pre>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-num">4</span>
+      <h3 class="card-title">Reversement COD au marchand (Console admin)</h3>
+      <button class="card-copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copier</button>
+    </div>
+    <div class="card-body">
+      <p>Le circuit « cash → agence » existe mais <span class="flag">le reversement agence → marchand n'a aucun écran</span>. Crée-le :</p>
+      <ul>
+        <li>Liste des marchands avec COD net à reverser (montant, période, commission déduite).</li>
+        <li>Détail : commandes concernées, COD brut − commission 15 % = net à virer.</li>
+        <li>Action « Générer le virement » / « Marquer comme reversé » avec bordereau.</li>
+        <li>Statuts : à reverser / en cours / reversé.</li>
+      </ul>
+      <pre class="raw">4. Reversement COD au marchand (Console transport, admin)
+
+Le circuit « cash → agence » existe (réconciliation) mais le reversement agence → marchand n'a aucun écran. Crée-le :
+- Liste des marchands avec COD collecté net à reverser (montant, période, déduction de commission).
+- Détail d'un reversement : commandes concernées, COD brut − commission 15 % = net à virer.
+- Action « Générer le virement » / « Marquer comme reversé » avec bordereau et référence.
+- Statuts : à reverser / en cours / reversé.</pre>
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-num">5</span>
+      <h3 class="card-title">Annulation / remboursement COD déjà encaissé</h3>
+      <button class="card-copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copier</button>
+    </div>
+    <div class="card-body">
+      <p>Cas métier absent : un colis annulé/retourné <strong>après</strong> encaissement du COD. Crée un flux de remboursement :</p>
+      <ul>
+        <li>Détection des commandes annulées/retournées avec COD payé.</li>
+        <li>Décision : rembourser le client, re-créditer le marchand, ou retenir.</li>
+        <li>Traçabilité de la transaction inverse.</li>
+      </ul>
+      <pre class="raw">5. Annulation / remboursement avec COD déjà encaissé (Console transport)
+
+Cas métier absent : que se passe-t-il quand un colis est annulé ou retourné après que le COD a été encaissé ? Crée un écran/flux de remboursement :
+- Détection des commandes annulées/retournées avec COD payé.
+- Décision : rembourser le client, re-créditer le marchand, ou retenir.
+- Traçabilité de la transaction inverse.</pre>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-num">6</span>
+      <h3 class="card-title">Centre de notifications — Console admin</h3>
+      <button class="card-copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copier</button>
+    </div>
+    <div class="card-body">
+      <p>L'admin <em>configure</em> les notifications mais n'a pas de centre de notifications <strong>pour lui-même</strong> (le livreur en a un). Crée-le : alertes conformité (assurance/CT/permis), sorties de géofence, écarts de caisse, litiges, SLA en breach — compteur de non-lues, marquage lu.</p>
+      <pre class="raw">6. Notifications reçues — Console admin (desktop)
+
+L'admin configure les notifications mais n'a pas de centre de notifications pour lui-même (le livreur en a un). Crée un panneau/centre de notifications admin : alertes de conformité (assurance/CT/permis expirés), sorties de géofence, écarts de caisse, litiges ouverts, SLA en breach — avec compteur de non-lues et marquage lu.</pre>
+    </div>
+  </div>
+
+  <!-- 7 -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-num">7</span>
+      <h3 class="card-title">Chat support — client final (mobile)</h3>
+      <button class="card-copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copier</button>
+    </div>
+    <div class="card-body">
+      <p>Le livreur a un chat dispatch, le client final n'a que « appeler ». Ajoute une messagerie client final (chat livreur ou support), avec réponses rapides suggérées, cohérente avec le chat dispatch existant.</p>
+      <pre class="raw">7. Support / chat pour le client final (mobile)
+
+Le livreur a un chat dispatch, le client final n'a que « appeler ». Ajoute un écran de messagerie côté client final (chat avec le livreur ou le support), avec réponses rapides suggérées, cohérent avec le chat dispatch existant du livreur.</pre>
+    </div>
+  </div>
+
+  <!-- 8 -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-num">8</span>
+      <h3 class="card-title">Conséquence du choix de créneau</h3>
+      <button class="card-copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copier</button>
+    </div>
+    <div class="card-body">
+      <p>Quand le client choisit/modifie son créneau, montre la <strong>conséquence</strong> : confirmation côté client + impact côté dispatch/tournée (re-planification de l'arrêt). Aujourd'hui l'action n'a aucun effet visible.</p>
+      <pre class="raw">8. Confirmation / conséquence du choix de créneau client (mobile + dispatch)
+
+Quand le client final choisit ou modifie son créneau (écran existant), montre la conséquence : écran de confirmation côté client + impact côté dispatch/tournée (re-planification de l'arrêt). Aujourd'hui l'action n'a aucun effet visible.</pre>
+    </div>
+  </div>
+
+  <!-- 9 -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-num">9</span>
+      <h3 class="card-title">Modération des avis clients (Console admin)</h3>
+      <button class="card-copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copier</button>
+    </div>
+    <div class="card-body">
+      <p>Le client note le livreur mais <span class="flag">aucun écran ne gère les avis</span> (surtout négatifs). Crée un écran de modération : liste des avis, filtre par note, signalement d'un avis abusif, réponse/contexte, impact sur le score du livreur (avec revue humaine, comme la fraude COD).</p>
+      <pre class="raw">9. Modération des avis clients (Console admin)
+
+Le client note le livreur, mais aucun écran ne gère les avis (surtout négatifs). Crée un écran de modération : liste des avis récents, filtrage par note, signalement d'un avis abusif, réponse/contexte, impact sur le score du livreur (avec revue humaine, comme la fraude COD).</pre>
+    </div>
+  </div>
+
+  <!-- COHERENCE -->
+  <div class="card" style="border-color: color-mix(in srgb, var(--p1) 35%, var(--border));">
+    <div class="card-head">
+      <span class="card-num" style="color:var(--p1); background:var(--p1-wash);">±</span>
+      <h3 class="card-title">Cohérences à corriger au passage</h3>
+      <button class="card-copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copier</button>
+    </div>
+    <div class="card-body">
+      <ul>
+        <li><strong><code>proof_level</code></strong> : l'API marchand utilise <code>photo_signature</code>, l'app livreur <code>photo_sig</code>. Uniformise (ou documente le mapping).</li>
+        <li><strong>Multi-langue incomplète</strong> : étends FR/AR aux écrans FR-only (Console SaaS, Flotte, Facturation, Analytics) si tu les régénères.</li>
+        <li><strong>Double facturation marchand</strong> : clarifie le rapport entre portefeuille prépayé et factures mensuelles post-payées.</li>
+      </ul>
+      <pre class="raw">Cohérences à corriger au passage
+
+- proof_level : l'API marchand utilise photo_signature, l'app livreur photo_sig. Uniformise la nomenclature (ou documente le mapping).
+- Multi-langue incomplète : étends FR/AR aux écrans aujourd'hui FR uniquement (Console SaaS, Flotte, Facturation, Analytics) si tu les régénères.
+- Double facturation marchand : clarifie par un écran ou une note le rapport entre le portefeuille prépayé et les factures mensuelles post-payées (lequel s'applique selon le type de contrat marchand).</pre>
+    </div>
+  </div>
+
+  <p class="footnote">Conseil : commence par la <strong>section 1 (Auth)</strong> — manque le plus critique et le plus autonome — pour vérifier que Claude Design respecte bien tes conventions avant de lancer le reste. Chaque bouton « Copier » inclut le contexte de la section ; « Copier tout » assemble le prompt complet dans l'ordre.</p>
+</div>
+
+<div id="toast" role="status" aria-live="polite">Copié</div>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    var toast = document.getElementById('toast');
+    var toastTimer;
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 1600);
+    }
+
+    function copyText(text, cb) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(cb, function () { fallback(text, cb); });
+      } else { fallback(text, cb); }
+    }
+    function fallback(text, cb) {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta); cb && cb();
+    }
+
+    // Per-section copy (each button's sibling .raw within the same card/context)
+    document.querySelectorAll('.card-copy').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var scope = btn.closest('.card') || btn.closest('.context');
+        var raw = scope ? scope.querySelector('.raw') : null;
+        if (!raw) return;
+        copyText(raw.textContent.trim(), function () {
+          showToast('Section copiée');
+          var orig = btn.innerHTML;
+          btn.classList.add('done');
+          btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Copié';
+          setTimeout(function () { btn.classList.remove('done'); btn.innerHTML = orig; }, 1500);
+        });
+      });
+    });
+
+    // Copy all — context first, then every card in order
+    document.getElementById('copyAll').addEventListener('click', function () {
+      var parts = [];
+      var ctx = document.getElementById('raw-ctx');
+      if (ctx) parts.push(ctx.textContent.trim());
+      document.querySelectorAll('.card .raw').forEach(function (r) { parts.push(r.textContent.trim()); });
+      copyText(parts.join('\n\n---\n\n'), function () { showToast('Prompt complet copié'); });
+    });
+
+    // Theme toggle
+    function currentTheme() {
+      if (root.dataset.theme) return root.dataset.theme;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    document.getElementById('themeToggle').addEventListener('click', function () {
+      root.dataset.theme = currentTheme() === 'dark' ? 'light' : 'dark';
+    });
+  })();
+</script>
