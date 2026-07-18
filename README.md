@@ -13,7 +13,7 @@ cp .env.example .env
 docker compose up --build
 ```
 - API : http://localhost:3000
-- Postgres : localhost:5432 (schémas `platform`, `tenant_casaexpress`, `tenant_atlas` créés + seedés au 1er démarrage)
+- Postgres : localhost:5432 (le service `migrate` applique les migrations puis seede `platform`, `tenant_casaexpress`, `tenant_atlas` avant le démarrage de l'API)
 
 ### Vérifier
 ```bash
@@ -44,8 +44,8 @@ packages/
   design-tokens/  # échelle visuelle Radix partagée web+mobile              ⏳
   i18n/           # dictionnaires FR/AR + RTL                                ⏳
   api-client/     # client typé                                             ⏳
-  db/             # schéma Drizzle + migrations (schema-per-tenant)          ⏳
-infra/postgres/   # init.sql (démo schema-per-tenant + seed)                 ✅
+  db/             # Drizzle + migrations schema-per-tenant + provisioning     ✅
+
 docs/adr/         # décisions d'architecture                                 ✅
 ```
 
