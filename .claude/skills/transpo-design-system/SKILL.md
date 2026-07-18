@@ -10,19 +10,23 @@ description: >
 
 # Transpo — Design-system (Radix)
 
+## Règle centrale
+**Cohérence visuelle web ↔ mobile, fidèle à la maquette.** La maquette Claude Design (Radix, indigo/slate) est la **référence visuelle** ; web et mobile doivent rendre le *même* système. La contrainte porte sur **le design-system**, pas sur « Radix » comme fin en soi : Radix est l'implémentation web, le natif reproduit le même visuel via tokens partagés + Tamagui (voir ci-dessous). Un écran web et son équivalent mobile doivent être reconnaissables comme la même app.
+
 ## Fondations (identiques à la maquette)
 - **Radix Themes** config : `accentColor="indigo"`, `grayColor="slate"`, `radius="medium"`, `scaling="100%"`, `panelBackground="solid"`.
 - **Thème clair/sombre** obligatoire sur toutes les interfaces.
 - **Neutres** : gris slate (biais froid vers l'indigo), pas de gris pur.
 - **Sémantique couleur** (séparée de l'accent) : vert = succès/livré, ambre = attention/COD, rouge = échec/critique, violet = récupéré, cyan = en route.
 
-## Radix web-only — décision cross-platform (À VALIDER)
-Radix UI Themes est **web uniquement**. Répartition :
+## Radix web-only — parité cross-platform (À VALIDER)
+Radix UI Themes est **web uniquement** ; l'objectif reste le **même rendu** sur les deux plateformes :
 - **Web (Next.js : consoles admin/marchand/SaaS, suivi public)** → **Radix Themes en direct**. Package `packages/ui-web`.
-- **React Native (apps livreur/client)** → Radix n'existe pas en natif. Utiliser **Tamagui** (bibliothèque cross-platform inspirée de Radix, API et tokens très proches) alimentée par `packages/design-tokens`. Package `packages/ui-native`.
-- **`packages/design-tokens`** = une seule échelle (couleurs indigo/slate, radius, spacing, typo) consommée par les deux mondes → cohérence visuelle garantie.
+- **React Native (apps livreur/client)** → **Tamagui** (cross-platform, aligné Radix), **paramétré pour reproduire le visuel Radix de la maquette** (mêmes couleurs, radius, densité, ombres). Package `packages/ui-native`.
+- **`packages/design-tokens`** = **source unique** de l'échelle visuelle (indigo/slate, radius, spacing, typo, élévations) consommée par `ui-web` ET `ui-native` → c'est ce qui **garantit la cohérence** web↔mobile. Toute couleur/rayon/espacement vient de là, jamais en dur.
+- **Test de parité** : un composant clé (StatusBadge, carte de commande, KPI) doit être visuellement identique en Radix (web) et Tamagui (RN) — le comparer à la maquette lors de la revue.
 
-Si l'équipe refuse Tamagui, alternative : composants RN maison minimalistes reproduisant l'API des primitives ci-dessous, alimentés par les mêmes tokens.
+Si Tamagui est écarté, alternative : composants RN maison reproduisant l'API des primitives ci-dessous, alimentés par les **mêmes tokens** — l'exigence de parité visuelle reste identique.
 
 ## Primitives partagées (même nom/comportement web & natif)
 - **`StatusBadge({ status, lang })`** — badge coloré depuis l'enum `STATUS` (couleur figée, libellé FR/AR). Ne jamais recoder les couleurs de statut à la main.
