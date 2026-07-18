@@ -4,6 +4,8 @@ Retour à [PRD-00-Vue-Ensemble.md](PRD-00-Vue-Ensemble.md). Modèle de données 
 
 **Source analysée** : `transpo/lot4.jsx`. Interface `/merchant`, **responsive** (un seul jeu d'écrans, layout desktop et mobile partagés, testable via bascule de viewport dans le harnais de démo).
 
+> **Interactivité** : entièrement fonctionnel (voir [PRD-00](PRD-00-Vue-Ensemble.md) §9). « Créer une commande » est branché au `Store` partagé (elle apparaît réellement dans « Mes commandes ») ; recherche et filtre de statut effectifs ; recharge du portefeuille, régénération de clé API, « Page de suivi publique » et téléchargements PDF déclenchent une action/toast.
+
 ---
 
 ## 1. Contexte

@@ -4,6 +4,8 @@ Retour à [PRD-00-Vue-Ensemble.md](PRD-00-Vue-Ensemble.md). Modèle de données 
 
 **Sources analysées** : `transpo/lot1.jsx` (Commandes), `lot2.jsx` (Dispatch/Zones), `lot6.jsx` (Flotte/Tarif/Facturation/Notifications/Users), `lot7.jsx` (Tournées), `lot8.jsx` (Cash), `lot9.jsx` (Hub), `lot10.jsx` (Retours), `lot12.jsx` (Analytics), `lot13.jsx` (Fraude), `lot14.jsx` (PC Flotte).
 
+> **Interactivité** : tous les écrans de cette console sont désormais fonctionnels (voir [PRD-00](PRD-00-Vue-Ensemble.md) §9). En particulier : recherche globale et cloche du bandeau branchées ; filtres Ville/Marchand/Livreur et pagination réels sur la liste des commandes ; actions de statut effectives sur Hub (déplacement de colis), Retours, Cash (dépôt), Fraude (enquête/blanchir) ; zoom carte et « Gérer les zones » sur le PC flotte ; exports → toast de confirmation.
+
 **Rôles** : Administrateur (accès complet) et Dispatcher (Commandes, Dispatch, lecture seule Chauffeurs) partagent la même console via un système de permissions par rôle (voir § Utilisateurs & rôles). Un troisième rôle, Comptable, n'a accès qu'à Facturation et Tarification (lecture).
 
 ---

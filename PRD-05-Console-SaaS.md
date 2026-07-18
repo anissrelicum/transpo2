@@ -4,6 +4,8 @@ Retour à [PRD-00-Vue-Ensemble.md](PRD-00-Vue-Ensemble.md). Modèle de données 
 
 **Source analysée** : `transpo/lot5.jsx` (section Console SaaS, exportée séparément du suivi public dans le même fichier). Interface `/admin` réservée à l'équipe **Transpo elle-même** (l'éditeur SaaS), pas à un transporteur client.
 
+> **Interactivité** : la console — jadis quasi entièrement statique — est désormais fonctionnelle (voir [PRD-00](PRD-00-Vue-Ensemble.md) §9). **« Provisionner un tenant »** ouvre un vrai formulaire qui crée le tenant ; Suspendre/Réactiver/Déprovisionner changent réellement le statut (avec confirmation) ; « Voir la fiche » ouvre un détail ; choix de plan, exports et actions du paywall déclenchent un effet/toast.
+
 ---
 
 > ✅ **Bilingue FR/AR** : la Console SaaS (`lot5.jsx`, écrans Tenants / Abonnements / Facturation / Paywall) a été internationalisée — dictionnaire `SAAS = {fr, ar}` + helper `useSaas(lang)` câblés dans tous les écrans, sélecteur de langue et `dir=rtl` ajoutés à `AdminApp` (tables de mapping pour villes/statuts/plans traduits). Elle bascule réellement en arabe.

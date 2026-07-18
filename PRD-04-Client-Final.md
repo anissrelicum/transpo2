@@ -4,6 +4,8 @@ Retour à [PRD-00-Vue-Ensemble.md](PRD-00-Vue-Ensemble.md). Modèle de données 
 
 **Source analysée** : `transpo/lot5.jsx` (section suivi public) et `transpo/lot11.jsx` (app client complète). Les deux coexistent : le **suivi public** est l'entrée minimale sans compte ; l'**app client** est une expérience mobile plus riche (créneau, notation) supposant une installation ou un lien approfondi.
 
+> **Interactivité** : fonctionnel (voir [PRD-00](PRD-00-Vue-Ensemble.md) §9). Les boutons d'appel / WhatsApp déclenchent une action (toast) ; « Modifier le créneau » mène réellement à l'écran de choix de créneau ; le chat et la notation sont opérationnels.
+
 ---
 
 ## 1. Suivi public sans compte (`Transpo - Lot 5a Suivi Public`)

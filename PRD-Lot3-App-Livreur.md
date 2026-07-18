@@ -4,6 +4,8 @@
 
 **Statut** : rédigé à partir d'une analyse exhaustive du code source de la maquette (`transpo/lot3.jsx` + bibliothèque partagée `transpo/lib.jsx`). Ce document sert de spécification d'implémentation pour l'app livreur native (iOS/Android).
 
+> **Interactivité** : l'app livreur est pleinement fonctionnelle (voir [PRD-00](PRD-00-Vue-Ensemble.md) §9) — parcours mission complet (statut → preuve → COD → caisse), onboarding, contacts (appel/WhatsApp → action), documents et FAQ opérationnels. Réserves de maquette inchangées : scanner caméra et capture de signature restent simulés (§9), à remplacer par de vraies libs natives.
+
 ---
 
 ## 1. Contexte produit
