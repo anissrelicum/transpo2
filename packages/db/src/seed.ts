@@ -3,6 +3,7 @@
 import { pool } from './client.js';
 import { provisionTenant, schemaFor, type TenantInput } from './provision.js';
 import { hashPassword } from './crypto.js';
+import { fraudScore, type FraudSignal } from '@transpo/domain';
 
 // Utilisateurs de démo par tenant (mot de passe commun en dev : "transpo").
 const USERS: Record<string, Array<{ email: string; name: string; role: string }>> = {
@@ -69,6 +70,16 @@ const VEHICLES: Record<string, Array<{ plate: string; type: string; city: string
   ],
 };
 
+// Cas de fraude COD (revue humaine requise). Score recalculé au seed via fraudScore.
+const FRAUD: Record<string, Array<{ driver: string; amount: number; signals: string[]; status: string; summary: string }>> = {
+  casaexpress: [
+    { driver: 'Karim El Amrani', amount: 3200, signals: ['non_declare', 'ecart_cash'], status: 'OUVERT', summary: 'COD marqué livré, absent du dépôt.' },
+  ],
+  e2e: [
+    { driver: 'Youssef Benali', amount: 1500, signals: ['hors_geo', 'echec_sans_preuve'], status: 'OUVERT', summary: 'Validation à 1,8 km de l’adresse, sans photo.' },
+  ],
+};
+
 async function main() {
   const client = await pool.connect();
   try {
@@ -111,6 +122,14 @@ async function main() {
           `INSERT INTO vehicles (plate, type, city, state, insurance_due, ct_due)
            VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (plate) DO NOTHING`,
           [v.plate, v.type, v.city, v.state, v.ins, v.ct],
+        );
+      }
+      for (const f of FRAUD[t.slug] ?? []) {
+        const score = fraudScore(f.signals as FraudSignal[]);
+        await client.query(
+          `INSERT INTO fraud_cases (driver, amount, signals, score, status, summary)
+           SELECT $1,$2,$3,$4,$5,$6 WHERE NOT EXISTS (SELECT 1 FROM fraud_cases WHERE driver = $1 AND summary = $6)`,
+          [f.driver, f.amount, f.signals, score, f.status, f.summary],
         );
       }
     }
