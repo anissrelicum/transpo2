@@ -103,7 +103,7 @@ export default async function OrdersPage({
                 <Table.Cell align="right"><CodChip amount={o.cod} paid={o.codPaid} /></Table.Cell>
                 {canWrite && (
                   <Table.Cell align="right">
-                    <OrderActions ref_={o.ref} status={o.status} driver={o.driver} drivers={driverNames} />
+                    <OrderActions ref_={o.ref} status={o.status} driver={o.driver} drivers={driverNames} cod={o.cod} codPaid={o.codPaid} />
                   </Table.Cell>
                 )}
               </Table.Row>

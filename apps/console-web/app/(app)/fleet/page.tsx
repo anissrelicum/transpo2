@@ -1,18 +1,33 @@
 import * as React from 'react';
-import { Callout, Badge, Text } from '@radix-ui/themes';
+import { cookies } from 'next/headers';
+import { Callout, Badge, Text, Flex } from '@radix-ui/themes';
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 import type { FleetLive } from '@transpo/api-client';
 import { load, PageTitle, DataTable, Box, wrap } from '../../../lib/page';
+import { CreateDialog } from '../../../components/CreateDialog';
 
 export const dynamic = 'force-dynamic';
 
 export default async function FleetPage() {
+  const canWrite = ['ADMIN', 'DISPATCHER'].includes(cookies().get('role')?.value || '');
   const live = await load((c) => c.getFleetLive());
   const alerts = live.filter((l) => l.outOfZone);
 
   return (
     <Box style={wrap}>
-      <PageTitle title="PC flotte — temps réel" subtitle="Dernière position par livreur et géofencing (alertes sortie de zone)." />
+      <Flex justify="between" align="end">
+        <PageTitle title="PC flotte — temps réel" subtitle="Dernière position par livreur et géofencing (alertes sortie de zone)." />
+        {canWrite && (
+          <Box mb="4"><CreateDialog title="Nouvelle zone géo" trigger="Zone géofence" path="v1/tracking/geofence"
+            fields={[
+              { name: 'driver', label: 'Livreur', placeholder: 'Youssef Benali' },
+              { name: 'name', label: 'Nom de zone', placeholder: 'Casa Centre' },
+              { name: 'centerLat', label: 'Latitude centre', type: 'number', placeholder: '33.5731' },
+              { name: 'centerLng', label: 'Longitude centre', type: 'number', placeholder: '-7.5898' },
+              { name: 'radiusM', label: 'Rayon (m)', type: 'number', default: '5000' },
+            ]} /></Box>
+        )}
+      </Flex>
       {alerts.length > 0 && (
         <Callout.Root color="red" mb="3" role="alert">
           <Callout.Icon><ExclamationTriangleIcon /></Callout.Icon>
