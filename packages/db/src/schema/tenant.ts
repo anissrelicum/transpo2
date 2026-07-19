@@ -1,4 +1,4 @@
-import { pgTable, text, integer, boolean, timestamp, uuid, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, text, integer, boolean, timestamp, uuid, jsonb, doublePrecision } from 'drizzle-orm/pg-core';
 
 // Tables d'un tenant. Volontairement NON qualifiées d'un schéma :
 // elles sont résolues au runtime via `SET search_path TO tenant_<x>` (cf. client.withTenantDb).
@@ -55,6 +55,23 @@ export const returns = pgTable('returns', {
   attempts: integer('attempts').notNull().default(1),
   status: text('status').notNull().default('A_TRAITER'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const driverPositions = pgTable('driver_positions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  driver: text('driver').notNull(),
+  lat: doublePrecision('lat').notNull(),
+  lng: doublePrecision('lng').notNull(),
+  at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const geofences = pgTable('geofences', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  driver: text('driver').notNull(),
+  name: text('name').notNull(),
+  centerLat: doublePrecision('center_lat').notNull(),
+  centerLng: doublePrecision('center_lng').notNull(),
+  radiusM: integer('radius_m').notNull().default(5000),
 });
 
 export const idempotencyKeys = pgTable('idempotency_keys', {
