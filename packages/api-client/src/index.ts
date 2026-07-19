@@ -28,7 +28,7 @@ export interface Tournee {
 }
 export interface Driver { id: string; name: string; city: string | null; vehicle: string | null; available: boolean; createdAt: string }
 export interface Vehicle { id: string; plate: string; type: string; city: string | null; state: string; insuranceDue: string | null; ctDue: string | null; createdAt: string }
-export interface Zone { id: string; nameFr: string; nameAr: string | null; color: string; commune: string | null; drivers: string[]; centerLat: number | null; centerLng: number | null; createdAt: string }
+export interface Zone { id: string; nameFr: string; nameAr: string | null; color: string; commune: string | null; region: string | null; province: string | null; drivers: string[]; centerLat: number | null; centerLng: number | null; polygon: number[][] | null; createdAt: string }
 export interface Suggestion { driver: string; city: string; vehicle: string; score: number; parts: { zone: number; dispo: number; charge: number } }
 export interface ReturnRow { ref: string; reason: string; attempts: number; status: string; createdAt: string }
 export interface NotificationRow { id: string; event: string; channel: string; recipient: string; lang: string; body: string; status: string; reason: string | null; createdAt: string }

@@ -2,7 +2,7 @@
 import * as React from 'react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Circle, Polygon, useMap, useMapEvents } from 'react-leaflet';
 import { useAppTheme } from './theme-provider';
 
 export type MapMarker = {
@@ -10,6 +10,7 @@ export type MapMarker = {
   label: string; sub?: string; color?: string; ini?: string;
 };
 export type MapCircle = { id: string; lat: number; lng: number; radiusM: number; color: string; label?: string; selected?: boolean };
+export type MapPolygon = { id: string; latlngs: [number, number][]; color: string; label?: string; selected?: boolean; onClick?: () => void };
 
 // Icône livreur (pastille avec initiales) ou commande (goutte).
 function makeIcon(m: MapMarker): L.DivIcon {
@@ -39,11 +40,16 @@ function ZoomExpose({ onMap }: { onMap: (m: L.Map) => void }) {
   return null;
 }
 
+function ClickCapture({ onClick }: { onClick: (lat: number, lng: number) => void }) {
+  useMapEvents({ click(e) { onClick(e.latlng.lat, e.latlng.lng); } });
+  return null;
+}
+
 export default function LeafletMap({
-  center, zoom = 12, markers = [], circles = [], interactive = true, onMap,
+  center, zoom = 12, markers = [], circles = [], polygons = [], interactive = true, onMap, onMapClick,
 }: {
-  center: [number, number]; zoom?: number; markers?: MapMarker[]; circles?: MapCircle[];
-  interactive?: boolean; onMap?: (m: L.Map) => void;
+  center: [number, number]; zoom?: number; markers?: MapMarker[]; circles?: MapCircle[]; polygons?: MapPolygon[];
+  interactive?: boolean; onMap?: (m: L.Map) => void; onMapClick?: (lat: number, lng: number) => void;
 }) {
   return (
     <MapContainer
@@ -53,6 +59,14 @@ export default function LeafletMap({
     >
       <TileByTheme />
       {onMap && <ZoomExpose onMap={onMap} />}
+      {onMapClick && <ClickCapture onClick={onMapClick} />}
+      {polygons.map((p) => (
+        <Polygon key={p.id} positions={p.latlngs}
+          eventHandlers={p.onClick ? { click: p.onClick } : undefined}
+          pathOptions={{ color: `var(--${p.color}-9)`, weight: p.selected ? 3 : 1.5, dashArray: p.selected ? undefined : '5 5', fillColor: `var(--${p.color}-9)`, fillOpacity: 0.2 }}>
+          {p.label && <Popup>{p.label}</Popup>}
+        </Polygon>
+      ))}
       {circles.map((c) => (
         <Circle key={c.id} center={[c.lat, c.lng]} radius={c.radiusM}
           pathOptions={{ color: `var(--${c.color}-9)`, weight: c.selected ? 3 : 1.5, dashArray: c.selected ? undefined : '5 5', fillColor: `var(--${c.color}-9)`, fillOpacity: 0.18 }}>
