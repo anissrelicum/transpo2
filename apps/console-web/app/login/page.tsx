@@ -1,13 +1,32 @@
 'use client';
 import * as React from 'react';
-import { Flex, Box, Card, Heading, Text, TextField, Button, Callout } from '@radix-ui/themes';
+import { Flex, Box, Card, Heading, Text, TextField, Button, Callout, Badge } from '@radix-ui/themes';
+
+// Miroir client de tenantFromHost (lib/server) — pour l'affichage seulement.
+function orgFromHost(host: string): string | null {
+  const name = host.split(':')[0];
+  if (/^\d+\.\d+\.\d+\.\d+$/.test(name)) return null;
+  const labels = name.split('.');
+  if (labels.length < 2) return null;
+  const first = labels[0].toLowerCase();
+  if (['www', 'localhost', 'app'].includes(first)) return null;
+  return first;
+}
 
 export default function LoginPage() {
   const [email, setEmail] = React.useState('admin@casaexpress.ma');
   const [password, setPassword] = React.useState('transpo');
-  const [tenant, setTenant] = React.useState('casaexpress');
+  const [org, setOrg] = React.useState<string | null>(null);   // override ?org= (dev/test)
+  const [detected, setDetected] = React.useState<string>('');  // org affichée
   const [error, setError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    const qOrg = new URLSearchParams(window.location.search).get('org');
+    const host = orgFromHost(window.location.host);
+    setOrg(qOrg);
+    setDetected(qOrg || host || 'par défaut');
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -15,12 +34,12 @@ export default function LoginPage() {
     const res = await fetch('/api/login', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ email, password, tenant }),
+      // Le tenant est résolu par le serveur depuis le host ; on ne transmet que
+      // l'override éventuel (?org=) pour le dev/test.
+      body: JSON.stringify({ email, password, tenant: org || undefined }),
     });
     if (res.ok) {
-      // Navigation dure : requête complète avec les cookies → rend le shell serveur
-      // proprement (évite la course push+refresh de Next 14).
-      window.location.assign('/dashboard');
+      window.location.assign('/dashboard'); // navigation dure (cookies posés)
       return;
     }
     setLoading(false);
@@ -42,10 +61,10 @@ export default function LoginPage() {
               {error && (
                 <Callout.Root color="red" role="alert" size="1"><Callout.Text>{error}</Callout.Text></Callout.Root>
               )}
-              <Box>
-                <Text as="label" size="2" weight="medium">Organisation</Text>
-                <TextField.Root name="tenant" value={tenant} onChange={(e) => setTenant(e.target.value)} mt="1" />
-              </Box>
+              <Flex align="center" justify="between">
+                <Text size="2" color="gray">Organisation</Text>
+                <Badge color="indigo" data-testid="detected-org">{detected}</Badge>
+              </Flex>
               <Box>
                 <Text as="label" size="2" weight="medium">E-mail</Text>
                 <TextField.Root name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} mt="1" />
@@ -57,6 +76,9 @@ export default function LoginPage() {
               <Button type="submit" size="3" disabled={loading} style={{ marginTop: 8 }}>
                 {loading ? 'Connexion…' : 'Se connecter'}
               </Button>
+              <Text size="1" color="gray" align="center">
+                L’organisation est déterminée par l’adresse (sous-domaine).
+              </Text>
             </Flex>
           </form>
         </Card>
