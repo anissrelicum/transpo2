@@ -51,6 +51,23 @@ export type Role = 'ADMIN' | 'DISPATCHER' | 'COMPTABLE' | 'MERCHANT' | 'SUPER_AD
 
 export const MAX_RETURN_ATTEMPTS = 3;
 
+/* ====================== Fraude COD — barème de signaux ====================== */
+export const FRAUD_SIGNALS = {
+  non_declare: { label: 'COD encaissé non déclaré', pts: 35 },
+  ecart_cash: { label: 'Écart de caisse récurrent', pts: 30 },
+  hors_geo: { label: 'Livraison hors géofence', pts: 28 },
+  echec_sans_preuve: { label: 'Échec sans preuve GPS', pts: 22 },
+  absent_eleve: { label: 'Taux « client absent » anormal', pts: 18 },
+  depot_tardif: { label: 'Dépôt cash tardif (> 24 h)', pts: 15 },
+} as const;
+export type FraudSignal = keyof typeof FRAUD_SIGNALS;
+
+/** Score de risque (0-100, plafonné) = somme des points des signaux. Jamais de sanction auto. */
+export function fraudScore(signals: FraudSignal[]): number {
+  const raw = signals.reduce((a, s) => a + (FRAUD_SIGNALS[s]?.pts ?? 0), 0);
+  return Math.min(100, raw);
+}
+
 /* ====================== Règles chiffrées ====================== */
 export const COMMISSION_RATE = 0.15; // 15 % par défaut (configurable par tenant)
 export const VAT_RATE = 0.20;        // TVA 20 %

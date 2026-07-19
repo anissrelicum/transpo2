@@ -10,8 +10,12 @@ function rndCode(): string {
   for (let i = 0; i < 8; i++) s += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)];
   return s;
 }
+let refCounter = 0;
 function nextRef(): string {
-  return 'CMD-' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + '-' + Math.floor(Math.random() * 900 + 100);
+  // Unique : date + base36(timestamp) + compteur process (évite les collisions sous charge).
+  const day = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  const uniq = (Date.now().toString(36) + (refCounter++).toString(36)).toUpperCase();
+  return `CMD-${day}-${uniq}`;
 }
 
 export interface CreateOrderInput {

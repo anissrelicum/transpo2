@@ -6,11 +6,17 @@ import { DispatchModule } from './dispatch/dispatch.module.js';
 import { FleetModule } from './fleet/fleet.module.js';
 import { CashModule } from './cash/cash.module.js';
 import { BillingModule } from './billing/billing.module.js';
+import { ReturnsModule } from './returns/returns.module.js';
+import { AnalyticsModule } from './analytics/analytics.module.js';
+import { FraudModule } from './fraud/fraud.module.js';
 import { HealthController } from './health.controller.js';
 
 // Scoping par tenant via TenantGuard ; auth JWT + RBAC via guards (transpo-auth-security).
 @Module({
-  imports: [AuthModule, OrdersModule, SaasModule, DispatchModule, FleetModule, CashModule, BillingModule],
+  imports: [
+    AuthModule, OrdersModule, SaasModule, DispatchModule, FleetModule,
+    CashModule, BillingModule, ReturnsModule, AnalyticsModule, FraudModule,
+  ],
   controllers: [HealthController],
 })
 export class AppModule {}
