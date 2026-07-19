@@ -13,6 +13,19 @@ export interface SuperLoginResult { token: string; name: string }
 export interface Tenant {
   slug: string; name: string; city: string | null; plan: string; status: string; createdAt: string;
 }
+export interface AnalyticsSummary {
+  total: number; byStatus: Record<string, number>;
+  delivered: number; failed: number; successRate: number; codCollected: number;
+}
+export interface FraudCase {
+  id: string; driver: string; amount: number; signals: string[];
+  score: number; status: string; summary: string | null; createdAt: string;
+}
+export interface RiskDriver { driver: string; cases: number; risk: number }
+export interface Tournee {
+  id: string; driver: string; zone: string | null; day: string; status: string;
+  stops: string[]; createdAt: string;
+}
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) { super(message); }
@@ -56,6 +69,24 @@ export class TranspoClient {
   // --- Commandes ---
   getOrders(): Promise<Order[]> {
     return this.req('/v1/orders');
+  }
+
+  // --- Analytics ---
+  getAnalyticsSummary(): Promise<AnalyticsSummary> {
+    return this.req('/v1/analytics/summary');
+  }
+
+  // --- Fraude ---
+  getFraudCases(): Promise<FraudCase[]> {
+    return this.req('/v1/fraud/cases');
+  }
+  getFraudLeaderboard(): Promise<RiskDriver[]> {
+    return this.req('/v1/fraud/leaderboard');
+  }
+
+  // --- Tournées ---
+  getTournees(): Promise<Tournee[]> {
+    return this.req('/v1/tournees');
   }
 
   // --- SaaS ---
