@@ -9,13 +9,14 @@ import { BillingModule } from './billing/billing.module.js';
 import { ReturnsModule } from './returns/returns.module.js';
 import { AnalyticsModule } from './analytics/analytics.module.js';
 import { FraudModule } from './fraud/fraud.module.js';
+import { MerchantModule } from './merchant/merchant.module.js';
 import { HealthController } from './health.controller.js';
 
 // Scoping par tenant via TenantGuard ; auth JWT + RBAC via guards (transpo-auth-security).
 @Module({
   imports: [
     AuthModule, OrdersModule, SaasModule, DispatchModule, FleetModule,
-    CashModule, BillingModule, ReturnsModule, AnalyticsModule, FraudModule,
+    CashModule, BillingModule, ReturnsModule, AnalyticsModule, FraudModule, MerchantModule,
   ],
   controllers: [HealthController],
 })
