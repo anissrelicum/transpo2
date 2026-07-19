@@ -12,6 +12,7 @@ import { FraudModule } from './fraud/fraud.module.js';
 import { MerchantModule } from './merchant/merchant.module.js';
 import { PublicModule } from './public/public.module.js';
 import { TourneesModule } from './tournees/tournees.module.js';
+import { NotificationsModule } from './notifications/notifications.module.js';
 import { HealthController } from './health.controller.js';
 
 // Scoping par tenant via TenantGuard ; auth JWT + RBAC via guards (transpo-auth-security).
@@ -19,7 +20,7 @@ import { HealthController } from './health.controller.js';
   imports: [
     AuthModule, OrdersModule, SaasModule, DispatchModule, FleetModule,
     CashModule, BillingModule, ReturnsModule, AnalyticsModule, FraudModule, MerchantModule,
-    PublicModule, TourneesModule,
+    PublicModule, TourneesModule, NotificationsModule,
   ],
   controllers: [HealthController],
 })

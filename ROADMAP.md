@@ -34,7 +34,7 @@ Légende : ✅ fait · 🚧 en cours · ⏳ à venir · *(skeleton)* = livré au
 - [ ] **T16 — PC flotte temps réel** — tracking live, géofencing, alertes sortie de zone, plein écran. — `transpo-realtime`, `transpo-maps-geo`
 - [~] **T17 — Analytics/SLA & Fraude COD** 🚧 *backend validé Docker* — synthèse (successRate, byStatus) ; fraude : scoring (fraudScore), liste, leaderboard livreurs à risque, revue humaine (enquête/blanchir/confirmer) audité, `@Roles ADMIN`. Tableaux par zone/marchand : à compléter. E2E API.
 - [ ] **T18 — Console SaaS** — tenants (provisioning réel), plans/abonnements, facturation plateforme, paywall. — PRD-05
-- [ ] **T19 — Notifications** — modèles, canaux SMS/WhatsApp/push, **consentement 09-08**, centre de notifs admin.
+- [~] **T19 — Notifications** 🚧 *backend validé Docker* — modèles bilingues FR/AR, canaux SMS/WhatsApp/push/email, **consentement 09-08** (transactionnel exempté, marketing bloqué sans opt-in), centre de notifs admin filtrable. Passerelles réelles (envoi effectif) : à câbler. E2E API.
 
 ## Phase 6 — Durcissement & mise en prod
 - [ ] **T20 — Sécurité/conformité/observabilité** — audit complet, logs/monitoring, RGPD/09-08 + page confidentialité, perf.
