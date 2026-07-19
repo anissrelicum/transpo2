@@ -5,6 +5,7 @@ export interface JwtUser {
   sub: string;        // email/id
   role: Role;
   tenant?: string;    // slug du tenant (absent pour SUPER_ADMIN plateforme)
+  merchant?: string;  // nom du marchand (rôle MERCHANT) — scope du portail marchand
   platform?: boolean; // true pour le realm super-admin
 }
 
