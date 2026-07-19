@@ -26,6 +26,15 @@ export interface Tournee {
   id: string; driver: string; zone: string | null; day: string; status: string;
   stops: string[]; createdAt: string;
 }
+export interface Driver { id: string; name: string; city: string | null; vehicle: string | null; available: boolean; createdAt: string }
+export interface Vehicle { id: string; plate: string; type: string; city: string | null; state: string; insuranceDue: string | null; ctDue: string | null; createdAt: string }
+export interface Zone { id: string; nameFr: string; nameAr: string | null; color: string; commune: string | null; drivers: string[]; createdAt: string }
+export interface ReturnRow { ref: string; reason: string; attempts: number; status: string; createdAt: string }
+export interface NotificationRow { id: string; event: string; channel: string; recipient: string; lang: string; body: string; status: string; reason: string | null; createdAt: string }
+export interface Invoice { merchant: string; deliveries: number; codCollected: number; commission: number; netHt: number; tva: number; ttc: number }
+export interface Reconciliation { driver: string; theorique: number; deliveries: number }
+export interface Payout { merchant: string; brut: number; orders: number; commissionRate: number; net: number }
+export interface FleetLive { driver: string; lat: number; lng: number; at: string; zone: string | null; distanceM: number | null; outOfZone: boolean }
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) { super(message); }
@@ -88,6 +97,22 @@ export class TranspoClient {
   getTournees(): Promise<Tournee[]> {
     return this.req('/v1/tournees');
   }
+
+  // --- Flotte & dispatch ---
+  getDrivers(): Promise<Driver[]> { return this.req('/v1/drivers'); }
+  getVehicles(): Promise<Vehicle[]> { return this.req('/v1/vehicles'); }
+  getZones(): Promise<Zone[]> { return this.req('/v1/dispatch/zones'); }
+  getFleetLive(): Promise<FleetLive[]> { return this.req('/v1/tracking/live'); }
+  getFleetAlerts(): Promise<FleetLive[]> { return this.req('/v1/tracking/alerts'); }
+
+  // --- Argent ---
+  getReconciliation(): Promise<Reconciliation[]> { return this.req('/v1/cash/reconciliation'); }
+  getPayouts(): Promise<Payout[]> { return this.req('/v1/cash/payouts'); }
+  getInvoices(): Promise<Invoice[]> { return this.req('/v1/invoices'); }
+
+  // --- Flux inverses & notifications ---
+  getReturns(): Promise<ReturnRow[]> { return this.req('/v1/returns'); }
+  getNotifications(): Promise<NotificationRow[]> { return this.req('/v1/notifications'); }
 
   // --- SaaS ---
   listTenants(): Promise<Tenant[]> {

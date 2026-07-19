@@ -204,5 +204,7 @@ export interface Order {
   codPaid: boolean;
   size: ParcelSize;
   proofLevel: ProofLevel;
+  rating?: number | null;         // note client (1..5) post-livraison
+  ratingComment?: string | null;
   createdAt: string;
 }

@@ -18,37 +18,37 @@ import { useAppTheme } from './theme-provider';
 type Item = { id: string; label: string; icon: React.ComponentType<any>; href?: string };
 type Group = { group: string; items: Item[] };
 
-// IA de navigation reprise de la maquette (lib.jsx NAV). Les écrans avec `href`
-// sont branchés à l'API ; les autres sont affichés désactivés (à venir).
+// IA de navigation reprise de la maquette (lib.jsx NAV). Toutes les entrées sont
+// branchées à un écran réel ; l'`id` correspond au 1er segment de la route.
 const NAV: Group[] = [
   { group: 'Opérations', items: [
     { id: 'dashboard', label: 'Tableau de bord', icon: DashboardIcon, href: '/dashboard' },
     { id: 'orders', label: 'Commandes', icon: ArchiveIcon, href: '/orders' },
     { id: 'analytics', label: 'Analytics & SLA', icon: BarChartIcon, href: '/analytics' },
     { id: 'fraud', label: 'Fraude COD', icon: LockClosedIcon, href: '/fraud' },
-    { id: 'planner', label: 'Tournées', icon: StackIcon, href: '/tournees' },
-    { id: 'dispatch', label: 'Dispatch', icon: SewingPinFilledIcon },
-    { id: 'fleet', label: 'PC flotte', icon: TargetIcon },
-    { id: 'zones', label: 'Zones', icon: GlobeIcon },
-    { id: 'hub', label: 'Tri en hub', icon: LayersIcon },
-    { id: 'returns', label: 'Retours', icon: ResetIcon },
+    { id: 'tournees', label: 'Tournées', icon: StackIcon, href: '/tournees' },
+    { id: 'dispatch', label: 'Dispatch', icon: SewingPinFilledIcon, href: '/dispatch' },
+    { id: 'fleet', label: 'PC flotte', icon: TargetIcon, href: '/fleet' },
+    { id: 'zones', label: 'Zones', icon: GlobeIcon, href: '/zones' },
+    { id: 'hub', label: 'Tri en hub', icon: LayersIcon, href: '/hub' },
+    { id: 'returns', label: 'Retours', icon: ResetIcon, href: '/returns' },
   ]},
   { group: 'Flotte', items: [
-    { id: 'vehicles', label: 'Véhicules', icon: CubeIcon },
-    { id: 'drivers', label: 'Chauffeurs', icon: IdCardIcon },
+    { id: 'vehicles', label: 'Véhicules', icon: CubeIcon, href: '/vehicles' },
+    { id: 'drivers', label: 'Chauffeurs', icon: IdCardIcon, href: '/drivers' },
   ]},
   { group: 'Facturation', items: [
-    { id: 'pricing', label: 'Tarification', icon: TokensIcon },
-    { id: 'invoices', label: 'Factures', icon: FileTextIcon },
-    { id: 'cash', label: 'Caisse', icon: CardStackIcon },
-    { id: 'payout', label: 'Reversement COD', icon: ArrowRightIcon },
+    { id: 'pricing', label: 'Tarification', icon: TokensIcon, href: '/pricing' },
+    { id: 'invoices', label: 'Factures', icon: FileTextIcon, href: '/invoices' },
+    { id: 'cash', label: 'Caisse', icon: CardStackIcon, href: '/cash' },
+    { id: 'payout', label: 'Reversement COD', icon: ArrowRightIcon, href: '/payout' },
   ]},
   { group: 'Administration', items: [
-    { id: 'users', label: 'Utilisateurs', icon: PersonIcon },
-    { id: 'notifcenter', label: 'Notifications', icon: BellIcon },
-    { id: 'reviews', label: 'Avis clients', icon: StarIcon },
-    { id: 'templates', label: 'Modèles de notif.', icon: PaperPlaneIcon },
-    { id: 'settings', label: 'Paramètres', icon: GearIcon },
+    { id: 'users', label: 'Utilisateurs', icon: PersonIcon, href: '/users' },
+    { id: 'notifications', label: 'Notifications', icon: BellIcon, href: '/notifications' },
+    { id: 'reviews', label: 'Avis clients', icon: StarIcon, href: '/reviews' },
+    { id: 'templates', label: 'Modèles de notif.', icon: PaperPlaneIcon, href: '/templates' },
+    { id: 'settings', label: 'Paramètres', icon: GearIcon, href: '/settings' },
   ]},
 ];
 
@@ -178,8 +178,7 @@ function Topbar({ name, role }: { name: string; role: string }) {
 export function AppShell({ name, role, children }: { name: string; role: string; children: React.ReactNode }) {
   const pathname = usePathname();
   // id de nav actif dérivé du 1er segment de l'URL (/orders → orders, etc.)
-  const seg = (pathname || '/').split('/')[1] || 'dashboard';
-  const active = seg === 'tournees' ? 'planner' : seg;
+  const active = (pathname || '/').split('/')[1] || 'dashboard';
   return (
     <Flex align="stretch" style={{ minHeight: '100vh' }}>
       <Sidebar active={active} />
