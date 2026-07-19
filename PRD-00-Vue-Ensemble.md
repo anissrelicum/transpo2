@@ -222,3 +222,31 @@ Un audit dédié (`AUDIT-Interactions-Non-Fonctionnelles.md`) a recensé ~60 él
 | Exports (partout) | inertes | toast de confirmation (fichier réel = production) |
 
 **Socle technique de la correction** : ajout au `Store` partagé d'un **système de toasts** (`Store.toast` + `ToastHost` + `window.Transpo.toast`), réutilisé par tous les écrans — pas de bricolage local. Aucun code mort : chaque handler ajouté est réellement appelé.
+
+## 10. Implémentation réelle — backend + E2E sous Docker
+
+Au-delà des maquettes (§8/§9), la **plateforme applicative** a été implémentée en mono-repo (pnpm + Turborepo), NestJS + PostgreSQL **schema-per-tenant** (Drizzle), Next.js + Radix pour la console. **Tout est validé par tests E2E qui tapent l'API/le web réels dans Docker** (`docker compose`), avec typecheck du workspace en conteneur. Détail des tranches dans [ROADMAP.md](ROADMAP.md).
+
+**Couverture E2E à ce jour : 83 tests API (node:test) + 3 Playwright (web), tous verts sous Docker.**
+
+| Tranche | Périmètre livré (backend + E2E) |
+|---|---|
+| T0–T3 | Fondations : mono-repo, Docker, migrations/seed, auth argon2id + JWT, RBAC, TenantGuard durci, audit, packages partagés (i18n FR/AR, design-tokens, domain) |
+| T4 | Console commandes (Next+Radix, BFF), **filtres statut + pagination SSR**, Playwright 3/3 |
+| T5/T6 | Dispatch (zones + suggestion livreur scorée), Flotte (véhicules + conformité assurance/CT) |
+| T7 | Tournées : regroupement multi-arrêts + assignation, réordonnancement, cycle PLANIFIEE→EN_COURS→CLOTUREE |
+| T8/T9 | App livreur (rôle DRIVER) : missions scopées, statut séquentiel, preuve+COD → LIVREE, **idempotence offline** (Idempotency-Key) |
+| T10 | Livreur annexes : incidents (livreur↔ops), chat support bidirectionnel, historique & gains |
+| T11/T13 | Cash & COD (réconciliation, reversement marchand net), Facturation (devis cascade 3 niveaux + TVA) |
+| T12/T17 | Retours & hub (tentatives, plafond 3, renvoi marchand), Analytics (successRate), Fraude COD (scoring, leaderboard, revue humaine auditée) |
+| T14 | Portail marchand scopé (claim JWT `merchant`) : dashboard, commandes, portefeuille, facture |
+| T15 | Suivi public client (sans compte, tenant dans l'URL) + notation post-livraison verrouillée |
+| T16 | PC flotte temps réel : ingestion positions, snapshot live, **géofencing** (haversine) + alertes sortie de zone |
+| T18 | Console SaaS : plans/abonnements, changement de plan, facturation plateforme (usage/quota), **paywall** (SUSPENDU bloque le login) |
+| T19 | Notifications : modèles FR/AR, canaux SMS/WhatsApp/push/email, **consentement loi 09-08** (transactionnel exempté), centre admin |
+| T20 | Sécurité/observabilité : journal d'audit lisible, droits RGPD/09-08 (export + effacement/anonymisation), anti-bruteforce login (429) |
+| T21 | CI GitHub Actions : build stack, typecheck workspace, suite E2E API complète + Playwright, teardown, garde de concurrence |
+
+**Conventions durcies** (voir skills `.claude/skills/`) : injection explicite `@Inject()` sur tous les constructeurs (NestJS sous tsx/esbuild n'émet pas la métadonnée de type), `@HttpCode(200)` sur les POST renvoyant 200, résolution du tenant côté serveur uniquement (`search_path`, jamais depuis le client), tenant `e2e` dédié aux tests mutants, E2E sérialisés (`--test-concurrency=1`).
+
+**Restes (front-end / hors E2E API)** : assistant de création de commande (3 étapes) et détail commande (timeline+onglets) ; apps React Native (écrans livreur/client) ; WebSocket temps réel + carte plein écran ; Maestro (E2E mobile) ; passerelles de notification réelles ; abonnements Stripe. Ces éléments sont marqués `à compléter` dans la ROADMAP.
