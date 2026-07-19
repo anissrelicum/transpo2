@@ -13,6 +13,12 @@ description: >
 
 > Choix de stack recommandés ci-dessous — **à valider par l'équipe** avant le premier commit de code. Le domaine (`transpo-domain`) et les conventions (`transpo-design-system`, `transpo-i18n`, `transpo-api`) sont indépendants de ces choix.
 
+## ⚠️ NestJS sous tsx/esbuild — injection explicite obligatoire
+L'API tourne via `tsx` (esbuild), qui **n'émet pas les métadonnées de décorateur** (`emitDecoratorMetadata`). Conséquence : l'injection NestJS **par type** échoue silencieusement (`this.xxx` = undefined → 500 au runtime, invisible au typecheck).
+- **Règle** : annoter **chaque** paramètre de constructeur injecté avec `@Inject(Token)` — services, guards, `Reflector`, tout. Jamais de `constructor(private x: Service)` nu.
+- **Router** : NestJS renvoie **201 par défaut sur les POST** ; utiliser `@HttpCode(200)` sur les endpoints qui doivent répondre 200 (ex. login).
+- Ces deux points sont systématiquement validés par les E2E Docker (un service mal injecté fait échouer le test).
+
 ## Stack
 - **Mono-repo** : pnpm workspaces + Turborepo.
 - **Backend** : NestJS (TypeScript, modulaire/DDD, guards & interceptors → idéal pour la résolution de tenant).
