@@ -50,8 +50,8 @@ export class TranspoClient {
     return new TranspoClient({ ...this.opts, tenant });
   }
 
-  private async req<T>(path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
-    const headers: Record<string, string> = {};
+  private async req<T>(path: string, init: { method?: string; body?: unknown; headers?: Record<string, string> } = {}): Promise<T> {
+    const headers: Record<string, string> = { ...(init.headers ?? {}) };
     if (this.opts.token) headers['authorization'] = `Bearer ${this.opts.token}`;
     if (this.opts.tenant) headers['x-tenant-slug'] = this.opts.tenant;
     if (init.body) headers['content-type'] = 'application/json';
@@ -122,6 +122,19 @@ export class TranspoClient {
   // --- Flux inverses & notifications ---
   getReturns(): Promise<ReturnRow[]> { return this.req('/v1/returns'); }
   getNotifications(): Promise<NotificationRow[]> { return this.req('/v1/notifications'); }
+
+  // --- App livreur (rôle DRIVER) ---
+  getMissions(): Promise<Order[]> { return this.req('/v1/driver/missions'); }
+  driverAdvance(ref: string, idemKey: string): Promise<Order> {
+    return this.req(`/v1/driver/orders/${encodeURIComponent(ref)}/advance`, {
+      method: 'POST', body: {}, headers: { 'idempotency-key': idemKey },
+    });
+  }
+  driverProof(ref: string, body: { codCollected?: number }, idemKey: string): Promise<Order> {
+    return this.req(`/v1/driver/orders/${encodeURIComponent(ref)}/proof`, {
+      method: 'POST', body, headers: { 'idempotency-key': idemKey },
+    });
+  }
 
   // --- SaaS ---
   listTenants(): Promise<Tenant[]> {

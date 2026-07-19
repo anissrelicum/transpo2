@@ -17,8 +17,8 @@ Légende : ✅ fait · 🚧 en cours · ⏳ à venir · *(skeleton)* = livré au
 - [~] **T7 — Tournées** 🚧 *backend validé Docker* — planificateur multi-arrêts (regroupe commandes + assigne livreur), réordonnancement, cycle PLANIFIEE→EN_COURS→CLOTUREE, `@Roles ADMIN/DISPATCHER`. **Vrai moteur de routing** (optimisation d'ordre) : à compléter. E2E API. — `transpo-maps-geo`
 
 ## Phase 2 — Terrain (App livreur, offline-first)
-- [~] **T8 — Livreur socle** 🚧 *backend validé Docker* — login DRIVER (claim `driver`), missions (commandes actives scopées), statut séquentiel, **idempotence offline** (Idempotency-Key → pas de double effet au rejeu). App RN (onboarding, écrans) : à compléter. E2E API. — `transpo-offline-sync`
-- [~] **T9 — Livreur preuve/COD/caisse** 🚧 *backend validé Docker* — preuve de livraison + encaissement COD → LIVREE (idempotent), ownership vérifié. Ma caisse/dépôt, scanner natif, shift EU 561 : à compléter. E2E API.
+- [~] **T8 — Livreur socle** 🚧 *backend validé Docker + app RN* — login DRIVER (claim `driver`), missions (commandes actives scopées), statut séquentiel, **idempotence offline** (Idempotency-Key → pas de double effet au rejeu). **App mobile Expo/React Native** (`apps/driver-app`) : écrans login/missions/mission branchés à l'API, packages partagés, typecheck en CI. Reste : onboarding, scanner natif, offline-store persistant, E2E Maestro (device requis). — `transpo-offline-sync`
+- [~] **T9 — Livreur preuve/COD/caisse** 🚧 *backend validé Docker + app RN* — preuve de livraison + encaissement COD → LIVREE (idempotent) depuis l'app mobile, ownership vérifié. Ma caisse/dépôt, shift EU 561 : à compléter. E2E API.
 - [~] **T10 — Livreur annexes** 🚧 *backend validé Docker* — signalement d'incidents (livreur) + traitement (ops), chat support bidirectionnel livreur↔ops, historique & gains (livraisons × forfait). Tournée mobile + sync complète : à compléter. E2E API.
 
 ## Phase 3 — Argent & flux inverses
