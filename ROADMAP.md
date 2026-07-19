@@ -5,8 +5,8 @@ Chaque tranche livre du fonctionnel réel et passe la **Definition of Done** (`D
 Légende : ✅ fait · 🚧 en cours · ⏳ à venir · *(skeleton)* = livré au niveau squelette, non validé au run.
 
 ## Phase 0 — Fondations
-- [x] **T0 — Amorçage mono-repo** *(skeleton)* — Docker, Postgres schema-per-tenant, `packages/domain`, API NestJS minimale (`/health`, `GET /v1/orders` isolé). — `transpo-architecture`
-- [ ] **T1 — Couche données réelle** — Drizzle + migrations multi-schémas (platform + boucle tenants), runner `db:migrate:tenants`, remplace le seed SQL brut. — `transpo-architecture`
+- [x] **T0 — Amorçage mono-repo** ✅ *validé Docker* — Docker, Postgres schema-per-tenant, `packages/domain`, API NestJS (`/health`, `GET /v1/orders` isolé, `TenantGuard`).
+- [x] **T1 — Couche données réelle** ✅ *validé Docker* — `packages/db` Drizzle, migrations platform + boucle tenants, `provisionTenant`, seed ; API branchée. Vérifié en conteneur : isolation casaexpress(2)/atlas(1), 400 sur tenant inconnu/absent.
 - [ ] **T2 — Auth, RBAC & durcissement multi-tenant** — login/2FA/SSO-SAML, JWT, rôles (admin/dispatcher/comptable/marchand/super-admin), guards, **journal d'audit**, provisioning tenant. — `transpo-auth-security`
 - [ ] **T3 — Design-system & packages partagés** — `design-tokens` (échelle Radix), `ui-web` (Radix), `ui-native` (Tamagui), `i18n` (FR/AR + RTL), `api-client` typé. — `transpo-design-system`, `transpo-i18n`
 
