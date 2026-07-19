@@ -37,7 +37,7 @@ Légende : ✅ fait · 🚧 en cours · ⏳ à venir · *(skeleton)* = livré au
 - [~] **T19 — Notifications** 🚧 *backend validé Docker* — modèles bilingues FR/AR, canaux SMS/WhatsApp/push/email, **consentement 09-08** (transactionnel exempté, marketing bloqué sans opt-in), centre de notifs admin filtrable. Passerelles réelles (envoi effectif) : à câbler. E2E API.
 
 ## Phase 6 — Durcissement & mise en prod
-- [ ] **T20 — Sécurité/conformité/observabilité** — audit complet, logs/monitoring, RGPD/09-08 + page confidentialité, perf.
+- [~] **T20 — Sécurité/conformité/observabilité** 🚧 *backend validé Docker* — journal d'audit lisible (SUPER_ADMIN), droits des personnes RGPD/09-08 (export + effacement/anonymisation tracés), anti-bruteforce login (429). Monitoring/perf + page confidentialité : à compléter. E2E API.
 - [ ] **T21 — CI/CD & déploiement** — images, migrations au déploiement, environnements, **suite E2E complète** (Playwright + Maestro). — `transpo-testing`, `transpo-git-workflow`
 
 ---
