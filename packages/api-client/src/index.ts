@@ -32,6 +32,7 @@ export interface Zone { id: string; nameFr: string; nameAr: string | null; color
 export interface ReturnRow { ref: string; reason: string; attempts: number; status: string; createdAt: string }
 export interface NotificationRow { id: string; event: string; channel: string; recipient: string; lang: string; body: string; status: string; reason: string | null; createdAt: string }
 export interface Invoice { merchant: string; deliveries: number; codCollected: number; commission: number; netHt: number; tva: number; ttc: number }
+export interface QuoteResult { applied: 'grille' | 'remise' | 'fixe_marchand'; base: number; surcharges: number; ht: number; tva: number; ttc: number }
 export interface Reconciliation { driver: string; theorique: number; deliveries: number }
 export interface Payout { merchant: string; brut: number; orders: number; commissionRate: number; net: number }
 export interface FleetLive { driver: string; lat: number; lng: number; at: string; zone: string | null; distanceM: number | null; outOfZone: boolean }

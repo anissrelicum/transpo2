@@ -91,15 +91,18 @@ test('création via l’assistant 3 étapes (tenant e2e) → apparaît dans la l
 
   await page.getByRole('link', { name: 'Nouvelle commande' }).click();
   await expect(page).toHaveURL(/\/orders\/new/);
-  // Étape 1 → 2 → 3
+  // Étape 1 → 2 : estimation de prix calculée par l'API (récap visible)
+  await expect(page.getByRole('heading', { name: 'Estimation du prix' })).toBeVisible();
+  await expect(page.getByText('Total TTC')).toBeVisible();
   await page.getByRole('button', { name: 'Continuer' }).click();
   await page.getByRole('button', { name: 'Continuer' }).click();
-  await page.getByTestId('wizard-merchant').fill('Boutique Test UI');
+  // Étape 3 : choisir un marchand réel (Select) puis créer
+  await page.getByTestId('wizard-merchant').click();
+  await page.getByRole('option', { name: 'Marchand E2E' }).click();
   await page.getByRole('button', { name: 'Créer la commande' }).click();
 
   await expect(page).toHaveURL(/\/orders$/);
   await expect(page.getByTestId('orders-count')).toHaveText(new RegExp(`${before + 1} résultat`));
-  await expect(page.getByText('Boutique Test UI').first()).toBeVisible();
 });
 
 test('détail commande : cycle de vie + onglets', async ({ page }) => {
@@ -128,6 +131,16 @@ test('action d’écriture via proxy : création d’une zone (tenant e2e)', asy
   await page.getByPlaceholder('Casa Centre').fill('Zone Test UI');
   await page.getByRole('button', { name: 'Créer' }).click();
   await expect(page.getByText('Zone Test UI').first()).toBeVisible();
+});
+
+test('analytics : répartition par statut + onglets (données réelles)', async ({ page }) => {
+  await login(page);
+  await page.goto('/analytics');
+  await expect(page.getByRole('heading', { name: 'Répartition par statut' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Motifs d’échec' })).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'Par livreur' })).toBeVisible();
+  await page.getByRole('tab', { name: 'Par marchand' }).click();
+  await expect(page.getByText('COD généré')).toBeVisible();
 });
 
 test('organisation détectée depuis l’adresse (host / override)', async ({ page }) => {

@@ -108,6 +108,23 @@ export function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: 
   return Math.round(2 * R * Math.asin(Math.sqrt(a)));
 }
 
+// Coordonnées réelles des villes (référentiel géo) — servent au calcul de distance.
+export const CITY_COORDS: Record<string, [number, number]> = {
+  Casablanca: [33.5731, -7.5898], Rabat: [34.0209, -6.8416], Salé: [34.0531, -6.7985],
+  Marrakech: [31.6295, -7.9811], Tanger: [35.7595, -5.8340], Fès: [34.0181, -5.0078],
+  Mohammedia: [33.6863, -7.3828], Kénitra: [34.2610, -6.5802], Tétouan: [35.5785, -5.3684],
+  Meknès: [33.8935, -5.5473], Agadir: [30.4278, -9.5981], Oujda: [34.6867, -1.9114],
+};
+export const CITIES_WITH_COORDS = Object.keys(CITY_COORDS);
+
+/** Distance routière estimée (km) entre deux villes du référentiel. */
+export function cityDistanceKm(from: string, to: string): number {
+  const a = CITY_COORDS[from], b = CITY_COORDS[to];
+  if (!a || !b) return 0;
+  if (from === to) return 6; // intra-urbain moyen
+  return Math.round(haversineMeters(a[0], a[1], b[0], b[1]) / 1000);
+}
+
 /* ====================== SaaS — plans & abonnements (T18) ====================== */
 export interface SaasPlan { code: string; label: string; monthlyDH: number; maxOrdersMonth: number | null; }
 export const SAAS_PLANS: SaasPlan[] = [

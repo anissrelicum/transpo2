@@ -3,17 +3,19 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Card, Flex, Box, Grid, Text, Heading, Button, TextField, TextArea, Select,
-  SegmentedControl, Switch, Separator, Callout, Badge,
+  SegmentedControl, Switch, Separator, Callout, Badge, Spinner,
 } from '@radix-ui/themes';
 import {
   HomeIcon, SewingPinFilledIcon, CubeIcon, CheckIcon, ChevronLeftIcon,
   ChevronRightIcon, ArrowLeftIcon, DownloadIcon, InfoCircledIcon,
 } from '@radix-ui/react-icons';
 import { money } from '@transpo/ui-web';
+import { CITIES_WITH_COORDS, cityDistanceKm, PARCEL_SIZES, PROOF_LEVELS } from '@transpo/domain';
+import type { QuoteResult } from '@transpo/api-client';
 import { PageHeader } from './ui';
 
-const CITIES = ['Casablanca', 'Rabat', 'Salé', 'Marrakech', 'Tanger', 'Fès', 'Mohammedia', 'Kénitra'];
-const SIZE_BASE: Record<string, number> = { Petit: 18, Moyen: 28, Grand: 42, 'Très grand': 60 };
+const VEHICLES = ['Moto', 'Voiture', 'Fourgon', 'Fourgon frigorifique'];
+const APPLIED_LABEL: Record<string, string> = { grille: 'Grille standard', remise: 'Remise contractuelle', fixe_marchand: 'Prix marchand' };
 const STEPS = [
   { n: 1, label: 'Point de retrait', icon: HomeIcon },
   { n: 2, label: 'Point de livraison', icon: SewingPinFilledIcon },
@@ -32,7 +34,6 @@ function Field({ label, hint, required, children }: { label: string; hint?: stri
     </Box>
   );
 }
-
 function PriceRow({ label, value }: { label: string; value: string }) {
   return <Flex justify="between" align="center"><Text size="2" color="gray">{label}</Text><Text size="2" weight="medium">{value}</Text></Flex>;
 }
@@ -43,45 +44,57 @@ function AddressForm({ which, city, onCity }: { which: 'retrait' | 'livraison'; 
     <Flex direction="column" gap="4">
       <Heading size="4">{isRet ? 'Point de retrait' : 'Point de livraison'}</Heading>
       <Grid columns={{ initial: '1', sm: '2' }} gap="4">
-        <Field label="Contact" required><TextField.Root placeholder={isRet ? 'Boutique Zellige' : 'Salma Idrissi'} size="2" /></Field>
-        <Field label="Téléphone" required><TextField.Root placeholder="+212 6 12 34 56 78" size="2" /></Field>
+        <Field label="Contact" required><TextField.Root placeholder="Nom du contact" size="2" /></Field>
+        <Field label="Téléphone" required><TextField.Root placeholder="+212 6 00 00 00 00" size="2" /></Field>
       </Grid>
       <Field label="Adresse" required><TextField.Root placeholder="N°, rue, quartier" size="2" /></Field>
       <Field label="Ville" required>
         <Select.Root value={city} onValueChange={onCity} size="2">
           <Select.Trigger style={{ width: '100%' }} />
-          <Select.Content>{CITIES.map((c) => <Select.Item key={c} value={c}>{c}</Select.Item>)}</Select.Content>
+          <Select.Content>{CITIES_WITH_COORDS.map((c) => <Select.Item key={c} value={c}>{c}</Select.Item>)}</Select.Content>
         </Select.Root>
       </Field>
-      <Field label="Notes pour le livreur"><TextArea placeholder={isRet ? 'Sonner à l’interphone' : 'Appeler avant d’arriver'} size="2" /></Field>
+      <Field label="Notes pour le livreur"><TextArea placeholder="Instructions d’accès, étage, code…" size="2" /></Field>
     </Flex>
   );
 }
 
-export function CreateWizard() {
+export function CreateWizard({ merchants }: { merchants: string[] }) {
   const router = useRouter();
   const [step, setStep] = React.useState(1);
-  const [size, setSize] = React.useState('Moyen');
-  const [merchant, setMerchant] = React.useState('Boutique Zellige');
-  const [fromCity, setFromCity] = React.useState('Casablanca');
-  const [toCity, setToCity] = React.useState('Rabat');
+  const [size, setSize] = React.useState<string>(PARCEL_SIZES[1]);
+  const [merchant, setMerchant] = React.useState('');
+  const [fromCity, setFromCity] = React.useState(CITIES_WITH_COORDS[0]);
+  const [toCity, setToCity] = React.useState(CITIES_WITH_COORDS[1]);
+  const [proof, setProof] = React.useState<string>('photo_signature');
   const [fragile, setFragile] = React.useState(false);
   const [scheduled, setScheduled] = React.useState(false);
-  const [cod, setCod] = React.useState('1250');
+  const [cod, setCod] = React.useState('');
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  const base = SIZE_BASE[size];
-  const distance = 12.4;
-  const distFee = Math.round(distance * 4.5 * 10) / 10;
-  const fragileFee = fragile ? 15 : 0;
-  const total = base + distFee + fragileFee;
+  // Devis calculé par l'API (moteur réel) — recalculé à chaque changement.
+  const distanceKm = cityDistanceKm(fromCity, toCity);
+  const [q, setQ] = React.useState<QuoteResult | null>(null);
+  const [quoting, setQuoting] = React.useState(false);
+  React.useEffect(() => {
+    let cancelled = false;
+    setQuoting(true);
+    fetch('/api/proxy/v1/pricing/quote', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ distanceKm, fragile, scheduled }),
+    })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (!cancelled) { setQ(data); setQuoting(false); } })
+      .catch(() => { if (!cancelled) setQuoting(false); });
+    return () => { cancelled = true; };
+  }, [distanceKm, fragile, scheduled]);
 
   async function submit() {
     setBusy(true); setError(null);
     const res = await fetch('/api/orders', {
       method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ merchant: merchant || undefined, fromCity, toCity, cod: Number(cod) || 0, size, scheduled }),
+      body: JSON.stringify({ merchant: merchant || undefined, fromCity, toCity, cod: Number(cod) || 0, size, proofLevel: proof, scheduled }),
     });
     if (res.ok) { router.push('/orders'); router.refresh(); return; }
     setBusy(false);
@@ -97,7 +110,6 @@ export function CreateWizard() {
         actions={<Button variant="soft" color="gray" onClick={() => router.push('/orders')}><ArrowLeftIcon /> Retour aux commandes</Button>}
       />
 
-      {/* Stepper */}
       <Card size="2" mb="4">
         <Flex align="center" gap="0">
           {STEPS.map((s, i) => (
@@ -126,36 +138,49 @@ export function CreateWizard() {
             {step === 3 && (
               <Flex direction="column" gap="4">
                 <Heading size="4">Colis & options</Heading>
-                <Field label="Marchand"><TextField.Root data-testid="wizard-merchant" value={merchant} onChange={(e) => setMerchant(e.target.value)} size="2" /></Field>
+                <Field label="Marchand" hint={merchants.length ? 'Marchands existants proposés' : undefined}>
+                  {merchants.length ? (
+                    <Select.Root value={merchant || '__none'} onValueChange={(v) => setMerchant(v === '__none' ? '' : v)} size="2">
+                      <Select.Trigger data-testid="wizard-merchant" style={{ width: '100%' }} placeholder="Choisir un marchand" />
+                      <Select.Content>
+                        <Select.Item value="__none">— Aucun —</Select.Item>
+                        <Select.Separator />
+                        {merchants.map((m) => <Select.Item key={m} value={m}>{m}</Select.Item>)}
+                      </Select.Content>
+                    </Select.Root>
+                  ) : (
+                    <TextField.Root data-testid="wizard-merchant" value={merchant} onChange={(e) => setMerchant(e.target.value)} placeholder="Nom du marchand" size="2" />
+                  )}
+                </Field>
                 <Field label="Taille du colis" required>
                   <SegmentedControl.Root value={size} onValueChange={setSize} size="2">
-                    {Object.keys(SIZE_BASE).map((s) => <SegmentedControl.Item key={s} value={s}>{s}</SegmentedControl.Item>)}
+                    {PARCEL_SIZES.map((s) => <SegmentedControl.Item key={s} value={s}>{s}</SegmentedControl.Item>)}
                   </SegmentedControl.Root>
                 </Field>
-                <Field label="Description du contenu"><TextArea placeholder="Ex. : coffret de 6 tasses en céramique de Safi" size="2" /></Field>
+                <Field label="Description du contenu"><TextArea placeholder="Ex. : coffret de 6 tasses en céramique" size="2" /></Field>
                 <Grid columns={{ initial: '1', sm: '2' }} gap="4">
                   <Field label="Type de véhicule requis">
-                    <Select.Root defaultValue="Moto" size="2"><Select.Trigger style={{ width: '100%' }} />
-                      <Select.Content>{['Moto', 'Voiture', 'Fourgon', 'Fourgon frigorifique'].map((v) => <Select.Item key={v} value={v}>{v}</Select.Item>)}</Select.Content>
+                    <Select.Root defaultValue={VEHICLES[0]} size="2"><Select.Trigger style={{ width: '100%' }} />
+                      <Select.Content>{VEHICLES.map((v) => <Select.Item key={v} value={v}>{v}</Select.Item>)}</Select.Content>
                     </Select.Root>
                   </Field>
                   <Field label="Niveau de preuve exigé" hint="Détermine les champs obligatoires côté livreur">
-                    <Select.Root defaultValue="photo_signature" size="2"><Select.Trigger style={{ width: '100%' }} />
-                      <Select.Content>{['aucune', 'photo', 'signature', 'photo_signature'].map((v) => <Select.Item key={v} value={v}>{v}</Select.Item>)}</Select.Content>
+                    <Select.Root value={proof} onValueChange={setProof} size="2"><Select.Trigger style={{ width: '100%' }} />
+                      <Select.Content>{PROOF_LEVELS.map((v) => <Select.Item key={v} value={v}>{v}</Select.Item>)}</Select.Content>
                     </Select.Root>
                   </Field>
                 </Grid>
                 <Separator size="4" />
                 <Flex justify="between" align="center">
-                  <Box><Text as="div" size="2" weight="medium">Colis fragile</Text><Text as="div" size="1" color="gray">Manipulation prioritaire (+15,00 DH)</Text></Box>
+                  <Box><Text as="div" size="2" weight="medium">Colis fragile</Text><Text as="div" size="1" color="gray">Manipulation prioritaire</Text></Box>
                   <Switch checked={fragile} onCheckedChange={setFragile} />
                 </Flex>
                 <Flex justify="between" align="center">
                   <Box><Text as="div" size="2" weight="medium">Livraison programmée</Text><Text as="div" size="1" color="gray">Planifier un créneau plutôt qu’immédiat</Text></Box>
                   <Switch checked={scheduled} onCheckedChange={setScheduled} />
                 </Flex>
-                <Field label="Montant à encaisser (COD)" hint="Laisser à 0 si prépayé">
-                  <TextField.Root value={cod} onChange={(e) => setCod(e.target.value.replace(/[^0-9]/g, ''))} size="2">
+                <Field label="Montant à encaisser (COD)" hint="Laisser vide si prépayé">
+                  <TextField.Root value={cod} onChange={(e) => setCod(e.target.value.replace(/[^0-9]/g, ''))} placeholder="0" size="2">
                     <TextField.Slot side="right"><Text size="2" color="gray">DH</Text></TextField.Slot>
                   </TextField.Root>
                 </Field>
@@ -172,31 +197,43 @@ export function CreateWizard() {
           </Card>
         </Box>
 
-        {/* Récap prix live */}
+        {/* Récap prix — calculé par l'API (moteur de tarification réel) */}
         <Box>
           <Card size="3" style={{ position: 'sticky', top: 72 }}>
-            <Heading size="4" mb="1">Estimation du prix</Heading>
-            <Text as="div" size="1" color="gray" mb="3">{fromCity} → {toCity} · {distance} km</Text>
-            <Flex direction="column" gap="2">
-              <PriceRow label={`Tarif de base (${size})`} value={money(base)} />
-              <PriceRow label={`Distance · ${distance} km × 4,50 DH`} value={money(distFee)} />
-              {fragile && <PriceRow label="Option fragile" value={money(fragileFee)} />}
-              <Separator size="4" />
-              <Flex justify="between" align="center">
-                <Text size="3" weight="bold">Total livraison</Text>
-                <Heading size="6" style={{ color: 'var(--indigo-11)' }}>{money(total)}</Heading>
-              </Flex>
-              {Number(cod) > 0 && (
-                <Callout.Root color="amber" size="1" mt="2">
-                  <Callout.Icon><DownloadIcon /></Callout.Icon>
-                  <Callout.Text>COD à encaisser à la livraison : <strong>{money(Number(cod))}</strong></Callout.Text>
-                </Callout.Root>
-              )}
-              <Callout.Root color="gray" size="1" variant="surface" mt="1">
-                <Callout.Icon><InfoCircledIcon /></Callout.Icon>
-                <Callout.Text>Prix indicatif. La grille tarifaire du marchand s’applique en priorité.</Callout.Text>
-              </Callout.Root>
+            <Flex justify="between" align="center" mb="1">
+              <Heading size="4">Estimation du prix</Heading>
+              {quoting && <Spinner />}
             </Flex>
+            <Text as="div" size="1" color="gray" mb="3">{fromCity} → {toCity} · {distanceKm} km</Text>
+            {q ? (
+              <Flex direction="column" gap="2">
+                <Flex justify="between" align="center">
+                  <Text size="1" color="gray">Tarification</Text>
+                  <Badge color="gray" variant="soft">{APPLIED_LABEL[q.applied] ?? q.applied}</Badge>
+                </Flex>
+                <PriceRow label={`Base · ${distanceKm} km`} value={money(q.base)} />
+                {q.surcharges > 0 && <PriceRow label="Suppléments (fragile/programmé)" value={money(q.surcharges)} />}
+                <PriceRow label="HT" value={money(q.ht)} />
+                <PriceRow label="TVA 20 %" value={money(q.tva)} />
+                <Separator size="4" />
+                <Flex justify="between" align="center">
+                  <Text size="3" weight="bold">Total TTC</Text>
+                  <Heading size="6" style={{ color: 'var(--indigo-11)' }}>{money(q.ttc)}</Heading>
+                </Flex>
+                {Number(cod) > 0 && (
+                  <Callout.Root color="amber" size="1" mt="2">
+                    <Callout.Icon><DownloadIcon /></Callout.Icon>
+                    <Callout.Text>COD à encaisser à la livraison : <strong>{money(Number(cod))}</strong></Callout.Text>
+                  </Callout.Root>
+                )}
+              </Flex>
+            ) : (
+              <Text size="2" color="gray">{quoting ? 'Calcul en cours…' : 'Sélectionnez les villes pour estimer.'}</Text>
+            )}
+            <Callout.Root color="gray" size="1" variant="surface" mt="3">
+              <Callout.Icon><InfoCircledIcon /></Callout.Icon>
+              <Callout.Text>Estimation calculée par le moteur de tarification. La grille du marchand s’applique en priorité.</Callout.Text>
+            </Callout.Root>
           </Card>
         </Box>
       </Grid>
