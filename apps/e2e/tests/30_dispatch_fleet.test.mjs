@@ -24,6 +24,21 @@ test('zones : création', async () => {
   assert.equal(r.json.nameFr, 'Casa Sud');
 });
 
+test('zones : mise à jour (couleur + livreurs affectés)', async () => {
+  const created = (await api('/v1/dispatch/zones', {
+    method: 'POST', token: admin,
+    body: { nameFr: 'Zone Patch ' + Date.now(), color: 'indigo', commune: 'Anfa', centerLat: 33.58, centerLng: -7.63 },
+  })).json;
+  const r = await api(`/v1/dispatch/zones/${created.id}`, {
+    method: 'PATCH', token: admin,
+    body: { color: 'crimson', drivers: ['Youssef Benali'] },
+  });
+  assert.equal(r.status, 200);
+  assert.equal(r.json.color, 'crimson');
+  assert.deepEqual(r.json.drivers, ['Youssef Benali']);
+  assert.equal(r.json.centerLat, 33.58); // géométrie conservée
+});
+
 test('suggestion de livreur (score /100, trié)', async () => {
   // CMD-…014 : Casablanca → Casablanca ; Youssef (Casablanca) doit scorer haut.
   const r = await api('/v1/dispatch/suggest/CMD-20260712-014', { token: admin });

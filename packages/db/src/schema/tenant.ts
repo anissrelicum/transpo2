@@ -35,6 +35,8 @@ export const zones = pgTable('zones', {
   color: text('color').notNull().default('indigo'),
   commune: text('commune'),
   drivers: text('drivers').array().notNull().default([]),
+  centerLat: doublePrecision('center_lat'),
+  centerLng: doublePrecision('center_lng'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

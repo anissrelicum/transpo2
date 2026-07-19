@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Req, UseGuards, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, Req, UseGuards, Inject } from '@nestjs/common';
 import { DispatchService } from './dispatch.service.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { TenantGuard } from '../tenant/tenant.guard.js';
@@ -19,6 +19,12 @@ export class DispatchController {
   @Roles('ADMIN', 'DISPATCHER')
   createZone(@Req() req: any, @Body() body: any) {
     return this.dispatch.createZone(req.tenantSchema, body);
+  }
+
+  @Patch('zones/:id')
+  @Roles('ADMIN', 'DISPATCHER')
+  updateZone(@Req() req: any, @Param('id') id: string, @Body() body: any) {
+    return this.dispatch.updateZone(req.tenantSchema, id, body);
   }
 
   @Get('suggest/:ref')

@@ -124,13 +124,21 @@ test('actions commande : menu d’actions présent (ADMIN)', async ({ page }) =>
   await expect(menus.first()).toBeVisible();
 });
 
-test('action d’écriture via proxy : création d’une zone (tenant e2e)', async ({ page }) => {
+test('zones : création + éditeur (carte, tenant e2e)', async ({ page }) => {
   await login(page, 'e2e', 'admin@e2e.ma');
   await page.goto('/zones');
-  await page.getByRole('button', { name: 'Nouvelle zone' }).click();
-  await page.getByPlaceholder('Casa Centre').fill('Zone Test UI');
-  await page.getByRole('button', { name: 'Créer' }).click();
-  await expect(page.getByText('Zone Test UI').first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Zones' })).toBeVisible();
+  await page.getByRole('button', { name: 'Nouvelle' }).click();
+  // La zone créée apparaît et l'éditeur s'ouvre.
+  await expect(page.getByText('Nouvelle zone').first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Éditeur de zone' })).toBeVisible();
+});
+
+test('dispatch : carte + panneau des non-affectées', async ({ page }) => {
+  await login(page);
+  await page.goto('/dispatch');
+  await expect(page.getByRole('heading', { name: 'Dispatch' })).toBeVisible();
+  await expect(page.getByText('Non affectées')).toBeVisible();
 });
 
 test('analytics : répartition par statut + onglets (données réelles)', async ({ page }) => {

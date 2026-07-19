@@ -8,6 +8,8 @@ const nextConfig = {
     '@transpo/i18n',
     '@transpo/design-tokens',
     '@transpo/api-client',
+    'react-leaflet',
+    '@react-leaflet/core',
   ],
 };
 export default nextConfig;
