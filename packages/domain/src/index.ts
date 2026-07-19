@@ -91,6 +91,18 @@ export const PRICE_TIERS = [
 export const FRAGILE_SURCHARGE = 15;
 export const SCHEDULED_SURCHARGE = 10;
 
+/* ====================== Géo / flotte (T16) ====================== */
+/** Distance en mètres entre deux points (formule de haversine). */
+export function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371000;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return Math.round(2 * R * Math.asin(Math.sqrt(a)));
+}
+
 /* ====================== SaaS — plans & abonnements (T18) ====================== */
 export interface SaasPlan { code: string; label: string; monthlyDH: number; maxOrdersMonth: number | null; }
 export const SAAS_PLANS: SaasPlan[] = [

@@ -31,7 +31,7 @@ Légende : ✅ fait · 🚧 en cours · ⏳ à venir · *(skeleton)* = livré au
 - [~] **T15 — Client final** 🚧 *backend validé Docker* — suivi public sans compte (timeline par code, tenant dans l'URL) + notation post-livraison (1..5, verrouillée). App client (live tracking, créneau, chat) : à compléter. E2E API. — `transpo-realtime` (+ push)
 
 ## Phase 5 — Pilotage & SaaS
-- [ ] **T16 — PC flotte temps réel** — tracking live, géofencing, alertes sortie de zone, plein écran. — `transpo-realtime`, `transpo-maps-geo`
+- [~] **T16 — PC flotte temps réel** 🚧 *backend validé Docker* — ingestion de positions livreur, snapshot live (dernière position/livreur), **géofencing** (haversine) + alertes sortie de zone. Realtime en polling REST ; WebSocket + carte plein écran : à câbler avec l'UI. E2E API. — `transpo-realtime`, `transpo-maps-geo`
 - [~] **T17 — Analytics/SLA & Fraude COD** 🚧 *backend validé Docker* — synthèse (successRate, byStatus) ; fraude : scoring (fraudScore), liste, leaderboard livreurs à risque, revue humaine (enquête/blanchir/confirmer) audité, `@Roles ADMIN`. Tableaux par zone/marchand : à compléter. E2E API.
 - [~] **T18 — Console SaaS** 🚧 *backend validé Docker* — tenants (provisioning réel schema-per-tenant), catalogue de plans, changement de plan, facturation plateforme (montant + usage/quota), **paywall** (statut SUSPENDU bloque le login). UI console + abonnements Stripe : à compléter. E2E API. — PRD-05
 - [~] **T19 — Notifications** 🚧 *backend validé Docker* — modèles bilingues FR/AR, canaux SMS/WhatsApp/push/email, **consentement 09-08** (transactionnel exempté, marketing bloqué sans opt-in), centre de notifs admin filtrable. Passerelles réelles (envoi effectif) : à câbler. E2E API.
