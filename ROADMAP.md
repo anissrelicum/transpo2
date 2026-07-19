@@ -13,7 +13,7 @@ Légende : ✅ fait · 🚧 en cours · ⏳ à venir · *(skeleton)* = livré au
 ## Phase 1 — Cœur opérationnel (Console transport)
 - [~] **T4 — Commandes** 🚧 *socle validé Docker* — 1ʳᵉ console Next.js + Radix (BFF, login, liste commandes branchée API) ; `ui-web` créé ; **E2E Playwright 2/2**. Restent (sous-tranches) : filtres/pagination, assistant de création 3 étapes, détail (timeline + onglets). — PRD-01
 - [ ] **T5 — Dispatch & zones** — carte temps réel, suggestion de livreur (scoring), éditeur de zones (**PostGIS**). — `transpo-maps-geo`, `transpo-realtime`
-- [ ] **T6 — Flotte** — véhicules (échéances assurance/CT), chauffeurs (permis, **EU 561**), objectifs & primes.
+- [~] **T6 — Flotte** 🚧 *backend validé Docker* — véhicules (CRUD + conformité assurance/CT) ; chauffeurs (GET). EU 561 / objectifs à venir. E2E API.
 - [ ] **T7 — Tournées** — planificateur multi-arrêts + **vrai moteur de routing**. — `transpo-maps-geo`
 
 ## Phase 2 — Terrain (App livreur, offline-first)
