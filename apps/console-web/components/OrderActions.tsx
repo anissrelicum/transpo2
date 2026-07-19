@@ -7,15 +7,16 @@ import { DotsHorizontalIcon } from '@radix-ui/react-icons';
 // Statuts terminaux : plus d'action possible.
 const TERMINAL = ['LIVREE', 'ANNULEE', 'RETOUR', 'ECHOUEE', 'RENDU'];
 
-export function OrderActions({ ref_, status, driver, drivers }: {
+export function OrderActions({ ref_, status, driver, drivers, cod = 0, codPaid = false }: {
   ref_: string; status: string; driver: string | null; drivers: string[];
+  cod?: number; codPaid?: boolean;
 }) {
   const router = useRouter();
   const [busy, setBusy] = React.useState(false);
 
-  async function act(action: string, body?: any) {
+  async function post(url: string, body?: any) {
     setBusy(true);
-    const res = await fetch(`/api/orders/${encodeURIComponent(ref_)}/${action}`, {
+    const res = await fetch(url, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(body ?? {}),
@@ -24,8 +25,11 @@ export function OrderActions({ ref_, status, driver, drivers }: {
     if (res.ok) router.refresh();
     else { const d = await res.json().catch(() => null); alert(d?.error ?? 'Action impossible'); }
   }
+  const act = (action: string, body?: any) => post(`/api/orders/${encodeURIComponent(ref_)}/${action}`, body);
+  const collect = () => post(`/api/proxy/v1/cash/collect/${encodeURIComponent(ref_)}`);
 
   const terminal = TERMINAL.includes(status);
+  const canCollect = cod > 0 && !codPaid;
 
   return (
     <DropdownMenu.Root>
@@ -46,6 +50,9 @@ export function OrderActions({ ref_, status, driver, drivers }: {
         </DropdownMenu.Sub>
         <DropdownMenu.Item disabled={terminal || status === 'LIVRAISON'} onSelect={() => act('advance')}>
           Faire progresser le statut
+        </DropdownMenu.Item>
+        <DropdownMenu.Item disabled={!canCollect} onSelect={collect}>
+          Encaisser le COD
         </DropdownMenu.Item>
         <DropdownMenu.Separator />
         <DropdownMenu.Item color="red" disabled={terminal} onSelect={() => act('cancel')}>
