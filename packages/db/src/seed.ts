@@ -63,10 +63,10 @@ const DRIVERS: Record<string, Array<{ name: string; city: string; vehicle: strin
   ],
 };
 
-const ZONES: Record<string, Array<{ fr: string; ar: string; color: string; commune: string; drivers: string[] }>> = {
+const ZONES: Record<string, Array<{ fr: string; ar: string; color: string; commune: string; drivers: string[]; lat: number; lng: number }>> = {
   casaexpress: [
-    { fr: 'Casa Centre', ar: 'الدار البيضاء الوسط', color: 'indigo', commune: 'Maârif', drivers: ['YB', 'SI'] },
-    { fr: 'Casa Nord', ar: 'الدار البيضاء الشمال', color: 'cyan', commune: 'Aïn Sebaâ', drivers: [] },
+    { fr: 'Casa Centre', ar: 'الدار البيضاء الوسط', color: 'indigo', commune: 'Maârif', drivers: ['YB', 'SI'], lat: 33.5850, lng: -7.6330 },
+    { fr: 'Casa Nord', ar: 'الدار البيضاء الشمال', color: 'cyan', commune: 'Aïn Sebaâ', drivers: [], lat: 33.6050, lng: -7.5300 },
   ],
 };
 
@@ -120,9 +120,9 @@ async function main() {
       }
       for (const z of ZONES[t.slug] ?? []) {
         await client.query(
-          `INSERT INTO zones (name_fr, name_ar, color, commune, drivers)
-           SELECT $1,$2,$3,$4,$5 WHERE NOT EXISTS (SELECT 1 FROM zones WHERE name_fr = $1)`,
-          [z.fr, z.ar, z.color, z.commune, z.drivers],
+          `INSERT INTO zones (name_fr, name_ar, color, commune, drivers, center_lat, center_lng)
+           SELECT $1,$2,$3,$4,$5,$6,$7 WHERE NOT EXISTS (SELECT 1 FROM zones WHERE name_fr = $1)`,
+          [z.fr, z.ar, z.color, z.commune, z.drivers, z.lat, z.lng],
         );
       }
       for (const v of VEHICLES[t.slug] ?? []) {

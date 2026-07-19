@@ -5,12 +5,12 @@ import { API_URL } from '../../../../lib/server';
 // Proxy générique authentifié : transmet le JWT (cookie httpOnly) à l'API.
 // La RBAC et le scoping tenant restent appliqués côté API — le proxy n'accorde
 // aucun privilège supplémentaire (il ne fait que porter le token de l'utilisateur).
-async function forward(req: NextRequest, path: string[], method: 'GET' | 'POST') {
+async function forward(req: NextRequest, path: string[], method: 'GET' | 'POST' | 'PATCH') {
   const token = cookies().get('token')?.value;
   if (!token) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
   const target = `${API_URL}/${path.map(encodeURIComponent).join('/')}`;
-  const body = method === 'POST' ? await req.text() : undefined;
+  const body = method !== 'GET' ? await req.text() : undefined;
   const res = await fetch(target, {
     method,
     headers: {
@@ -26,4 +26,12 @@ async function forward(req: NextRequest, path: string[], method: 'GET' | 'POST')
 
 export async function POST(req: NextRequest, { params }: { params: { path: string[] } }) {
   return forward(req, params.path, 'POST');
+}
+
+export async function GET(req: NextRequest, { params }: { params: { path: string[] } }) {
+  return forward(req, params.path, 'GET');
+}
+
+export async function PATCH(req: NextRequest, { params }: { params: { path: string[] } }) {
+  return forward(req, params.path, 'PATCH');
 }

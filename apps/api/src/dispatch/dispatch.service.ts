@@ -13,13 +13,28 @@ export class DispatchService {
     return withTenantDb(schema, async (db) => db.select().from(zonesTable).orderBy(zonesTable.nameFr));
   }
 
-  createZone(schema: string, input: { nameFr: string; nameAr?: string; color?: string; commune?: string }) {
+  createZone(schema: string, input: { nameFr: string; nameAr?: string; color?: string; commune?: string; centerLat?: number; centerLng?: number }) {
     if (!input?.nameFr) throw new BadRequestException('nameFr requis.');
     return withTenantDb(schema, async (db) => {
       const [z] = await db.insert(zonesTable).values({
         nameFr: input.nameFr, nameAr: input.nameAr ?? null,
         color: input.color ?? 'indigo', commune: input.commune ?? null, drivers: [],
+        centerLat: input.centerLat ?? null, centerLng: input.centerLng ?? null,
       }).returning();
+      return z;
+    });
+  }
+
+  /** Mise à jour d'une zone (couleur, commune, livreurs affectés, centre). */
+  async updateZone(schema: string, id: string, patch: { nameFr?: string; nameAr?: string; color?: string; commune?: string; drivers?: string[]; centerLat?: number; centerLng?: number }) {
+    const set: Record<string, unknown> = {};
+    for (const k of ['nameFr', 'nameAr', 'color', 'commune', 'drivers', 'centerLat', 'centerLng'] as const) {
+      if (patch[k] !== undefined) set[k] = patch[k];
+    }
+    if (Object.keys(set).length === 0) throw new BadRequestException('Aucun champ à mettre à jour.');
+    return withTenantDb(schema, async (db) => {
+      const [z] = await db.update(zonesTable).set(set).where(eq(zonesTable.id, id)).returning();
+      if (!z) throw new BadRequestException('Zone introuvable.');
       return z;
     });
   }
