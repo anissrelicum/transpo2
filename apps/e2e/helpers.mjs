@@ -1,8 +1,8 @@
 // Helpers E2E — tapent l'API réelle (conteneur). BASE fourni par l'env (API_URL).
 export const BASE = process.env.API_URL || 'http://localhost:3000';
 
-export async function api(path, { method = 'GET', token, tenant, body } = {}) {
-  const headers = {};
+export async function api(path, { method = 'GET', token, tenant, body, headers: extra } = {}) {
+  const headers = { ...(extra ?? {}) };
   if (token) headers['authorization'] = `Bearer ${token}`;
   if (tenant) headers['x-tenant-slug'] = tenant;
   if (body) headers['content-type'] = 'application/json';

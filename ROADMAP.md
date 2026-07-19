@@ -17,8 +17,8 @@ Légende : ✅ fait · 🚧 en cours · ⏳ à venir · *(skeleton)* = livré au
 - [~] **T7 — Tournées** 🚧 *backend validé Docker* — planificateur multi-arrêts (regroupe commandes + assigne livreur), réordonnancement, cycle PLANIFIEE→EN_COURS→CLOTUREE, `@Roles ADMIN/DISPATCHER`. **Vrai moteur de routing** (optimisation d'ordre) : à compléter. E2E API. — `transpo-maps-geo`
 
 ## Phase 2 — Terrain (App livreur, offline-first)
-- [ ] **T8 — Livreur socle** — onboarding, login+permissions, missions, détail, statut séquentiel — **offline + idempotence**. — `transpo-offline-sync`
-- [ ] **T9 — Livreur preuve/COD/caisse** — preuve paramétrable, encaissement COD, Ma caisse + dépôt, scanner (natif), shift EU 561.
+- [~] **T8 — Livreur socle** 🚧 *backend validé Docker* — login DRIVER (claim `driver`), missions (commandes actives scopées), statut séquentiel, **idempotence offline** (Idempotency-Key → pas de double effet au rejeu). App RN (onboarding, écrans) : à compléter. E2E API. — `transpo-offline-sync`
+- [~] **T9 — Livreur preuve/COD/caisse** 🚧 *backend validé Docker* — preuve de livraison + encaissement COD → LIVREE (idempotent), ownership vérifié. Ma caisse/dépôt, scanner natif, shift EU 561 : à compléter. E2E API.
 - [ ] **T10 — Livreur annexes** — tournée mobile, support chat, historique & gains, incident, notifications, sync complète.
 
 ## Phase 3 — Argent & flux inverses
