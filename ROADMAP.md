@@ -11,7 +11,7 @@ Légende : ✅ fait · 🚧 en cours · ⏳ à venir · *(skeleton)* = livré au
 - [x] **T3 — Packages partagés** ✅ *validé Docker (typecheck workspace + E2E 10/10)* — `@transpo/i18n` (FR/AR + RTL), `@transpo/design-tokens` (échelle Radix, source unique web+RN), `@transpo/api-client` (typé). `ui-web` (Radix) / `ui-native` (Tamagui) : créés avec la 1ʳᵉ console (T4). — `transpo-design-system`, `transpo-i18n`
 
 ## Phase 1 — Cœur opérationnel (Console transport)
-- [~] **T4 — Commandes** 🚧 *socle validé Docker* — 1ʳᵉ console Next.js + Radix (BFF, login, liste commandes branchée API) ; `ui-web` créé ; **E2E Playwright 2/2**. Restent (sous-tranches) : filtres/pagination, assistant de création 3 étapes, détail (timeline + onglets). — PRD-01
+- [~] **T4 — Commandes** 🚧 *validé Docker* — console Next.js + Radix (BFF, login, liste commandes branchée API), **filtres par statut + pagination** (SSR, sans JS requis) ; `ui-web` créé ; **E2E Playwright 3/3**. Restent (sous-tranches) : assistant de création 3 étapes, détail (timeline + onglets). — PRD-01
 - [~] **T5 — Dispatch & zones** 🚧 *backend validé Docker* — zones (CRUD) + suggestion de livreur (score /100) ; carte temps réel + PostGIS à venir avec l'UI. E2E API. — `transpo-maps-geo`, `transpo-realtime`
 - [~] **T6 — Flotte** 🚧 *backend validé Docker* — véhicules (CRUD + conformité assurance/CT) ; chauffeurs (GET). EU 561 / objectifs à venir. E2E API.
 - [~] **T7 — Tournées** 🚧 *backend validé Docker* — planificateur multi-arrêts (regroupe commandes + assigne livreur), réordonnancement, cycle PLANIFIEE→EN_COURS→CLOTUREE, `@Roles ADMIN/DISPATCHER`. **Vrai moteur de routing** (optimisation d'ordre) : à compléter. E2E API. — `transpo-maps-geo`
