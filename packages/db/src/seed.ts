@@ -54,6 +54,21 @@ const DRIVERS: Record<string, Array<{ name: string; city: string; vehicle: strin
   ],
 };
 
+const ZONES: Record<string, Array<{ fr: string; ar: string; color: string; commune: string; drivers: string[] }>> = {
+  casaexpress: [
+    { fr: 'Casa Centre', ar: 'الدار البيضاء الوسط', color: 'indigo', commune: 'Maârif', drivers: ['YB', 'SI'] },
+    { fr: 'Casa Nord', ar: 'الدار البيضاء الشمال', color: 'cyan', commune: 'Aïn Sebaâ', drivers: [] },
+  ],
+};
+
+// Véhicules — l'un a une assurance expirée (règle de conformité, cf. transpo-domain).
+const VEHICLES: Record<string, Array<{ plate: string; type: string; city: string; state: string; ins: string; ct: string }>> = {
+  casaexpress: [
+    { plate: '1234-A-56', type: 'Fourgon', city: 'Casablanca', state: 'ACTIF', ins: '2026-07-10', ct: '2027-03-01' }, // assurance expirée
+    { plate: '7890-B-12', type: 'Moto', city: 'Rabat', state: 'ACTIF', ins: '2026-11-01', ct: '2026-08-01' },
+  ],
+};
+
 async function main() {
   const client = await pool.connect();
   try {
@@ -82,6 +97,20 @@ async function main() {
           `INSERT INTO drivers (name, city, vehicle, available)
            SELECT $1,$2,$3,$4 WHERE NOT EXISTS (SELECT 1 FROM drivers WHERE name = $1)`,
           [d.name, d.city, d.vehicle, d.available],
+        );
+      }
+      for (const z of ZONES[t.slug] ?? []) {
+        await client.query(
+          `INSERT INTO zones (name_fr, name_ar, color, commune, drivers)
+           SELECT $1,$2,$3,$4,$5 WHERE NOT EXISTS (SELECT 1 FROM zones WHERE name_fr = $1)`,
+          [z.fr, z.ar, z.color, z.commune, z.drivers],
+        );
+      }
+      for (const v of VEHICLES[t.slug] ?? []) {
+        await client.query(
+          `INSERT INTO vehicles (plate, type, city, state, insurance_due, ct_due)
+           VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (plate) DO NOTHING`,
+          [v.plate, v.type, v.city, v.state, v.ins, v.ct],
         );
       }
     }

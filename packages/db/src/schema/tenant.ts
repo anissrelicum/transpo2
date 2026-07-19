@@ -26,3 +26,24 @@ export const drivers = pgTable('drivers', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const zones = pgTable('zones', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  nameFr: text('name_fr').notNull(),
+  nameAr: text('name_ar'),
+  color: text('color').notNull().default('indigo'),
+  commune: text('commune'),
+  drivers: text('drivers').array().notNull().default([]),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const vehicles = pgTable('vehicles', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  plate: text('plate').notNull().unique(),
+  type: text('type').notNull(),
+  city: text('city'),
+  state: text('state').notNull().default('ACTIF'),
+  insuranceDue: text('insurance_due'),
+  ctDue: text('ct_due'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
