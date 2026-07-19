@@ -47,3 +47,22 @@ export const vehicles = pgTable('vehicles', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const returns = pgTable('returns', {
+  ref: text('ref').primaryKey(),
+  reason: text('reason').notNull(),
+  attempts: integer('attempts').notNull().default(1),
+  status: text('status').notNull().default('A_TRAITER'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const fraudCases = pgTable('fraud_cases', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  driver: text('driver').notNull(),
+  amount: integer('amount').notNull().default(0),
+  signals: text('signals').array().notNull().default([]),
+  score: integer('score').notNull().default(0),
+  status: text('status').notNull().default('OUVERT'),
+  summary: text('summary'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
