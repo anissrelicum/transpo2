@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "Transpo Livreur",
+    "slug": "transpo-driver",
+    "scheme": "transpo-driver",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "splash": { "backgroundColor": "#3E63DD" },
+    "ios": { "supportsTablet": false },
+    "android": { "adaptiveIcon": { "backgroundColor": "#3E63DD" } },
+    "web": { "bundler": "metro" },
+    "plugins": ["expo-router"],
+    "extra": {
+      "apiUrl": "http://localhost:3000"
+    }
+  }
+}
