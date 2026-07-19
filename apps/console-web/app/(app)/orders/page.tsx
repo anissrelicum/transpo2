@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import { Box } from '@radix-ui/themes';
+import Link from 'next/link';
+import { Box, Button } from '@radix-ui/themes';
+import { PlusIcon } from '@radix-ui/react-icons';
 import type { Order } from '@transpo/domain';
 import { serverClient } from '../../../lib/server';
 import { PageHeader } from '../../../components/ui';
-import { NewOrderButton } from '../../../components/NewOrderButton';
 import { OrdersClient } from '../../../components/OrdersClient';
 
 export const dynamic = 'force-dynamic';
@@ -33,7 +34,9 @@ export default async function OrdersPage({ searchParams }: { searchParams: { q?:
       <PageHeader
         title="Commandes"
         subtitle={`${all.length} commande(s) · toutes périodes`}
-        actions={canCreate ? <NewOrderButton /> : undefined}
+        actions={canCreate ? (
+          <Button asChild><Link href="/orders/new"><PlusIcon /> Nouvelle commande</Link></Button>
+        ) : undefined}
       />
       <OrdersClient
         orders={all}
