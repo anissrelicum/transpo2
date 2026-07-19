@@ -1,10 +1,8 @@
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
 import { Flex, Box, Card, Heading, Text, TextField, Button, Callout } from '@radix-ui/themes';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = React.useState('admin@casaexpress.ma');
   const [password, setPassword] = React.useState('transpo');
   const [tenant, setTenant] = React.useState('casaexpress');
@@ -19,9 +17,15 @@ export default function LoginPage() {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ email, password, tenant }),
     });
+    if (res.ok) {
+      // Navigation dure : requête complète avec les cookies → rend le shell serveur
+      // proprement (évite la course push+refresh de Next 14).
+      window.location.assign('/dashboard');
+      return;
+    }
     setLoading(false);
-    if (res.ok) { router.push('/orders'); router.refresh(); }
-    else { const d = await res.json().catch(() => null); setError(d?.error ?? 'Échec de connexion'); }
+    const d = await res.json().catch(() => null);
+    setError(d?.error ?? 'Échec de connexion');
   }
 
   return (
