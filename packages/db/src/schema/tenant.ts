@@ -57,6 +57,25 @@ export const returns = pgTable('returns', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const notifConsents = pgTable('notif_consents', {
+  subject: text('subject').notNull(),
+  channel: text('channel').notNull(),
+  optedIn: boolean('opted_in').notNull().default(false),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const notifications = pgTable('notifications', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  event: text('event').notNull(),
+  channel: text('channel').notNull(),
+  recipient: text('recipient').notNull(),
+  lang: text('lang').notNull().default('fr'),
+  body: text('body').notNull(),
+  status: text('status').notNull().default('QUEUED'),
+  reason: text('reason'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const tournees = pgTable('tournees', {
   id: uuid('id').primaryKey().defaultRandom(),
   driver: text('driver').notNull(),

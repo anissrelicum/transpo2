@@ -91,6 +91,32 @@ export const PRICE_TIERS = [
 export const FRAGILE_SURCHARGE = 15;
 export const SCHEDULED_SURCHARGE = 10;
 
+/* ====================== Notifications (T19) ====================== */
+export const NOTIF_CHANNELS = ['SMS', 'WHATSAPP', 'PUSH', 'EMAIL'] as const;
+export type NotifChannel = (typeof NOTIF_CHANNELS)[number];
+
+// Modèles bilingues. {code}/{ville} sont substitués à l'envoi. Placeholder `{x}`.
+export const NOTIF_TEMPLATES: Record<string, { fr: string; ar: string; transactional: boolean }> = {
+  'order.created':   { fr: 'Votre colis {code} est enregistré.', ar: 'تم تسجيل طردكم {code}.', transactional: true },
+  'order.out':       { fr: 'Votre colis {code} est en cours de livraison.', ar: 'طردكم {code} في طريق التوصيل.', transactional: true },
+  'order.delivered': { fr: 'Votre colis {code} a été livré. Merci !', ar: 'تم تسليم طردكم {code}. شكراً!', transactional: true },
+  'order.failed':    { fr: 'Échec de livraison du colis {code}. Nouvel essai prévu.', ar: 'فشل تسليم الطرد {code}. ستتم إعادة المحاولة.', transactional: true },
+  'promo':           { fr: 'Offre spéciale de la part de {x}.', ar: 'عرض خاص من {x}.', transactional: false },
+};
+export type NotifEvent = keyof typeof NOTIF_TEMPLATES;
+
+/** Rendu d'un modèle dans la langue voulue avec substitution des variables. */
+export function renderNotif(event: string, lang: 'fr' | 'ar', vars: Record<string, string> = {}): string {
+  const tpl = NOTIF_TEMPLATES[event];
+  if (!tpl) throw new Error(`Modèle de notification inconnu : ${event}`);
+  return (lang === 'ar' ? tpl.ar : tpl.fr).replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? `{${k}}`);
+}
+
+/** Un événement transactionnel ne requiert pas de consentement marketing (loi 09-08). */
+export function requiresConsent(event: string): boolean {
+  return !(NOTIF_TEMPLATES[event]?.transactional ?? false);
+}
+
 function gridPrice(distanceKm: number): number {
   const t = PRICE_TIERS.find((x) => (x.to === null ? distanceKm >= x.from : distanceKm >= x.from && distanceKm < x.to)) ?? PRICE_TIERS[0];
   return t.perKm ? Math.round(t.perKm * distanceKm) : (t.base ?? 0);
