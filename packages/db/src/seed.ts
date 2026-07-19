@@ -41,6 +41,10 @@ const ORDERS: Record<string, OrderRow[]> = {
   atlas: [
     ['CMD-20260712-900', 'Z9Q1M4KP', 'RECUPEREE', 'Riad Déco', 'Marrakech', 'Marrakech', 'Karim El Amrani', 0, false, 'Grand'],
   ],
+  // Commande livrée stable (suivi public + notation) — code fixe pour les tests E2E.
+  e2e: [
+    ['CMD-E2E-TRACK', 'TRACK123', 'LIVREE', 'Marchand E2E', 'Casablanca', 'Rabat', 'Youssef Benali', 500, true, 'Moyen'],
+  ],
 };
 
 const DRIVERS: Record<string, Array<{ name: string; city: string; vehicle: string; available: boolean }>> = {

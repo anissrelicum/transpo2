@@ -14,6 +14,8 @@ export const orders = pgTable('orders', {
   codPaid: boolean('cod_paid').notNull().default(false),
   size: text('size'),
   proofLevel: text('proof_level').notNull().default('photo_signature'),
+  rating: integer('rating'),
+  ratingComment: text('rating_comment'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
