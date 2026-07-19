@@ -4,9 +4,14 @@ on:
   push:
     branches: [main]
 
+# Annule les exécutions superflues sur une même réf.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   e2e:
-    name: Build & E2E (Docker)
+    name: Build, typecheck & E2E (Docker)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -14,10 +19,15 @@ jobs:
       - name: Prepare env
         run: cp .env.example .env
 
+      # api dépend de migrate (service_completed_successfully) : au retour de
+      # cette commande, migrations + seed sont terminés et l'API tourne.
       - name: Build & start stack
         run: docker compose up --build -d api console-web
 
-      - name: E2E API (in container)
+      - name: Typecheck workspace (in container)
+        run: docker compose run --rm --no-deps api sh -c "cd /repo && pnpm -r typecheck"
+
+      - name: E2E API — suite complète (in container)
         run: docker compose --profile test run --rm e2e
 
       - name: E2E web — Playwright (in container)
