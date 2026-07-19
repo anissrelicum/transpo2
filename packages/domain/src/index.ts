@@ -91,6 +91,11 @@ export const PRICE_TIERS = [
 export const FRAGILE_SURCHARGE = 15;
 export const SCHEDULED_SURCHARGE = 10;
 
+/* ====================== Terrain — livreur annexes (T10) ====================== */
+export const DRIVER_DELIVERY_FEE = 12; // rémunération livreur par livraison réussie (DH)
+export const INCIDENT_TYPES = ['ADRESSE', 'CLIENT_INJOIGNABLE', 'COLIS_ENDOMMAGE', 'VEHICULE', 'AUTRE'] as const;
+export type IncidentType = (typeof INCIDENT_TYPES)[number];
+
 /* ====================== Géo / flotte (T16) ====================== */
 /** Distance en mètres entre deux points (formule de haversine). */
 export function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
