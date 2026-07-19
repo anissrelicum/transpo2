@@ -2,6 +2,20 @@
 // Remplace l'ancien seeding SQL brut (init.sql). Lancement : pnpm --filter @transpo/db seed.
 import { pool } from './client.js';
 import { provisionTenant, schemaFor, type TenantInput } from './provision.js';
+import { hashPassword } from './crypto.js';
+
+// Utilisateurs de démo par tenant (mot de passe commun en dev : "transpo").
+const USERS: Record<string, Array<{ email: string; name: string; role: string }>> = {
+  casaexpress: [
+    { email: 'admin@casaexpress.ma', name: 'Youssef Benali', role: 'ADMIN' },
+    { email: 'dispatch@casaexpress.ma', name: 'Salma Idrissi', role: 'DISPATCHER' },
+    { email: 'compta@casaexpress.ma', name: 'Fatima Zahra', role: 'COMPTABLE' },
+  ],
+  atlas: [
+    { email: 'admin@atlas.ma', name: 'Karim El Amrani', role: 'ADMIN' },
+  ],
+};
+const DEV_PASSWORD = 'transpo';
 
 const DEMO_TENANTS: TenantInput[] = [
   { slug: 'casaexpress', name: 'CasaExpress', city: 'Casablanca', plan: 'Transporteur', status: 'ACTIF' },
@@ -23,6 +37,8 @@ const ORDERS: Record<string, OrderRow[]> = {
 async function main() {
   const client = await pool.connect();
   try {
+    const devHash = await hashPassword(DEV_PASSWORD);
+
     for (const t of DEMO_TENANTS) {
       await provisionTenant(client, t);
       await client.query(`SET search_path TO "${schemaFor(t.slug)}", platform`);
@@ -34,9 +50,25 @@ async function main() {
           o,
         );
       }
+      for (const u of USERS[t.slug] ?? []) {
+        await client.query(
+          `INSERT INTO users (email, password_hash, name, role)
+           VALUES ($1,$2,$3,$4) ON CONFLICT (email) DO NOTHING`,
+          [u.email, devHash, u.name, u.role],
+        );
+      }
     }
+
+    // Super-admin plateforme (realm séparé)
+    await client.query('SET search_path TO platform');
+    await client.query(
+      `INSERT INTO platform.super_admins (email, password_hash, name)
+       VALUES ($1,$2,$3) ON CONFLICT (email) DO NOTHING`,
+      ['ops@transpo.ma', devHash, 'Ops Transpo'],
+    );
+
     // eslint-disable-next-line no-console
-    console.log(`Seed OK — ${DEMO_TENANTS.length} tenants.`);
+    console.log(`Seed OK — ${DEMO_TENANTS.length} tenants + users + super-admin (mdp dev: "${DEV_PASSWORD}").`);
   } finally {
     client.release();
     await pool.end();

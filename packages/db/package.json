@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@node-rs/argon2": "^2.0.2",
     "@transpo/domain": "workspace:*",
     "drizzle-orm": "^0.36.4",
     "pg": "^8.13.0"

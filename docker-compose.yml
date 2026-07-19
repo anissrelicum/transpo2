@@ -50,5 +50,19 @@ services:
       migrate:
         condition: service_completed_successfully
 
+  # Tests E2E (profil "test") : tapent l'API réelle en conteneur.
+  # Lancement : docker compose --profile test run --rm e2e
+  e2e:
+    image: transpo/app:dev
+    working_dir: /repo/apps/e2e
+    command: pnpm test
+    environment:
+      API_URL: http://api:3000
+    profiles: ["test"]
+    depends_on:
+      api:
+        condition: service_started
+
 volumes:
   pgdata:
+
