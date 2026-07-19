@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { pool, withTenantDb, verifyPassword } from '@transpo/db';
 import type { Role } from '@transpo/domain';
 import { signToken } from './jwt.js';
@@ -8,8 +8,9 @@ export class AuthService {
   /** Login d'un utilisateur de tenant → JWT { sub, role, tenant }. */
   async loginTenant(slug: string | undefined, email: string, password: string): Promise<{ token: string; role: Role; name: string }> {
     if (!slug) throw new BadRequestException('Tenant manquant.');
-    const { rows } = await pool.query('SELECT slug FROM platform.tenants WHERE slug = $1', [slug]);
+    const { rows } = await pool.query('SELECT slug, status FROM platform.tenants WHERE slug = $1', [slug]);
     if (!rows.length) throw new BadRequestException(`Tenant inconnu : ${slug}`);
+    if (rows[0].status === 'SUSPENDU') throw new ForbiddenException('Espace suspendu — contactez la plateforme.');
 
     const user = await withTenantDb(`tenant_${slug}`, async (_db, client) => {
       const r = await client.query(

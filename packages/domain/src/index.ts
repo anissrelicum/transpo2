@@ -91,6 +91,20 @@ export const PRICE_TIERS = [
 export const FRAGILE_SURCHARGE = 15;
 export const SCHEDULED_SURCHARGE = 10;
 
+/* ====================== SaaS — plans & abonnements (T18) ====================== */
+export interface SaasPlan { code: string; label: string; monthlyDH: number; maxOrdersMonth: number | null; }
+export const SAAS_PLANS: SaasPlan[] = [
+  { code: 'Essai',         label: 'Essai (14 j)',  monthlyDH: 0,    maxOrdersMonth: 50 },
+  { code: 'TPE Coursier',  label: 'TPE Coursier',  monthlyDH: 299,  maxOrdersMonth: 500 },
+  { code: 'Transporteur',  label: 'Transporteur',  monthlyDH: 899,  maxOrdersMonth: 5000 },
+  { code: 'Entreprise',    label: 'Entreprise',    monthlyDH: 2499, maxOrdersMonth: null },
+];
+export const TENANT_STATUSES = ['ESSAI', 'ACTIF', 'SUSPENDU'] as const;
+export type TenantStatus = (typeof TENANT_STATUSES)[number];
+export function planByCode(code: string): SaasPlan | undefined {
+  return SAAS_PLANS.find((p) => p.code === code);
+}
+
 /* ====================== Notifications (T19) ====================== */
 export const NOTIF_CHANNELS = ['SMS', 'WHATSAPP', 'PUSH', 'EMAIL'] as const;
 export type NotifChannel = (typeof NOTIF_CHANNELS)[number];
