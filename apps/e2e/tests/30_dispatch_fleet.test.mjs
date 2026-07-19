@@ -74,3 +74,19 @@ test('véhicules : plaque invalide → 400', async () => {
   const r = await api('/v1/vehicles', { method: 'POST', token: admin, body: { plate: 'ABC', type: 'Moto' } });
   assert.equal(r.status, 400);
 });
+
+test('geo : référentiel régions/provinces/communes du Maroc', async () => {
+  const r = await api('/v1/geo/regions', { token: admin });
+  assert.equal(r.status, 200);
+  assert.equal(r.json.length, 12); // 12 régions
+  const cs = r.json.find((x) => x.region === 'Casablanca-Settat');
+  assert.ok(cs && cs.provinces.some((p) => p.province === 'Casablanca'));
+  const casa = cs.provinces.find((p) => p.province === 'Casablanca');
+  const anfa = casa.communes.find((c) => c.name === 'Anfa');
+  assert.ok(anfa, 'commune Anfa présente');
+  // forme de commune (centre + polygone)
+  const s = await api(`/v1/geo/commune/${encodeURIComponent(anfa.iso)}`, { token: admin });
+  assert.equal(s.status, 200);
+  assert.ok(Array.isArray(s.json.polygon) && s.json.polygon.length >= 3);
+  assert.equal(s.json.center.length, 2);
+});
