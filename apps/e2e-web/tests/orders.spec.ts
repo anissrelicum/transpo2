@@ -51,6 +51,40 @@ test('filtre par statut → n’affiche que les commandes du statut choisi', asy
   await expect(page.getByTestId('page-indicator')).toHaveText('Page 1 / 1');
 });
 
+// Smoke : chaque écran du menu rend son titre (aucun 500 / redirection login).
+const SCREENS: [string, string][] = [
+  ['/dashboard', 'Tableau de bord'],
+  ['/orders', 'Commandes'],
+  ['/analytics', 'Analytics & SLA'],
+  ['/fraud', 'Fraude COD'],
+  ['/tournees', 'Tournées'],
+  ['/dispatch', 'Dispatch'],
+  ['/fleet', 'PC flotte — temps réel'],
+  ['/zones', 'Zones'],
+  ['/hub', 'Tri en hub'],
+  ['/returns', 'Retours'],
+  ['/vehicles', 'Véhicules'],
+  ['/drivers', 'Chauffeurs'],
+  ['/pricing', 'Tarification'],
+  ['/invoices', 'Factures'],
+  ['/cash', 'Caisse'],
+  ['/payout', 'Reversement COD'],
+  ['/users', 'Utilisateurs'],
+  ['/notifications', 'Centre de notifications'],
+  ['/reviews', 'Avis clients'],
+  ['/templates', 'Modèles de notification'],
+  ['/settings', 'Paramètres'],
+];
+
+test('tous les écrans du menu rendent leur titre (branchés API)', async ({ page }) => {
+  await login(page);
+  for (const [path, title] of SCREENS) {
+    await page.goto(path);
+    await expect(page).toHaveURL(new RegExp(path.replace('/', '\\/')));
+    await expect(page.getByRole('heading', { name: title })).toBeVisible();
+  }
+});
+
 test('mauvais mot de passe → message d’erreur, reste sur /login', async ({ page }) => {
   await page.goto('/login');
   await page.fill('input[name="tenant"]', 'casaexpress');
