@@ -26,6 +26,26 @@ test('login CasaExpress → liste des 2 commandes', async ({ page }) => {
   await expect(page.getByTestId('order-row')).toHaveCount(2);
 });
 
+test('filtre par statut → n’affiche que les commandes du statut choisi', async ({ page }) => {
+  await page.goto('/login');
+  await page.fill('input[name="tenant"]', 'casaexpress');
+  await page.fill('input[name="email"]', 'admin@casaexpress.ma');
+  await page.fill('input[name="password"]', 'transpo');
+  await page.click('button[type="submit"]');
+  await expect(page).toHaveURL(/\/orders/);
+
+  // CasaExpress : 1 NOUVELLE + 1 LIVRAISON.
+  await page.getByTestId('filter-NOUVELLE').click();
+  await expect(page).toHaveURL(/status=NOUVELLE/);
+  await expect(page.getByTestId('orders-count')).toHaveText('1 commande(s)');
+  await expect(page.getByTestId('order-row')).toHaveCount(1);
+
+  // Retour à « Tous ».
+  await page.getByTestId('filter-all').click();
+  await expect(page.getByTestId('order-row')).toHaveCount(2);
+  await expect(page.getByTestId('page-indicator')).toHaveText('Page 1 / 1');
+});
+
 test('mauvais mot de passe → message d’erreur, reste sur /login', async ({ page }) => {
   await page.goto('/login');
   await page.fill('input[name="tenant"]', 'casaexpress');
