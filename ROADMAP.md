@@ -23,7 +23,7 @@ Légende : ✅ fait · 🚧 en cours · ⏳ à venir · *(skeleton)* = livré au
 
 ## Phase 3 — Argent & flux inverses
 - [~] **T11 — Cash & COD** 🚧 *backend validé Docker* — encaissement COD, réconciliation par livreur (théorique), reversement marchand (net=brut−commission). Dépôt/écart/remboursement : à compléter. E2E API.
-- [ ] **T12 — Retours & hub** — reverse logistics (tentatives, souffrance), tri en hub + manifeste de transfert.
+- [~] **T12 — Retours & hub** 🚧 *backend validé Docker* — échec livraison → retour A_TRAITER, reprogrammation (plafond MAX_RETURN_ATTEMPTS=3), renvoi marchand → RENDU. Tri hub/manifeste : à compléter. E2E API.
 - [~] **T13 — Facturation & tarification** 🚧 *backend validé Docker* — devis (cascade à 3 niveaux + TVA), factures marchand dérivées (commission/TVA). Litiges/modes prépayé-postpayé : à compléter. E2E API.
 
 ## Phase 4 — Marchand & Client
@@ -32,7 +32,7 @@ Légende : ✅ fait · 🚧 en cours · ⏳ à venir · *(skeleton)* = livré au
 
 ## Phase 5 — Pilotage & SaaS
 - [ ] **T16 — PC flotte temps réel** — tracking live, géofencing, alertes sortie de zone, plein écran. — `transpo-realtime`, `transpo-maps-geo`
-- [ ] **T17 — Analytics/SLA & Fraude COD** — tableaux par zone/livreur/marchand ; détection de fraude (scoring, enquêtes, revue humaine).
+- [~] **T17 — Analytics/SLA & Fraude COD** 🚧 *backend validé Docker* — synthèse (successRate, byStatus) ; fraude : scoring (fraudScore), liste, leaderboard livreurs à risque, revue humaine (enquête/blanchir/confirmer) audité, `@Roles ADMIN`. Tableaux par zone/marchand : à compléter. E2E API.
 - [ ] **T18 — Console SaaS** — tenants (provisioning réel), plans/abonnements, facturation plateforme, paywall. — PRD-05
 - [ ] **T19 — Notifications** — modèles, canaux SMS/WhatsApp/push, **consentement 09-08**, centre de notifs admin.
 
