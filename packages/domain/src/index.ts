@@ -62,6 +62,53 @@ export function merchantPayoutNet(codBrut: number, rate: number = COMMISSION_RAT
   return Math.round(codBrut * (1 - rate) * 100) / 100;
 }
 
+/* ====================== Tarification (cascade à 3 niveaux) ====================== */
+// Grille standard par palier de distance (DH). Dernier palier au km.
+export const PRICE_TIERS = [
+  { from: 0, to: 3, base: 22 },
+  { from: 3, to: 7, base: 32 },
+  { from: 7, to: 15, base: 48 },
+  { from: 15, to: 30, base: 75 },
+  { from: 30, to: null as number | null, perKm: 3.2 },
+];
+export const FRAGILE_SURCHARGE = 15;
+export const SCHEDULED_SURCHARGE = 10;
+
+function gridPrice(distanceKm: number): number {
+  const t = PRICE_TIERS.find((x) => (x.to === null ? distanceKm >= x.from : distanceKm >= x.from && distanceKm < x.to)) ?? PRICE_TIERS[0];
+  return t.perKm ? Math.round(t.perKm * distanceKm) : (t.base ?? 0);
+}
+
+export interface QuoteInput {
+  distanceKm: number;
+  fragile?: boolean;
+  scheduled?: boolean;
+  merchantFixedPrice?: number | null; // ① prix négocié marchand
+  discountRate?: number;              // ② remise contractuelle (ex. 0.1)
+}
+export interface Quote {
+  applied: 'fixe_marchand' | 'remise' | 'grille';
+  base: number; surcharges: number; ht: number; tva: number; ttc: number;
+}
+
+/**
+ * Cascade tarifaire à PRIORITÉ STRICTE : ① prix fixe marchand → ② remise → ③ grille standard.
+ * Le 1er niveau applicable l'emporte. Majorations fragile/programmée + TVA ajoutées ensuite.
+ * Cf. transpo-domain / PRD-01 Tarification.
+ */
+export function quote(input: QuoteInput): Quote {
+  const surcharges = (input.fragile ? FRAGILE_SURCHARGE : 0) + (input.scheduled ? SCHEDULED_SURCHARGE : 0);
+  let base: number;
+  let applied: Quote['applied'];
+  if (input.merchantFixedPrice != null) { base = input.merchantFixedPrice; applied = 'fixe_marchand'; }
+  else if (input.discountRate) { base = Math.round(gridPrice(input.distanceKm) * (1 - input.discountRate) * 100) / 100; applied = 'remise'; }
+  else { base = gridPrice(input.distanceKm); applied = 'grille'; }
+  const ht = Math.round((base + surcharges) * 100) / 100;
+  const tva = Math.round(ht * VAT_RATE * 100) / 100;
+  const ttc = Math.round((ht + tva) * 100) / 100;
+  return { applied, base, surcharges, ht, tva, ttc };
+}
+
 /* ====================== Format monétaire ====================== */
 export function money(n: number): string {
   const f = new Intl.NumberFormat('fr-FR', {
