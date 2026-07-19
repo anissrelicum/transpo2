@@ -1,8 +1,11 @@
 import * as React from 'react';
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { Box, Flex, Heading, Text, Card, Table, Badge } from '@radix-ui/themes';
 import type { Tournee } from '@transpo/api-client';
 import { serverClient } from '../../../lib/server';
+import { ActionButton } from '../../../components/ActionButton';
+import { CreateDialog } from '../../../components/CreateDialog';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,6 +14,7 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 export default async function TourneesPage() {
+  const canWrite = ['ADMIN', 'DISPATCHER'].includes(cookies().get('role')?.value || '');
   let tournees: Tournee[] = [];
   try {
     tournees = await serverClient().getTournees();
@@ -20,8 +24,21 @@ export default async function TourneesPage() {
 
   return (
     <Box style={{ maxWidth: 1000, margin: '0 auto' }}>
-      <Heading size="6" weight="bold" mb="1">Tournées</Heading>
-      <Text as="p" size="2" color="gray" mb="4">Regroupements multi-arrêts par livreur.</Text>
+      <Flex justify="between" align="start" mb="4">
+        <Box>
+          <Heading size="6" weight="bold" mb="1">Tournées</Heading>
+          <Text as="p" size="2" color="gray">Regroupements multi-arrêts par livreur.</Text>
+        </Box>
+        {canWrite && (
+          <CreateDialog title="Nouvelle tournée" trigger="Nouvelle tournée" path="v1/tournees"
+            fields={[
+              { name: 'driver', label: 'Livreur', placeholder: 'Youssef Benali' },
+              { name: 'day', label: 'Jour (AAAA-MM-JJ)', placeholder: '2026-07-20' },
+              { name: 'zone', label: 'Zone', placeholder: 'Casa Centre' },
+              { name: 'stops', label: 'Commandes (réfs séparées par des virgules)', type: 'csv', placeholder: 'CMD-…, CMD-…' },
+            ]} />
+        )}
+      </Flex>
 
       <Card size="1">
         <Table.Root variant="ghost">
@@ -32,12 +49,13 @@ export default async function TourneesPage() {
               <Table.ColumnHeaderCell>Jour</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell align="right">Arrêts</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Statut</Table.ColumnHeaderCell>
+              {canWrite && <Table.ColumnHeaderCell></Table.ColumnHeaderCell>}
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {tournees.length === 0 && (
               <Table.Row>
-                <Table.Cell colSpan={5}><Text size="2" color="gray">Aucune tournée planifiée.</Text></Table.Cell>
+                <Table.Cell colSpan={canWrite ? 6 : 5}><Text size="2" color="gray">Aucune tournée planifiée.</Text></Table.Cell>
               </Table.Row>
             )}
             {tournees.map((t) => (
@@ -47,6 +65,13 @@ export default async function TourneesPage() {
                 <Table.Cell>{t.day}</Table.Cell>
                 <Table.Cell align="right">{t.stops.length}</Table.Cell>
                 <Table.Cell><Badge color={(STATUS_COLOR[t.status] as any) || 'gray'}>{t.status}</Badge></Table.Cell>
+                {canWrite && (
+                  <Table.Cell>
+                    {t.status !== 'CLOTUREE'
+                      ? <ActionButton path={`v1/tournees/${t.id}/advance`} color="indigo">Avancer</ActionButton>
+                      : <Text color="gray" size="1">—</Text>}
+                  </Table.Cell>
+                )}
               </Table.Row>
             ))}
           </Table.Body>

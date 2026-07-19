@@ -1,9 +1,11 @@
 import * as React from 'react';
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { Box, Flex, Grid, Heading, Text, Card, Table, Badge } from '@radix-ui/themes';
 import { money } from '@transpo/ui-web';
 import type { FraudCase, RiskDriver } from '@transpo/api-client';
 import { serverClient } from '../../../lib/server';
+import { ActionButton } from '../../../components/ActionButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,6 +14,7 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 export default async function FraudPage() {
+  const isAdmin = (cookies().get('role')?.value || '') === 'ADMIN';
   let cases: FraudCase[] = [];
   let leaderboard: RiskDriver[] = [];
   try {
@@ -38,6 +41,7 @@ export default async function FraudPage() {
                   <Table.ColumnHeaderCell align="right">Montant</Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell align="right">Score</Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>Statut</Table.ColumnHeaderCell>
+                  {isAdmin && <Table.ColumnHeaderCell>Arbitrage</Table.ColumnHeaderCell>}
                 </Table.Row>
               </Table.Header>
               <Table.Body>
@@ -48,6 +52,15 @@ export default async function FraudPage() {
                     <Table.Cell align="right">{money(f.amount)}</Table.Cell>
                     <Table.Cell align="right"><Badge color={f.score >= 60 ? 'red' : 'amber'}>{f.score}</Badge></Table.Cell>
                     <Table.Cell><Badge color={(STATUS_COLOR[f.status] as any) || 'gray'}>{f.status}</Badge></Table.Cell>
+                    {isAdmin && (
+                      <Table.Cell>
+                        <Flex gap="1" wrap="wrap">
+                          <ActionButton path={`v1/fraud/cases/${f.id}/investigate`} color="amber">Enquêter</ActionButton>
+                          <ActionButton path={`v1/fraud/cases/${f.id}/clear`} color="green">Blanchir</ActionButton>
+                          <ActionButton path={`v1/fraud/cases/${f.id}/confirm`} color="red">Confirmer</ActionButton>
+                        </Flex>
+                      </Table.Cell>
+                    )}
                   </Table.Row>
                 ))}
               </Table.Body>
