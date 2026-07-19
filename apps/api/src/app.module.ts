@@ -15,6 +15,7 @@ import { TourneesModule } from './tournees/tournees.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { PrivacyModule } from './privacy/privacy.module.js';
 import { DriverModule } from './driver/driver.module.js';
+import { TrackingModule } from './tracking/tracking.module.js';
 import { HealthController } from './health.controller.js';
 
 // Scoping par tenant via TenantGuard ; auth JWT + RBAC via guards (transpo-auth-security).
@@ -23,6 +24,7 @@ import { HealthController } from './health.controller.js';
     AuthModule, OrdersModule, SaasModule, DispatchModule, FleetModule,
     CashModule, BillingModule, ReturnsModule, AnalyticsModule, FraudModule, MerchantModule,
     PublicModule, TourneesModule, NotificationsModule, PrivacyModule, DriverModule,
+    TrackingModule,
   ],
   controllers: [HealthController],
 })
