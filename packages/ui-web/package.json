@@ -1,0 +1,22 @@
+{
+  "name": "@transpo/ui-web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.tsx",
+  "types": "./src/index.tsx",
+  "exports": { ".": "./src/index.tsx" },
+  "scripts": { "typecheck": "tsc --noEmit" },
+  "dependencies": {
+    "@transpo/domain": "workspace:*",
+    "@transpo/i18n": "workspace:*"
+  },
+  "peerDependencies": {
+    "@radix-ui/themes": "^3.2.1",
+    "react": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "typescript": "^5.6.0"
+  }
+}

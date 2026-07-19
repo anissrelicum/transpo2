@@ -15,10 +15,13 @@ jobs:
         run: cp .env.example .env
 
       - name: Build & start stack
-        run: docker compose up --build -d
+        run: docker compose up --build -d api console-web
 
-      - name: Run E2E suite (in container)
+      - name: E2E API (in container)
         run: docker compose --profile test run --rm e2e
+
+      - name: E2E web — Playwright (in container)
+        run: docker compose --profile test run --rm playwright
 
       - name: Logs on failure
         if: failure()
@@ -28,4 +31,4 @@ jobs:
         if: always()
         run: docker compose down -v
 
-  # ⏳ À venir : E2E web (Playwright) + mobile (Maestro) quand les fronts existeront — cf. transpo-testing.
+  # ⏳ À venir : E2E mobile (Maestro) quand les apps RN existeront — cf. transpo-testing.
