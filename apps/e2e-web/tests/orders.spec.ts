@@ -83,18 +83,34 @@ test('tous les écrans du menu rendent leur titre (branchés API)', async ({ pag
   }
 });
 
-test('création d’une commande depuis l’UI (tenant e2e) → apparaît dans la liste', async ({ page }) => {
+test('création via l’assistant 3 étapes (tenant e2e) → apparaît dans la liste', async ({ page }) => {
   await login(page, 'e2e', 'admin@e2e.ma'); // override host → tenant e2e
   await page.goto('/orders');
   const countText = await page.getByTestId('orders-count').textContent();
   const before = parseInt(countText?.match(/\d+/)?.[0] || '0', 10);
 
-  await page.getByRole('button', { name: 'Nouvelle commande' }).click();
-  await page.getByPlaceholder('Boutique Zellige').fill('Boutique Test UI'); // champ Marchand du dialog
-  await page.getByRole('button', { name: 'Créer' }).click();
+  await page.getByRole('link', { name: 'Nouvelle commande' }).click();
+  await expect(page).toHaveURL(/\/orders\/new/);
+  // Étape 1 → 2 → 3
+  await page.getByRole('button', { name: 'Continuer' }).click();
+  await page.getByRole('button', { name: 'Continuer' }).click();
+  await page.getByTestId('wizard-merchant').fill('Boutique Test UI');
+  await page.getByRole('button', { name: 'Créer la commande' }).click();
 
+  await expect(page).toHaveURL(/\/orders$/);
   await expect(page.getByTestId('orders-count')).toHaveText(new RegExp(`${before + 1} résultat`));
   await expect(page.getByText('Boutique Test UI').first()).toBeVisible();
+});
+
+test('détail commande : cycle de vie + onglets', async ({ page }) => {
+  await login(page);
+  await page.goto('/orders');
+  await page.getByTestId('order-row').first().getByRole('link').first().click();
+  await expect(page).toHaveURL(/\/orders\/CMD/);
+  await expect(page.getByRole('heading', { name: 'Cycle de vie' })).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'Facturation' })).toBeVisible();
+  await page.getByRole('tab', { name: 'Facturation' }).click();
+  await expect(page.getByText('Total TTC')).toBeVisible();
 });
 
 test('actions commande : menu d’actions présent (ADMIN)', async ({ page }) => {
