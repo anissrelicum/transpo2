@@ -27,7 +27,7 @@ Légende : ✅ fait · 🚧 en cours · ⏳ à venir · *(skeleton)* = livré au
 - [~] **T13 — Facturation & tarification** 🚧 *backend validé Docker* — devis (cascade à 3 niveaux + TVA), factures marchand dérivées (commission/TVA). Litiges/modes prépayé-postpayé : à compléter. E2E API.
 
 ## Phase 4 — Marchand & Client
-- [ ] **T14 — Portail marchand** — dashboard, commandes, portefeuille, factures, API/webhooks signés, mode de facturation. — PRD-02
+- [~] **T14 — Portail marchand** 🚧 *backend validé Docker* — vues scopées au marchand (claim JWT `merchant`, résolu serveur) : dashboard (KPIs), commandes, portefeuille (net = COD − commission), facture dérivée. `@Roles MERCHANT`. API/webhooks signés + mode facturation : à compléter. E2E API. — PRD-02
 - [ ] **T15 — Client final** — suivi public sans compte + app client (live tracking, créneau, chat, notation). — `transpo-realtime` (+ push)
 
 ## Phase 5 — Pilotage & SaaS
