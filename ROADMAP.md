@@ -19,7 +19,7 @@ Légende : ✅ fait · 🚧 en cours · ⏳ à venir · *(skeleton)* = livré au
 ## Phase 2 — Terrain (App livreur, offline-first)
 - [~] **T8 — Livreur socle** 🚧 *backend validé Docker* — login DRIVER (claim `driver`), missions (commandes actives scopées), statut séquentiel, **idempotence offline** (Idempotency-Key → pas de double effet au rejeu). App RN (onboarding, écrans) : à compléter. E2E API. — `transpo-offline-sync`
 - [~] **T9 — Livreur preuve/COD/caisse** 🚧 *backend validé Docker* — preuve de livraison + encaissement COD → LIVREE (idempotent), ownership vérifié. Ma caisse/dépôt, scanner natif, shift EU 561 : à compléter. E2E API.
-- [ ] **T10 — Livreur annexes** — tournée mobile, support chat, historique & gains, incident, notifications, sync complète.
+- [~] **T10 — Livreur annexes** 🚧 *backend validé Docker* — signalement d'incidents (livreur) + traitement (ops), chat support bidirectionnel livreur↔ops, historique & gains (livraisons × forfait). Tournée mobile + sync complète : à compléter. E2E API.
 
 ## Phase 3 — Argent & flux inverses
 - [~] **T11 — Cash & COD** 🚧 *backend validé Docker* — encaissement COD, réconciliation par livreur (théorique), reversement marchand (net=brut−commission). Dépôt/écart/remboursement : à compléter. E2E API.
