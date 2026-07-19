@@ -57,6 +57,16 @@ export const returns = pgTable('returns', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const tournees = pgTable('tournees', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  driver: text('driver').notNull(),
+  zone: text('zone'),
+  day: text('day').notNull(),
+  status: text('status').notNull().default('PLANIFIEE'),
+  stops: text('stops').array().notNull().default([]),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const fraudCases = pgTable('fraud_cases', {
   id: uuid('id').primaryKey().defaultRandom(),
   driver: text('driver').notNull(),
