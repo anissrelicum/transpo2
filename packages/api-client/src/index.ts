@@ -79,6 +79,15 @@ export class TranspoClient {
   getOrders(): Promise<Order[]> {
     return this.req('/v1/orders');
   }
+  getOrder(ref: string): Promise<Order> {
+    return this.req(`/v1/orders/${encodeURIComponent(ref)}`);
+  }
+  createOrder(input: {
+    merchant?: string; fromCity: string; toCity: string;
+    cod?: number; size?: string; scheduled?: boolean;
+  }): Promise<Order> {
+    return this.req('/v1/orders', { method: 'POST', body: input });
+  }
 
   // --- Analytics ---
   getAnalyticsSummary(): Promise<AnalyticsSummary> {

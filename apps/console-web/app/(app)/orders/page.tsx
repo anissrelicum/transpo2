@@ -1,23 +1,34 @@
 import * as React from 'react';
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { Box, Flex, Heading, Text, Table, Card, Badge, Button } from '@radix-ui/themes';
 import { StatusBadge, CodChip } from '@transpo/ui-web';
 import type { Order, OrderStatus } from '@transpo/domain';
 import { serverClient } from '../../../lib/server';
+import { NewOrderButton } from '../../../components/NewOrderButton';
+import { OrderActions } from '../../../components/OrderActions';
 
 export const dynamic = 'force-dynamic';
 
 const PAGE_SIZE = 10;
+const CAN_WRITE = ['ADMIN', 'DISPATCHER'];
 
 export default async function OrdersPage({
   searchParams,
 }: {
   searchParams: { status?: string; page?: string; q?: string };
 }) {
+  const role = cookies().get('role')?.value || '';
+  const canCreate = ['ADMIN', 'DISPATCHER', 'MERCHANT'].includes(role);
+  const canWrite = CAN_WRITE.includes(role);
+
   let all: Order[] = [];
+  let driverNames: string[] = [];
   try {
-    all = await serverClient().getOrders();
+    const c = serverClient();
+    all = await c.getOrders();
+    if (canWrite) driverNames = (await c.getDrivers()).map((d) => d.name);
   } catch {
     redirect('/login'); // token invalide/expiré
   }
@@ -51,6 +62,7 @@ export default async function OrdersPage({
             {filtered.length} commande(s){q ? ` · « ${q} »` : ''}
           </Text>
         </Box>
+        {canCreate && <NewOrderButton />}
       </Flex>
 
       {/* Filtres par statut */}
@@ -75,17 +87,25 @@ export default async function OrdersPage({
               <Table.ColumnHeaderCell>Livreur</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Statut</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell align="right">COD</Table.ColumnHeaderCell>
+              {canWrite && <Table.ColumnHeaderCell align="right"></Table.ColumnHeaderCell>}
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {rows.map((o) => (
               <Table.Row key={o.ref} data-testid="order-row">
-                <Table.RowHeaderCell>{o.ref}</Table.RowHeaderCell>
+                <Table.RowHeaderCell>
+                  <Link href={`/orders/${encodeURIComponent(o.ref)}`}>{o.ref}</Link>
+                </Table.RowHeaderCell>
                 <Table.Cell>{o.merchant}</Table.Cell>
                 <Table.Cell><Text color="gray">{o.fromCity} → {o.toCity}</Text></Table.Cell>
                 <Table.Cell>{o.driver ?? <Text color="gray">—</Text>}</Table.Cell>
                 <Table.Cell><StatusBadge status={o.status} /></Table.Cell>
                 <Table.Cell align="right"><CodChip amount={o.cod} paid={o.codPaid} /></Table.Cell>
+                {canWrite && (
+                  <Table.Cell align="right">
+                    <OrderActions ref_={o.ref} status={o.status} driver={o.driver} drivers={driverNames} />
+                  </Table.Cell>
+                )}
               </Table.Row>
             ))}
           </Table.Body>

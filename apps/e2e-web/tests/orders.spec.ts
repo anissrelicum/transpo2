@@ -11,10 +11,11 @@ test.beforeAll(async ({ request }) => {
   throw new Error('console-web indisponible');
 });
 
-async function login(page: Page) {
-  await page.goto('/login');
-  await page.fill('input[name="tenant"]', 'casaexpress');
-  await page.fill('input[name="email"]', 'admin@casaexpress.ma');
+// Le tenant vient du host ; sur console-web (pas de sous-domaine) → défaut casaexpress.
+// Pour cibler un autre tenant en test, on passe l'override ?org=<slug>.
+async function login(page: Page, org?: string, email = 'admin@casaexpress.ma') {
+  await page.goto(org ? `/login?org=${org}` : '/login');
+  await page.fill('input[name="email"]', email);
   await page.fill('input[name="password"]', 'transpo');
   await page.click('button[type="submit"]');
   await page.waitForURL(/\/dashboard/); // attend la fin de la navigation post-login
@@ -85,9 +86,35 @@ test('tous les écrans du menu rendent leur titre (branchés API)', async ({ pag
   }
 });
 
+test('création d’une commande depuis l’UI (tenant e2e) → apparaît dans la liste', async ({ page }) => {
+  await login(page, 'e2e', 'admin@e2e.ma'); // override host → tenant e2e
+  await page.goto('/orders');
+  const countText = await page.getByTestId('orders-count').textContent();
+  const before = parseInt(countText?.match(/\d+/)?.[0] || '0', 10);
+
+  await page.getByRole('button', { name: 'Nouvelle commande' }).click();
+  await page.getByPlaceholder('Boutique Zellige').fill('Boutique Test UI'); // champ Marchand du dialog
+  await page.getByRole('button', { name: 'Créer' }).click();
+
+  await expect(page.getByTestId('orders-count')).toHaveText(new RegExp(`${before + 1} commande`));
+  await expect(page.getByText('Boutique Test UI').first()).toBeVisible();
+});
+
+test('actions commande : menu d’actions présent (ADMIN)', async ({ page }) => {
+  await login(page);
+  await page.goto('/orders');
+  // La colonne d'actions expose un menu par ligne pour un ADMIN.
+  const menus = page.locator('[data-testid="order-row"] button');
+  await expect(menus.first()).toBeVisible();
+});
+
+test('organisation détectée depuis l’adresse (host / override)', async ({ page }) => {
+  await page.goto('/login?org=casaexpress');
+  await expect(page.getByTestId('detected-org')).toHaveText('casaexpress');
+});
+
 test('mauvais mot de passe → message d’erreur, reste sur /login', async ({ page }) => {
   await page.goto('/login');
-  await page.fill('input[name="tenant"]', 'casaexpress');
   await page.fill('input[name="email"]', 'admin@casaexpress.ma');
   await page.fill('input[name="password"]', 'faux');
   await page.click('button[type="submit"]');
