@@ -1,13 +1,17 @@
-import { Controller, Get, Req } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards, Inject } from '@nestjs/common';
 import { OrdersService } from './orders.service.js';
+import { TenantGuard } from '../tenant/tenant.guard.js';
 
 @Controller('v1/orders')
+@UseGuards(TenantGuard)
 export class OrdersController {
-  constructor(private readonly orders: OrdersService) {}
+  // @Inject explicite : l'injection par type ne marche pas sous tsx/esbuild
+  // (pas de métadonnée de décorateur émise).
+  constructor(@Inject(OrdersService) private readonly orders: OrdersService) {}
 
   @Get()
   list(@Req() req: any) {
-    // req.tenantSchema est posé par le TenantMiddleware (dérivé du serveur).
+    // req.tenantSchema est posé par le TenantGuard (dérivé du serveur).
     return this.orders.list(req.tenantSchema);
   }
 }
