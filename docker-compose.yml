@@ -50,8 +50,22 @@ services:
       migrate:
         condition: service_completed_successfully
 
-  # Tests E2E (profil "test") : tapent l'API réelle en conteneur.
-  # Lancement : docker compose --profile test run --rm e2e
+  # Console transport (Next.js) — BFF vers l'API (pas de CORS).
+  console-web:
+    build:
+      context: .
+      dockerfile: apps/console-web/Dockerfile
+    image: transpo/console-web:dev
+    environment:
+      API_URL: http://api:3000
+      NODE_ENV: ${NODE_ENV:-development}
+    ports:
+      - "3001:3001"
+    depends_on:
+      api:
+        condition: service_started
+
+  # Tests E2E API (profil "test").
   e2e:
     image: transpo/app:dev
     working_dir: /repo/apps/e2e
@@ -61,6 +75,20 @@ services:
     profiles: ["test"]
     depends_on:
       api:
+        condition: service_started
+
+  # Tests E2E web (Playwright) — image officielle avec navigateurs préinstallés.
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.48.0-jammy
+    working_dir: /work
+    volumes:
+      - ./apps/e2e-web:/work
+    environment:
+      WEB_URL: http://console-web:3001
+    command: sh -c "npm i -D @playwright/test@1.48.0 --no-save --silent && npx playwright test"
+    profiles: ["test"]
+    depends_on:
+      console-web:
         condition: service_started
 
 volumes:

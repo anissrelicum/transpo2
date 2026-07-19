@@ -1,0 +1,6 @@
+{
+  "name": "@transpo/e2e-web",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": { "test": "playwright test" }
+}
