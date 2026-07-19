@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "Transpo Suivi",
+    "slug": "transpo",
+    "scheme": "transpo-client",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#3E63DD"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.anissrelicum.transpo"
+    },
+    "android": {
+      "package": "com.anissrelicum.transpo",
+      "adaptiveIcon": {
+        "backgroundColor": "#3E63DD"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "extra": {
+      "apiUrl": "http://localhost:3000",
+      "defaultTenant": "casaexpress",
+      "eas": {
+        "projectId": "3effe70b-cb60-4c3b-aa0f-4213ad621d04"
+      }
+    },
+    "owner": "anissrelicum"
+  }
+}

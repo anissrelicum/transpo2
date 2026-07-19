@@ -35,6 +35,12 @@ export interface Invoice { merchant: string; deliveries: number; codCollected: n
 export interface Reconciliation { driver: string; theorique: number; deliveries: number }
 export interface Payout { merchant: string; brut: number; orders: number; commissionRate: number; net: number }
 export interface FleetLive { driver: string; lat: number; lng: number; at: string; zone: string | null; distanceM: number | null; outOfZone: boolean }
+export interface TrackStep { status: string; label: string; done: boolean }
+export interface TrackResult {
+  code: string; status: string; statusLabel: string; color: string;
+  from: string; to: string; steps: TrackStep[];
+  delivered: boolean; canRate: boolean; rating: number | null; terminal: boolean;
+}
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) { super(message); }
@@ -122,6 +128,16 @@ export class TranspoClient {
   // --- Flux inverses & notifications ---
   getReturns(): Promise<ReturnRow[]> { return this.req('/v1/returns'); }
   getNotifications(): Promise<NotificationRow[]> { return this.req('/v1/notifications'); }
+
+  // --- Suivi public client (sans authentification ; tenant dans l'URL) ---
+  publicTrack(slug: string, code: string): Promise<TrackResult> {
+    return this.req(`/v1/public/track/${encodeURIComponent(slug)}/${encodeURIComponent(code)}`);
+  }
+  publicRate(slug: string, code: string, score: number, comment?: string): Promise<{ code: string; rating: number }> {
+    return this.req(`/v1/public/track/${encodeURIComponent(slug)}/${encodeURIComponent(code)}/rate`, {
+      method: 'POST', body: { score, comment },
+    });
+  }
 
   // --- App livreur (rôle DRIVER) ---
   getMissions(): Promise<Order[]> { return this.req('/v1/driver/missions'); }
