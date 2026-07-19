@@ -8,7 +8,7 @@ Légende : ✅ fait · 🚧 en cours · ⏳ à venir · *(skeleton)* = livré au
 - [x] **T0 — Amorçage mono-repo** ✅ *validé Docker* — Docker, Postgres schema-per-tenant, `packages/domain`, API NestJS (`/health`, `GET /v1/orders` isolé, `TenantGuard`).
 - [x] **T1 — Couche données réelle** ✅ *validé Docker* — `packages/db` Drizzle, migrations platform + boucle tenants, `provisionTenant`, seed ; API branchée. Vérifié en conteneur : isolation casaexpress(2)/atlas(1), 400 sur tenant inconnu/absent.
 - [x] **T2 — Auth, RBAC & durcissement multi-tenant** ✅ *validé Docker (E2E 10/10)* — login tenant + super-admin (argon2id), JWT {sub,role,tenant}, JwtAuthGuard/RolesGuard/@Roles, TenantGuard durci (claim JWT, anti cross-tenant), audit `platform.audit_log`, provisioning tenant (SUPER_ADMIN). 2FA/SSO-SAML : écrans posés côté maquette, à câbler ultérieurement. — `transpo-auth-security`
-- [ ] **T3 — Design-system & packages partagés** — `design-tokens` (échelle Radix), `ui-web` (Radix), `ui-native` (Tamagui), `i18n` (FR/AR + RTL), `api-client` typé. — `transpo-design-system`, `transpo-i18n`
+- [x] **T3 — Packages partagés** ✅ *validé Docker (typecheck workspace + E2E 10/10)* — `@transpo/i18n` (FR/AR + RTL), `@transpo/design-tokens` (échelle Radix, source unique web+RN), `@transpo/api-client` (typé). `ui-web` (Radix) / `ui-native` (Tamagui) : créés avec la 1ʳᵉ console (T4). — `transpo-design-system`, `transpo-i18n`
 
 ## Phase 1 — Cœur opérationnel (Console transport)
 - [ ] **T4 — Commandes** — liste (filtres/pagination), assistant de création 3 étapes, détail (timeline + onglets) ; API `orders` complète + 1ʳᵉ console Next.js. — PRD-01
