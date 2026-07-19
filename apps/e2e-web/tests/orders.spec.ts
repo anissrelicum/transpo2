@@ -108,6 +108,15 @@ test('actions commande : menu d’actions présent (ADMIN)', async ({ page }) =>
   await expect(menus.first()).toBeVisible();
 });
 
+test('action d’écriture via proxy : création d’une zone (tenant e2e)', async ({ page }) => {
+  await login(page, 'e2e', 'admin@e2e.ma');
+  await page.goto('/zones');
+  await page.getByRole('button', { name: 'Nouvelle zone' }).click();
+  await page.getByPlaceholder('Casa Centre').fill('Zone Test UI');
+  await page.getByRole('button', { name: 'Créer' }).click();
+  await expect(page.getByText('Zone Test UI').first()).toBeVisible();
+});
+
 test('organisation détectée depuis l’adresse (host / override)', async ({ page }) => {
   await page.goto('/login?org=casaexpress');
   await expect(page.getByTestId('detected-org')).toHaveText('casaexpress');

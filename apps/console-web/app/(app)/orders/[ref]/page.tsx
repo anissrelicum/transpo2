@@ -48,7 +48,7 @@ export default async function OrderDetailPage({ params }: { params: { ref: strin
           <Heading size="6" weight="bold">{order.ref}</Heading>
           <StatusBadge status={order.status} />
         </Flex>
-        {canWrite && <OrderActions ref_={order.ref} status={order.status} driver={order.driver} drivers={driverNames} />}
+        {canWrite && <OrderActions ref_={order.ref} status={order.status} driver={order.driver} drivers={driverNames} cod={order.cod} codPaid={order.codPaid} />}
       </Flex>
 
       <Grid columns={{ initial: '1', sm: '2' }} gap="4">
