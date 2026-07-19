@@ -14,8 +14,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: data?.message ?? 'Échec de connexion' }, { status: res.status });
   }
   const out = NextResponse.json({ ok: true, role: data.role, name: data.name });
-  const secure = process.env.NODE_ENV === 'production';
-  out.cookies.set('token', data.token, { httpOnly: true, sameSite: 'lax', path: '/', secure });
-  out.cookies.set('tenant', tenant ?? '', { httpOnly: true, sameSite: 'lax', path: '/', secure });
+  // `Secure` uniquement en HTTPS réel : un cookie Secure est rejeté par le navigateur
+  // sur http:// (cas Docker/E2E). Derrière un proxy TLS, x-forwarded-proto=https le réactive.
+  const secure = (req.headers.get('x-forwarded-proto') ?? req.nextUrl.protocol.replace(':', '')) === 'https';
+  const opts = { httpOnly: true, sameSite: 'lax' as const, path: '/', secure };
+  out.cookies.set('token', data.token, opts);
+  out.cookies.set('tenant', tenant ?? '', opts);
+  out.cookies.set('name', data.name ?? '', opts);
+  out.cookies.set('role', data.role ?? '', opts);
   return out;
 }
