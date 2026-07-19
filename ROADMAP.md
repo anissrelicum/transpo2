@@ -28,7 +28,7 @@ Légende : ✅ fait · 🚧 en cours · ⏳ à venir · *(skeleton)* = livré au
 
 ## Phase 4 — Marchand & Client
 - [~] **T14 — Portail marchand** 🚧 *backend validé Docker* — vues scopées au marchand (claim JWT `merchant`, résolu serveur) : dashboard (KPIs), commandes, portefeuille (net = COD − commission), facture dérivée. `@Roles MERCHANT`. API/webhooks signés + mode facturation : à compléter. E2E API. — PRD-02
-- [~] **T15 — Client final** 🚧 *backend validé Docker* — suivi public sans compte (timeline par code, tenant dans l'URL) + notation post-livraison (1..5, verrouillée). App client (live tracking, créneau, chat) : à compléter. E2E API. — `transpo-realtime` (+ push)
+- [~] **T15 — Client final** 🚧 *backend validé Docker + app RN* — suivi public sans compte (timeline par code, tenant dans l'URL) + notation post-livraison (1..5, verrouillée). **App mobile Expo/React Native** (`apps/client-app`) : accueil (saisie code) + suivi (timeline + notation étoiles), branchée aux endpoints publics, **build EAS** (projet Expo `transpo`, profil preview/APK). Reste : live tracking carte, créneau, chat, push. E2E API. — `transpo-realtime` (+ push)
 
 ## Phase 5 — Pilotage & SaaS
 - [~] **T16 — PC flotte temps réel** 🚧 *backend validé Docker* — ingestion de positions livreur, snapshot live (dernière position/livreur), **géofencing** (haversine) + alertes sortie de zone. Realtime en polling REST ; WebSocket + carte plein écran : à câbler avec l'UI. E2E API. — `transpo-realtime`, `transpo-maps-geo`
