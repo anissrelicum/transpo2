@@ -63,10 +63,15 @@ const DRIVERS: Record<string, Array<{ name: string; city: string; vehicle: strin
   ],
 };
 
-const ZONES: Record<string, Array<{ fr: string; ar: string; color: string; commune: string; drivers: string[]; lat: number; lng: number }>> = {
+// Polygone carré ~4 km autour d'un centre.
+function box(lat: number, lng: number): number[][] {
+  const d = 0.02;
+  return [[lat + d, lng - d], [lat + d, lng + d], [lat - d, lng + d], [lat - d, lng - d]];
+}
+const ZONES: Record<string, Array<{ fr: string; ar: string; color: string; commune: string; region: string; province: string; drivers: string[]; lat: number; lng: number }>> = {
   casaexpress: [
-    { fr: 'Casa Centre', ar: 'الدار البيضاء الوسط', color: 'indigo', commune: 'Maârif', drivers: ['YB', 'SI'], lat: 33.5850, lng: -7.6330 },
-    { fr: 'Casa Nord', ar: 'الدار البيضاء الشمال', color: 'cyan', commune: 'Aïn Sebaâ', drivers: [], lat: 33.6050, lng: -7.5300 },
+    { fr: 'Casa Centre', ar: 'الدار البيضاء الوسط', color: 'indigo', commune: 'Maârif', region: 'Casablanca-Settat', province: 'Casablanca', drivers: ['YB', 'SI'], lat: 33.5850, lng: -7.6330 },
+    { fr: 'Casa Nord', ar: 'الدار البيضاء الشمال', color: 'cyan', commune: 'Aïn Sebaâ', region: 'Casablanca-Settat', province: 'Casablanca', drivers: [], lat: 33.6050, lng: -7.5300 },
   ],
 };
 
@@ -120,9 +125,9 @@ async function main() {
       }
       for (const z of ZONES[t.slug] ?? []) {
         await client.query(
-          `INSERT INTO zones (name_fr, name_ar, color, commune, drivers, center_lat, center_lng)
-           SELECT $1,$2,$3,$4,$5,$6,$7 WHERE NOT EXISTS (SELECT 1 FROM zones WHERE name_fr = $1)`,
-          [z.fr, z.ar, z.color, z.commune, z.drivers, z.lat, z.lng],
+          `INSERT INTO zones (name_fr, name_ar, color, commune, region, province, drivers, center_lat, center_lng, polygon)
+           SELECT $1,$2,$3,$4,$5,$6,$7,$8,$9,$10 WHERE NOT EXISTS (SELECT 1 FROM zones WHERE name_fr = $1)`,
+          [z.fr, z.ar, z.color, z.commune, z.region, z.province, z.drivers, z.lat, z.lng, JSON.stringify(box(z.lat, z.lng))],
         );
       }
       for (const v of VEHICLES[t.slug] ?? []) {

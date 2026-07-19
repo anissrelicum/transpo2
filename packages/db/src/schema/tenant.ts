@@ -37,6 +37,9 @@ export const zones = pgTable('zones', {
   drivers: text('drivers').array().notNull().default([]),
   centerLat: doublePrecision('center_lat'),
   centerLng: doublePrecision('center_lng'),
+  region: text('region'),
+  province: text('province'),
+  polygon: jsonb('polygon'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

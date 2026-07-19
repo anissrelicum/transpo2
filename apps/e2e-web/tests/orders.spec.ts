@@ -124,14 +124,15 @@ test('actions commande : menu d’actions présent (ADMIN)', async ({ page }) =>
   await expect(menus.first()).toBeVisible();
 });
 
-test('zones : création + éditeur (carte, tenant e2e)', async ({ page }) => {
+test('zones : création + éditeur (carte polygone, tenant e2e)', async ({ page }) => {
   await login(page, 'e2e', 'admin@e2e.ma');
   await page.goto('/zones');
   await expect(page.getByRole('heading', { name: 'Zones' })).toBeVisible();
-  await page.getByRole('button', { name: 'Nouvelle' }).click();
-  // La zone créée apparaît et l'éditeur s'ouvre.
-  await expect(page.getByText('Nouvelle zone').first()).toBeVisible();
+  await expect(page.getByText(/Zones définies/)).toBeVisible();
+  await page.getByRole('button', { name: 'Nouvelle zone' }).click();
   await expect(page.getByRole('heading', { name: 'Éditeur de zone' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Dessiner un polygone' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Enregistrer' })).toBeVisible();
 });
 
 test('dispatch : carte + panneau des non-affectées', async ({ page }) => {
