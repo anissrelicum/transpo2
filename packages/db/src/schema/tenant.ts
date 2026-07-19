@@ -57,6 +57,24 @@ export const returns = pgTable('returns', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const incidents = pgTable('incidents', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  driver: text('driver').notNull(),
+  ref: text('ref'),
+  type: text('type').notNull(),
+  note: text('note'),
+  status: text('status').notNull().default('OUVERT'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const supportMessages = pgTable('support_messages', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  driver: text('driver').notNull(),
+  sender: text('sender').notNull(),
+  body: text('body').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const driverPositions = pgTable('driver_positions', {
   id: uuid('id').primaryKey().defaultRandom(),
   driver: text('driver').notNull(),
