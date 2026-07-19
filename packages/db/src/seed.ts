@@ -6,12 +6,13 @@ import { hashPassword } from './crypto.js';
 import { fraudScore, type FraudSignal } from '@transpo/domain';
 
 // Utilisateurs de démo par tenant (mot de passe commun en dev : "transpo").
-const USERS: Record<string, Array<{ email: string; name: string; role: string; merchant?: string }>> = {
+const USERS: Record<string, Array<{ email: string; name: string; role: string; merchant?: string; driver?: string }>> = {
   casaexpress: [
     { email: 'admin@casaexpress.ma', name: 'Youssef Benali', role: 'ADMIN' },
     { email: 'dispatch@casaexpress.ma', name: 'Salma Idrissi', role: 'DISPATCHER' },
     { email: 'compta@casaexpress.ma', name: 'Fatima Zahra', role: 'COMPTABLE' },
     { email: 'marchand@casaexpress.ma', name: 'Boutique Zellige', role: 'MERCHANT', merchant: 'Boutique Zellige' },
+    { email: 'livreur@casaexpress.ma', name: 'Youssef Benali', role: 'DRIVER', driver: 'Youssef Benali' },
   ],
   atlas: [
     { email: 'admin@atlas.ma', name: 'Karim El Amrani', role: 'ADMIN' },
@@ -21,6 +22,7 @@ const USERS: Record<string, Array<{ email: string; name: string; role: string; m
     { email: 'admin@e2e.ma', name: 'E2E Admin', role: 'ADMIN' },
     { email: 'compta@e2e.ma', name: 'E2E Compta', role: 'COMPTABLE' },
     { email: 'marchand@e2e.ma', name: 'Marchand E2E', role: 'MERCHANT', merchant: 'Marchand E2E' },
+    { email: 'livreur@e2e.ma', name: 'Youssef Benali', role: 'DRIVER', driver: 'Youssef Benali' },
   ],
 };
 const DEV_PASSWORD = 'transpo';
@@ -104,9 +106,9 @@ async function main() {
       }
       for (const u of USERS[t.slug] ?? []) {
         await client.query(
-          `INSERT INTO users (email, password_hash, name, role, merchant)
-           VALUES ($1,$2,$3,$4,$5) ON CONFLICT (email) DO NOTHING`,
-          [u.email, devHash, u.name, u.role, u.merchant ?? null],
+          `INSERT INTO users (email, password_hash, name, role, merchant, driver)
+           VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (email) DO NOTHING`,
+          [u.email, devHash, u.name, u.role, u.merchant ?? null, u.driver ?? null],
         );
       }
       for (const d of DRIVERS[t.slug] ?? []) {

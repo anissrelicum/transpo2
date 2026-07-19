@@ -1,4 +1,4 @@
-import { pgTable, text, integer, boolean, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { pgTable, text, integer, boolean, timestamp, uuid, jsonb } from 'drizzle-orm/pg-core';
 
 // Tables d'un tenant. Volontairement NON qualifiées d'un schéma :
 // elles sont résolues au runtime via `SET search_path TO tenant_<x>` (cf. client.withTenantDb).
@@ -54,6 +54,12 @@ export const returns = pgTable('returns', {
   reason: text('reason').notNull(),
   attempts: integer('attempts').notNull().default(1),
   status: text('status').notNull().default('A_TRAITER'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const idempotencyKeys = pgTable('idempotency_keys', {
+  key: text('key').primaryKey(),
+  response: jsonb('response').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

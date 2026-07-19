@@ -6,6 +6,7 @@ export interface JwtUser {
   role: Role;
   tenant?: string;    // slug du tenant (absent pour SUPER_ADMIN plateforme)
   merchant?: string;  // nom du marchand (rôle MERCHANT) — scope du portail marchand
+  driver?: string;    // nom du livreur (rôle DRIVER) — scope de l'app livreur
   platform?: boolean; // true pour le realm super-admin
 }
 
