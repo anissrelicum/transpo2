@@ -22,9 +22,9 @@ Légende : ✅ fait · 🚧 en cours · ⏳ à venir · *(skeleton)* = livré au
 - [ ] **T10 — Livreur annexes** — tournée mobile, support chat, historique & gains, incident, notifications, sync complète.
 
 ## Phase 3 — Argent & flux inverses
-- [ ] **T11 — Cash & COD** — réconciliation (théorique/déclaré/déposé), reversement marchand, remboursement (transaction inverse), audit.
+- [~] **T11 — Cash & COD** 🚧 *backend validé Docker* — encaissement COD, réconciliation par livreur (théorique), reversement marchand (net=brut−commission). Dépôt/écart/remboursement : à compléter. E2E API.
 - [ ] **T12 — Retours & hub** — reverse logistics (tentatives, souffrance), tri en hub + manifeste de transfert.
-- [ ] **T13 — Facturation & tarification** — grille (cascade à 3 niveaux), factures marchand + litiges, modes prépayé/post-payé, commission/TVA.
+- [~] **T13 — Facturation & tarification** 🚧 *backend validé Docker* — devis (cascade à 3 niveaux + TVA), factures marchand dérivées (commission/TVA). Litiges/modes prépayé-postpayé : à compléter. E2E API.
 
 ## Phase 4 — Marchand & Client
 - [ ] **T14 — Portail marchand** — dashboard, commandes, portefeuille, factures, API/webhooks signés, mode de facturation. — PRD-02
