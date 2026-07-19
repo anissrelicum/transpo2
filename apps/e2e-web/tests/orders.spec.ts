@@ -35,21 +35,18 @@ test('navigation sidebar → Commandes : liste des 2 commandes', async ({ page }
   await expect(page).toHaveURL(/\/dashboard/);
   await page.getByRole('link', { name: 'Commandes' }).click();
   await expect(page).toHaveURL(/\/orders/);
-  await expect(page.getByTestId('orders-count')).toHaveText('2 commande(s)');
+  await expect(page.getByTestId('orders-count')).toHaveText('2 résultat(s)');
   await expect(page.getByTestId('order-row')).toHaveCount(2);
 });
 
-test('filtre par statut → n’affiche que les commandes du statut choisi', async ({ page }) => {
+test('recherche → filtre la liste dense en direct', async ({ page }) => {
   await login(page);
   await page.goto('/orders');
-  await page.getByTestId('filter-NOUVELLE').click();
-  await expect(page).toHaveURL(/status=NOUVELLE/);
-  await expect(page.getByTestId('orders-count')).toHaveText('1 commande(s)');
-  await expect(page.getByTestId('order-row')).toHaveCount(1);
-
-  await page.getByTestId('filter-all').click();
   await expect(page.getByTestId('order-row')).toHaveCount(2);
-  await expect(page.getByTestId('page-indicator')).toHaveText('Page 1 / 1');
+  // Recherche par marchand (une seule commande "Atlas Cosmetics" seedée).
+  await page.getByPlaceholder('Réf, code, marchand, ville…').fill('Atlas');
+  await expect(page.getByTestId('orders-count')).toHaveText('1 résultat(s)');
+  await expect(page.getByTestId('order-row')).toHaveCount(1);
 });
 
 // Smoke : chaque écran du menu rend son titre (aucun 500 / redirection login).
@@ -96,7 +93,7 @@ test('création d’une commande depuis l’UI (tenant e2e) → apparaît dans l
   await page.getByPlaceholder('Boutique Zellige').fill('Boutique Test UI'); // champ Marchand du dialog
   await page.getByRole('button', { name: 'Créer' }).click();
 
-  await expect(page.getByTestId('orders-count')).toHaveText(new RegExp(`${before + 1} commande`));
+  await expect(page.getByTestId('orders-count')).toHaveText(new RegExp(`${before + 1} résultat`));
   await expect(page.getByText('Boutique Test UI').first()).toBeVisible();
 });
 
