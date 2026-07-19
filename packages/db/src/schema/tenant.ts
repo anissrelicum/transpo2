@@ -1,4 +1,4 @@
-import { pgTable, text, integer, boolean, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, text, integer, boolean, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 // Tables d'un tenant. Volontairement NON qualifiées d'un schéma :
 // elles sont résolues au runtime via `SET search_path TO tenant_<x>` (cf. client.withTenantDb).
@@ -16,3 +16,13 @@ export const orders = pgTable('orders', {
   proofLevel: text('proof_level').notNull().default('photo_signature'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
+
+export const drivers = pgTable('drivers', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  city: text('city'),
+  vehicle: text('vehicle'),
+  available: boolean('available').notNull().default(true),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+

@@ -14,12 +14,18 @@ const USERS: Record<string, Array<{ email: string; name: string; role: string }>
   atlas: [
     { email: 'admin@atlas.ma', name: 'Karim El Amrani', role: 'ADMIN' },
   ],
+  // Tenant dédié aux tests E2E mutants (création/annulation…) : n'affecte pas casaexpress/atlas.
+  e2e: [
+    { email: 'admin@e2e.ma', name: 'E2E Admin', role: 'ADMIN' },
+    { email: 'compta@e2e.ma', name: 'E2E Compta', role: 'COMPTABLE' },
+  ],
 };
 const DEV_PASSWORD = 'transpo';
 
 const DEMO_TENANTS: TenantInput[] = [
   { slug: 'casaexpress', name: 'CasaExpress', city: 'Casablanca', plan: 'Transporteur', status: 'ACTIF' },
   { slug: 'atlas', name: 'Atlas Courier', city: 'Marrakech', plan: 'TPE Coursier', status: 'ACTIF' },
+  { slug: 'e2e', name: 'E2E Test', city: 'Casablanca', plan: 'Transporteur', status: 'ACTIF' },
 ];
 
 type OrderRow = [string, string, string, string, string, string, string | null, number, boolean, string];
@@ -31,6 +37,20 @@ const ORDERS: Record<string, OrderRow[]> = {
   ],
   atlas: [
     ['CMD-20260712-900', 'Z9Q1M4KP', 'RECUPEREE', 'Riad Déco', 'Marrakech', 'Marrakech', 'Karim El Amrani', 0, false, 'Grand'],
+  ],
+};
+
+const DRIVERS: Record<string, Array<{ name: string; city: string; vehicle: string; available: boolean }>> = {
+  casaexpress: [
+    { name: 'Youssef Benali', city: 'Casablanca', vehicle: 'Moto', available: true },
+    { name: 'Salma Idrissi', city: 'Rabat', vehicle: 'Fourgon', available: true },
+  ],
+  atlas: [
+    { name: 'Karim El Amrani', city: 'Marrakech', vehicle: 'Voiture', available: false },
+  ],
+  e2e: [
+    { name: 'Youssef Benali', city: 'Casablanca', vehicle: 'Moto', available: true },
+    { name: 'Salma Idrissi', city: 'Rabat', vehicle: 'Fourgon', available: true },
   ],
 };
 
@@ -55,6 +75,13 @@ async function main() {
           `INSERT INTO users (email, password_hash, name, role)
            VALUES ($1,$2,$3,$4) ON CONFLICT (email) DO NOTHING`,
           [u.email, devHash, u.name, u.role],
+        );
+      }
+      for (const d of DRIVERS[t.slug] ?? []) {
+        await client.query(
+          `INSERT INTO drivers (name, city, vehicle, available)
+           SELECT $1,$2,$3,$4 WHERE NOT EXISTS (SELECT 1 FROM drivers WHERE name = $1)`,
+          [d.name, d.city, d.vehicle, d.available],
         );
       }
     }
