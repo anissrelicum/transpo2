@@ -1,9 +1,8 @@
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
 import {
   Card, Flex, Box, Grid, Text, Heading, Badge, Button, TextField, Select,
-  Avatar, Popover, Inset,
+  Avatar, Popover, Inset, Spinner,
 } from '@radix-ui/themes';
 import { PlusIcon, Cross2Icon, CheckIcon, GlobeIcon, Pencil1Icon, TrashIcon } from '@radix-ui/react-icons';
 import { CITY_COORDS } from '@transpo/domain';
@@ -12,31 +11,45 @@ import { Map, type MapPolygon } from './Map';
 import { PageHeader } from './ui';
 
 const PALETTE = ['indigo', 'cyan', 'amber', 'grass', 'crimson', 'violet'];
-const REGIONS = ['Casablanca-Settat', 'Rabat-Salé-Kénitra', 'Marrakech-Safi', 'Tanger-Tétouan-Al Hoceïma', 'Fès-Meknès', 'Souss-Massa', 'Oriental', 'Béni Mellal-Khénifra'];
-const PROVINCES = ['Casablanca', 'Mohammedia', 'Médiouna', 'Nouaceur', 'Rabat', 'Salé', 'Marrakech', 'Tanger', 'Fès'];
-const COMMUNES = ['Maârif', 'Sidi Belyout', 'Anfa', 'Aïn Sebaâ', 'Sidi Maârouf', 'Hay Hassani', 'Aïn Chock'];
 const initials = (n: string) => n.split(' ').map((x) => x[0]).join('').slice(0, 2).toUpperCase();
 const boxAround = (lat: number, lng: number): [number, number][] => { const d = 0.02; return [[lat + d, lng - d], [lat + d, lng + d], [lat - d, lng + d], [lat - d, lng - d]]; };
 
-type Draft = { nameFr: string; nameAr: string; color: string; commune: string; region: string; province: string; polygon: [number, number][] };
+type Commune = { name: string; iso: string };
+type Province = { province: string; communes: Commune[] };
+type RegionNode = { region: string; provinces: Province[] };
+type Draft = { nameFr: string; nameAr: string; color: string; region: string; province: string; commune: string; polygon: [number, number][]; center: [number, number] | null };
 
 export function ZonesView({ zones: initial, drivers, canWrite }: { zones: Zone[]; drivers: string[]; canWrite: boolean }) {
-  const router = useRouter();
   const [zones, setZones] = React.useState<Zone[]>(initial);
   const [selId, setSelId] = React.useState<string | null>(initial[0]?.id ?? null);
+  const [geo, setGeo] = React.useState<RegionNode[] | null>(null);
   const [drawing, setDrawing] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const zone = zones.find((z) => z.id === selId) ?? null;
 
+  React.useEffect(() => { setZones(initial); }, [initial]);
+  React.useEffect(() => { fetch('/api/proxy/v1/geo/regions').then((r) => r.ok ? r.json() : null).then(setGeo).catch(() => {}); }, []);
+
   const toDraft = (z: Zone | null): Draft => ({
     nameFr: z?.nameFr ?? '', nameAr: z?.nameAr ?? '', color: z?.color ?? 'indigo',
-    commune: z?.commune ?? COMMUNES[0], region: z?.region ?? REGIONS[0], province: z?.province ?? PROVINCES[0],
+    region: z?.region ?? '', province: z?.province ?? '', commune: z?.commune ?? '',
     polygon: (z?.polygon as [number, number][]) ?? (z?.centerLat != null ? boxAround(z.centerLat, z.centerLng!) : []),
+    center: z?.centerLat != null ? [z.centerLat, z.centerLng!] : null,
   });
   const [draft, setDraft] = React.useState<Draft>(toDraft(initial[0] ?? null));
-  React.useEffect(() => { setZones(initial); }, [initial]);
   React.useEffect(() => { setDraft(toDraft(zone)); setDrawing(false); /* eslint-disable-next-line */ }, [selId, zones]);
   const set = (p: Partial<Draft>) => setDraft((d) => ({ ...d, ...p }));
+
+  // Cascade géo
+  const regionNode = geo?.find((r) => r.region === draft.region) ?? null;
+  const provinceNode = regionNode?.provinces.find((p) => p.province === draft.province) ?? null;
+  const onRegion = (region: string) => set({ region, province: '', commune: '' });
+  const onProvince = (province: string) => set({ province, commune: '' });
+  async function onCommune(iso: string, name: string) {
+    set({ commune: name, nameFr: draft.nameFr || name });
+    const shape = await fetch(`/api/proxy/v1/geo/commune/${encodeURIComponent(iso)}`).then((r) => r.ok ? r.json() : null).catch(() => null);
+    if (shape) set({ commune: name, nameFr: draft.nameFr || name, polygon: shape.polygon, center: shape.center });
+  }
 
   async function req(url: string, method: string, body?: unknown) {
     setBusy(true);
@@ -47,12 +60,14 @@ export function ZonesView({ zones: initial, drivers, canWrite }: { zones: Zone[]
   }
   async function createZone() {
     const n = zones.length;
-    const z = await req('/api/proxy/v1/dispatch/zones', 'POST', { nameFr: 'Nouvelle zone', color: PALETTE[n % PALETTE.length], commune: COMMUNES[0], region: REGIONS[0], province: PROVINCES[0], centerLat: 33.5731, centerLng: -7.5898, polygon: boxAround(33.5731, -7.5898) });
+    const z = await req('/api/proxy/v1/dispatch/zones', 'POST', { nameFr: 'Nouvelle zone', color: PALETTE[n % PALETTE.length], centerLat: 33.5731, centerLng: -7.5898, polygon: boxAround(33.5731, -7.5898) });
     if (z) { setZones((zs) => [...zs, z]); setSelId(z.id); }
   }
   async function saveZone() {
     if (!zone) return;
-    const z = await req(`/api/proxy/v1/dispatch/zones/${zone.id}`, 'PATCH', { ...draft });
+    const body: Record<string, unknown> = { nameFr: draft.nameFr, nameAr: draft.nameAr, color: draft.color, region: draft.region, province: draft.province, commune: draft.commune, polygon: draft.polygon };
+    if (draft.center) { body.centerLat = draft.center[0]; body.centerLng = draft.center[1]; }
+    const z = await req(`/api/proxy/v1/dispatch/zones/${zone.id}`, 'PATCH', body);
     if (z) setZones((zs) => zs.map((x) => (x.id === z.id ? z : x)));
     setDrawing(false);
   }
@@ -68,16 +83,12 @@ export function ZonesView({ zones: initial, drivers, canWrite }: { zones: Zone[]
   }
 
   const available = drivers.filter((d) => !zone || !zone.drivers.includes(d));
-  // Polygones affichés : les zones + le brouillon en cours d'édition pour la zone sélectionnée.
-  const polygons: MapPolygon[] = zones.filter((z) => Array.isArray(z.polygon) && z.polygon!.length >= 3).map((z) => ({
-    id: z.id, latlngs: z.id === selId ? draft.polygon : (z.polygon as [number, number][]),
-    color: z.id === selId ? draft.color : z.color, selected: z.id === selId, onClick: () => setSelId(z.id),
-  }));
-  if (zone && draft.polygon.length >= 3 && !zones.some((z) => z.id === selId && Array.isArray(z.polygon) && z.polygon!.length >= 3)) {
-    polygons.push({ id: 'draft', latlngs: draft.polygon, color: draft.color, selected: true });
-  }
-  const geo = zones.filter((z) => z.centerLat != null);
-  const center: [number, number] = zone?.centerLat != null ? [zone.centerLat, zone.centerLng!] : geo.length ? [geo[0].centerLat!, geo[0].centerLng!] : (CITY_COORDS['Casablanca'] as [number, number]);
+  const polygons: MapPolygon[] = zones.filter((z) => z.id !== selId && Array.isArray(z.polygon) && z.polygon!.length >= 3)
+    .map((z) => ({ id: z.id, latlngs: z.polygon as [number, number][], color: z.color, selected: false, onClick: () => setSelId(z.id) }));
+  if (draft.polygon.length >= 3) polygons.push({ id: 'draft', latlngs: draft.polygon, color: draft.color, selected: true });
+
+  const geoAll = zones.filter((z) => z.centerLat != null);
+  const center: [number, number] = draft.center ?? (geoAll.length ? [geoAll[0].centerLat!, geoAll[0].centerLng!] : (CITY_COORDS['Casablanca'] as [number, number]));
   const onMapClick = (lat: number, lng: number) => { if (drawing) set({ polygon: [...draft.polygon, [lat, lng]] }); };
 
   return (
@@ -88,7 +99,6 @@ export function ZonesView({ zones: initial, drivers, canWrite }: { zones: Zone[]
       />
 
       <Grid columns={{ initial: '1', md: '3' }} gap="4">
-        {/* Liste */}
         <Box>
           <Text as="div" size="1" color="gray" weight="medium" mb="2" style={{ textTransform: 'uppercase', letterSpacing: '.04em' }}>Zones définies · {zones.length}</Text>
           <Flex direction="column" gap="2">
@@ -99,7 +109,7 @@ export function ZonesView({ zones: initial, drivers, canWrite }: { zones: Zone[]
                     <Box style={{ width: 12, height: 12, borderRadius: 3, background: `var(--${z.color}-9)`, flex: '0 0 12px' }} />
                     <Box style={{ minWidth: 0 }}>
                       <Text as="div" size="2" weight="medium">{z.nameFr}</Text>
-                      <Text as="div" size="1" color="gray">{z.commune || '—'}</Text>
+                      <Text as="div" size="1" color="gray">{z.commune || z.province || '—'}</Text>
                     </Box>
                   </Flex>
                   <Flex>{z.drivers.length ? z.drivers.map((d, i) => <Box key={d} style={{ marginInlineStart: i ? -8 : 0 }}><Avatar size="1" radius="full" fallback={initials(d)} color={z.color as any} style={{ boxShadow: '0 0 0 2px var(--color-panel-solid)' }} /></Box>) : <Badge color="gray" variant="soft" radius="full">0</Badge>}</Flex>
@@ -110,7 +120,6 @@ export function ZonesView({ zones: initial, drivers, canWrite }: { zones: Zone[]
           </Flex>
         </Box>
 
-        {/* Carte + éditeur */}
         <Box style={{ gridColumn: 'span 2' }}>
           <Card size="1" mb="4">
             <Inset side="all">
@@ -136,10 +145,18 @@ export function ZonesView({ zones: initial, drivers, canWrite }: { zones: Zone[]
               <Grid columns={{ initial: '1', sm: '2' }} gap="4">
                 <Fld label="Nom (français)"><TextField.Root value={draft.nameFr} disabled={!canWrite} onChange={(e) => set({ nameFr: e.target.value })} size="2" /></Fld>
                 <Fld label="Nom (arabe)"><TextField.Root value={draft.nameAr} disabled={!canWrite} dir="rtl" onChange={(e) => set({ nameAr: e.target.value })} size="2" /></Fld>
-                <Fld label="Région"><ZSelect value={draft.region} options={REGIONS} disabled={!canWrite} onChange={(v) => set({ region: v })} /></Fld>
-                <Fld label="Province / préfecture"><ZSelect value={draft.province} options={PROVINCES} disabled={!canWrite} onChange={(v) => set({ province: v })} /></Fld>
-                <Fld label="Commune"><ZSelect value={draft.commune} options={COMMUNES} disabled={!canWrite} onChange={(v) => set({ commune: v })} /></Fld>
-                <Fld label="Couleur"><ZSelect value={draft.color} options={PALETTE} disabled={!canWrite} onChange={(v) => set({ color: v })} /></Fld>
+                <Fld label={`Région${geo ? '' : ' (chargement…)'}`}>
+                  <Cascade value={draft.region} placeholder="Choisir une région" disabled={!canWrite || !geo} options={(geo ?? []).map((r) => r.region)} onChange={onRegion} />
+                </Fld>
+                <Fld label="Province / préfecture">
+                  <Cascade value={draft.province} placeholder="Choisir une province" disabled={!canWrite || !regionNode} options={(regionNode?.provinces ?? []).map((p) => p.province)} onChange={onProvince} />
+                </Fld>
+                <Fld label="Commune">
+                  <Cascade value={draft.commune} placeholder="Choisir une commune" disabled={!canWrite || !provinceNode}
+                    options={(provinceNode?.communes ?? []).map((c) => c.name)}
+                    onChange={(name) => { const c = provinceNode?.communes.find((x) => x.name === name); if (c) onCommune(c.iso, c.name); }} />
+                </Fld>
+                <Fld label="Couleur"><Cascade value={draft.color} disabled={!canWrite} options={PALETTE} onChange={(v) => set({ color: v })} /></Fld>
               </Grid>
 
               <Box mt="4">
@@ -167,7 +184,7 @@ export function ZonesView({ zones: initial, drivers, canWrite }: { zones: Zone[]
                 </Flex>
               </Box>
 
-              {canWrite && <Flex justify="end" mt="4"><Button color="green" onClick={saveZone} disabled={busy}><CheckIcon /> Enregistrer</Button></Flex>}
+              {canWrite && <Flex justify="end" mt="4" align="center" gap="2">{busy && <Spinner />}<Button color="green" onClick={saveZone} disabled={busy}><CheckIcon /> Enregistrer</Button></Flex>}
             </Card>
           ) : (
             <Card size="3"><Flex direction="column" align="center" gap="3" py="9"><GlobeIcon width="22" /><Text size="2" color="gray">Créez une zone pour commencer.</Text></Flex></Card>
@@ -181,11 +198,14 @@ export function ZonesView({ zones: initial, drivers, canWrite }: { zones: Zone[]
 function Fld({ label, children }: { label: string; children: React.ReactNode }) {
   return <Box><Text as="label" size="2" weight="medium" mb="1" style={{ display: 'block' }}>{label}</Text>{children}</Box>;
 }
-function ZSelect({ value, options, onChange, disabled }: { value: string; options: string[]; onChange: (v: string) => void; disabled?: boolean }) {
+function Cascade({ value, options, onChange, disabled, placeholder }: { value: string; options: string[]; onChange: (v: string) => void; disabled?: boolean; placeholder?: string }) {
   return (
-    <Select.Root value={value} onValueChange={onChange} disabled={disabled} size="2">
-      <Select.Trigger style={{ width: '100%' }} />
-      <Select.Content>{options.map((o) => <Select.Item key={o} value={o}>{o}</Select.Item>)}</Select.Content>
+    <Select.Root value={value || undefined} onValueChange={onChange} disabled={disabled} size="2">
+      <Select.Trigger style={{ width: '100%' }} placeholder={placeholder} />
+      <Select.Content>
+        {options.length === 0 && <Select.Item value="__none" disabled>—</Select.Item>}
+        {options.map((o) => <Select.Item key={o} value={o}>{o}</Select.Item>)}
+      </Select.Content>
     </Select.Root>
   );
 }
