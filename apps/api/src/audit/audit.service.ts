@@ -23,4 +23,21 @@ export class AuditService {
       ],
     );
   }
+
+  /** Lecture du journal (observabilité sécurité) — filtres optionnels. */
+  async recent(filters: { tenant?: string; action?: string; limit?: number } = {}) {
+    const limit = Math.min(Math.max(filters.limit ?? 100, 1), 500);
+    const conds: string[] = [];
+    const params: unknown[] = [];
+    if (filters.tenant) { params.push(filters.tenant); conds.push(`tenant = $${params.length}`); }
+    if (filters.action) { params.push(filters.action); conds.push(`action = $${params.length}`); }
+    const where = conds.length ? `WHERE ${conds.join(' AND ')}` : '';
+    params.push(limit);
+    const { rows } = await pool.query(
+      `SELECT id, at, actor, actor_role AS "actorRole", tenant, action, target, detail
+         FROM platform.audit_log ${where} ORDER BY at DESC LIMIT $${params.length}`,
+      params,
+    );
+    return rows;
+  }
 }
