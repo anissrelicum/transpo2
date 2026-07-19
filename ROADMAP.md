@@ -11,7 +11,7 @@ Légende : ✅ fait · 🚧 en cours · ⏳ à venir · *(skeleton)* = livré au
 - [x] **T3 — Packages partagés** ✅ *validé Docker (typecheck workspace + E2E 10/10)* — `@transpo/i18n` (FR/AR + RTL), `@transpo/design-tokens` (échelle Radix, source unique web+RN), `@transpo/api-client` (typé). `ui-web` (Radix) / `ui-native` (Tamagui) : créés avec la 1ʳᵉ console (T4). — `transpo-design-system`, `transpo-i18n`
 
 ## Phase 1 — Cœur opérationnel (Console transport)
-- [ ] **T4 — Commandes** — liste (filtres/pagination), assistant de création 3 étapes, détail (timeline + onglets) ; API `orders` complète + 1ʳᵉ console Next.js. — PRD-01
+- [~] **T4 — Commandes** 🚧 *socle validé Docker* — 1ʳᵉ console Next.js + Radix (BFF, login, liste commandes branchée API) ; `ui-web` créé ; **E2E Playwright 2/2**. Restent (sous-tranches) : filtres/pagination, assistant de création 3 étapes, détail (timeline + onglets). — PRD-01
 - [ ] **T5 — Dispatch & zones** — carte temps réel, suggestion de livreur (scoring), éditeur de zones (**PostGIS**). — `transpo-maps-geo`, `transpo-realtime`
 - [ ] **T6 — Flotte** — véhicules (échéances assurance/CT), chauffeurs (permis, **EU 561**), objectifs & primes.
 - [ ] **T7 — Tournées** — planificateur multi-arrêts + **vrai moteur de routing**. — `transpo-maps-geo`
