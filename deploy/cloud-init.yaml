@@ -1,0 +1,35 @@
+#cloud-config
+# Provisionnement d'un hôte Dokku pour Transpo (Ubuntu 22.04).
+# Installe Docker + Dokku + plugin postgres au premier boot.
+package_update: true
+package_upgrade: false
+packages:
+  - curl
+  - git
+  - openssl
+
+write_files:
+  - path: /root/dokku-bootstrap.sh
+    permissions: "0755"
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      export DEBIAN_FRONTEND=noninteractive
+      # Dokku (version épinglée) — installe Docker + Dokku + nginx.
+      if ! command -v dokku >/dev/null 2>&1; then
+        wget -NP /root https://dokku.com/install/v0.34.9/bootstrap.sh
+        DOKKU_TAG=v0.34.9 bash /root/bootstrap.sh
+      fi
+      # Plugin Postgres.
+      if [ ! -d /var/lib/dokku/plugins/available/postgres ]; then
+        dokku plugin:install https://github.com/dokku/dokku-postgres.git postgres
+      fi
+      # Autorise les gros builds (Next.js) : swap 2G si absent.
+      if ! swapon --show | grep -q /swapfile; then
+        fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+        echo '/swapfile none swap sw 0 0' >> /etc/fstab
+      fi
+      touch /root/.dokku-ready
+
+runcmd:
+  - bash /root/dokku-bootstrap.sh > /var/log/dokku-bootstrap.log 2>&1
