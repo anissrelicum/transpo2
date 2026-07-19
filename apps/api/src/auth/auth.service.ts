@@ -13,7 +13,7 @@ export class AuthService {
 
     const user = await withTenantDb(`tenant_${slug}`, async (_db, client) => {
       const r = await client.query(
-        'SELECT email, password_hash, name, role, active FROM users WHERE email = $1',
+        'SELECT email, password_hash, name, role, active, merchant FROM users WHERE email = $1',
         [email],
       );
       return r.rows[0];
@@ -23,7 +23,10 @@ export class AuthService {
       throw new UnauthorizedException('Identifiants invalides.');
     }
     return {
-      token: signToken({ sub: user.email, role: user.role as Role, tenant: slug }),
+      token: signToken({
+        sub: user.email, role: user.role as Role, tenant: slug,
+        ...(user.merchant ? { merchant: user.merchant } : {}),
+      }),
       role: user.role as Role,
       name: user.name,
     };
