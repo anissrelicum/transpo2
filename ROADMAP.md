@@ -38,7 +38,7 @@ Légende : ✅ fait · 🚧 en cours · ⏳ à venir · *(skeleton)* = livré au
 
 ## Phase 6 — Durcissement & mise en prod
 - [~] **T20 — Sécurité/conformité/observabilité** 🚧 *backend validé Docker* — journal d'audit lisible (SUPER_ADMIN), droits des personnes RGPD/09-08 (export + effacement/anonymisation tracés), anti-bruteforce login (429). Monitoring/perf + page confidentialité : à compléter. E2E API.
-- [ ] **T21 — CI/CD & déploiement** — images, migrations au déploiement, environnements, **suite E2E complète** (Playwright + Maestro). — `transpo-testing`, `transpo-git-workflow`
+- [~] **T21 — CI/CD & déploiement** 🚧 *pipeline validée Docker (répétition locale : typecheck + E2E API 83/83 + Playwright 2/2)* — GitHub Actions : build stack, typecheck workspace, suite E2E API complète, Playwright, teardown ; garde de concurrence. Registry/déploiement multi-env + Maestro (mobile) : à compléter. — `transpo-testing`, `transpo-git-workflow`
 
 ---
 
