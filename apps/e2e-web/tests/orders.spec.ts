@@ -57,7 +57,7 @@ const SCREENS: [string, string][] = [
   ['/fraud', 'Fraude COD'],
   ['/tournees', 'Tournées'],
   ['/dispatch', 'Dispatch'],
-  ['/fleet', 'PC flotte — temps réel'],
+  ['/fleet', 'PC de commandement flotte'],
   ['/zones', 'Zones'],
   ['/hub', 'Tri en hub'],
   ['/returns', 'Retours'],
