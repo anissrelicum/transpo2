@@ -223,5 +223,6 @@ export interface Order {
   proofLevel: ProofLevel;
   rating?: number | null;         // note client (1..5) post-livraison
   ratingComment?: string | null;
+  hubPhase?: string | null;       // tri en hub : arrive | trier | quai
   createdAt: string;
 }

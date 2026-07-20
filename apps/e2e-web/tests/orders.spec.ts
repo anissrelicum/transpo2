@@ -60,7 +60,7 @@ const SCREENS: [string, string][] = [
   ['/fleet', 'PC de commandement flotte'],
   ['/zones', 'Zones'],
   ['/hub', 'Tri en hub'],
-  ['/returns', 'Retours'],
+  ['/returns', 'Gestion des retours'],
   ['/vehicles', 'Véhicules'],
   ['/drivers', 'Chauffeurs'],
   ['/pricing', 'Tarification'],

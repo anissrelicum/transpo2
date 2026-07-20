@@ -43,6 +43,14 @@ const ORDERS: Record<string, OrderRow[]> = {
     ['CMD-20260712-201', 'T1R2A3B4', 'ASSIGNEE', 'Boutique Zellige', 'Casablanca', 'Rabat', 'Youssef Benali', 640, false, 'Moyen'],
     ['CMD-20260712-202', 'T2M3O4H5', 'ASSIGNEE', 'Atlas Cosmetics', 'Casablanca', 'Mohammedia', 'Youssef Benali', 0, false, 'Petit'],
     ['CMD-20260712-203', 'T3K4E5N6', 'ASSIGNEE', 'Souss Électro', 'Casablanca', 'Kénitra', 'Youssef Benali', 1500, false, 'Grand'],
+    // Commandes échouées (gestion des retours).
+    ['CMD-20260711-142', 'G1M9K4PX', 'ECHOUEE', 'Atlas Cosmetics', 'Rabat', 'Kénitra', 'Salma Idrissi', 900, false, 'Moyen'],
+    ['CMD-20260711-138', 'H4P7M2KQ', 'ECHOUEE', 'Souss Électro', 'Casablanca', 'Tanger', 'Nadia Chraibi', 1500, false, 'Grand'],
+    // Colis dans le hub (tri) — destinations variées.
+    ['CMD-20260714-301', 'HM4K7P2X', 'RECUPEREE', 'Boutique Zellige', 'Casablanca', 'Marrakech', 'Youssef Benali', 640, false, 'Moyen'],
+    ['CMD-20260714-302', 'HR8P3K1M', 'RECUPEREE', 'Atlas Cosmetics', 'Casablanca', 'Rabat', 'Youssef Benali', 0, false, 'Petit'],
+    ['CMD-20260714-303', 'HT2M9X4K', 'RECUPEREE', 'Souss Électro', 'Casablanca', 'Tanger', 'Nadia Chraibi', 1500, false, 'Grand'],
+    ['CMD-20260714-304', 'HM8K3P2Q', 'RECUPEREE', 'Riad Déco', 'Casablanca', 'Marrakech', 'Nadia Chraibi', 3200, false, 'Très grand'],
   ],
   atlas: [
     ['CMD-20260712-900', 'Z9Q1M4KP', 'RECUPEREE', 'Riad Déco', 'Marrakech', 'Marrakech', 'Karim El Amrani', 0, false, 'Grand'],
@@ -79,6 +87,18 @@ const ZONES: Record<string, Array<{ fr: string; ar: string; color: string; commu
     { fr: 'Casa Centre', ar: 'الدار البيضاء الوسط', color: 'indigo', commune: 'Maârif', region: 'Casablanca-Settat', province: 'Casablanca', drivers: ['YB', 'SI'], lat: 33.5850, lng: -7.6330 },
     { fr: 'Casa Nord', ar: 'الدار البيضاء الشمال', color: 'cyan', commune: 'Aïn Sebaâ', region: 'Casablanca-Settat', province: 'Casablanca', drivers: [], lat: 33.6050, lng: -7.5300 },
   ],
+};
+
+// Retours (livraisons échouées à arbitrer).
+const RETURNS: Record<string, Array<{ ref: string; reason: string; attempts: number; status: string }>> = {
+  casaexpress: [
+    { ref: 'CMD-20260711-142', reason: 'Client absent', attempts: 2, status: 'A_TRAITER' },
+    { ref: 'CMD-20260711-138', reason: 'Client refuse le colis', attempts: 1, status: 'A_TRAITER' },
+  ],
+};
+// Phase de tri dans le hub par code colis (arrive / trier / quai).
+const HUB_PHASE: Record<string, Record<string, string>> = {
+  casaexpress: { 'HM4K7P2X': 'arrive', 'HR8P3K1M': 'trier', 'HT2M9X4K': 'quai', 'HM8K3P2Q': 'quai' },
 };
 
 // Tournée de démo (planificateur multi-arrêts) — arrêts multi-villes.
@@ -176,6 +196,16 @@ async function main() {
            SELECT $1,$2,$3,$4,$5,$6 WHERE NOT EXISTS (SELECT 1 FROM fraud_cases WHERE driver = $1 AND summary = $6)`,
           [f.driver, f.amount, f.signals, score, f.status, f.summary],
         );
+      }
+      for (const rt of RETURNS[t.slug] ?? []) {
+        await client.query(
+          `INSERT INTO returns (ref, reason, attempts, status)
+           SELECT $1,$2,$3,$4 WHERE NOT EXISTS (SELECT 1 FROM returns WHERE ref = $1)`,
+          [rt.ref, rt.reason, rt.attempts, rt.status],
+        );
+      }
+      for (const [code, phase] of Object.entries(HUB_PHASE[t.slug] ?? {})) {
+        await client.query('UPDATE orders SET hub_phase = $2 WHERE code = $1 AND hub_phase IS NULL', [code, phase]);
       }
       for (const tr of TOURNEES[t.slug] ?? []) {
         await client.query(

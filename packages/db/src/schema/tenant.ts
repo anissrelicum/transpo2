@@ -16,6 +16,7 @@ export const orders = pgTable('orders', {
   proofLevel: text('proof_level').notNull().default('photo_signature'),
   rating: integer('rating'),
   ratingComment: text('rating_comment'),
+  hubPhase: text('hub_phase'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

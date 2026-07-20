@@ -1,41 +1,35 @@
 import * as React from 'react';
+import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import { Badge, Text, Flex } from '@radix-ui/themes';
+import { Box } from '@radix-ui/themes';
+import type { Order } from '@transpo/domain';
 import type { ReturnRow } from '@transpo/api-client';
-import { load, PageTitle, DataTable, Box, wrap } from '../../../lib/page';
-import { ActionButton } from '../../../components/ActionButton';
+import { serverClient } from '../../../lib/server';
+import { ReturnsView, type Ret } from '../../../components/ReturnsView';
 
 export const dynamic = 'force-dynamic';
 
-const COLOR: Record<string, string> = { A_TRAITER: 'amber', REPROGRAMME: 'blue', RENDU: 'green' };
-
 export default async function ReturnsPage() {
   const canWrite = ['ADMIN', 'DISPATCHER'].includes(cookies().get('role')?.value || '');
-  const returns = await load((c) => c.getReturns());
-
-  const columns: any[] = [
-    { key: 'ref', label: 'Commande' },
-    { key: 'reason', label: 'Motif', render: (r: ReturnRow) => <Text color="gray">{r.reason}</Text> },
-    { key: 'attempts', label: 'Tentatives', align: 'right' },
-    { key: 'status', label: 'Statut', render: (r: ReturnRow) => <Badge color={(COLOR[r.status] as any) || 'gray'}>{r.status}</Badge> },
-  ];
-  if (canWrite) {
-    columns.push({
-      key: 'actions', label: '', render: (r: ReturnRow) => (
-        r.status === 'RENDU' ? <Text color="gray" size="1">—</Text> : (
-          <Flex gap="1" wrap="wrap">
-            <ActionButton path={`v1/returns/${encodeURIComponent(r.ref)}/reschedule`} color="blue">Reprogrammer</ActionButton>
-            <ActionButton path={`v1/returns/${encodeURIComponent(r.ref)}/return-to-merchant`} color="green">Rendre au marchand</ActionButton>
-          </Flex>
-        )
-      ),
-    });
+  let returns: ReturnRow[] = [];
+  let orders: Order[] = [];
+  try {
+    const c = serverClient();
+    [returns, orders] = await Promise.all([c.getReturns(), c.getOrders()]);
+  } catch {
+    redirect('/login');
   }
 
+  // Enrichissement retour ← commande (marchand / ville de destination / COD).
+  const byRef = new Map(orders.map((o) => [o.ref, o]));
+  const enriched: Ret[] = returns.map((r) => {
+    const o = byRef.get(r.ref);
+    return { ref: r.ref, reason: r.reason, attempts: r.attempts, status: r.status, merchant: o?.merchant ?? null, city: o?.toCity ?? '—', cod: o?.cod ?? 0 };
+  });
+
   return (
-    <Box style={wrap}>
-      <PageTitle title="Retours" subtitle="Logistique inverse : tentatives, reprogrammation, renvoi marchand." />
-      <DataTable<ReturnRow> columns={columns} rows={returns} empty="Aucun retour." />
+    <Box style={{ maxWidth: 1300, margin: '0 auto' }}>
+      <ReturnsView returns={enriched} canWrite={canWrite} />
     </Box>
   );
 }
