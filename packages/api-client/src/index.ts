@@ -114,6 +114,9 @@ export class TranspoClient {
   getTournees(): Promise<Tournee[]> {
     return this.req('/v1/tournees');
   }
+  getTournee(id: string): Promise<Tournee & { orders: Order[] }> {
+    return this.req(`/v1/tournees/${encodeURIComponent(id)}`);
+  }
 
   // --- Flotte & dispatch ---
   getDrivers(): Promise<Driver[]> { return this.req('/v1/drivers'); }
