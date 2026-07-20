@@ -53,6 +53,8 @@ const DRIVERS: Record<string, Array<{ name: string; city: string; vehicle: strin
   casaexpress: [
     { name: 'Youssef Benali', city: 'Casablanca', vehicle: 'Moto', available: true },
     { name: 'Salma Idrissi', city: 'Rabat', vehicle: 'Fourgon', available: true },
+    { name: 'Nadia Chraibi', city: 'Casablanca', vehicle: 'Moto', available: true },
+    { name: 'Omar Fassi', city: 'Casablanca', vehicle: 'Fourgon', available: true },
   ],
   atlas: [
     { name: 'Karim El Amrani', city: 'Marrakech', vehicle: 'Voiture', available: false },
@@ -72,6 +74,25 @@ const ZONES: Record<string, Array<{ fr: string; ar: string; color: string; commu
   casaexpress: [
     { fr: 'Casa Centre', ar: 'الدار البيضاء الوسط', color: 'indigo', commune: 'Maârif', region: 'Casablanca-Settat', province: 'Casablanca', drivers: ['YB', 'SI'], lat: 33.5850, lng: -7.6330 },
     { fr: 'Casa Nord', ar: 'الدار البيضاء الشمال', color: 'cyan', commune: 'Aïn Sebaâ', region: 'Casablanca-Settat', province: 'Casablanca', drivers: [], lat: 33.6050, lng: -7.5300 },
+  ],
+};
+
+// Géofences par livreur (PC flotte). Chaque livreur a une zone assignée (centre + rayon).
+const GEOFENCES: Record<string, Array<{ driver: string; name: string; lat: number; lng: number; radius: number }>> = {
+  casaexpress: [
+    { driver: 'Youssef Benali', name: 'Casa Centre', lat: 33.5850, lng: -7.6330, radius: 5000 },
+    { driver: 'Salma Idrissi', name: 'Casa Nord', lat: 33.6050, lng: -7.5300, radius: 5000 },
+    { driver: 'Nadia Chraibi', name: 'Casa Sud', lat: 33.5490, lng: -7.6160, radius: 5000 },
+    { driver: 'Omar Fassi', name: 'Casa Centre', lat: 33.5850, lng: -7.6330, radius: 5000 },
+  ],
+};
+// Dernière position connue de chaque livreur (PC flotte temps réel). Omar est loin de sa zone → alerte.
+const POSITIONS: Record<string, Array<{ driver: string; lat: number; lng: number }>> = {
+  casaexpress: [
+    { driver: 'Youssef Benali', lat: 33.5840, lng: -7.6120 },
+    { driver: 'Salma Idrissi', lat: 33.6040, lng: -7.5400 },
+    { driver: 'Nadia Chraibi', lat: 33.5510, lng: -7.6110 },
+    { driver: 'Omar Fassi', lat: 33.6600, lng: -7.4500 }, // hors zone
   ],
 };
 
@@ -143,6 +164,20 @@ async function main() {
           `INSERT INTO fraud_cases (driver, amount, signals, score, status, summary)
            SELECT $1,$2,$3,$4,$5,$6 WHERE NOT EXISTS (SELECT 1 FROM fraud_cases WHERE driver = $1 AND summary = $6)`,
           [f.driver, f.amount, f.signals, score, f.status, f.summary],
+        );
+      }
+      for (const g of GEOFENCES[t.slug] ?? []) {
+        await client.query(
+          `INSERT INTO geofences (driver, name, center_lat, center_lng, radius_m)
+           SELECT $1,$2,$3,$4,$5 WHERE NOT EXISTS (SELECT 1 FROM geofences WHERE driver = $1)`,
+          [g.driver, g.name, g.lat, g.lng, g.radius],
+        );
+      }
+      for (const p of POSITIONS[t.slug] ?? []) {
+        await client.query(
+          `INSERT INTO driver_positions (driver, lat, lng)
+           SELECT $1,$2,$3 WHERE NOT EXISTS (SELECT 1 FROM driver_positions WHERE driver = $1)`,
+          [p.driver, p.lat, p.lng],
         );
       }
     }
