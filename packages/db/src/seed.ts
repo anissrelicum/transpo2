@@ -39,6 +39,10 @@ const ORDERS: Record<string, OrderRow[]> = {
   casaexpress: [
     ['CMD-20260712-014', 'A7K2M9QX', 'LIVRAISON', 'Boutique Zellige', 'Casablanca', 'Casablanca', 'Youssef Benali', 1250, false, 'Moyen'],
     ['CMD-20260712-013', 'B3P8K1LM', 'NOUVELLE', 'Atlas Cosmetics', 'Rabat', 'Salé', null, 480, false, 'Petit'],
+    // Arrêts multi-villes d'une tournée de démo (Youssef Benali).
+    ['CMD-20260712-201', 'T1R2A3B4', 'ASSIGNEE', 'Boutique Zellige', 'Casablanca', 'Rabat', 'Youssef Benali', 640, false, 'Moyen'],
+    ['CMD-20260712-202', 'T2M3O4H5', 'ASSIGNEE', 'Atlas Cosmetics', 'Casablanca', 'Mohammedia', 'Youssef Benali', 0, false, 'Petit'],
+    ['CMD-20260712-203', 'T3K4E5N6', 'ASSIGNEE', 'Souss Électro', 'Casablanca', 'Kénitra', 'Youssef Benali', 1500, false, 'Grand'],
   ],
   atlas: [
     ['CMD-20260712-900', 'Z9Q1M4KP', 'RECUPEREE', 'Riad Déco', 'Marrakech', 'Marrakech', 'Karim El Amrani', 0, false, 'Grand'],
@@ -74,6 +78,13 @@ const ZONES: Record<string, Array<{ fr: string; ar: string; color: string; commu
   casaexpress: [
     { fr: 'Casa Centre', ar: 'الدار البيضاء الوسط', color: 'indigo', commune: 'Maârif', region: 'Casablanca-Settat', province: 'Casablanca', drivers: ['YB', 'SI'], lat: 33.5850, lng: -7.6330 },
     { fr: 'Casa Nord', ar: 'الدار البيضاء الشمال', color: 'cyan', commune: 'Aïn Sebaâ', region: 'Casablanca-Settat', province: 'Casablanca', drivers: [], lat: 33.6050, lng: -7.5300 },
+  ],
+};
+
+// Tournée de démo (planificateur multi-arrêts) — arrêts multi-villes.
+const TOURNEES: Record<string, Array<{ driver: string; zone: string; day: string; stops: string[] }>> = {
+  casaexpress: [
+    { driver: 'Youssef Benali', zone: 'Casa Centre', day: '2026-07-14', stops: ['CMD-20260712-201', 'CMD-20260712-202', 'CMD-20260712-203'] },
   ],
 };
 
@@ -164,6 +175,13 @@ async function main() {
           `INSERT INTO fraud_cases (driver, amount, signals, score, status, summary)
            SELECT $1,$2,$3,$4,$5,$6 WHERE NOT EXISTS (SELECT 1 FROM fraud_cases WHERE driver = $1 AND summary = $6)`,
           [f.driver, f.amount, f.signals, score, f.status, f.summary],
+        );
+      }
+      for (const tr of TOURNEES[t.slug] ?? []) {
+        await client.query(
+          `INSERT INTO tournees (driver, zone, day, status, stops)
+           SELECT $1,$2,$3,'PLANIFIEE',$4 WHERE NOT EXISTS (SELECT 1 FROM tournees WHERE driver = $1 AND day = $3)`,
+          [tr.driver, tr.zone, tr.day, tr.stops],
         );
       }
       for (const g of GEOFENCES[t.slug] ?? []) {
