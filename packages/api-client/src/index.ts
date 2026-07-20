@@ -135,6 +135,7 @@ export class TranspoClient {
 
   // --- Flux inverses & notifications ---
   getReturns(): Promise<ReturnRow[]> { return this.req('/v1/returns'); }
+  getHub(): Promise<Order[]> { return this.req('/v1/hub'); }
   getNotifications(): Promise<NotificationRow[]> { return this.req('/v1/notifications'); }
 
   // --- Suivi public client (sans authentification ; tenant dans l'URL) ---

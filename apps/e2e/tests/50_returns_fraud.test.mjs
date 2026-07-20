@@ -62,3 +62,21 @@ test('fraude : leaderboard livreurs à risque', async () => {
   assert.equal(r.status, 200);
   assert.ok(r.json.some((d) => d.driver === 'Karim El Amrani'));
 });
+
+test('hub : liste des colis, scan et déplacement de phase', async () => {
+  const admin2 = await login('casaexpress', 'admin@casaexpress.ma');
+  const r = await api('/v1/hub', { token: admin2 });
+  assert.equal(r.status, 200);
+  assert.ok(r.json.length >= 3, 'colis seedés dans le hub');
+  // Scan d'un colis "arrivé" (code HM4K7P2X) → phase trier
+  const s = await api('/v1/hub/scan', { method: 'POST', token: admin2, body: { code: 'HM4K7P2X' } });
+  assert.equal(s.status, 200);
+  assert.equal(s.json.hubPhase, 'trier');
+  // Placer sur quai
+  const q = await api(`/v1/hub/${s.json.ref}/phase`, { method: 'POST', token: admin2, body: { phase: 'quai' } });
+  assert.equal(q.status, 200);
+  assert.equal(q.json.hubPhase, 'quai');
+  // Code inconnu → 404
+  const bad = await api('/v1/hub/scan', { method: 'POST', token: admin2, body: { code: 'ZZZZZZZZ' } });
+  assert.equal(bad.status, 404);
+});

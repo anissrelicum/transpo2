@@ -16,6 +16,7 @@ import { NotificationsModule } from './notifications/notifications.module.js';
 import { PrivacyModule } from './privacy/privacy.module.js';
 import { DriverModule } from './driver/driver.module.js';
 import { GeoModule } from './geo/geo.module.js';
+import { HubModule } from './hub/hub.module.js';
 import { TrackingModule } from './tracking/tracking.module.js';
 import { FieldModule } from './field/field.module.js';
 import { HealthController } from './health.controller.js';
@@ -26,7 +27,7 @@ import { HealthController } from './health.controller.js';
     AuthModule, OrdersModule, SaasModule, DispatchModule, FleetModule,
     CashModule, BillingModule, ReturnsModule, AnalyticsModule, FraudModule, MerchantModule,
     PublicModule, TourneesModule, NotificationsModule, PrivacyModule, DriverModule,
-    TrackingModule, FieldModule, GeoModule,
+    TrackingModule, FieldModule, GeoModule, HubModule,
   ],
   controllers: [HealthController],
 })
