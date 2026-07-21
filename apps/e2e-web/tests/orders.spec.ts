@@ -54,7 +54,7 @@ const SCREENS: [string, string][] = [
   ['/dashboard', 'Tableau de bord'],
   ['/orders', 'Commandes'],
   ['/analytics', 'Analytics & SLA'],
-  ['/fraud', 'Fraude COD'],
+  ['/fraud', 'Détection de fraude COD'],
   ['/tournees', 'Planificateur de tournées'],
   ['/dispatch', 'Dispatch'],
   ['/fleet', 'PC de commandement flotte'],
