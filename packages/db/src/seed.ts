@@ -148,6 +148,31 @@ const FRAUD: Record<string, Array<{ driver: string; amount: number; signals: str
   ],
 };
 
+// Sessions de caisse (réconciliation COD par livreur, 14/07/2026).
+type CashMoveSeed = { ref: string; recipient: string; amount: number; matched: boolean };
+type CashSeed = {
+  driver: string; ini: string; date: string; theorique: number; declared: number | null;
+  deposited: number; deliveries: number; cap: number; status: string; moves?: CashMoveSeed[];
+};
+const CASH: Record<string, CashSeed[]> = {
+  casaexpress: [
+    { driver: 'Youssef Benali', ini: 'YB', date: '2026-07-14', theorique: 5140, declared: 5140, deposited: 5140, deliveries: 7, cap: 8000, status: 'DEPOSE' },
+    { driver: 'Salma Idrissi', ini: 'SI', date: '2026-07-14', theorique: 3820, declared: 3820, deposited: 0, deliveries: 5, cap: 6000, status: 'A_DEPOSER' },
+    { driver: 'Karim El Amrani', ini: 'KE', date: '2026-07-14', theorique: 4600, declared: 4400, deposited: 0, deliveries: 6, cap: 5000, status: 'ECART', moves: [
+      { ref: 'CMD-20260714-088', recipient: 'Salma Idrissi', amount: 1250, matched: true },
+      { ref: 'CMD-20260714-091', recipient: 'Mehdi Tahiri', amount: 680, matched: true },
+      { ref: 'CMD-20260714-095', recipient: 'Imane Ouazzani', amount: 900, matched: true },
+      { ref: 'CMD-20260714-097', recipient: 'Yassine Bennani', amount: 1000, matched: true },
+      { ref: 'CMD-20260714-099', recipient: 'Fatima Zahra', amount: 770, matched: false },
+    ] },
+    { driver: 'Nadia Chraibi', ini: 'NC', date: '2026-07-14', theorique: 2260, declared: 2260, deposited: 2260, deliveries: 4, cap: 6000, status: 'DEPOSE' },
+    { driver: 'Omar Fassi', ini: 'OF', date: '2026-07-14', theorique: 6980, declared: null, deposited: 0, deliveries: 9, cap: 7000, status: 'EN_COURS' },
+  ],
+  e2e: [
+    { driver: 'Youssef Benali', ini: 'YB', date: '2026-07-14', theorique: 1500, declared: 1500, deposited: 0, deliveries: 2, cap: 6000, status: 'A_DEPOSER' },
+  ],
+};
+
 async function main() {
   const client = await pool.connect();
   try {
@@ -230,6 +255,24 @@ async function main() {
            SELECT $1,$2,$3 WHERE NOT EXISTS (SELECT 1 FROM driver_positions WHERE driver = $1)`,
           [p.driver, p.lat, p.lng],
         );
+      }
+      for (const cs of CASH[t.slug] ?? []) {
+        const res = await client.query(
+          `INSERT INTO cash_sessions (driver, ini, session_date, theorique, declared, deposited, deliveries, cap, status)
+           SELECT $1,$2,$3,$4,$5,$6,$7,$8,$9
+           WHERE NOT EXISTS (SELECT 1 FROM cash_sessions WHERE driver = $1 AND session_date = $3)
+           RETURNING id`,
+          [cs.driver, cs.ini, cs.date, cs.theorique, cs.declared, cs.deposited, cs.deliveries, cs.cap, cs.status],
+        );
+        const sid = res.rows[0]?.id;
+        if (sid) {
+          for (const m of cs.moves ?? []) {
+            await client.query(
+              `INSERT INTO cash_movements (session_id, ref, recipient, amount, matched) VALUES ($1,$2,$3,$4,$5)`,
+              [sid, m.ref, m.recipient, m.amount, m.matched],
+            );
+          }
+        }
       }
     }
 

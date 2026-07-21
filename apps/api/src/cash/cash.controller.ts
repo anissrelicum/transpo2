@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Req, UseGuards, Inject, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Req, UseGuards, Inject, HttpCode } from '@nestjs/common';
 import { CashService } from './cash.service.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { TenantGuard } from '../tenant/tenant.guard.js';
@@ -15,6 +15,26 @@ export class CashController {
   @Roles('ADMIN', 'DISPATCHER')
   collect(@Req() req: any, @Param('ref') ref: string) {
     return this.cash.collect(req.tenantSchema, ref);
+  }
+
+  @Get('sessions')
+  @Roles('ADMIN', 'COMPTABLE')
+  sessions(@Req() req: any) {
+    return this.cash.sessions(req.tenantSchema);
+  }
+
+  @Post('sessions/:id/deposit')
+  @HttpCode(200)
+  @Roles('ADMIN', 'COMPTABLE')
+  deposit(@Req() req: any, @Param('id') id: string) {
+    return this.cash.deposit(req.tenantSchema, id);
+  }
+
+  @Post('sessions/:id/resolve')
+  @HttpCode(200)
+  @Roles('ADMIN', 'COMPTABLE')
+  resolve(@Req() req: any, @Param('id') id: string, @Body() body: { reason: string; note?: string }) {
+    return this.cash.resolve(req.tenantSchema, id, body?.reason, body?.note);
   }
 
   @Get('reconciliation')

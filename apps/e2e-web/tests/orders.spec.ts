@@ -65,7 +65,7 @@ const SCREENS: [string, string][] = [
   ['/drivers', 'Chauffeurs'],
   ['/pricing', 'Tarification'],
   ['/invoices', 'Factures'],
-  ['/cash', 'Caisse'],
+  ['/cash', 'Réconciliation cash'],
   ['/payout', 'Reversement COD'],
   ['/users', 'Utilisateurs'],
   ['/notifications', 'Centre de notifications'],
