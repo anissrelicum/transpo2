@@ -32,7 +32,13 @@ export interface Zone { id: string; nameFr: string; nameAr: string | null; color
 export interface Suggestion { driver: string; city: string; vehicle: string; score: number; parts: { zone: number; dispo: number; charge: number } }
 export interface ReturnRow { ref: string; reason: string; attempts: number; status: string; createdAt: string }
 export interface NotificationRow { id: string; event: string; channel: string; recipient: string; lang: string; body: string; status: string; reason: string | null; createdAt: string }
-export interface Invoice { merchant: string; deliveries: number; codCollected: number; commission: number; netHt: number; tva: number; ttc: number }
+export type InvoiceStatus = 'BROUILLON' | 'ENVOYEE' | 'PAYEE' | 'LITIGE';
+export interface Invoice {
+  id: string; ref: string; merchant: string; period: string; orders: number;
+  deliveries: number; codCollected: number; commission: number; netHt: number; tva: number; ttc: number;
+  status: InvoiceStatus; color: string; disputeAmount: number | null; disputeNote: string | null;
+}
+export interface BillingMode { merchant: string; mode: 'prepaid' | 'postpaid' }
 export interface QuoteResult { applied: 'grille' | 'remise' | 'fixe_marchand'; base: number; surcharges: number; ht: number; tva: number; ttc: number }
 export interface Reconciliation { driver: string; theorique: number; deliveries: number }
 export interface CashMove { ref: string; recipient: string; amount: number; matched: boolean }
@@ -146,6 +152,25 @@ export class TranspoClient {
   getReconciliation(): Promise<Reconciliation[]> { return this.req('/v1/cash/reconciliation'); }
   getPayouts(): Promise<Payout[]> { return this.req('/v1/cash/payouts'); }
   getInvoices(): Promise<Invoice[]> { return this.req('/v1/invoices'); }
+  getBillingModes(): Promise<BillingMode[]> { return this.req('/v1/invoices/billing-modes'); }
+  setBillingMode(merchant: string, mode: string): Promise<BillingMode> {
+    return this.req('/v1/invoices/billing-modes', { method: 'POST', body: { merchant, mode } });
+  }
+  generateInvoices(period?: string): Promise<{ created: number; refs: string[] }> {
+    return this.req('/v1/invoices/generate', { method: 'POST', body: { period } });
+  }
+  sendInvoice(id: string): Promise<{ id: string; ref: string; status: string }> {
+    return this.req(`/v1/invoices/${encodeURIComponent(id)}/send`, { method: 'POST' });
+  }
+  payInvoice(id: string): Promise<{ id: string; ref: string; status: string }> {
+    return this.req(`/v1/invoices/${encodeURIComponent(id)}/pay`, { method: 'POST' });
+  }
+  disputeInvoice(id: string, amount: number, note?: string): Promise<{ id: string; ref: string; status: string }> {
+    return this.req(`/v1/invoices/${encodeURIComponent(id)}/dispute`, { method: 'POST', body: { amount, note } });
+  }
+  resolveInvoiceDispute(id: string, decision: string): Promise<{ id: string; ref: string; status: string }> {
+    return this.req(`/v1/invoices/${encodeURIComponent(id)}/resolve`, { method: 'POST', body: { decision } });
+  }
 
   // --- Flux inverses & notifications ---
   getReturns(): Promise<ReturnRow[]> { return this.req('/v1/returns'); }
