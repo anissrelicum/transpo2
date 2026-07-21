@@ -144,3 +144,29 @@ export const fraudCases = pgTable('fraud_cases', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+// Sessions de caisse : réconciliation COD par livreur et par jour.
+export const cashSessions = pgTable('cash_sessions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  driver: text('driver').notNull(),
+  ini: text('ini').notNull(),
+  sessionDate: text('session_date').notNull(),
+  theorique: integer('theorique').notNull().default(0),
+  declared: integer('declared'),
+  deposited: integer('deposited').notNull().default(0),
+  deliveries: integer('deliveries').notNull().default(0),
+  cap: integer('cap').notNull().default(6000),
+  status: text('status').notNull().default('EN_COURS'),
+  reason: text('reason'),
+  note: text('note'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const cashMovements = pgTable('cash_movements', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  sessionId: uuid('session_id').notNull(),
+  ref: text('ref').notNull(),
+  recipient: text('recipient').notNull(),
+  amount: integer('amount').notNull(),
+  matched: boolean('matched').notNull().default(true),
+});
+

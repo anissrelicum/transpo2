@@ -35,6 +35,13 @@ export interface NotificationRow { id: string; event: string; channel: string; r
 export interface Invoice { merchant: string; deliveries: number; codCollected: number; commission: number; netHt: number; tva: number; ttc: number }
 export interface QuoteResult { applied: 'grille' | 'remise' | 'fixe_marchand'; base: number; surcharges: number; ht: number; tva: number; ttc: number }
 export interface Reconciliation { driver: string; theorique: number; deliveries: number }
+export interface CashMove { ref: string; recipient: string; amount: number; matched: boolean }
+export interface CashSession {
+  id: string; driver: string; ini: string; date: string;
+  theorique: number; declared: number | null; deposited: number; deliveries: number;
+  cap: number; status: 'EN_COURS' | 'A_DEPOSER' | 'ECART' | 'DEPOSE';
+  reason: string | null; note: string | null; ecart: number | null; moves: CashMove[];
+}
 export interface Payout { merchant: string; brut: number; orders: number; commissionRate: number; net: number }
 export interface FleetLive { driver: string; lat: number; lng: number; at: string; zone: string | null; distanceM: number | null; outOfZone: boolean }
 export interface TrackStep { status: string; label: string; done: boolean }
@@ -129,6 +136,13 @@ export class TranspoClient {
   getFleetAlerts(): Promise<FleetLive[]> { return this.req('/v1/tracking/alerts'); }
 
   // --- Argent ---
+  getCashSessions(): Promise<CashSession[]> { return this.req('/v1/cash/sessions'); }
+  depositCashSession(id: string): Promise<{ id: string; status: string; deposited: number }> {
+    return this.req(`/v1/cash/sessions/${encodeURIComponent(id)}/deposit`, { method: 'POST' });
+  }
+  resolveCashSession(id: string, reason: string, note?: string): Promise<{ id: string; status: string; reason: string }> {
+    return this.req(`/v1/cash/sessions/${encodeURIComponent(id)}/resolve`, { method: 'POST', body: { reason, note } });
+  }
   getReconciliation(): Promise<Reconciliation[]> { return this.req('/v1/cash/reconciliation'); }
   getPayouts(): Promise<Payout[]> { return this.req('/v1/cash/payouts'); }
   getInvoices(): Promise<Invoice[]> { return this.req('/v1/invoices'); }
