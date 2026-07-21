@@ -138,7 +138,10 @@ const VEHICLES: Record<string, Array<{ plate: string; type: string; city: string
 // Cas de fraude COD (revue humaine requise). Score recalculé au seed via fraudScore.
 const FRAUD: Record<string, Array<{ driver: string; amount: number; signals: string[]; status: string; summary: string }>> = {
   casaexpress: [
-    { driver: 'Karim El Amrani', amount: 3200, signals: ['non_declare', 'ecart_cash'], status: 'OUVERT', summary: 'COD marqué livré, absent du dépôt.' },
+    { driver: 'Karim El Amrani', amount: 3200, signals: ['non_declare', 'ecart_cash', 'depot_tardif'], status: 'OUVERT', summary: 'COD de 3 200 DH marqué livré, absent du dépôt de caisse. Écart de 200 DH la veille.' },
+    { driver: 'Nadia Chraibi', amount: 1500, signals: ['hors_geo', 'echec_sans_preuve'], status: 'ENQUETE', summary: 'Livraison validée à 1,8 km de l’adresse client, sans photo alors que preuve exigée.' },
+    { driver: 'Karim El Amrani', amount: 0, signals: ['absent_eleve'], status: 'OUVERT', summary: 'Taux « client absent » de 31 % sur 7 jours (moyenne flotte : 9 %).' },
+    { driver: 'Omar Fassi', amount: 260, signals: ['depot_tardif'], status: 'BLANCHI', summary: 'Dépôt tardif justifié : panne véhicule confirmée par le dispatcher.' },
   ],
   e2e: [
     { driver: 'Youssef Benali', amount: 1500, signals: ['hors_geo', 'echec_sans_preuve'], status: 'OUVERT', summary: 'Validation à 1,8 km de l’adresse, sans photo.' },
