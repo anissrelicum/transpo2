@@ -170,3 +170,26 @@ export const cashMovements = pgTable('cash_movements', {
   matched: boolean('matched').notNull().default(true),
 });
 
+// Factures marchand (service de livraison : commission 15 % + TVA 20 %).
+export const invoices = pgTable('invoices', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  ref: text('ref').notNull(),
+  merchant: text('merchant').notNull(),
+  period: text('period').notNull(),
+  ordersCount: integer('orders_count').notNull().default(0),
+  deliveriesAmount: integer('deliveries_amount').notNull().default(0),
+  codCollected: integer('cod_collected').notNull().default(0),
+  commission: integer('commission').notNull().default(0),
+  netHt: integer('net_ht').notNull().default(0),
+  tva: integer('tva').notNull().default(0),
+  status: text('status').notNull().default('BROUILLON'),
+  disputeAmount: integer('dispute_amount'),
+  disputeNote: text('dispute_note'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const merchantBilling = pgTable('merchant_billing', {
+  merchant: text('merchant').primaryKey(),
+  mode: text('mode').notNull().default('prepaid'),
+});
+

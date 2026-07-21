@@ -173,6 +173,32 @@ const CASH: Record<string, CashSeed[]> = {
   ],
 };
 
+// Factures marchand (service de livraison : commission 15 % + TVA 20 %).
+type InvoiceSeed = {
+  ref: string; merchant: string; period: string; orders: number; deliveries: number;
+  cod: number; commission: number; net: number; tva: number; status: string;
+  disputeAmount?: number; disputeNote?: string;
+};
+const INVOICES: Record<string, InvoiceSeed[]> = {
+  casaexpress: [
+    { ref: 'FCT-2026-07-0042', merchant: 'Boutique Zellige', period: '2026-07', orders: 128, deliveries: 8420, cod: 42300, commission: 1263, net: 7157, tva: 1431, status: 'BROUILLON' },
+    { ref: 'FCT-2026-07-0041', merchant: 'Atlas Cosmetics', period: '2026-07', orders: 76, deliveries: 4980, cod: 18600, commission: 747, net: 4233, tva: 847, status: 'ENVOYEE' },
+    { ref: 'FCT-2026-06-0039', merchant: 'Riad Déco', period: '2026-06', orders: 54, deliveries: 3820, cod: 9400, commission: 573, net: 3247, tva: 649, status: 'PAYEE' },
+    { ref: 'FCT-2026-06-0038', merchant: 'Souss Électro', period: '2026-06', orders: 41, deliveries: 5210, cod: 31200, commission: 782, net: 4428, tva: 886, status: 'LITIGE', disputeAmount: 1200, disputeNote: 'Écart de reversement COD contesté sur 3 commandes.' },
+  ],
+  e2e: [
+    { ref: 'FCT-2026-07-0001', merchant: 'Marchand E2E', period: '2026-07', orders: 12, deliveries: 900, cod: 3000, commission: 135, net: 765, tva: 153, status: 'BROUILLON' },
+  ],
+};
+const BILLING_MODES: Record<string, Array<{ merchant: string; mode: string }>> = {
+  casaexpress: [
+    { merchant: 'Boutique Zellige', mode: 'prepaid' },
+    { merchant: 'Atlas Cosmetics', mode: 'postpaid' },
+    { merchant: 'Riad Déco', mode: 'prepaid' },
+    { merchant: 'Souss Électro', mode: 'postpaid' },
+  ],
+};
+
 async function main() {
   const client = await pool.connect();
   try {
@@ -254,6 +280,19 @@ async function main() {
           `INSERT INTO driver_positions (driver, lat, lng)
            SELECT $1,$2,$3 WHERE NOT EXISTS (SELECT 1 FROM driver_positions WHERE driver = $1)`,
           [p.driver, p.lat, p.lng],
+        );
+      }
+      for (const inv of INVOICES[t.slug] ?? []) {
+        await client.query(
+          `INSERT INTO invoices (ref, merchant, period, orders_count, deliveries_amount, cod_collected, commission, net_ht, tva, status, dispute_amount, dispute_note)
+           SELECT $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12 WHERE NOT EXISTS (SELECT 1 FROM invoices WHERE ref = $1)`,
+          [inv.ref, inv.merchant, inv.period, inv.orders, inv.deliveries, inv.cod, inv.commission, inv.net, inv.tva, inv.status, inv.disputeAmount ?? null, inv.disputeNote ?? null],
+        );
+      }
+      for (const bm of BILLING_MODES[t.slug] ?? []) {
+        await client.query(
+          `INSERT INTO merchant_billing (merchant, mode) VALUES ($1,$2) ON CONFLICT (merchant) DO NOTHING`,
+          [bm.merchant, bm.mode],
         );
       }
       for (const cs of CASH[t.slug] ?? []) {

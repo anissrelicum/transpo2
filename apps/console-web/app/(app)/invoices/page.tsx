@@ -1,27 +1,24 @@
 import * as React from 'react';
-import type { Invoice } from '@transpo/api-client';
-import { money } from '@transpo/ui-web';
-import { load, PageTitle, DataTable, Box, wrap } from '../../../lib/page';
+import { redirect } from 'next/navigation';
+import { Box } from '@radix-ui/themes';
+import type { Invoice, BillingMode } from '@transpo/api-client';
+import { serverClient } from '../../../lib/server';
+import { BillingView } from '../../../components/BillingView';
 
 export const dynamic = 'force-dynamic';
 
 export default async function InvoicesPage() {
-  const invoices = await load((c) => c.getInvoices());
+  let invoices: Invoice[] = [];
+  let modes: BillingMode[] = [];
+  try {
+    const c = serverClient();
+    [invoices, modes] = await Promise.all([c.getInvoices(), c.getBillingModes()]);
+  } catch {
+    redirect('/login');
+  }
   return (
-    <Box style={wrap}>
-      <PageTitle title="Factures" subtitle="Factures marchand dérivées des livraisons (commission 15 % + TVA 20 %)." />
-      <DataTable<Invoice>
-        columns={[
-          { key: 'merchant', label: 'Marchand' },
-          { key: 'deliveries', label: 'Livraisons', align: 'right' },
-          { key: 'codCollected', label: 'COD encaissé', align: 'right', render: (r) => money(r.codCollected) },
-          { key: 'commission', label: 'Commission', align: 'right', render: (r) => money(r.commission) },
-          { key: 'tva', label: 'TVA', align: 'right', render: (r) => money(r.tva) },
-          { key: 'ttc', label: 'TTC', align: 'right', render: (r) => money(r.ttc) },
-        ]}
-        rows={invoices}
-        empty="Aucune facture."
-      />
+    <Box style={{ maxWidth: 1300, margin: '0 auto' }}>
+      <BillingView invoices={invoices} modes={modes} />
     </Box>
   );
 }
