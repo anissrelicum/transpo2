@@ -52,6 +52,8 @@ export const vehicles = pgTable('vehicles', {
   state: text('state').notNull().default('ACTIF'),
   insuranceDue: text('insurance_due'),
   ctDue: text('ct_due'),
+  capacity: text('capacity'),
+  equipment: text('equipment').array().notNull().default([]),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

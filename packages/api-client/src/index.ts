@@ -27,7 +27,11 @@ export interface Tournee {
   stops: string[]; createdAt: string;
 }
 export interface Driver { id: string; name: string; city: string | null; vehicle: string | null; available: boolean; createdAt: string }
-export interface Vehicle { id: string; plate: string; type: string; city: string | null; state: string; insuranceDue: string | null; ctDue: string | null; createdAt: string }
+export interface Vehicle {
+  id: string; plate: string; type: string; city: string | null; state: string;
+  insuranceDue: string | null; ctDue: string | null; capacity: string | null; equipment: string[];
+  insuranceExpired: boolean; ctExpired: boolean; assignable: boolean; createdAt: string;
+}
 export interface Zone { id: string; nameFr: string; nameAr: string | null; color: string; commune: string | null; region: string | null; province: string | null; drivers: string[]; centerLat: number | null; centerLng: number | null; polygon: number[][] | null; createdAt: string }
 export interface Suggestion { driver: string; city: string; vehicle: string; score: number; parts: { zone: number; dispo: number; charge: number } }
 export interface ReturnRow { ref: string; reason: string; attempts: number; status: string; createdAt: string }
@@ -141,6 +145,18 @@ export class TranspoClient {
   // --- Flotte & dispatch ---
   getDrivers(): Promise<Driver[]> { return this.req('/v1/drivers'); }
   getVehicles(): Promise<Vehicle[]> { return this.req('/v1/vehicles'); }
+  createVehicle(input: Partial<Vehicle> & { plate: string; type: string }): Promise<Vehicle> {
+    return this.req('/v1/vehicles', { method: 'POST', body: input });
+  }
+  setVehicleState(id: string, state: string): Promise<Vehicle> {
+    return this.req(`/v1/vehicles/${encodeURIComponent(id)}/state`, { method: 'PATCH', body: { state } });
+  }
+  renewVehicle(id: string, field: 'insurance' | 'ct', due: string): Promise<Vehicle> {
+    return this.req(`/v1/vehicles/${encodeURIComponent(id)}/renew`, { method: 'POST', body: { field, due } });
+  }
+  deleteVehicle(id: string): Promise<{ ok: boolean }> {
+    return this.req(`/v1/vehicles/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  }
   getZones(): Promise<Zone[]> { return this.req('/v1/dispatch/zones'); }
   suggestDrivers(ref: string): Promise<{ order: string; suggestions: Suggestion[] }> {
     return this.req(`/v1/dispatch/suggest/${encodeURIComponent(ref)}`);
