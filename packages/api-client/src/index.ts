@@ -40,6 +40,8 @@ export interface Invoice {
 }
 export interface BillingMode { merchant: string; mode: 'prepaid' | 'postpaid' }
 export interface QuoteResult { applied: 'grille' | 'remise' | 'fixe_marchand'; base: number; surcharges: number; ht: number; tva: number; ttc: number }
+export interface PriceTier { from: number; to: number | null; base?: number; perKm?: number }
+export interface PriceConfig { tiers: PriceTier[]; fragileSurcharge: number; scheduledSurcharge: number; discountRate: number }
 export interface Reconciliation { driver: string; theorique: number; deliveries: number }
 export interface CashMove { ref: string; recipient: string; amount: number; matched: boolean }
 export interface CashSession {
@@ -153,6 +155,10 @@ export class TranspoClient {
   }
   resolveCashSession(id: string, reason: string, note?: string): Promise<{ id: string; status: string; reason: string }> {
     return this.req(`/v1/cash/sessions/${encodeURIComponent(id)}/resolve`, { method: 'POST', body: { reason, note } });
+  }
+  getPricingConfig(): Promise<PriceConfig> { return this.req('/v1/pricing/config'); }
+  savePricingConfig(cfg: PriceConfig): Promise<{ ok: boolean }> {
+    return this.req('/v1/pricing/config', { method: 'POST', body: cfg });
   }
   getReconciliation(): Promise<Reconciliation[]> { return this.req('/v1/cash/reconciliation'); }
   getPayouts(): Promise<Payout[]> { return this.req('/v1/cash/payouts'); }

@@ -165,9 +165,17 @@ export function requiresConsent(event: string): boolean {
   return !(NOTIF_TEMPLATES[event]?.transactional ?? false);
 }
 
-function gridPrice(distanceKm: number): number {
-  const t = PRICE_TIERS.find((x) => (x.to === null ? distanceKm >= x.from : distanceKm >= x.from && distanceKm < x.to)) ?? PRICE_TIERS[0];
+export interface PriceTier { from: number; to: number | null; base?: number; perKm?: number }
+
+/** Prix grille pour une distance selon une grille de paliers (défaut : PRICE_TIERS). */
+export function gridPriceFor(distanceKm: number, tiers: PriceTier[] = PRICE_TIERS): number {
+  const t = tiers.find((x) => (x.to === null ? distanceKm >= x.from : distanceKm >= x.from && distanceKm < x.to)) ?? tiers[0];
+  if (!t) return 0;
   return t.perKm ? Math.round(t.perKm * distanceKm) : (t.base ?? 0);
+}
+
+function gridPrice(distanceKm: number): number {
+  return gridPriceFor(distanceKm, PRICE_TIERS);
 }
 
 export interface QuoteInput {
@@ -176,6 +184,9 @@ export interface QuoteInput {
   scheduled?: boolean;
   merchantFixedPrice?: number | null; // ① prix négocié marchand
   discountRate?: number;              // ② remise contractuelle (ex. 0.1)
+  tiers?: PriceTier[];                // grille configurée par tenant (défaut : PRICE_TIERS)
+  fragileSurcharge?: number;          // supplément fragile configuré
+  scheduledSurcharge?: number;        // supplément programmé configuré
 }
 export interface Quote {
   applied: 'fixe_marchand' | 'remise' | 'grille';
@@ -188,12 +199,15 @@ export interface Quote {
  * Cf. transpo-domain / PRD-01 Tarification.
  */
 export function quote(input: QuoteInput): Quote {
-  const surcharges = (input.fragile ? FRAGILE_SURCHARGE : 0) + (input.scheduled ? SCHEDULED_SURCHARGE : 0);
+  const fragileS = input.fragileSurcharge ?? FRAGILE_SURCHARGE;
+  const scheduledS = input.scheduledSurcharge ?? SCHEDULED_SURCHARGE;
+  const surcharges = (input.fragile ? fragileS : 0) + (input.scheduled ? scheduledS : 0);
+  const gp = gridPriceFor(input.distanceKm, input.tiers ?? PRICE_TIERS);
   let base: number;
   let applied: Quote['applied'];
   if (input.merchantFixedPrice != null) { base = input.merchantFixedPrice; applied = 'fixe_marchand'; }
-  else if (input.discountRate) { base = Math.round(gridPrice(input.distanceKm) * (1 - input.discountRate) * 100) / 100; applied = 'remise'; }
-  else { base = gridPrice(input.distanceKm); applied = 'grille'; }
+  else if (input.discountRate) { base = Math.round(gp * (1 - input.discountRate) * 100) / 100; applied = 'remise'; }
+  else { base = gp; applied = 'grille'; }
   const ht = Math.round((base + surcharges) * 100) / 100;
   const tva = Math.round(ht * VAT_RATE * 100) / 100;
   const ttc = Math.round((ht + tva) * 100) / 100;

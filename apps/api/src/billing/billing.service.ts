@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { withTenantDb, orders as ordersTable, invoices as invoicesTable, merchantBilling } from '@transpo/db';
-import { quote, cityDistanceKm, type QuoteInput, COMMISSION_RATE, VAT_RATE } from '@transpo/domain';
+import { withTenantDb, orders as ordersTable, invoices as invoicesTable, merchantBilling, pricingConfig } from '@transpo/db';
+import { quote, cityDistanceKm, type QuoteInput, type PriceTier, PRICE_TIERS, FRAGILE_SURCHARGE, SCHEDULED_SURCHARGE, COMMISSION_RATE, VAT_RATE } from '@transpo/domain';
 import { eq, asc } from 'drizzle-orm';
 
 const STATUS_COLOR: Record<string, string> = {
@@ -9,9 +9,57 @@ const STATUS_COLOR: Record<string, string> = {
 
 @Injectable()
 export class BillingService {
-  /** Devis tarifaire (cascade à 3 niveaux + TVA) — logique pure du domaine. */
-  quote(input: QuoteInput) {
-    return quote(input);
+  /** Config tarifaire du tenant (grille + suppléments + remise). Défaut : constantes domaine. */
+  pricingConfig(schema: string) {
+    return withTenantDb(schema, async (db) => {
+      const [row] = await db.select().from(pricingConfig).where(eq(pricingConfig.id, 'default'));
+      const tiers = (row?.tiers as PriceTier[] | undefined);
+      return {
+        tiers: tiers && tiers.length ? tiers : (PRICE_TIERS as PriceTier[]),
+        fragileSurcharge: row?.fragileSurcharge ?? FRAGILE_SURCHARGE,
+        scheduledSurcharge: row?.scheduledSurcharge ?? SCHEDULED_SURCHARGE,
+        discountRate: row?.discountRate ?? 0.1,
+      };
+    });
+  }
+
+  savePricingConfig(schema: string, cfg: { tiers: PriceTier[]; fragileSurcharge: number; scheduledSurcharge: number; discountRate: number }) {
+    return withTenantDb(schema, async (db) => {
+      if (!Array.isArray(cfg?.tiers) || !cfg.tiers.length) throw new BadRequestException('Grille invalide.');
+      const clean = cfg.tiers.map((t) => ({
+        from: Number(t.from) || 0,
+        to: t.to == null ? null : Number(t.to),
+        ...(t.perKm != null ? { perKm: Number(t.perKm) } : { base: Number(t.base) || 0 }),
+      }));
+      await db.insert(pricingConfig).values({
+        id: 'default', tiers: clean,
+        fragileSurcharge: Number(cfg.fragileSurcharge) || 0,
+        scheduledSurcharge: Number(cfg.scheduledSurcharge) || 0,
+        discountRate: Number(cfg.discountRate) || 0,
+        updatedAt: new Date(),
+      }).onConflictDoUpdate({
+        target: pricingConfig.id,
+        set: {
+          tiers: clean,
+          fragileSurcharge: Number(cfg.fragileSurcharge) || 0,
+          scheduledSurcharge: Number(cfg.scheduledSurcharge) || 0,
+          discountRate: Number(cfg.discountRate) || 0,
+          updatedAt: new Date(),
+        },
+      });
+      return { ok: true };
+    });
+  }
+
+  /** Devis tarifaire (cascade à 3 niveaux + TVA), en appliquant la grille configurée du tenant. */
+  async quote(schema: string, input: QuoteInput) {
+    const cfg = await this.pricingConfig(schema);
+    return quote({
+      ...input,
+      tiers: input.tiers ?? cfg.tiers,
+      fragileSurcharge: input.fragileSurcharge ?? cfg.fragileSurcharge,
+      scheduledSurcharge: input.scheduledSurcharge ?? cfg.scheduledSurcharge,
+    });
   }
 
   /** Factures marchand persistées, triées de la plus récente à la plus ancienne. */

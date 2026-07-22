@@ -193,6 +193,16 @@ export const merchantBilling = pgTable('merchant_billing', {
   mode: text('mode').notNull().default('prepaid'),
 });
 
+// Configuration tarifaire par tenant (grille + suppléments + remise), lue par le devis.
+export const pricingConfig = pgTable('pricing_config', {
+  id: text('id').primaryKey().default('default'),
+  tiers: jsonb('tiers').notNull().default([]),
+  fragileSurcharge: integer('fragile_surcharge').notNull().default(15),
+  scheduledSurcharge: integer('scheduled_surcharge').notNull().default(10),
+  discountRate: doublePrecision('discount_rate').notNull().default(0.1),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 // Reversements COD : cash encaissé pour le marchand, à lui reverser.
 export const payouts = pgTable('payouts', {
   id: uuid('id').primaryKey().defaultRandom(),

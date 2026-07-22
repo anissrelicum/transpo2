@@ -309,6 +309,17 @@ async function main() {
           [bm.merchant, bm.mode],
         );
       }
+      await client.query(
+        `INSERT INTO pricing_config (id, tiers, fragile_surcharge, scheduled_surcharge, discount_rate)
+         VALUES ('default', $1::jsonb, 15, 10, 0.1) ON CONFLICT (id) DO NOTHING`,
+        [JSON.stringify([
+          { from: 0, to: 3, base: 22 },
+          { from: 3, to: 7, base: 32 },
+          { from: 7, to: 15, base: 48 },
+          { from: 15, to: 30, base: 75 },
+          { from: 30, to: null, perKm: 3.2 },
+        ])],
+      );
       for (const p of PAYOUTS[t.slug] ?? []) {
         await client.query(
           `INSERT INTO payouts (merchant, period, orders_count, cod_amount, status, method, reference, paid_at)
