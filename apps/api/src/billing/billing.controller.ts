@@ -13,13 +13,31 @@ export class BillingController {
   // Devis tarifaire (accessible à tous les rôles authentifiés du tenant).
   @Post('pricing/quote')
   @HttpCode(200)
-  quote(@Body() body: any) {
-    return this.billing.quote({
+  quote(@Req() req: any, @Body() body: any) {
+    return this.billing.quote(req.tenantSchema, {
       distanceKm: Number(body?.distanceKm) || 0,
       fragile: !!body?.fragile,
       scheduled: !!body?.scheduled,
       merchantFixedPrice: body?.merchantFixedPrice ?? null,
       discountRate: body?.discountRate ?? undefined,
+    });
+  }
+
+  @Get('pricing/config')
+  @Roles('ADMIN', 'COMPTABLE', 'DISPATCHER')
+  pricingConfig(@Req() req: any) {
+    return this.billing.pricingConfig(req.tenantSchema);
+  }
+
+  @Post('pricing/config')
+  @HttpCode(200)
+  @Roles('ADMIN')
+  savePricingConfig(@Req() req: any, @Body() body: any) {
+    return this.billing.savePricingConfig(req.tenantSchema, {
+      tiers: body?.tiers ?? [],
+      fragileSurcharge: Number(body?.fragileSurcharge) || 0,
+      scheduledSurcharge: Number(body?.scheduledSurcharge) || 0,
+      discountRate: Number(body?.discountRate) || 0,
     });
   }
 
