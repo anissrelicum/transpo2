@@ -128,10 +128,12 @@ const POSITIONS: Record<string, Array<{ driver: string; lat: number; lng: number
 };
 
 // Véhicules — l'un a une assurance expirée (règle de conformité, cf. transpo-domain).
-const VEHICLES: Record<string, Array<{ plate: string; type: string; city: string; state: string; ins: string; ct: string }>> = {
+const VEHICLES: Record<string, Array<{ plate: string; type: string; city: string; state: string; ins: string; ct: string; cap?: string; equip?: string[] }>> = {
   casaexpress: [
-    { plate: '1234-A-56', type: 'Fourgon', city: 'Casablanca', state: 'ACTIF', ins: '2026-07-10', ct: '2027-03-01' }, // assurance expirée
-    { plate: '7890-B-12', type: 'Moto', city: 'Rabat', state: 'ACTIF', ins: '2026-11-01', ct: '2026-08-01' },
+    { plate: '1234-A-56', type: 'Fourgon', city: 'Casablanca', state: 'ACTIF', ins: '2026-07-10', ct: '2027-03-01', cap: '1,2 t', equip: ['Hayon', 'Frigo'] }, // assurance expirée
+    { plate: '7890-B-12', type: 'Moto', city: 'Rabat', state: 'ACTIF', ins: '2026-11-01', ct: '2026-08-10', cap: '30 kg', equip: ['Top-case'] }, // CT bientôt
+    { plate: '4567-C-89', type: 'Voiture', city: 'Marrakech', state: 'MAINTENANCE', ins: '2026-08-01', ct: '2027-01-01', cap: '400 kg', equip: [] },
+    { plate: '3210-D-45', type: 'Fourgon frigo', city: 'Tanger', state: 'ACTIF', ins: '2027-05-01', ct: '2026-09-01', cap: '2,0 t', equip: ['Hayon', 'Frigo'] },
   ],
 };
 
@@ -252,9 +254,9 @@ async function main() {
       }
       for (const v of VEHICLES[t.slug] ?? []) {
         await client.query(
-          `INSERT INTO vehicles (plate, type, city, state, insurance_due, ct_due)
-           VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (plate) DO NOTHING`,
-          [v.plate, v.type, v.city, v.state, v.ins, v.ct],
+          `INSERT INTO vehicles (plate, type, city, state, insurance_due, ct_due, capacity, equipment)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (plate) DO NOTHING`,
+          [v.plate, v.type, v.city, v.state, v.ins, v.ct, v.cap ?? null, v.equip ?? []],
         );
       }
       for (const f of FRAUD[t.slug] ?? []) {
