@@ -49,6 +49,11 @@ export interface CashSession {
   reason: string | null; note: string | null; ecart: number | null; moves: CashMove[];
 }
 export interface Payout { merchant: string; brut: number; orders: number; commissionRate: number; net: number }
+export type ReversementStatus = 'EN_ATTENTE' | 'VERSE';
+export interface Reversement {
+  id: string; merchant: string; period: string; orders: number; cod: number;
+  status: ReversementStatus; method: string | null; reference: string | null; paidAt: string | null;
+}
 export interface FleetLive { driver: string; lat: number; lng: number; at: string; zone: string | null; distanceM: number | null; outOfZone: boolean }
 export interface TrackStep { status: string; label: string; done: boolean }
 export interface TrackResult {
@@ -151,6 +156,13 @@ export class TranspoClient {
   }
   getReconciliation(): Promise<Reconciliation[]> { return this.req('/v1/cash/reconciliation'); }
   getPayouts(): Promise<Payout[]> { return this.req('/v1/cash/payouts'); }
+  getReversements(): Promise<Reversement[]> { return this.req('/v1/cash/reversements'); }
+  generateReversements(period?: string): Promise<{ created: number; merchants: string[] }> {
+    return this.req('/v1/cash/reversements/generate', { method: 'POST', body: { period } });
+  }
+  payReversement(id: string, method: string, reference?: string): Promise<{ id: string; status: string; method: string; reference: string }> {
+    return this.req(`/v1/cash/reversements/${encodeURIComponent(id)}/pay`, { method: 'POST', body: { method, reference } });
+  }
   getInvoices(): Promise<Invoice[]> { return this.req('/v1/invoices'); }
   getBillingModes(): Promise<BillingMode[]> { return this.req('/v1/invoices/billing-modes'); }
   setBillingMode(merchant: string, mode: string): Promise<BillingMode> {

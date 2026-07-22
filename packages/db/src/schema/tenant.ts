@@ -193,3 +193,17 @@ export const merchantBilling = pgTable('merchant_billing', {
   mode: text('mode').notNull().default('prepaid'),
 });
 
+// Reversements COD : cash encaissé pour le marchand, à lui reverser.
+export const payouts = pgTable('payouts', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  merchant: text('merchant').notNull(),
+  period: text('period').notNull(),
+  ordersCount: integer('orders_count').notNull().default(0),
+  codAmount: integer('cod_amount').notNull().default(0),
+  status: text('status').notNull().default('EN_ATTENTE'),
+  method: text('method'),
+  reference: text('reference'),
+  paidAt: timestamp('paid_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+

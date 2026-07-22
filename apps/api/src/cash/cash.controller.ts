@@ -37,6 +37,26 @@ export class CashController {
     return this.cash.resolve(req.tenantSchema, id, body?.reason, body?.note);
   }
 
+  @Get('reversements')
+  @Roles('ADMIN', 'COMPTABLE')
+  reversements(@Req() req: any) {
+    return this.cash.reversements(req.tenantSchema);
+  }
+
+  @Post('reversements/generate')
+  @HttpCode(200)
+  @Roles('ADMIN', 'COMPTABLE')
+  generateReversements(@Req() req: any, @Body() body: { period?: string }) {
+    return this.cash.generateReversements(req.tenantSchema, body?.period || '2026-07');
+  }
+
+  @Post('reversements/:id/pay')
+  @HttpCode(200)
+  @Roles('ADMIN', 'COMPTABLE')
+  payReversement(@Req() req: any, @Param('id') id: string, @Body() body: { method?: string; reference?: string }) {
+    return this.cash.payReversement(req.tenantSchema, id, body?.method || 'virement', body?.reference);
+  }
+
   @Get('reconciliation')
   @Roles('ADMIN', 'COMPTABLE')
   reconciliation(@Req() req: any) {
