@@ -199,6 +199,20 @@ const BILLING_MODES: Record<string, Array<{ merchant: string; mode: string }>> =
   ],
 };
 
+// Reversements COD par marchand (cash encaissé à reverser). Un déjà versé.
+type PayoutSeed = { merchant: string; period: string; orders: number; cod: number; status: string; method?: string; reference?: string };
+const PAYOUTS: Record<string, PayoutSeed[]> = {
+  casaexpress: [
+    { merchant: 'Boutique Zellige', period: '2026-07', orders: 128, cod: 42300, status: 'EN_ATTENTE' },
+    { merchant: 'Atlas Cosmetics', period: '2026-07', orders: 76, cod: 18600, status: 'VERSE', method: 'virement', reference: 'REV-2026-07-ATL' },
+    { merchant: 'Riad Déco', period: '2026-07', orders: 54, cod: 9400, status: 'EN_ATTENTE' },
+    { merchant: 'Souss Électro', period: '2026-07', orders: 41, cod: 31200, status: 'EN_ATTENTE' },
+  ],
+  e2e: [
+    { merchant: 'Marchand E2E', period: '2026-07', orders: 12, cod: 3000, status: 'EN_ATTENTE' },
+  ],
+};
+
 async function main() {
   const client = await pool.connect();
   try {
@@ -293,6 +307,13 @@ async function main() {
         await client.query(
           `INSERT INTO merchant_billing (merchant, mode) VALUES ($1,$2) ON CONFLICT (merchant) DO NOTHING`,
           [bm.merchant, bm.mode],
+        );
+      }
+      for (const p of PAYOUTS[t.slug] ?? []) {
+        await client.query(
+          `INSERT INTO payouts (merchant, period, orders_count, cod_amount, status, method, reference, paid_at)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (merchant, period) DO NOTHING`,
+          [p.merchant, p.period, p.orders, p.cod, p.status, p.method ?? null, p.reference ?? null, p.status === 'VERSE' ? new Date() : null],
         );
       }
       for (const cs of CASH[t.slug] ?? []) {

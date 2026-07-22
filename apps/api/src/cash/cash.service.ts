@@ -1,10 +1,66 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { withTenantDb, orders as ordersTable, cashSessions, cashMovements } from '@transpo/db';
+import { withTenantDb, orders as ordersTable, cashSessions, cashMovements, payouts as payoutsTable } from '@transpo/db';
 import { merchantPayoutNet, COMMISSION_RATE } from '@transpo/domain';
 import { eq, asc } from 'drizzle-orm';
 
 @Injectable()
 export class CashService {
+  /** Reversements COD par marchand (cash encaissé à reverser). */
+  reversements(schema: string) {
+    return withTenantDb(schema, async (db) => {
+      const rows = await db.select().from(payoutsTable).orderBy(asc(payoutsTable.merchant));
+      return rows.map((p) => ({
+        id: p.id,
+        merchant: p.merchant,
+        period: p.period,
+        orders: p.ordersCount,
+        cod: p.codAmount,
+        status: p.status,
+        method: p.method,
+        reference: p.reference,
+        paidAt: p.paidAt ? p.paidAt.toISOString() : null,
+      }));
+    });
+  }
+
+  /** Marque un reversement comme versé (méthode + référence de paiement). */
+  payReversement(schema: string, id: string, method: string, reference?: string) {
+    return withTenantDb(schema, async (db) => {
+      const [cur] = await db.select().from(payoutsTable).where(eq(payoutsTable.id, id));
+      if (!cur) throw new NotFoundException('Reversement introuvable.');
+      if (cur.status === 'VERSE') throw new BadRequestException('Reversement déjà versé.');
+      const m = method || 'virement';
+      const ref = reference || `REV-${cur.period}-${cur.merchant.slice(0, 3).toUpperCase()}`;
+      const [r] = await db.update(payoutsTable)
+        .set({ status: 'VERSE', method: m, reference: ref, paidAt: new Date() })
+        .where(eq(payoutsTable.id, id)).returning();
+      return { id: r.id, status: r.status, method: r.method, reference: r.reference };
+    });
+  }
+
+  /** Génère des reversements EN_ATTENTE pour les COD encaissés non encore reversés. */
+  generateReversements(schema: string, period: string) {
+    return withTenantDb(schema, async (db) => {
+      const existing = await db.select().from(payoutsTable);
+      const already = new Set(existing.filter((p) => p.period === period).map((p) => p.merchant));
+      const rows = await db.select().from(ordersTable);
+      const agg = new Map<string, { cod: number; orders: number }>();
+      for (const o of rows) {
+        if (!o.merchant || !o.codPaid || already.has(o.merchant)) continue;
+        const e = agg.get(o.merchant) ?? { cod: 0, orders: 0 };
+        e.cod += o.cod; e.orders += 1;
+        agg.set(o.merchant, e);
+      }
+      const created: string[] = [];
+      for (const [merchant, e] of agg) {
+        await db.insert(payoutsTable).values({
+          merchant, period, ordersCount: e.orders, codAmount: e.cod, status: 'EN_ATTENTE',
+        });
+        created.push(merchant);
+      }
+      return { created: created.length, merchants: created };
+    });
+  }
   /** Sessions de caisse (réconciliation COD) avec leurs mouvements. */
   sessions(schema: string) {
     return withTenantDb(schema, async (db) => {
