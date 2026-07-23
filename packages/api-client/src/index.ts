@@ -36,6 +36,10 @@ export interface Zone { id: string; nameFr: string; nameAr: string | null; color
 export interface Suggestion { driver: string; city: string; vehicle: string; score: number; parts: { zone: number; dispo: number; charge: number } }
 export interface ReturnRow { ref: string; reason: string; attempts: number; status: string; createdAt: string }
 export interface NotificationRow { id: string; event: string; channel: string; recipient: string; lang: string; body: string; status: string; reason: string | null; createdAt: string }
+export type ConsoleRole = 'ADMIN' | 'DISPATCHER' | 'COMPTABLE';
+export interface ConsoleUser { id: string; email: string; name: string; role: ConsoleRole; active: boolean; createdAt: string }
+export interface InviteUserResult extends ConsoleUser { tempPassword: string }
+export interface ResetPasswordResult { id: string; tempPassword: string }
 export type InvoiceStatus = 'BROUILLON' | 'ENVOYEE' | 'PAYEE' | 'LITIGE';
 export interface Invoice {
   id: string; ref: string; merchant: string; period: string; orders: number;
@@ -210,6 +214,21 @@ export class TranspoClient {
   getReturns(): Promise<ReturnRow[]> { return this.req('/v1/returns'); }
   getHub(): Promise<Order[]> { return this.req('/v1/hub'); }
   getNotifications(): Promise<NotificationRow[]> { return this.req('/v1/notifications'); }
+
+  // --- Utilisateurs & rôles ---
+  getUsers(): Promise<ConsoleUser[]> { return this.req('/v1/users'); }
+  inviteUser(input: { email: string; name: string; role: ConsoleRole }): Promise<InviteUserResult> {
+    return this.req('/v1/users', { method: 'POST', body: input });
+  }
+  setUserRole(id: string, role: ConsoleRole): Promise<ConsoleUser> {
+    return this.req(`/v1/users/${encodeURIComponent(id)}/role`, { method: 'PATCH', body: { role } });
+  }
+  setUserActive(id: string, active: boolean): Promise<ConsoleUser> {
+    return this.req(`/v1/users/${encodeURIComponent(id)}/active`, { method: 'PATCH', body: { active } });
+  }
+  resetUserPassword(id: string): Promise<ResetPasswordResult> {
+    return this.req(`/v1/users/${encodeURIComponent(id)}/reset-password`, { method: 'POST' });
+  }
 
   // --- Suivi public client (sans authentification ; tenant dans l'URL) ---
   publicTrack(slug: string, code: string): Promise<TrackResult> {

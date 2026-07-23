@@ -57,6 +57,18 @@ export const vehicles = pgTable('vehicles', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const users = pgTable('users', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  email: text('email').notNull().unique(),
+  passwordHash: text('password_hash').notNull(),
+  name: text('name').notNull(),
+  role: text('role').notNull(),
+  active: boolean('active').notNull().default(true),
+  merchant: text('merchant'),
+  driver: text('driver'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const returns = pgTable('returns', {
   ref: text('ref').primaryKey(),
   reason: text('reason').notNull(),
