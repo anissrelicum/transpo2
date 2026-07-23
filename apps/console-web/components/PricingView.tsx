@@ -25,6 +25,7 @@ export function PricingView({ config }: { config: PriceConfig }) {
   const [fragile, setFragile] = React.useState(config.fragileSurcharge);
   const [scheduled, setScheduled] = React.useState(config.scheduledSurcharge);
   const [discountRate, setDiscountRate] = React.useState(config.discountRate);
+  const [vatRate, setVatRate] = React.useState(config.vatRate);
   const [busy, setBusy] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
 
@@ -43,7 +44,7 @@ export function PricingView({ config }: { config: PriceConfig }) {
       ? { rank: 2, label: `Grille remisée −${Math.round(discountRate * 100)} %`, value: afterDiscount }
       : { rank: 3, label: 'Grille standard', value: grid };
   const ht = round2(applied.value);
-  const tva = round2(ht * 0.2);
+  const tva = round2(ht * vatRate);
   const ttc = round2(ht + tva);
 
   const setTierField = (i: number, field: keyof PriceTier, val: string) =>
@@ -64,7 +65,10 @@ export function PricingView({ config }: { config: PriceConfig }) {
     setBusy(true);
     const res = await fetch('/api/proxy/v1/pricing/config', {
       method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ tiers, fragileSurcharge: fragile, scheduledSurcharge: scheduled, discountRate }),
+      body: JSON.stringify({
+        tiers, fragileSurcharge: fragile, scheduledSurcharge: scheduled, discountRate,
+        commissionRate: config.commissionRate, vatRate,
+      }),
     });
     setBusy(false);
     if (res.ok) { setSaved(true); router.refresh(); setTimeout(() => setSaved(false), 2500); }
@@ -94,7 +98,7 @@ export function PricingView({ config }: { config: PriceConfig }) {
       <Callout.Root color="indigo" variant="surface" mb="4">
         <Callout.Icon><InfoCircledIcon /></Callout.Icon>
         <Callout.Text>
-          Cascade tarifaire à priorité stricte : <strong>① prix fixe marchand</strong> → <strong>② grille remisée</strong> → <strong>③ grille standard</strong>. Le premier niveau applicable l’emporte ; suppléments et TVA 20 % ajoutés ensuite.
+          Cascade tarifaire à priorité stricte : <strong>① prix fixe marchand</strong> → <strong>② grille remisée</strong> → <strong>③ grille standard</strong>. Le premier niveau applicable l’emporte ; suppléments et TVA ({Math.round(vatRate * 100)} %) ajoutés ensuite.
         </Callout.Text>
       </Callout.Root>
 
@@ -147,7 +151,7 @@ export function PricingView({ config }: { config: PriceConfig }) {
             </Table.Root>
 
             <Separator size="4" my="3" />
-            <Grid columns="3" gap="3">
+            <Grid columns="4" gap="3">
               <Box>
                 <Text as="div" size="1" color="gray" mb="1">Supplément fragile</Text>
                 <TextField.Root size="2" type="number" value={String(fragile)} onChange={(e) => setFragile(Number(e.target.value) || 0)}>
@@ -163,6 +167,12 @@ export function PricingView({ config }: { config: PriceConfig }) {
               <Box>
                 <Text as="div" size="1" color="gray" mb="1">Remise standard</Text>
                 <TextField.Root size="2" type="number" value={String(Math.round(discountRate * 100))} onChange={(e) => setDiscountRate((Number(e.target.value) || 0) / 100)}>
+                  <TextField.Slot side="right"><Text size="1" color="gray">%</Text></TextField.Slot>
+                </TextField.Root>
+              </Box>
+              <Box>
+                <Text as="div" size="1" color="gray" mb="1">TVA</Text>
+                <TextField.Root size="2" type="number" value={String(Math.round(vatRate * 100))} onChange={(e) => setVatRate((Number(e.target.value) || 0) / 100)}>
                   <TextField.Slot side="right"><Text size="1" color="gray">%</Text></TextField.Slot>
                 </TextField.Root>
               </Box>
@@ -194,7 +204,7 @@ export function PricingView({ config }: { config: PriceConfig }) {
             <Separator size="4" my="3" />
             <Flex direction="column" gap="1">
               <Flex justify="between"><Text size="2" color="gray">Base ({applied.label})</Text><Text size="2">{money(applied.value)}</Text></Flex>
-              <Flex justify="between"><Text size="2" color="gray">TVA 20 %</Text><Text size="2" color="gray">{money(tva)}</Text></Flex>
+              <Flex justify="between"><Text size="2" color="gray">TVA {Math.round(vatRate * 100)} %</Text><Text size="2" color="gray">{money(tva)}</Text></Flex>
             </Flex>
             <Separator size="4" my="3" />
             <Flex justify="between" align="center">

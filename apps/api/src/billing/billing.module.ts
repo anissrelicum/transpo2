@@ -8,5 +8,6 @@ import { RolesGuard } from '../auth/roles.guard.js';
 @Module({
   controllers: [BillingController],
   providers: [BillingService, JwtAuthGuard, TenantGuard, RolesGuard],
+  exports: [BillingService],
 })
 export class BillingModule {}

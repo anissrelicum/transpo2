@@ -38,6 +38,8 @@ export class BillingController {
       fragileSurcharge: Number(body?.fragileSurcharge) || 0,
       scheduledSurcharge: Number(body?.scheduledSurcharge) || 0,
       discountRate: Number(body?.discountRate) || 0,
+      commissionRate: Number(body?.commissionRate) || 0,
+      vatRate: Number(body?.vatRate) || 0,
     });
   }
 

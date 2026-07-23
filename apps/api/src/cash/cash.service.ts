@@ -1,10 +1,13 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
 import { withTenantDb, orders as ordersTable, cashSessions, cashMovements, payouts as payoutsTable } from '@transpo/db';
-import { merchantPayoutNet, COMMISSION_RATE } from '@transpo/domain';
+import { merchantPayoutNet } from '@transpo/domain';
 import { eq, asc } from 'drizzle-orm';
+import { BillingService } from '../billing/billing.service.js';
 
 @Injectable()
 export class CashService {
+  constructor(@Inject(BillingService) private readonly billing: BillingService) {}
+
   /** Reversements COD par marchand (cash encaissé à reverser). */
   reversements(schema: string) {
     return withTenantDb(schema, async (db) => {
@@ -145,7 +148,8 @@ export class CashService {
   }
 
   /** Aperçu de reversement marchand : brut (COD encaissés) − commission = net. */
-  merchantPayouts(schema: string) {
+  async merchantPayouts(schema: string) {
+    const { commissionRate } = await this.billing.pricingConfig(schema);
     return withTenantDb(schema, async (db) => {
       const rows = await db.select().from(ordersTable);
       const byMerchant = new Map<string, { merchant: string; brut: number; orders: number }>();
@@ -157,8 +161,8 @@ export class CashService {
       }
       return [...byMerchant.values()].map((m) => ({
         ...m,
-        commissionRate: COMMISSION_RATE,
-        net: merchantPayoutNet(m.brut),
+        commissionRate,
+        net: merchantPayoutNet(m.brut, commissionRate),
       }));
     });
   }

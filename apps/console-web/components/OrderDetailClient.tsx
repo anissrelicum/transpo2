@@ -10,7 +10,7 @@ import {
   SewingPinFilledIcon, CubeIcon, DownloadIcon, InfoCircledIcon, ImageIcon, DotFilledIcon,
 } from '@radix-ui/react-icons';
 import { StatusBadge, CodChip, money } from '@transpo/ui-web';
-import { LIFECYCLE, STATUS_META, COMMISSION_RATE, VAT_RATE } from '@transpo/domain';
+import { LIFECYCLE, STATUS_META } from '@transpo/domain';
 import type { Order, OrderStatus } from '@transpo/domain';
 import { OrderActions } from './OrderActions';
 
@@ -25,16 +25,16 @@ function InfoBlock({ icon, title, lines }: { icon: React.ReactNode; title: strin
   );
 }
 
-export function OrderDetailClient({ order, drivers, canWrite }: { order: Order; drivers: string[]; canWrite: boolean }) {
+export function OrderDetailClient({ order, drivers, canWrite, commissionRate, vatRate }: { order: Order; drivers: string[]; canWrite: boolean; commissionRate: number; vatRate: number }) {
   const [copied, setCopied] = React.useState(false);
   const idx = LIFECYCLE.indexOf(order.status as OrderStatus);
   const copy = () => { navigator.clipboard?.writeText(order.code); setCopied(true); setTimeout(() => setCopied(false), 1500); };
 
-  // Facturation dérivée du COD (commission 15 % + TVA 20 %), cohérente avec le backend.
+  // Facturation dérivée du COD, aux taux commission/TVA configurés par le tenant (Paramètres).
   const codCollected = order.codPaid ? order.cod : 0;
-  const commission = r2(codCollected * COMMISSION_RATE);
+  const commission = r2(codCollected * commissionRate);
   const netHt = r2(codCollected - commission);
-  const tva = r2(netHt * VAT_RATE);
+  const tva = r2(netHt * vatRate);
   const ttc = r2(netHt + tva);
 
   return (
@@ -137,10 +137,10 @@ export function OrderDetailClient({ order, drivers, canWrite }: { order: Order; 
                 <Tabs.Content value="billing">
                   <Flex direction="column" gap="2">
                     <Flex justify="between"><Text size="2" color="gray">COD encaissé</Text><Text size="2" weight="medium">{money(codCollected)}</Text></Flex>
-                    <Flex justify="between"><Text size="2" color="gray">Commission ({Math.round(COMMISSION_RATE * 100)} %)</Text><Text size="2" weight="medium">−{money(commission)}</Text></Flex>
+                    <Flex justify="between"><Text size="2" color="gray">Commission ({Math.round(commissionRate * 100)} %)</Text><Text size="2" weight="medium">−{money(commission)}</Text></Flex>
                     <Separator size="4" />
                     <Flex justify="between"><Text size="2" weight="medium">Net à reverser HT</Text><Text size="2" weight="medium">{money(netHt)}</Text></Flex>
-                    <Flex justify="between"><Text size="2" color="gray">TVA {Math.round(VAT_RATE * 100)} %</Text><Text size="2" weight="medium">{money(tva)}</Text></Flex>
+                    <Flex justify="between"><Text size="2" color="gray">TVA {Math.round(vatRate * 100)} %</Text><Text size="2" weight="medium">{money(tva)}</Text></Flex>
                     <Separator size="4" />
                     <Flex justify="between" align="center"><Text size="3" weight="bold">Total TTC</Text><Heading size="5">{money(ttc)}</Heading></Flex>
                     {codCollected === 0 && <Callout.Root color="gray" variant="surface" size="1" mt="2"><Callout.Icon><InfoCircledIcon /></Callout.Icon><Callout.Text>Aucun COD encaissé pour cette commande.</Callout.Text></Callout.Root>}

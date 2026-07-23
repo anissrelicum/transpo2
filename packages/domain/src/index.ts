@@ -187,6 +187,7 @@ export interface QuoteInput {
   tiers?: PriceTier[];                // grille configurée par tenant (défaut : PRICE_TIERS)
   fragileSurcharge?: number;          // supplément fragile configuré
   scheduledSurcharge?: number;        // supplément programmé configuré
+  vatRate?: number;                   // TVA configurée par tenant (défaut : VAT_RATE)
 }
 export interface Quote {
   applied: 'fixe_marchand' | 'remise' | 'grille';
@@ -209,7 +210,7 @@ export function quote(input: QuoteInput): Quote {
   else if (input.discountRate) { base = Math.round(gp * (1 - input.discountRate) * 100) / 100; applied = 'remise'; }
   else { base = gp; applied = 'grille'; }
   const ht = Math.round((base + surcharges) * 100) / 100;
-  const tva = Math.round(ht * VAT_RATE * 100) / 100;
+  const tva = Math.round(ht * (input.vatRate ?? VAT_RATE) * 100) / 100;
   const ttc = Math.round((ht + tva) * 100) / 100;
   return { applied, base, surcharges, ht, tva, ttc };
 }
