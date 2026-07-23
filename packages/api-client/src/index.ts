@@ -49,7 +49,8 @@ export interface Invoice {
 export interface BillingMode { merchant: string; mode: 'prepaid' | 'postpaid' }
 export interface QuoteResult { applied: 'grille' | 'remise' | 'fixe_marchand'; base: number; surcharges: number; ht: number; tva: number; ttc: number }
 export interface PriceTier { from: number; to: number | null; base?: number; perKm?: number }
-export interface PriceConfig { tiers: PriceTier[]; fragileSurcharge: number; scheduledSurcharge: number; discountRate: number }
+export interface PriceConfig { tiers: PriceTier[]; fragileSurcharge: number; scheduledSurcharge: number; discountRate: number; commissionRate: number; vatRate: number }
+export interface CompanySettings { legalName: string | null; ice: string | null; rc: string | null; address: string | null; currency: string; timezone: string; defaultLang: 'fr' | 'ar' }
 export interface Reconciliation { driver: string; theorique: number; deliveries: number }
 export interface CashMove { ref: string; recipient: string; amount: number; matched: boolean }
 export interface CashSession {
@@ -228,6 +229,12 @@ export class TranspoClient {
   }
   resetUserPassword(id: string): Promise<ResetPasswordResult> {
     return this.req(`/v1/users/${encodeURIComponent(id)}/reset-password`, { method: 'POST' });
+  }
+
+  // --- Paramètres tenant ---
+  getCompanySettings(): Promise<CompanySettings> { return this.req('/v1/settings/company'); }
+  saveCompanySettings(input: CompanySettings): Promise<{ ok: boolean }> {
+    return this.req('/v1/settings/company', { method: 'POST', body: input });
   }
 
   // --- Suivi public client (sans authentification ; tenant dans l'URL) ---

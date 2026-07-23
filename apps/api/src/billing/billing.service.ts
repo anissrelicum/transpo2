@@ -9,7 +9,7 @@ const STATUS_COLOR: Record<string, string> = {
 
 @Injectable()
 export class BillingService {
-  /** Config tarifaire du tenant (grille + suppléments + remise). Défaut : constantes domaine. */
+  /** Config tarifaire du tenant (grille + suppléments + remise + commission + TVA). Défaut : constantes domaine. */
   pricingConfig(schema: string) {
     return withTenantDb(schema, async (db) => {
       const [row] = await db.select().from(pricingConfig).where(eq(pricingConfig.id, 'default'));
@@ -19,11 +19,13 @@ export class BillingService {
         fragileSurcharge: row?.fragileSurcharge ?? FRAGILE_SURCHARGE,
         scheduledSurcharge: row?.scheduledSurcharge ?? SCHEDULED_SURCHARGE,
         discountRate: row?.discountRate ?? 0.1,
+        commissionRate: row?.commissionRate ?? COMMISSION_RATE,
+        vatRate: row?.vatRate ?? VAT_RATE,
       };
     });
   }
 
-  savePricingConfig(schema: string, cfg: { tiers: PriceTier[]; fragileSurcharge: number; scheduledSurcharge: number; discountRate: number }) {
+  savePricingConfig(schema: string, cfg: { tiers: PriceTier[]; fragileSurcharge: number; scheduledSurcharge: number; discountRate: number; commissionRate: number; vatRate: number }) {
     return withTenantDb(schema, async (db) => {
       if (!Array.isArray(cfg?.tiers) || !cfg.tiers.length) throw new BadRequestException('Grille invalide.');
       const clean = cfg.tiers.map((t) => ({
@@ -31,22 +33,17 @@ export class BillingService {
         to: t.to == null ? null : Number(t.to),
         ...(t.perKm != null ? { perKm: Number(t.perKm) } : { base: Number(t.base) || 0 }),
       }));
-      await db.insert(pricingConfig).values({
-        id: 'default', tiers: clean,
+      const values = {
+        tiers: clean,
         fragileSurcharge: Number(cfg.fragileSurcharge) || 0,
         scheduledSurcharge: Number(cfg.scheduledSurcharge) || 0,
         discountRate: Number(cfg.discountRate) || 0,
+        commissionRate: Math.min(Math.max(Number(cfg.commissionRate) || 0, 0), 1),
+        vatRate: Math.min(Math.max(Number(cfg.vatRate) || 0, 0), 1),
         updatedAt: new Date(),
-      }).onConflictDoUpdate({
-        target: pricingConfig.id,
-        set: {
-          tiers: clean,
-          fragileSurcharge: Number(cfg.fragileSurcharge) || 0,
-          scheduledSurcharge: Number(cfg.scheduledSurcharge) || 0,
-          discountRate: Number(cfg.discountRate) || 0,
-          updatedAt: new Date(),
-        },
-      });
+      };
+      await db.insert(pricingConfig).values({ id: 'default', ...values })
+        .onConflictDoUpdate({ target: pricingConfig.id, set: values });
       return { ok: true };
     });
   }
@@ -59,6 +56,7 @@ export class BillingService {
       tiers: input.tiers ?? cfg.tiers,
       fragileSurcharge: input.fragileSurcharge ?? cfg.fragileSurcharge,
       scheduledSurcharge: input.scheduledSurcharge ?? cfg.scheduledSurcharge,
+      vatRate: input.vatRate ?? cfg.vatRate,
     });
   }
 
@@ -109,7 +107,8 @@ export class BillingService {
    * Génère des factures BROUILLON pour les marchands ayant des livraisons non encore facturées
    * sur la période courante. Montant livraisons dérivé du barème (quote) par commande livrée.
    */
-  generate(schema: string, period: string) {
+  async generate(schema: string, period: string) {
+    const cfg = await this.pricingConfig(schema);
     return withTenantDb(schema, async (db) => {
       const existing = await db.select().from(invoicesTable);
       const already = new Set(existing.filter((i) => i.period === period).map((i) => i.merchant));
@@ -129,9 +128,9 @@ export class BillingService {
       let seq = existing.length + 1;
       for (const [merchant, e] of agg) {
         const deliveries = Math.round(e.deliveries);
-        const commission = Math.round(deliveries * COMMISSION_RATE);
+        const commission = Math.round(deliveries * cfg.commissionRate);
         const netHt = deliveries - commission;
-        const tva = Math.round(netHt * VAT_RATE);
+        const tva = Math.round(netHt * cfg.vatRate);
         const ref = `FCT-${yr}-${mo}-${String(seq++).padStart(4, '0')}`;
         await db.insert(invoicesTable).values({
           ref, merchant, period, ordersCount: e.orders, deliveriesAmount: deliveries,

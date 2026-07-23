@@ -214,6 +214,20 @@ export const pricingConfig = pgTable('pricing_config', {
   fragileSurcharge: integer('fragile_surcharge').notNull().default(15),
   scheduledSurcharge: integer('scheduled_surcharge').notNull().default(10),
   discountRate: doublePrecision('discount_rate').notNull().default(0.1),
+  commissionRate: doublePrecision('commission_rate').notNull().default(0.15),
+  vatRate: doublePrecision('vat_rate').notNull().default(0.20),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const companySettings = pgTable('company_settings', {
+  id: text('id').primaryKey().default('default'),
+  legalName: text('legal_name'),
+  ice: text('ice'),
+  rc: text('rc'),
+  address: text('address'),
+  currency: text('currency').notNull().default('MAD'),
+  timezone: text('timezone').notNull().default('Africa/Casablanca'),
+  defaultLang: text('default_lang').notNull().default('fr'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

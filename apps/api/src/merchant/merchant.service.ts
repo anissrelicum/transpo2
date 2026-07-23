@@ -1,7 +1,8 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import { Injectable, ForbiddenException, Inject } from '@nestjs/common';
 import { withTenantDb, orders as ordersTable } from '@transpo/db';
 import { desc, eq } from 'drizzle-orm';
-import { COMMISSION_RATE, VAT_RATE, type Order } from '@transpo/domain';
+import type { Order } from '@transpo/domain';
+import { BillingService } from '../billing/billing.service.js';
 
 function rowToOrder(r: any): Order {
   return { ...r, createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt } as Order;
@@ -14,6 +15,8 @@ const round2 = (n: number) => Math.round(n * 100) / 100;
  */
 @Injectable()
 export class MerchantService {
+  constructor(@Inject(BillingService) private readonly billing: BillingService) {}
+
   private ensure(merchant?: string): string {
     if (!merchant) throw new ForbiddenException('Compte marchand non rattaché à un marchand.');
     return merchant;
@@ -45,21 +48,23 @@ export class MerchantService {
   /** Portefeuille : COD encaissé net de commission (ce que la plateforme doit reverser). */
   async wallet(schema: string, merchant?: string) {
     const rows = await this.orders(schema, merchant);
+    const { commissionRate } = await this.billing.pricingConfig(schema);
     const codCollected = rows.filter((o) => o.codPaid).reduce((s, o) => s + o.cod, 0);
-    const commission = round2(codCollected * COMMISSION_RATE);
+    const commission = round2(codCollected * commissionRate);
     const net = round2(codCollected - commission);
-    return { codCollected, commissionRate: COMMISSION_RATE, commission, net };
+    return { codCollected, commissionRate, commission, net };
   }
 
-  /** Facture marchand dérivée des livraisons (commission 15 % + TVA 20 %). */
+  /** Facture marchand dérivée des livraisons (commission + TVA configurées par le tenant). */
   async invoice(schema: string, merchant?: string) {
     const m = this.ensure(merchant);
     const rows = (await this.orders(schema, merchant)).filter((o) => o.status === 'LIVREE');
+    const { commissionRate, vatRate } = await this.billing.pricingConfig(schema);
     const deliveries = rows.length;
     const codCollected = rows.filter((o) => o.codPaid).reduce((s, o) => s + o.cod, 0);
-    const commission = round2(codCollected * COMMISSION_RATE);
+    const commission = round2(codCollected * commissionRate);
     const netHt = round2(codCollected - commission);
-    const tva = round2(netHt * VAT_RATE);
+    const tva = round2(netHt * vatRate);
     return { merchant: m, deliveries, codCollected, commission, netHt, tva, ttc: round2(netHt + tva) };
   }
 }
