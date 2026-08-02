@@ -61,6 +61,27 @@ const ORDERS: Record<string, OrderRow[]> = {
   ],
 };
 
+// Livraisons clôturées et notées : alimentent les avis clients, le taux de
+// réussite par chauffeur et les moyennes par marchand.
+type RatedRow = [string, string, string, string, string, string, number, string, number, string | null];
+
+const DELIVERED: Record<string, RatedRow[]> = {
+  casaexpress: [
+    ['CMD-20260710-401', 'D1A2B3C4', 'Boutique Zellige', 'Casablanca', 'Casablanca', 'Youssef Benali', 750, 'Moyen', 5, 'Livreur ponctuel et très aimable.'],
+    ['CMD-20260710-402', 'D2E3F4G5', 'Atlas Cosmetics', 'Casablanca', 'Rabat', 'Youssef Benali', 0, 'Petit', 4, null],
+    ['CMD-20260710-403', 'D3H4I5J6', 'Souss Électro', 'Casablanca', 'Mohammedia', 'Salma Idrissi', 1100, 'Grand', 5, 'Colis en parfait état, rien à dire.'],
+    ['CMD-20260709-404', 'D4K5L6M7', 'Riad Déco', 'Casablanca', 'Marrakech', 'Salma Idrissi', 2400, 'Très grand', 3, 'Livré avec deux heures de retard.'],
+    ['CMD-20260709-405', 'D5N6O7P8', 'Boutique Zellige', 'Casablanca', 'Kénitra', 'Nadia Chraibi', 380, 'Petit', 2, 'Créneau non respecté, aucun appel préalable.'],
+    ['CMD-20260709-406', 'D6Q7R8S9', 'Atlas Cosmetics', 'Casablanca', 'Casablanca', 'Nadia Chraibi', 0, 'Moyen', 1, 'Emballage abîmé à la remise.'],
+    ['CMD-20260708-407', 'D7T8U9V1', 'Souss Électro', 'Casablanca', 'Tanger', 'Omar Fassi', 1750, 'Grand', 4, 'Bon service dans l’ensemble.'],
+    ['CMD-20260708-408', 'D8W1X2Y3', 'Riad Déco', 'Casablanca', 'Casablanca', 'Omar Fassi', 520, 'Moyen', 5, null],
+  ],
+  atlas: [
+    ['CMD-20260710-901', 'E1A2B3C4', 'Riad Déco', 'Marrakech', 'Marrakech', 'Karim El Amrani', 600, 'Moyen', 4, 'Correct, livreur courtois.'],
+    ['CMD-20260709-902', 'E2D3E4F5', 'Riad Déco', 'Marrakech', 'Agadir', 'Karim El Amrani', 1200, 'Grand', 2, 'Deux jours de retard sans explication.'],
+  ],
+};
+
 type SeedDriver = {
   name: string; city: string; vehicle: string; available: boolean;
   phone: string; licenseNo: string; licenseDue: string; medicalDue: string;
@@ -233,6 +254,14 @@ async function main() {
            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
            ON CONFLICT (ref) DO NOTHING`,
           o,
+        );
+      }
+      for (const d of DELIVERED[t.slug] ?? []) {
+        await client.query(
+          `INSERT INTO orders (ref, code, status, merchant, from_city, to_city, driver, cod, cod_paid, size, rating, rating_comment)
+           VALUES ($1,$2,'LIVREE',$3,$4,$5,$6,$7,true,$8,$9,$10)
+           ON CONFLICT (ref) DO NOTHING`,
+          d,
         );
       }
       for (const u of USERS[t.slug] ?? []) {
