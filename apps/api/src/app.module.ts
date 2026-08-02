@@ -22,6 +22,7 @@ import { FieldModule } from './field/field.module.js';
 import { UsersModule } from './users/users.module.js';
 import { SettingsModule } from './settings/settings.module.js';
 import { DriversModule } from './drivers/drivers.module.js';
+import { ReviewsModule } from './reviews/reviews.module.js';
 import { HealthController } from './health.controller.js';
 
 // Scoping par tenant via TenantGuard ; auth JWT + RBAC via guards (transpo-auth-security).
@@ -31,7 +32,7 @@ import { HealthController } from './health.controller.js';
     CashModule, BillingModule, ReturnsModule, AnalyticsModule, FraudModule, MerchantModule,
     PublicModule, TourneesModule, NotificationsModule, PrivacyModule, DriverModule,
     TrackingModule, FieldModule, GeoModule, HubModule, UsersModule, SettingsModule,
-    DriversModule,
+    DriversModule, ReviewsModule,
   ],
   controllers: [HealthController],
 })

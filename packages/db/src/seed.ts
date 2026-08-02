@@ -3,7 +3,7 @@
 import { pool } from './client.js';
 import { provisionTenant, schemaFor, type TenantInput } from './provision.js';
 import { hashPassword } from './crypto.js';
-import { fraudScore, type FraudSignal } from '@transpo/domain';
+import { fraudScore, NOTIF_TEMPLATES, type FraudSignal } from '@transpo/domain';
 
 // Utilisateurs de démo par tenant (mot de passe commun en dev : "transpo").
 const USERS: Record<string, Array<{ email: string; name: string; role: string; merchant?: string; driver?: string }>> = {
@@ -268,6 +268,14 @@ async function main() {
           `INSERT INTO vehicles (plate, type, city, state, insurance_due, ct_due, capacity, equipment)
            VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (plate) DO NOTHING`,
           [v.plate, v.type, v.city, v.state, v.ins, v.ct, v.cap ?? null, v.equip ?? []],
+        );
+      }
+      // Catalogue de modèles : posé une fois par tenant, les éditions console ne sont pas écrasées.
+      for (const [event, tpl] of Object.entries(NOTIF_TEMPLATES)) {
+        await client.query(
+          `INSERT INTO notif_templates (event, fr, ar, transactional)
+           VALUES ($1,$2,$3,$4) ON CONFLICT (event) DO NOTHING`,
+          [event, tpl.fr, tpl.ar, tpl.transactional],
         );
       }
       for (const f of FRAUD[t.slug] ?? []) {
