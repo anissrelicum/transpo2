@@ -20,13 +20,22 @@ export default function LoginPage() {
   const [detected, setDetected] = React.useState<string>('');  // org affichée
   const [error, setError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
+  const [superAdmin, setSuperAdmin] = React.useState(false);   // realm plateforme (console SaaS)
 
   React.useEffect(() => {
-    const qOrg = new URLSearchParams(window.location.search).get('org');
+    const params = new URLSearchParams(window.location.search);
+    const qOrg = params.get('org');
     const host = orgFromHost(window.location.host);
     setOrg(qOrg);
     setDetected(qOrg || host || 'par défaut');
+    if (params.get('realm') === 'saas') setSuperAdmin(true);
   }, []);
+
+  function switchRealm(toSuper: boolean) {
+    setSuperAdmin(toSuper);
+    setError(null);
+    setEmail(toSuper ? 'ops@transpo.ma' : 'admin@casaexpress.ma');
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -36,10 +45,10 @@ export default function LoginPage() {
       headers: { 'content-type': 'application/json' },
       // Le tenant est résolu par le serveur depuis le host ; on ne transmet que
       // l'override éventuel (?org=) pour le dev/test.
-      body: JSON.stringify({ email, password, tenant: org || undefined }),
+      body: JSON.stringify({ email, password, tenant: org || undefined, superAdmin: superAdmin || undefined }),
     });
     if (res.ok) {
-      window.location.assign('/dashboard'); // navigation dure (cookies posés)
+      window.location.assign(superAdmin ? '/saas' : '/dashboard'); // navigation dure (cookies posés)
       return;
     }
     setLoading(false);
@@ -52,7 +61,7 @@ export default function LoginPage() {
       <Box style={{ width: 380 }}>
         <Flex direction="column" align="center" gap="2" mb="4">
           <Heading size="6">Transpo</Heading>
-          <Text size="2" color="gray">Console transport</Text>
+          <Text size="2" color="gray">{superAdmin ? 'Console SaaS — plateforme' : 'Console transport'}</Text>
         </Flex>
         <Card size="4">
           <form onSubmit={submit}>
@@ -62,8 +71,10 @@ export default function LoginPage() {
                 <Callout.Root color="red" role="alert" size="1"><Callout.Text>{error}</Callout.Text></Callout.Root>
               )}
               <Flex align="center" justify="between">
-                <Text size="2" color="gray">Organisation</Text>
-                <Badge color="indigo" data-testid="detected-org">{detected}</Badge>
+                <Text size="2" color="gray">{superAdmin ? 'Realm' : 'Organisation'}</Text>
+                <Badge color={superAdmin ? 'amber' : 'indigo'} data-testid="detected-org">
+                  {superAdmin ? 'plateforme' : detected}
+                </Badge>
               </Flex>
               <Box>
                 <Text as="label" size="2" weight="medium">E-mail</Text>
@@ -77,7 +88,17 @@ export default function LoginPage() {
                 {loading ? 'Connexion…' : 'Se connecter'}
               </Button>
               <Text size="1" color="gray" align="center">
-                L’organisation est déterminée par l’adresse (sous-domaine).
+                {superAdmin
+                  ? 'Compte plateforme, hors organisation.'
+                  : 'L’organisation est déterminée par l’adresse (sous-domaine).'}
+              </Text>
+              <Text
+                size="1" align="center" color="indigo" role="button" tabIndex={0}
+                style={{ cursor: 'pointer' }}
+                onClick={() => switchRealm(!superAdmin)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') switchRealm(!superAdmin); }}
+              >
+                {superAdmin ? '← Connexion à une organisation' : 'Connexion console SaaS (plateforme) →'}
               </Text>
             </Flex>
           </form>
