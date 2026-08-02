@@ -153,11 +153,21 @@ export const NOTIF_TEMPLATES: Record<string, { fr: string; ar: string; transacti
 };
 export type NotifEvent = keyof typeof NOTIF_TEMPLATES;
 
-/** Rendu d'un modèle dans la langue voulue avec substitution des variables. */
+/** Substitue les variables `{nom}` d'un texte de modèle. Une variable absente reste visible. */
+export function renderTemplate(text: string, vars: Record<string, string> = {}): string {
+  return text.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? `{${k}}`);
+}
+
+/** Variables `{nom}` déclarées par un modèle, dédoublonnées. */
+export function templateVars(text: string): string[] {
+  return [...new Set([...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]!))];
+}
+
+/** Rendu d'un modèle du catalogue par défaut. Les modèles persistés passent par `renderTemplate`. */
 export function renderNotif(event: string, lang: 'fr' | 'ar', vars: Record<string, string> = {}): string {
   const tpl = NOTIF_TEMPLATES[event];
   if (!tpl) throw new Error(`Modèle de notification inconnu : ${event}`);
-  return (lang === 'ar' ? tpl.ar : tpl.fr).replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? `{${k}}`);
+  return renderTemplate(lang === 'ar' ? tpl.ar : tpl.fr, vars);
 }
 
 /** Un événement transactionnel ne requiert pas de consentement marketing (loi 09-08). */

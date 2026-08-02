@@ -43,6 +43,20 @@ export interface Zone { id: string; nameFr: string; nameAr: string | null; color
 export interface Suggestion { driver: string; city: string; vehicle: string; score: number; parts: { zone: number; dispo: number; charge: number } }
 export interface ReturnRow { ref: string; reason: string; attempts: number; status: string; createdAt: string }
 export interface NotificationRow { id: string; event: string; channel: string; recipient: string; lang: string; body: string; status: string; reason: string | null; createdAt: string }
+export interface NotifTemplate {
+  event: string; fr: string; ar: string; transactional: boolean; active: boolean;
+  customized: boolean; updatedAt: string | null;
+}
+export interface Review {
+  ref: string; merchant: string | null; driver: string | null;
+  rating: number; comment: string | null; city: string; createdAt: string;
+}
+export interface ReviewGroup { name: string; count: number; avg: number }
+export interface ReviewsSummary {
+  reviews: Review[]; total: number; average: number | null; negatives: number; withComment: number;
+  distribution: { stars: number; count: number }[];
+  byDriver: ReviewGroup[]; byMerchant: ReviewGroup[];
+}
 export type ConsoleRole = 'ADMIN' | 'DISPATCHER' | 'COMPTABLE';
 export interface ConsoleUser { id: string; email: string; name: string; role: ConsoleRole; active: boolean; createdAt: string }
 export interface InviteUserResult extends ConsoleUser { tempPassword: string }
@@ -237,6 +251,22 @@ export class TranspoClient {
   getReturns(): Promise<ReturnRow[]> { return this.req('/v1/returns'); }
   getHub(): Promise<Order[]> { return this.req('/v1/hub'); }
   getNotifications(): Promise<NotificationRow[]> { return this.req('/v1/notifications'); }
+  retryNotification(id: string): Promise<NotificationRow> {
+    return this.req(`/v1/notifications/${encodeURIComponent(id)}/retry`, { method: 'POST' });
+  }
+  getNotifTemplates(): Promise<NotifTemplate[]> { return this.req('/v1/notifications/templates'); }
+  saveNotifTemplate(event: string, input: Partial<Pick<NotifTemplate, 'fr' | 'ar' | 'transactional' | 'active'>>): Promise<NotifTemplate> {
+    return this.req(`/v1/notifications/templates/${encodeURIComponent(event)}`, { method: 'PUT', body: input });
+  }
+  resetNotifTemplate(event: string): Promise<NotifTemplate> {
+    return this.req(`/v1/notifications/templates/${encodeURIComponent(event)}/reset`, { method: 'POST' });
+  }
+  setNotifConsent(subject: string, channel: string, optedIn: boolean): Promise<{ subject: string; channel: string; optedIn: boolean }> {
+    return this.req('/v1/notifications/consent', { method: 'POST', body: { subject, channel, optedIn } });
+  }
+
+  // --- Avis clients ---
+  getReviews(): Promise<ReviewsSummary> { return this.req('/v1/reviews'); }
 
   // --- Utilisateurs & rôles ---
   getUsers(): Promise<ConsoleUser[]> { return this.req('/v1/users'); }

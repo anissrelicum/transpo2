@@ -143,6 +143,15 @@ export const notifications = pgTable('notifications', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const notifTemplates = pgTable('notif_templates', {
+  event: text('event').primaryKey(),
+  fr: text('fr').notNull(),
+  ar: text('ar').notNull(),
+  transactional: boolean('transactional').notNull().default(true),
+  active: boolean('active').notNull().default(true),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const tournees = pgTable('tournees', {
   id: uuid('id').primaryKey().defaultRandom(),
   driver: text('driver').notNull(),
