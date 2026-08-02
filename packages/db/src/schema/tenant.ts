@@ -24,8 +24,14 @@ export const drivers = pgTable('drivers', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
   city: text('city'),
+  // Libellé du véhicule (type), conservé tel quel : le scoring dispatch s'appuie dessus.
   vehicle: text('vehicle'),
   available: boolean('available').notNull().default(true),
+  phone: text('phone'),
+  licenseNo: text('license_no'),
+  licenseDue: text('license_due'),
+  medicalDue: text('medical_due'),
+  vehicleId: uuid('vehicle_id'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

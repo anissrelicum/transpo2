@@ -61,19 +61,23 @@ const ORDERS: Record<string, OrderRow[]> = {
   ],
 };
 
-const DRIVERS: Record<string, Array<{ name: string; city: string; vehicle: string; available: boolean }>> = {
+type SeedDriver = {
+  name: string; city: string; vehicle: string; available: boolean;
+  phone: string; licenseNo: string; licenseDue: string; medicalDue: string;
+};
+const DRIVERS: Record<string, SeedDriver[]> = {
   casaexpress: [
-    { name: 'Youssef Benali', city: 'Casablanca', vehicle: 'Moto', available: true },
-    { name: 'Salma Idrissi', city: 'Rabat', vehicle: 'Fourgon', available: true },
-    { name: 'Nadia Chraibi', city: 'Casablanca', vehicle: 'Moto', available: true },
-    { name: 'Omar Fassi', city: 'Casablanca', vehicle: 'Fourgon', available: true },
+    { name: 'Youssef Benali', city: 'Casablanca', vehicle: 'Moto', available: true, phone: '+212661234501', licenseNo: 'AB123456', licenseDue: '2028-04-15', medicalDue: '2026-08-20' }, // visite bientôt
+    { name: 'Salma Idrissi', city: 'Rabat', vehicle: 'Fourgon', available: true, phone: '+212661234502', licenseNo: 'CD234567', licenseDue: '2027-11-30', medicalDue: '2027-02-10' },
+    { name: 'Nadia Chraibi', city: 'Casablanca', vehicle: 'Moto', available: true, phone: '+212661234503', licenseNo: 'EF345678', licenseDue: '2026-06-01', medicalDue: '2027-05-05' }, // permis expiré
+    { name: 'Omar Fassi', city: 'Casablanca', vehicle: 'Fourgon', available: true, phone: '+212661234504', licenseNo: 'GH456789', licenseDue: '2029-01-20', medicalDue: '2027-09-12' },
   ],
   atlas: [
-    { name: 'Karim El Amrani', city: 'Marrakech', vehicle: 'Voiture', available: false },
+    { name: 'Karim El Amrani', city: 'Marrakech', vehicle: 'Voiture', available: false, phone: '+212661234510', licenseNo: 'IJ567890', licenseDue: '2027-07-07', medicalDue: '2027-07-07' },
   ],
   e2e: [
-    { name: 'Youssef Benali', city: 'Casablanca', vehicle: 'Moto', available: true },
-    { name: 'Salma Idrissi', city: 'Rabat', vehicle: 'Fourgon', available: true },
+    { name: 'Youssef Benali', city: 'Casablanca', vehicle: 'Moto', available: true, phone: '+212661234501', licenseNo: 'AB123456', licenseDue: '2028-04-15', medicalDue: '2028-04-15' },
+    { name: 'Salma Idrissi', city: 'Rabat', vehicle: 'Fourgon', available: true, phone: '+212661234502', licenseNo: 'CD234567', licenseDue: '2027-11-30', medicalDue: '2027-02-10' },
   ],
 };
 
@@ -240,9 +244,16 @@ async function main() {
       }
       for (const d of DRIVERS[t.slug] ?? []) {
         await client.query(
-          `INSERT INTO drivers (name, city, vehicle, available)
-           SELECT $1,$2,$3,$4 WHERE NOT EXISTS (SELECT 1 FROM drivers WHERE name = $1)`,
-          [d.name, d.city, d.vehicle, d.available],
+          `INSERT INTO drivers (name, city, vehicle, available, phone, license_no, license_due, medical_due)
+           SELECT $1,$2,$3,$4,$5,$6,$7,$8 WHERE NOT EXISTS (SELECT 1 FROM drivers WHERE name = $1)`,
+          [d.name, d.city, d.vehicle, d.available, d.phone, d.licenseNo, d.licenseDue, d.medicalDue],
+        );
+        // Backfill des tenants déjà semés : ne remplit que ce qui manque (édition console préservée).
+        await client.query(
+          `UPDATE drivers SET phone = COALESCE(phone,$2), license_no = COALESCE(license_no,$3),
+                              license_due = COALESCE(license_due,$4), medical_due = COALESCE(medical_due,$5)
+           WHERE name = $1`,
+          [d.name, d.phone, d.licenseNo, d.licenseDue, d.medicalDue],
         );
       }
       for (const z of ZONES[t.slug] ?? []) {

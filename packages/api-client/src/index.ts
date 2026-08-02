@@ -26,7 +26,14 @@ export interface Tournee {
   id: string; driver: string; zone: string | null; day: string; status: string;
   stops: string[]; createdAt: string;
 }
-export interface Driver { id: string; name: string; city: string | null; vehicle: string | null; available: boolean; createdAt: string }
+export interface DriverStats { delivered: number; failed: number; active: number; successRate: number | null }
+export interface Driver {
+  id: string; name: string; city: string | null; vehicle: string | null; available: boolean;
+  phone: string | null; licenseNo: string | null; licenseDue: string | null; medicalDue: string | null;
+  vehicleId: string | null; vehiclePlate: string | null; vehicleState: string | null;
+  licenseExpired: boolean; medicalExpired: boolean; assignable: boolean;
+  stats: DriverStats; createdAt: string;
+}
 export interface Vehicle {
   id: string; plate: string; type: string; city: string | null; state: string;
   insuranceDue: string | null; ctDue: string | null; capacity: string | null; equipment: string[];
@@ -149,6 +156,21 @@ export class TranspoClient {
 
   // --- Flotte & dispatch ---
   getDrivers(): Promise<Driver[]> { return this.req('/v1/drivers'); }
+  createDriver(input: { name: string } & Partial<Pick<Driver, 'city' | 'vehicle' | 'phone' | 'licenseNo' | 'licenseDue' | 'medicalDue' | 'available'>>): Promise<Driver> {
+    return this.req('/v1/drivers', { method: 'POST', body: input });
+  }
+  setDriverAvailability(id: string, available: boolean): Promise<Driver> {
+    return this.req(`/v1/drivers/${encodeURIComponent(id)}/availability`, { method: 'PATCH', body: { available } });
+  }
+  renewDriver(id: string, field: 'license' | 'medical', due: string): Promise<Driver> {
+    return this.req(`/v1/drivers/${encodeURIComponent(id)}/renew`, { method: 'POST', body: { field, due } });
+  }
+  assignDriverVehicle(id: string, vehicleId: string | null): Promise<Driver> {
+    return this.req(`/v1/drivers/${encodeURIComponent(id)}/vehicle`, { method: 'PATCH', body: { vehicleId } });
+  }
+  deleteDriver(id: string): Promise<{ ok: boolean }> {
+    return this.req(`/v1/drivers/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  }
   getVehicles(): Promise<Vehicle[]> { return this.req('/v1/vehicles'); }
   createVehicle(input: Partial<Vehicle> & { plate: string; type: string }): Promise<Vehicle> {
     return this.req('/v1/vehicles', { method: 'POST', body: input });
