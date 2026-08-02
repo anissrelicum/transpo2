@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import type { Order, OrderStatus, ParcelSize, ProofLevel } from '@transpo/domain';
 import { LIFECYCLE, canTransition } from '@transpo/domain';
-import { withTenantDb, orders as ordersTable, drivers as driversTable } from '@transpo/db';
+import { withTenantDb, orders as ordersTable } from '@transpo/db';
 import { desc, eq } from 'drizzle-orm';
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -95,9 +95,5 @@ export class OrdersService {
       const [r] = await db.update(ordersTable).set({ status: 'ANNULEE' }).where(eq(ordersTable.ref, ref)).returning();
       return rowToOrder(r);
     });
-  }
-
-  listDrivers(schema: string) {
-    return withTenantDb(schema, async (db) => db.select().from(driversTable).orderBy(driversTable.name));
   }
 }

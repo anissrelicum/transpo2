@@ -61,8 +61,12 @@ export class DispatchService {
       const allDrivers = await db.select().from(driversTable);
       const activeOrders = await db.select().from(ordersTable);
 
+      // Un chauffeur au permis ou à la visite médicale expirés n'est pas affectable.
+      const today = new Date().toISOString().slice(0, 10);
       const suggestions = allDrivers
-        .filter((d) => d.available)
+        .filter((d) => d.available
+          && !(d.licenseDue != null && d.licenseDue < today)
+          && !(d.medicalDue != null && d.medicalDue < today))
         .map((d) => {
           const sameCity = d.city === order.fromCity || d.city === order.toCity;
           const load = activeOrders.filter((o) => o.driver === d.name && !['LIVREE', 'ANNULEE'].includes(o.status)).length;
