@@ -11,12 +11,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "1.23.1",
+    "@react-native-community/netinfo": "11.3.1",
     "@transpo/api-client": "workspace:*",
     "@transpo/domain": "workspace:*",
     "expo": "~51.0.0",
     "expo-constants": "~16.0.0",
     "expo-linking": "~6.3.1",
     "expo-router": "~3.5.0",
+    "expo-secure-store": "~13.0.2",
     "expo-status-bar": "~1.12.0",
     "react": "18.2.0",
     "react-native": "0.74.5",
@@ -29,7 +32,10 @@
   },
   "expo": {
     "install": {
-      "exclude": ["@types/react", "typescript"]
+      "exclude": [
+        "@types/react",
+        "typescript"
+      ]
     }
   }
 }
