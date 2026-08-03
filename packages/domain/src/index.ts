@@ -62,7 +62,9 @@ export function missingProof(
 ): string | null {
   const missing = proofRequirements(level).filter((k) => !provided[k]);
   if (missing.length === 0) return null;
-  return `Preuve incomplète : ${missing.map((m) => PROOF_LABEL[m]).join(' et ')} requise(s) pour ce niveau (${level}).`;
+  const what = missing.map((m) => PROOF_LABEL[m]).join(' et ');
+  const verb = missing.length > 1 ? 'requises' : 'requise';
+  return `Preuve incomplète : ${what} ${verb} pour ce niveau (${level}).`;
 }
 
 export const PARCEL_SIZES = ['Petit', 'Moyen', 'Grand', 'Très grand'] as const;
