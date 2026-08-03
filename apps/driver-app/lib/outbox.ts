@@ -14,7 +14,12 @@ const KEY = 'transpo.outbox.v1';
  */
 export type PendingAction =
   | { kind: 'advance'; ref: string; from: OrderStatus; idemKey: string }
-  | { kind: 'proof'; ref: string; codCollected: number; idemKey: string };
+  | {
+      kind: 'proof'; ref: string; codCollected: number; idemKey: string;
+      // Artefacts déjà compressés (data URI) : ils partent avec l'action et
+      // survivent donc à une coupure réseau comme à un redémarrage de l'app.
+      photo?: string; signature?: string;
+    };
 
 /** L'action telle que persistée, avec son identité et sa date de mise en file. */
 export type Pending = PendingAction & { id: string; at: number };
@@ -65,7 +70,7 @@ export async function enqueue(entry: PendingAction): Promise<Pending> {
 async function send(p: Pending): Promise<void> {
   const c = authedClient();
   if (p.kind === 'advance') await c.driverAdvance(p.ref, p.idemKey);
-  else await c.driverProof(p.ref, { codCollected: p.codCollected }, p.idemKey);
+  else await c.driverProof(p.ref, { codCollected: p.codCollected, photo: p.photo, signature: p.signature }, p.idemKey);
 }
 
 /**

@@ -349,7 +349,11 @@ export class TranspoClient {
       method: 'POST', body: {}, headers: { 'idempotency-key': idemKey },
     });
   }
-  driverProof(ref: string, body: { codCollected?: number }, idemKey: string): Promise<Order> {
+  driverProof(
+    ref: string,
+    body: { codCollected?: number; photo?: string; signature?: string },
+    idemKey: string,
+  ): Promise<Order> {
     return this.req(`/v1/driver/orders/${encodeURIComponent(ref)}/proof`, {
       method: 'POST', body, headers: { 'idempotency-key': idemKey },
     });
