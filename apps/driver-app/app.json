@@ -26,7 +26,7 @@
       "expo-router"
     ],
     "extra": {
-      "apiUrl": "http://localhost:3000",
+      "apiUrl": "https://api.transpo.wedo.technology",
       "router": {
         "origin": false
       },

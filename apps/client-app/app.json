@@ -26,7 +26,7 @@
       "expo-router"
     ],
     "extra": {
-      "apiUrl": "http://localhost:3000",
+      "apiUrl": "https://api.transpo.wedo.technology",
       "defaultTenant": "casaexpress",
       "eas": {
         "projectId": "3effe70b-cb60-4c3b-aa0f-4213ad621d04"
