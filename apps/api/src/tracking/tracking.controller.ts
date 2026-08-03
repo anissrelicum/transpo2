@@ -3,10 +3,11 @@ import { TrackingService } from './tracking.service.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { TenantGuard } from '../tenant/tenant.guard.js';
 import { RolesGuard } from '../auth/roles.guard.js';
-import { Roles } from '../auth/roles.decorator.js';
+import { Roles, CONSOLE_ROLES } from '../auth/roles.decorator.js';
 
 @Controller('v1/tracking')
 @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
+@Roles(...CONSOLE_ROLES)
 export class TrackingController {
   constructor(@Inject(TrackingService) private readonly svc: TrackingService) {}
 

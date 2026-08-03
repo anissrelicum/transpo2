@@ -3,9 +3,10 @@ import { ReviewsController } from './reviews.controller.js';
 import { ReviewsService } from './reviews.service.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { TenantGuard } from '../tenant/tenant.guard.js';
+import { RolesGuard } from '../auth/roles.guard.js';
 
 @Module({
   controllers: [ReviewsController],
-  providers: [ReviewsService, JwtAuthGuard, TenantGuard],
+  providers: [ReviewsService, JwtAuthGuard, TenantGuard, RolesGuard],
 })
 export class ReviewsModule {}
