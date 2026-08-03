@@ -110,6 +110,18 @@ export default function MissionsScreen() {
           </Text>
         </View>
       )}
+      <View style={s.nav}>
+        {[
+          { href: '/incidents', label: '⚠︎  Incidents' },
+          { href: '/support', label: '💬  Support' },
+          { href: '/gains', label: '◎  Gains' },
+        ].map((l) => (
+          <Pressable key={l.href} style={s.navItem} onPress={() => router.push(l.href as never)}>
+            <Text style={s.navTxt}>{l.label}</Text>
+          </Pressable>
+        ))}
+      </View>
+
       <View style={s.track}>
         <View style={{ flex: 1 }}>
           <Text style={s.trackTitle}>Partage de position</Text>
@@ -180,6 +192,12 @@ const s = StyleSheet.create({
   bannerInfo: { backgroundColor: C.indigo + '18' },
   bannerTxt: { fontSize: 12, color: C.text, flex: 1, paddingRight: 8 },
   bannerAction: { fontSize: 12, fontWeight: '700', color: C.indigo },
+  nav: { flexDirection: 'row', gap: 8, marginBottom: 10 },
+  navItem: {
+    flex: 1, backgroundColor: C.card, borderWidth: 1, borderColor: C.border,
+    borderRadius: 10, paddingVertical: 10, alignItems: 'center',
+  },
+  navTxt: { fontSize: 12, fontWeight: '600', color: C.text },
   track: {
     flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 10,
     backgroundColor: C.card, borderWidth: 1, borderColor: C.border, borderRadius: 10, padding: 10,

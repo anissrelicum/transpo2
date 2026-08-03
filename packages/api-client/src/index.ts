@@ -43,6 +43,17 @@ export interface Zone { id: string; nameFr: string; nameAr: string | null; color
 export interface Suggestion { driver: string; city: string; vehicle: string; score: number; parts: { zone: number; dispo: number; charge: number } }
 export interface ReturnRow { ref: string; reason: string; attempts: number; status: string; createdAt: string }
 export interface NotificationRow { id: string; event: string; channel: string; recipient: string; lang: string; body: string; status: string; reason: string | null; createdAt: string }
+export interface Incident {
+  id: string; driver: string; ref: string | null; type: string;
+  note: string | null; status: string; createdAt: string;
+}
+export interface SupportMessage {
+  id: string; driver: string; sender: 'driver' | 'ops'; body: string; createdAt: string;
+}
+export interface DriverHistory {
+  driver: string; deliveries: number; gains: number; feePerDelivery: number; codCollected: number;
+  orders: { ref: string; toCity: string; cod: number; codPaid: boolean }[];
+}
 export interface DeliveryProof {
   ref: string; proofLevel: string; captured: boolean;
   photo: string | null; signature: string | null;
@@ -349,6 +360,17 @@ export class TranspoClient {
       method: 'POST', body: {}, headers: { 'idempotency-key': idemKey },
     });
   }
+  // --- Annexes livreur : incidents, support, gains (scope = claim `driver`) ---
+  reportIncident(input: { ref?: string; type: string; note?: string }): Promise<Incident> {
+    return this.req('/v1/driver/incidents', { method: 'POST', body: input });
+  }
+  getMyIncidents(): Promise<Incident[]> { return this.req('/v1/driver/incidents'); }
+  getSupportThread(): Promise<SupportMessage[]> { return this.req('/v1/driver/support'); }
+  sendSupportMessage(body: string): Promise<SupportMessage> {
+    return this.req('/v1/driver/support', { method: 'POST', body: { body } });
+  }
+  getDriverHistory(): Promise<DriverHistory> { return this.req('/v1/driver/history'); }
+
   /** Position du livreur (scope = claim `driver`). Éphémère : pas d'idempotence. */
   pushDriverPosition(lat: number, lng: number): Promise<{ ok: boolean; at: string }> {
     return this.req('/v1/tracking/position', { method: 'POST', body: { lat, lng } });
