@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, Text, FlatList, Pressable, StyleSheet, RefreshControl, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, FlatList, Pressable, StyleSheet, RefreshControl, ActivityIndicator, Alert, Switch } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import type { Order } from '@transpo/domain';
 import { STATUS_META } from '@transpo/domain';
@@ -7,15 +7,37 @@ import { authedClient, getSession, clearSession } from '../lib/api';
 import { readJson, writeJson } from '../lib/storage';
 import { applyPending, clear as clearOutbox } from '../lib/outbox';
 import { useOutbox } from '../lib/useOutbox';
+import { useTracking } from '../lib/tracking';
 import { C, STATUS_COLOR } from '../lib/theme';
 
 const CACHE_KEY = 'transpo.missions.v1';
+const TRACK_KEY = 'transpo.tracking.enabled';
+
+const TRACK_LABEL: Record<string, string> = {
+  off: 'désactivé',
+  starting: 'activation…',
+  on: 'position transmise au PC flotte',
+  denied: 'autorisation refusée — à activer dans les réglages',
+  error: 'localisation indisponible',
+};
 
 export default function MissionsScreen() {
   const [orders, setOrders] = React.useState<Order[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [stale, setStale] = React.useState(false);
+  const [tracking, setTracking] = React.useState(false);
   const name = getSession()?.name ?? '';
+
+  // Le partage de position est un choix du livreur : il est mémorisé.
+  React.useEffect(() => {
+    readJson<boolean>(TRACK_KEY, false).then(setTracking);
+  }, []);
+  const track = useTracking(tracking);
+
+  async function toggleTracking(next: boolean) {
+    setTracking(next);
+    await writeJson(TRACK_KEY, next);
+  }
 
   const { pending, online, syncing, sync } = useOutbox((r) => {
     if (r.rejected.length > 0) {
@@ -88,6 +110,19 @@ export default function MissionsScreen() {
           </Text>
         </View>
       )}
+      <View style={s.track}>
+        <View style={{ flex: 1 }}>
+          <Text style={s.trackTitle}>Partage de position</Text>
+          <Text style={[s.trackState, track.state === 'denied' && { color: C.red }]}>
+            {TRACK_LABEL[track.state]}
+            {track.state === 'on' && track.lastAt
+              ? ` · dernier envoi ${new Date(track.lastAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
+              : ''}
+          </Text>
+        </View>
+        <Switch value={tracking} onValueChange={toggleTracking} />
+      </View>
+
       {pending.length > 0 && (
         <View style={[s.banner, s.bannerInfo]}>
           <Text style={s.bannerTxt}>
@@ -145,6 +180,12 @@ const s = StyleSheet.create({
   bannerInfo: { backgroundColor: C.indigo + '18' },
   bannerTxt: { fontSize: 12, color: C.text, flex: 1, paddingRight: 8 },
   bannerAction: { fontSize: 12, fontWeight: '700', color: C.indigo },
+  track: {
+    flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 10,
+    backgroundColor: C.card, borderWidth: 1, borderColor: C.border, borderRadius: 10, padding: 10,
+  },
+  trackTitle: { fontSize: 13, fontWeight: '700', color: C.text },
+  trackState: { fontSize: 11, color: C.muted, marginTop: 2 },
   empty: { color: C.muted, textAlign: 'center', marginTop: 40 },
   card: { backgroundColor: C.card, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: C.border, marginBottom: 10 },
   rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
