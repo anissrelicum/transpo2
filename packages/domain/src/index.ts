@@ -135,6 +135,16 @@ export const SAAS_PLANS: SaasPlan[] = [
 ];
 export const TENANT_STATUSES = ['ESSAI', 'ACTIF', 'SUSPENDU'] as const;
 export type TenantStatus = (typeof TENANT_STATUSES)[number];
+
+/**
+ * Sous-domaines d'infrastructure, jamais des tenants. Le slug d'un tenant est
+ * son sous-domaine (`slug.transpo.wedo.technology`) : `api` sert l'API publique,
+ * les autres sont des noms d'hôte usuels. Deux usages, à garder alignés :
+ * le provisioning les refuse, et la résolution de tenant par le host les ignore
+ * (sans quoi un appel authentifié vers `api.…` serait vu comme un tenant « api »
+ * en conflit avec le claim du JWT).
+ */
+export const RESERVED_SUBDOMAINS = ['api', 'www', 'app', 'admin', 'static', 'assets', 'mail', 'smtp', 'ftp'];
 export function planByCode(code: string): SaasPlan | undefined {
   return SAAS_PLANS.find((p) => p.code === code);
 }

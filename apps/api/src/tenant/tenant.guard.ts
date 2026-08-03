@@ -1,5 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { pool } from '../db/pool.js';
+import { RESERVED_SUBDOMAINS } from '@transpo/domain';
 
 /**
  * Résout le tenant du contexte serveur et pose req.tenantSchema.
@@ -31,5 +32,9 @@ export class TenantGuard implements CanActivate {
 function subdomainOf(host?: string): string | null {
   if (!host) return null;
   const parts = host.split(':')[0].split('.');
-  return parts.length > 2 ? parts[0] : null; // casaexpress.transpo.ma -> casaexpress
+  if (parts.length <= 2) return null;
+  const first = parts[0]!.toLowerCase(); // casaexpress.transpo.ma -> casaexpress
+  // `api.…` sert l'API publique (mobile) : ce n'est pas un tenant, et le prendre
+  // pour tel ferait échouer tout appel authentifié en « incohérence de tenant ».
+  return RESERVED_SUBDOMAINS.includes(first) ? null : first;
 }
