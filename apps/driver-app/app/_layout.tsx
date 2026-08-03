@@ -18,6 +18,9 @@ export default function RootLayout() {
         <Stack.Screen name="index" options={{ title: 'Transpo Livreur' }} />
         <Stack.Screen name="missions" options={{ title: 'Mes missions' }} />
         <Stack.Screen name="mission/[ref]" options={{ title: 'Mission' }} />
+        <Stack.Screen name="incidents" options={{ title: 'Incidents' }} />
+        <Stack.Screen name="support" options={{ title: 'Support' }} />
+        <Stack.Screen name="gains" options={{ title: 'Historique & gains' }} />
       </Stack>
     </SafeAreaProvider>
   );
