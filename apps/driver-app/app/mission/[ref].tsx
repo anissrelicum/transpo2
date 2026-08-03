@@ -1,15 +1,19 @@
 import * as React from 'react';
-import { View, Text, Pressable, StyleSheet, ActivityIndicator, TextInput, Alert } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ActivityIndicator, TextInput, Alert, Image, ScrollView } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import type { Order, OrderStatus } from '@transpo/domain';
-import { LIFECYCLE, STATUS_META } from '@transpo/domain';
+import type { Order, OrderStatus, ProofLevel } from '@transpo/domain';
+import { LIFECYCLE, STATUS_META, proofRequirements, missingProof } from '@transpo/domain';
 import { authedClient, idemKey } from '../../lib/api';
 import { readJson, writeJson } from '../../lib/storage';
 import { enqueue, applyPending } from '../../lib/outbox';
 import { useOutbox } from '../../lib/useOutbox';
+import { capturePhoto, signatureToDataUri, isSignatureMeaningful, type Point } from '../../lib/proof';
+import { SignaturePad } from '../../components/SignaturePad';
 import { C, STATUS_COLOR } from '../../lib/theme';
 
 const CACHE_KEY = 'transpo.missions.v1';
+const SIGN_W = 320;
+const SIGN_H = 180;
 
 export default function MissionDetail() {
   const { ref } = useLocalSearchParams<{ ref: string }>();
@@ -19,6 +23,9 @@ export default function MissionDetail() {
   const [busy, setBusy] = React.useState(false);
   const [cod, setCod] = React.useState('');
   const [touchedCod, setTouchedCod] = React.useState(false);
+  const [photo, setPhoto] = React.useState<string | null>(null);
+  const [strokes, setStrokes] = React.useState<Point[][]>([]);
+  const [shooting, setShooting] = React.useState(false);
 
   const { pending, online, sync } = useOutbox();
 
@@ -44,6 +51,9 @@ export default function MissionDetail() {
     if (order && !touchedCod) setCod(order.cod ? String(order.cod) : '');
   }, [order?.ref, order?.cod, touchedCod]);
 
+  const required = order ? proofRequirements(order.proofLevel as ProofLevel) : [];
+  const signature = isSignatureMeaningful(strokes) ? signatureToDataUri(strokes, SIGN_W, SIGN_H) : null;
+
   /** Met l'action en file (donc sur disque) puis tente de l'envoyer tout de suite. */
   async function submit(action: 'advance' | 'proof') {
     if (!order) return;
@@ -58,6 +68,8 @@ export default function MissionDetail() {
         await enqueue({
           kind: 'proof', ref: order.ref, codCollected: Number(cod) || 0,
           idemKey: idemKey(order.ref, 'proof'),
+          photo: photo ?? undefined,
+          signature: signature ?? undefined,
         });
       }
       await sync();
@@ -66,8 +78,24 @@ export default function MissionDetail() {
     }
   }
 
+  async function shoot() {
+    setShooting(true);
+    try {
+      const res = await capturePhoto();
+      if ('uri' in res) setPhoto(res.uri);
+      else if (res.error) Alert.alert('Photo impossible', res.error);
+    } finally {
+      setShooting(false);
+    }
+  }
+
   async function confirmProof() {
     if (!order) return;
+    // Même règle que l'API, appliquée avant l'envoi : inutile de mettre en file
+    // une preuve qui sera refusée, surtout hors ligne où le refus arriverait tard.
+    const gap = missingProof(order.proofLevel as ProofLevel, { photo, signature });
+    if (gap) { Alert.alert('Preuve incomplète', gap); return; }
+
     const amount = Number(cod) || 0;
     if (order.cod > 0 && amount < order.cod) {
       // L'API ne marque `codPaid` qu'au montant plein : autant le dire ici.
@@ -100,7 +128,7 @@ export default function MissionDetail() {
   const delivered = order.status === 'LIVREE';
 
   return (
-    <View style={s.wrap}>
+    <ScrollView style={s.wrap} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
       <View style={s.head}>
         <Text style={s.ref}>{order.ref}</Text>
         <View style={[s.badge, { backgroundColor: (STATUS_COLOR[order.status] || C.muted) + '22' }]}>
@@ -140,15 +168,46 @@ export default function MissionDetail() {
         </View>
       ) : atDelivery ? (
         <View style={s.actionBox}>
+          {required.length > 0 && (
+            <Text style={s.proofNote}>
+              Preuve exigée pour cette commande : {required.map((r) => (r === 'photo' ? 'photo' : 'signature')).join(' et ')}.
+            </Text>
+          )}
+
+          {required.includes('photo') && (
+            <View style={s.block}>
+              <Text style={s.label}>Photo du colis livré</Text>
+              {photo ? (
+                <View>
+                  <Image source={{ uri: photo }} style={s.preview} resizeMode="cover" />
+                  <Pressable onPress={shoot} disabled={shooting} hitSlop={8}>
+                    <Text style={s.retake}>{shooting ? 'Ouverture…' : 'Reprendre la photo'}</Text>
+                  </Pressable>
+                </View>
+              ) : (
+                <Pressable style={[s.secondary, shooting && s.btnDisabled]} onPress={shoot} disabled={shooting}>
+                  {shooting ? <ActivityIndicator color={C.indigo} /> : <Text style={s.secondaryTxt}>📷 Prendre la photo</Text>}
+                </Pressable>
+              )}
+            </View>
+          )}
+
+          {required.includes('signature') && (
+            <View style={s.block}>
+              <SignaturePad strokes={strokes} onChange={setStrokes} height={SIGN_H} />
+            </View>
+          )}
+
           {order.cod > 0 && (
-            <>
+            <View style={s.block}>
               <Text style={s.label}>Montant COD encaissé (DH)</Text>
               <TextInput
                 style={s.input} value={cod} keyboardType="numeric"
                 onChangeText={(v) => { setTouchedCod(true); setCod(v); }}
               />
-            </>
+            </View>
           )}
+
           <Pressable style={[s.btn, busy && s.btnDisabled]} onPress={confirmProof} disabled={busy}>
             {busy ? <ActivityIndicator color="#fff" /> : <Text style={s.btnTxt}>Confirmer la livraison</Text>}
           </Pressable>
@@ -158,12 +217,19 @@ export default function MissionDetail() {
           {busy ? <ActivityIndicator color="#fff" /> : <Text style={s.btnTxt}>Étape suivante</Text>}
         </Pressable>
       )}
-    </View>
+    </ScrollView>
   );
 }
 
 const s = StyleSheet.create({
-  wrap: { flex: 1, padding: 16, backgroundColor: C.bg },
+  wrap: { flex: 1, backgroundColor: C.bg },
+  content: { padding: 16, paddingBottom: 40 },
+  proofNote: { fontSize: 12, color: C.muted, marginBottom: 12 },
+  block: { marginBottom: 16 },
+  preview: { width: '100%', height: 200, borderRadius: 10, backgroundColor: C.card, borderWidth: 1, borderColor: C.border },
+  retake: { fontSize: 13, color: C.indigo, fontWeight: '600', marginTop: 8 },
+  secondary: { borderWidth: 1, borderColor: C.indigo, borderRadius: 10, paddingVertical: 14, alignItems: 'center', backgroundColor: C.card },
+  secondaryTxt: { color: C.indigo, fontSize: 15, fontWeight: '700' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: C.bg, padding: 24 },
   head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   ref: { fontSize: 18, fontWeight: '800', color: C.text },
