@@ -22,6 +22,12 @@ export class OrdersController {
     return this.orders.get(req.tenantSchema, ref);
   }
 
+  /** Preuve de livraison capturée par le livreur (photo / signature). */
+  @Get(':ref/proof')
+  proof(@Req() req: any, @Param('ref') ref: string) {
+    return this.orders.proof(req.tenantSchema, ref);
+  }
+
   @Post()
   @Roles('ADMIN', 'DISPATCHER', 'MERCHANT')
   create(@Req() req: any, @Body() body: CreateOrderInput) {

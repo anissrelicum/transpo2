@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import type { Order, OrderStatus, ParcelSize, ProofLevel } from '@transpo/domain';
 import { LIFECYCLE, canTransition } from '@transpo/domain';
-import { withTenantDb, orders as ordersTable } from '@transpo/db';
+import { withTenantDb, orders as ordersTable, deliveryProofs } from '@transpo/db';
 import { desc, eq } from 'drizzle-orm';
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -94,6 +94,25 @@ export class OrdersService {
       if (!canTransition(cur.status as OrderStatus, 'ANNULEE')) throw new BadRequestException('Annulation impossible.');
       const [r] = await db.update(ordersTable).set({ status: 'ANNULEE' }).where(eq(ordersTable.ref, ref)).returning();
       return rowToOrder(r);
+    });
+  }
+
+  /**
+   * Preuve de livraison d'une commande. `captured: false` quand le livreur n'a
+   * rien déposé — le cas normal pour une commande de niveau « aucune », ou pour
+   * les livraisons antérieures à l'application de la règle.
+   */
+  proof(schema: string, ref: string) {
+    return withTenantDb(schema, async (db) => {
+      const [o] = await db.select().from(ordersTable).where(eq(ordersTable.ref, ref));
+      if (!o) throw new NotFoundException(`Commande introuvable : ${ref}`);
+      const [p] = await db.select().from(deliveryProofs).where(eq(deliveryProofs.ref, ref));
+      if (!p) return { ref, proofLevel: o.proofLevel, captured: false, photo: null, signature: null, capturedBy: null, capturedAt: null };
+      return {
+        ref, proofLevel: o.proofLevel, captured: true,
+        photo: p.photo, signature: p.signature,
+        capturedBy: p.capturedBy, capturedAt: p.capturedAt.toISOString(),
+      };
     });
   }
 }

@@ -40,6 +40,31 @@ export function canTransition(from: OrderStatus, to: OrderStatus): boolean {
 export const PROOF_LEVELS = ['aucune', 'photo', 'signature', 'photo_signature'] as const;
 export type ProofLevel = (typeof PROOF_LEVELS)[number]; // canonique: photo_signature (jamais photo_sig)
 
+/** Artefacts exigés par un niveau de preuve, dans l'ordre d'affichage. */
+export function proofRequirements(level: ProofLevel): ('photo' | 'signature')[] {
+  switch (level) {
+    case 'photo': return ['photo'];
+    case 'signature': return ['signature'];
+    case 'photo_signature': return ['photo', 'signature'];
+    default: return [];
+  }
+}
+
+const PROOF_LABEL: Record<'photo' | 'signature', string> = { photo: 'photo', signature: 'signature' };
+
+/**
+ * Vérifie qu'une livraison porte les preuves exigées. Retourne le message
+ * d'erreur à afficher, ou `null` si la preuve est complète.
+ */
+export function missingProof(
+  level: ProofLevel,
+  provided: { photo?: string | null; signature?: string | null },
+): string | null {
+  const missing = proofRequirements(level).filter((k) => !provided[k]);
+  if (missing.length === 0) return null;
+  return `Preuve incomplète : ${missing.map((m) => PROOF_LABEL[m]).join(' et ')} requise(s) pour ce niveau (${level}).`;
+}
+
 export const PARCEL_SIZES = ['Petit', 'Moyen', 'Grand', 'Très grand'] as const;
 export type ParcelSize = (typeof PARCEL_SIZES)[number];
 

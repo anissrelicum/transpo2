@@ -6,6 +6,10 @@ const DRIVER = 'Youssef Benali';
 let admin, driver, ref;
 const idem = (k) => ({ headers: { 'idempotency-key': k } });
 
+// Artefacts minimaux valides : 1 px GIF-like en JPEG et un PNG transparent.
+const PHOTO = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AKp//2Q==';
+const SIGN = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+
 before(async () => {
   await waitForApi();
   admin = await login('e2e', 'admin@e2e.ma');
@@ -34,12 +38,45 @@ test('livreur : avancement idempotent (rejeu même clé = pas de double effet)',
   assert.equal(r4.status, 400); // livraison via preuve
 });
 
-test('livreur : preuve + encaissement COD → LIVREE, idempotent', async () => {
-  const p1 = await api(`/v1/driver/orders/${ref}/proof`, { method: 'POST', token: driver, body: { codCollected: 400 }, ...idem('PRF1') });
+test('livreur : preuve refusée sans les artefacts exigés par le proofLevel', async () => {
+  // La commande est créée au niveau par défaut `photo_signature`.
+  const r = await api(`/v1/driver/orders/${ref}/proof`, { method: 'POST', token: driver, body: { codCollected: 400 } });
+  assert.equal(r.status, 400);
+  assert.match(r.json.message, /Preuve incomplète/);
+});
+
+test('livreur : preuve refusée si un seul des deux artefacts est fourni', async () => {
+  const r = await api(`/v1/driver/orders/${ref}/proof`, {
+    method: 'POST', token: driver, body: { codCollected: 400, photo: PHOTO },
+  });
+  assert.equal(r.status, 400);
+  assert.match(r.json.message, /signature/);
+});
+
+test('livreur : artefact rejeté si ce n’est pas un data URI attendu', async () => {
+  const r = await api(`/v1/driver/orders/${ref}/proof`, {
+    method: 'POST', token: driver, body: { codCollected: 400, photo: 'https://exemple.ma/photo.jpg', signature: SIGN },
+  });
+  assert.equal(r.status, 400);
+  assert.match(r.json.message, /data URI/);
+});
+
+test('livreur : preuve complète + encaissement COD → LIVREE, idempotent', async () => {
+  const body = { codCollected: 400, photo: PHOTO, signature: SIGN };
+  const p1 = await api(`/v1/driver/orders/${ref}/proof`, { method: 'POST', token: driver, body, ...idem('PRF1') });
   assert.equal(p1.json.status, 'LIVREE');
   assert.equal(p1.json.codPaid, true);
-  const p2 = await api(`/v1/driver/orders/${ref}/proof`, { method: 'POST', token: driver, body: { codCollected: 400 }, ...idem('PRF1') });
+  const p2 = await api(`/v1/driver/orders/${ref}/proof`, { method: 'POST', token: driver, body, ...idem('PRF1') });
   assert.deepEqual(p2.json, p1.json); // rejeu : réponse mémorisée identique
+});
+
+test('ops : la preuve capturée est consultable depuis la console', async () => {
+  const r = await api(`/v1/orders/${ref}/proof`, { token: admin });
+  assert.equal(r.status, 200);
+  assert.equal(r.json.captured, true);
+  assert.equal(r.json.proofLevel, 'photo_signature');
+  assert.equal(r.json.photo, PHOTO);
+  assert.equal(r.json.capturedBy, DRIVER);
 });
 
 test('RBAC : un admin n’accède pas à l’app livreur', async () => {
