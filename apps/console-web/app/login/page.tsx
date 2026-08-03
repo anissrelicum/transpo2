@@ -48,7 +48,10 @@ export default function LoginPage() {
       body: JSON.stringify({ email, password, tenant: org || undefined, superAdmin: superAdmin || undefined }),
     });
     if (res.ok) {
-      window.location.assign(superAdmin ? '/saas' : '/dashboard'); // navigation dure (cookies posés)
+      const { role } = await res.json().catch(() => ({ role: undefined }));
+      // Chaque realm a sa racine : plateforme, espace marchand, console transport.
+      const home = superAdmin ? '/saas' : role === 'MERCHANT' ? '/portail' : '/dashboard';
+      window.location.assign(home); // navigation dure (cookies posés)
       return;
     }
     setLoading(false);
