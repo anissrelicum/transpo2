@@ -3,10 +3,11 @@ import { DriversService } from './drivers.service.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { TenantGuard } from '../tenant/tenant.guard.js';
 import { RolesGuard } from '../auth/roles.guard.js';
-import { Roles } from '../auth/roles.decorator.js';
+import { Roles, CONSOLE_ROLES } from '../auth/roles.decorator.js';
 
 @Controller('v1/drivers')
 @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
+@Roles(...CONSOLE_ROLES)
 export class DriversController {
   constructor(@Inject(DriversService) private readonly drivers: DriversService) {}
 

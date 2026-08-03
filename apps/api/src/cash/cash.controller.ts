@@ -3,10 +3,11 @@ import { CashService } from './cash.service.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { TenantGuard } from '../tenant/tenant.guard.js';
 import { RolesGuard } from '../auth/roles.guard.js';
-import { Roles } from '../auth/roles.decorator.js';
+import { Roles, CONSOLE_ROLES } from '../auth/roles.decorator.js';
 
 @Controller('v1/cash')
 @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
+@Roles(...CONSOLE_ROLES)
 export class CashController {
   constructor(@Inject(CashService) private readonly cash: CashService) {}
 
