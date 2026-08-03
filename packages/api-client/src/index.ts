@@ -349,6 +349,10 @@ export class TranspoClient {
       method: 'POST', body: {}, headers: { 'idempotency-key': idemKey },
     });
   }
+  /** Position du livreur (scope = claim `driver`). Éphémère : pas d'idempotence. */
+  pushDriverPosition(lat: number, lng: number): Promise<{ ok: boolean; at: string }> {
+    return this.req('/v1/tracking/position', { method: 'POST', body: { lat, lng } });
+  }
   driverProof(
     ref: string,
     body: { codCollected?: number; photo?: string; signature?: string },

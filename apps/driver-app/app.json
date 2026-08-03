@@ -23,7 +23,19 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Transpo utilise votre position pendant vos tournées pour informer le PC flotte de votre avancement."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Transpo utilise l’appareil photo pour la preuve de livraison (photo du colis remis)."
+        }
+      ]
     ],
     "extra": {
       "apiUrl": "https://api.transpo.wedo.technology",
