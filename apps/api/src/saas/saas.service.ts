@@ -4,6 +4,15 @@ import { SAAS_PLANS, TENANT_STATUSES, planByCode, type TenantStatus } from '@tra
 import { AuditService } from '../audit/audit.service.js';
 import type { JwtUser } from '../auth/jwt.js';
 
+/**
+ * Sous-domaines réservés à l'infrastructure : le slug d'un tenant devient son
+ * sous-domaine (`slug.transpo.wedo.technology`). `api` sert l'API publique ;
+ * les autres sont des noms d'hôte usuels ou déjà exclus de la résolution de
+ * tenant côté web. Un tenant portant l'un d'eux serait inaccessible, ou pire,
+ * masquerait le service en place.
+ */
+const RESERVED_SLUGS = ['api', 'www', 'app', 'admin', 'static', 'assets', 'mail', 'smtp', 'ftp'];
+
 @Injectable()
 export class SaasService {
   // @Inject explicite : requis sous tsx/esbuild (pas de métadonnée de type émise).
@@ -17,6 +26,9 @@ export class SaasService {
 
   /** Provisionne un tenant (crée le schéma + tables + ligne). Réservé SUPER_ADMIN. Tracé. */
   async provision(actor: JwtUser, input: TenantInput) {
+    if (RESERVED_SLUGS.includes(input.slug)) {
+      throw new BadRequestException(`Slug réservé à l’infrastructure : ${input.slug}`);
+    }
     const exists = await pool.query('SELECT 1 FROM platform.tenants WHERE slug = $1', [input.slug]);
     if (exists.rowCount) throw new ConflictException(`Tenant déjà existant : ${input.slug}`);
 
