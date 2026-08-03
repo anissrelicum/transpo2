@@ -43,6 +43,11 @@ export interface Zone { id: string; nameFr: string; nameAr: string | null; color
 export interface Suggestion { driver: string; city: string; vehicle: string; score: number; parts: { zone: number; dispo: number; charge: number } }
 export interface ReturnRow { ref: string; reason: string; attempts: number; status: string; createdAt: string }
 export interface NotificationRow { id: string; event: string; channel: string; recipient: string; lang: string; body: string; status: string; reason: string | null; createdAt: string }
+export interface DeliveryProof {
+  ref: string; proofLevel: string; captured: boolean;
+  photo: string | null; signature: string | null;
+  capturedBy: string | null; capturedAt: string | null;
+}
 export interface MerchantDashboard {
   total: number; delivered: number; cancelled: number; inTransit: number;
   codPending: number; successRate: number;
@@ -281,6 +286,10 @@ export class TranspoClient {
 
   // --- Avis clients ---
   getReviews(): Promise<ReviewsSummary> { return this.req('/v1/reviews'); }
+
+  getOrderProof(ref: string): Promise<DeliveryProof> {
+    return this.req(`/v1/orders/${encodeURIComponent(ref)}/proof`);
+  }
 
   // --- Portail marchand (MERCHANT, scope = claim `merchant` du JWT) ---
   getMerchantOrders(): Promise<Order[]> { return this.req('/v1/merchant/orders'); }

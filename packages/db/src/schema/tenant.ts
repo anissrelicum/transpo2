@@ -143,6 +143,14 @@ export const notifications = pgTable('notifications', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const deliveryProofs = pgTable('delivery_proofs', {
+  ref: text('ref').primaryKey(),
+  photo: text('photo'),
+  signature: text('signature'),
+  capturedBy: text('captured_by').notNull(),
+  capturedAt: timestamp('captured_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const notifTemplates = pgTable('notif_templates', {
   event: text('event').primaryKey(),
   fr: text('fr').notNull(),

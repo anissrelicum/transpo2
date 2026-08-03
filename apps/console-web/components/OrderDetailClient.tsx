@@ -10,8 +10,9 @@ import {
   SewingPinFilledIcon, CubeIcon, DownloadIcon, InfoCircledIcon, ImageIcon, DotFilledIcon,
 } from '@radix-ui/react-icons';
 import { StatusBadge, CodChip, money } from '@transpo/ui-web';
-import { LIFECYCLE, STATUS_META } from '@transpo/domain';
+import { LIFECYCLE, STATUS_META, proofRequirements } from '@transpo/domain';
 import type { Order, OrderStatus } from '@transpo/domain';
+import type { DeliveryProof } from '@transpo/api-client';
 import { OrderActions } from './OrderActions';
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
@@ -25,7 +26,55 @@ function InfoBlock({ icon, title, lines }: { icon: React.ReactNode; title: strin
   );
 }
 
-export function OrderDetailClient({ order, drivers, canWrite, commissionRate, vatRate }: { order: Order; drivers: string[]; canWrite: boolean; commissionRate: number; vatRate: number }) {
+/** Preuve réellement capturée par le livreur (photo / signature), ou l'état d'attente. */
+function ProofPanel({ order, proof }: { order: Order; proof: DeliveryProof | null }) {
+  const required = proofRequirements(order.proofLevel);
+  const items = ([['photo', proof?.photo], ['signature', proof?.signature]] as const)
+    .filter(([kind]) => required.includes(kind));
+
+  return (
+    <>
+      <Callout.Root color={proof?.captured ? 'green' : 'gray'} variant="surface" size="1" mb="3">
+        <Callout.Icon>{proof?.captured ? <CheckIcon /> : <InfoCircledIcon />}</Callout.Icon>
+        <Callout.Text>
+          Preuve requise : <strong>{order.proofLevel}</strong>.{' '}
+          {proof?.captured
+            ? <>Déposée par <strong>{proof.capturedBy}</strong>{proof.capturedAt ? ` le ${new Date(proof.capturedAt).toLocaleString('fr-FR')}` : ''}.</>
+            : order.status === 'LIVREE'
+              ? 'Livraison confirmée sans artefact enregistré (antérieure à la capture de preuve).'
+              : 'En attente de la livraison.'}
+        </Callout.Text>
+      </Callout.Root>
+
+      {required.length === 0 ? (
+        <Text size="2" color="gray">Aucune preuve n’est exigée pour cette commande.</Text>
+      ) : (
+        <Grid columns={{ initial: '1', sm: '2' }} gap="3">
+          {items.map(([kind, src]) => (
+            <Box key={kind}>
+              <Text as="div" size="1" color="gray" weight="medium" mb="1">
+                {kind === 'photo' ? 'Photo du colis livré' : 'Signature du destinataire'}
+              </Text>
+              {src ? (
+                <Box style={{ borderRadius: 'var(--radius-3)', border: '1px solid var(--gray-a5)', overflow: 'hidden', background: kind === 'signature' ? '#fff' : 'var(--gray-a2)' }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element -- data URI, pas d'optimisation possible */}
+                  <img src={src} alt={kind === 'photo' ? 'Photo de livraison' : 'Signature du destinataire'}
+                    style={{ display: 'block', width: '100%', maxHeight: 260, objectFit: 'contain' }} />
+                </Box>
+              ) : (
+                <Flex align="center" justify="center" gap="2" style={{ aspectRatio: '4/3', borderRadius: 'var(--radius-3)', border: '1px dashed var(--gray-a6)', background: 'var(--gray-a2)', color: 'var(--gray-9)' }}>
+                  <ImageIcon width="18" height="18" /><Text size="1" color="gray">Non déposée</Text>
+                </Flex>
+              )}
+            </Box>
+          ))}
+        </Grid>
+      )}
+    </>
+  );
+}
+
+export function OrderDetailClient({ order, drivers, proof, canWrite, commissionRate, vatRate }: { order: Order; drivers: string[]; proof: DeliveryProof | null; canWrite: boolean; commissionRate: number; vatRate: number }) {
   const [copied, setCopied] = React.useState(false);
   const idx = LIFECYCLE.indexOf(order.status as OrderStatus);
   const copy = () => { navigator.clipboard?.writeText(order.code); setCopied(true); setTimeout(() => setCopied(false), 1500); };
@@ -112,14 +161,7 @@ export function OrderDetailClient({ order, drivers, canWrite, commissionRate, va
                 </Tabs.Content>
 
                 <Tabs.Content value="proof">
-                  <Callout.Root color="gray" variant="surface" size="1" mb="3"><Callout.Icon><InfoCircledIcon /></Callout.Icon><Callout.Text>Preuve requise : <strong>{order.proofLevel}</strong>. {order.status === 'LIVREE' ? 'Livraison confirmée.' : 'En attente de la livraison.'}</Callout.Text></Callout.Root>
-                  <Grid columns={{ initial: '2', sm: '4' }} gap="2">
-                    {[0, 1, 2, 3].map((i) => (
-                      <Box key={i} style={{ aspectRatio: '1', borderRadius: 'var(--radius-3)', border: order.status === 'LIVREE' && i < 2 ? 'none' : '1px dashed var(--gray-a6)', background: order.status === 'LIVREE' && i < 2 ? 'var(--indigo-a3)' : 'var(--gray-a2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gray-9)' }}>
-                        <ImageIcon width="20" height="20" color={order.status === 'LIVREE' && i < 2 ? 'var(--indigo-10)' : undefined} />
-                      </Box>
-                    ))}
-                  </Grid>
+                  <ProofPanel order={order} proof={proof} />
                 </Tabs.Content>
 
                 <Tabs.Content value="history">

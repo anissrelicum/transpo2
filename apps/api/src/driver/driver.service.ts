@@ -1,11 +1,30 @@
 import { Injectable, BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
-import { withTenantDb, orders as ordersTable, idempotencyKeys } from '@transpo/db';
+import { withTenantDb, orders as ordersTable, idempotencyKeys, deliveryProofs } from '@transpo/db';
 import { and, desc, eq, inArray } from 'drizzle-orm';
-import { LIFECYCLE, type Order, type OrderStatus } from '@transpo/domain';
+import { LIFECYCLE, missingProof, type Order, type OrderStatus, type ProofLevel } from '@transpo/domain';
 
 const ACTIVE: OrderStatus[] = ['ASSIGNEE', 'RETRAIT', 'RECUPEREE', 'LIVRAISON'];
+// ~700 Ko de data URI ≈ 500 Ko binaire : large pour une photo compressée par l'app,
+// assez bas pour ne pas saturer la base ni la file d'attente hors ligne du mobile.
+const MAX_ARTIFACT_CHARS = 700_000;
+
+export interface ProofInput { codCollected?: number; photo?: string | null; signature?: string | null }
+
 function rowToOrder(r: any): Order {
   return { ...r, createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt } as Order;
+}
+
+/** Valide un artefact de preuve : data URI d'un type attendu, de taille bornée. */
+function assertArtifact(value: string | null | undefined, name: string, mimes: string[]): string | undefined {
+  if (!value) return undefined;
+  const v = value.trim();
+  if (!mimes.some((m) => v.startsWith(`data:${m};base64,`))) {
+    throw new BadRequestException(`${name} : data URI attendu (${mimes.join(' ou ')}).`);
+  }
+  if (v.length > MAX_ARTIFACT_CHARS) {
+    throw new BadRequestException(`${name} : trop volumineux (max ${Math.round(MAX_ARTIFACT_CHARS / 1000)} Ko encodés).`);
+  }
+  return v;
 }
 
 @Injectable()
@@ -71,14 +90,33 @@ export class DriverService {
     });
   }
 
-  /** Preuve de livraison + encaissement COD → LIVREE. Idempotent. */
-  async proof(schema: string, driver: string | undefined, ref: string, body: { codCollected?: number }, key?: string) {
+  /**
+   * Preuve de livraison + encaissement COD → LIVREE. Idempotent.
+   * Le `proofLevel` de la commande est **appliqué** : sans les artefacts exigés,
+   * la livraison est refusée. Photo et signature sont des data URI déjà compressés
+   * par l'app ; leur taille est bornée pour ne pas gonfler la base ni la file hors ligne.
+   */
+  async proof(schema: string, driver: string | undefined, ref: string, body: ProofInput, key?: string) {
     const d = this.ensure(driver);
     return this.idempotent(schema, key, async () => {
       const cur = await this.ownedOrder(schema, d, ref);
       if (cur.status !== 'LIVRAISON') throw new BadRequestException('Preuve possible en cours de livraison uniquement.');
+
+      const photo = assertArtifact(body?.photo, 'photo', ['image/jpeg', 'image/png']);
+      const signature = assertArtifact(body?.signature, 'signature', ['image/png', 'image/svg+xml']);
+      const missing = missingProof(cur.proofLevel as ProofLevel, { photo, signature });
+      if (missing) throw new BadRequestException(missing);
+
       const codPaid = cur.cod > 0 ? (body?.codCollected ?? 0) >= cur.cod : false;
       return withTenantDb(schema, async (db) => {
+        if (photo || signature) {
+          await db.insert(deliveryProofs)
+            .values({ ref, photo: photo ?? null, signature: signature ?? null, capturedBy: d })
+            .onConflictDoUpdate({
+              target: deliveryProofs.ref,
+              set: { photo: photo ?? null, signature: signature ?? null, capturedBy: d, capturedAt: new Date() },
+            });
+        }
         const [r] = await db.update(ordersTable)
           .set({ status: 'LIVREE', codPaid })
           .where(eq(ordersTable.ref, ref)).returning();

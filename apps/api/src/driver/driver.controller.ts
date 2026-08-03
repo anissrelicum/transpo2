@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Param, Body, Req, Headers, UseGuards, Inject, HttpCode } from '@nestjs/common';
-import { DriverService } from './driver.service.js';
+import { DriverService, type ProofInput } from './driver.service.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { TenantGuard } from '../tenant/tenant.guard.js';
 import { RolesGuard } from '../auth/roles.guard.js';
@@ -25,7 +25,7 @@ export class DriverController {
   proof(
     @Req() req: any,
     @Param('ref') ref: string,
-    @Body() body: { codCollected?: number },
+    @Body() body: ProofInput,
     @Headers('idempotency-key') key?: string,
   ) {
     return this.svc.proof(req.tenantSchema, req.user?.driver, ref, body ?? {}, key);
