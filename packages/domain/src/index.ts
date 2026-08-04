@@ -267,7 +267,11 @@ export function money(n: number): string {
   const f = new Intl.NumberFormat('fr-FR', {
     minimumFractionDigits: 2, maximumFractionDigits: 2,
   }).format(n);
-  return f.replace(/ | /g, ' ') + ' DH';
+  // Isolat directionnel : en contexte RTL (interface arabe), l'algorithme bidi
+  // découpe sinon le montant et sa devise en segments qu'il réordonne —
+  // « 7 990,00 DH » s'affichait « 990,00 7 DH ». U+2066…U+2069 le traite comme
+  // un bloc gauche-à-droite unique, sans effet visible en contexte LTR.
+  return `⁦${f.replace(/ | /g, ' ')} DH⁩`;
 }
 
 /* ====================== Type Order (contrat partagé) ====================== */
