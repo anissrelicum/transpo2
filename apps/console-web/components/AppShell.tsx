@@ -14,45 +14,47 @@ import {
   MoonIcon, ChevronDownIcon, ExitIcon, Cross2Icon,
 } from '@radix-ui/react-icons';
 import { useAppTheme } from './theme-provider';
+import { LangSwitch } from './LangSwitch';
+import { t, type Lang, type Key, type Translate } from '@transpo/i18n';
 
-type Item = { id: string; label: string; icon: React.ComponentType<any>; href?: string };
-type Group = { group: string; items: Item[] };
+type Item = { id: string; key: Key; icon: React.ComponentType<any>; href?: string };
+type Group = { key: Key; items: Item[] };
 
 // IA de navigation reprise de la maquette (lib.jsx NAV). Toutes les entrées sont
 // branchées à un écran réel ; l'`id` correspond au 1er segment de la route.
 const NAV: Group[] = [
-  { group: 'Opérations', items: [
-    { id: 'dashboard', label: 'Tableau de bord', icon: DashboardIcon, href: '/dashboard' },
-    { id: 'orders', label: 'Commandes', icon: ArchiveIcon, href: '/orders' },
-    { id: 'analytics', label: 'Analytics & SLA', icon: BarChartIcon, href: '/analytics' },
-    { id: 'fraud', label: 'Fraude COD', icon: LockClosedIcon, href: '/fraud' },
-    { id: 'tournees', label: 'Tournées', icon: StackIcon, href: '/tournees' },
-    { id: 'dispatch', label: 'Dispatch', icon: SewingPinFilledIcon, href: '/dispatch' },
-    { id: 'fleet', label: 'PC flotte', icon: TargetIcon, href: '/fleet' },
-    { id: 'zones', label: 'Zones', icon: GlobeIcon, href: '/zones' },
-    { id: 'hub', label: 'Tri en hub', icon: LayersIcon, href: '/hub' },
-    { id: 'returns', label: 'Retours', icon: ResetIcon, href: '/returns' },
+  { key: 'nav.operations', items: [
+    { id: 'dashboard', key: 'nav.dashboard', icon: DashboardIcon, href: '/dashboard' },
+    { id: 'orders', key: 'nav.orders', icon: ArchiveIcon, href: '/orders' },
+    { id: 'analytics', key: 'nav.analytics', icon: BarChartIcon, href: '/analytics' },
+    { id: 'fraud', key: 'nav.fraud', icon: LockClosedIcon, href: '/fraud' },
+    { id: 'tournees', key: 'nav.tournees', icon: StackIcon, href: '/tournees' },
+    { id: 'dispatch', key: 'nav.dispatch', icon: SewingPinFilledIcon, href: '/dispatch' },
+    { id: 'fleet', key: 'nav.fleetLive', icon: TargetIcon, href: '/fleet' },
+    { id: 'zones', key: 'nav.zones', icon: GlobeIcon, href: '/zones' },
+    { id: 'hub', key: 'nav.hub', icon: LayersIcon, href: '/hub' },
+    { id: 'returns', key: 'nav.returns', icon: ResetIcon, href: '/returns' },
   ]},
-  { group: 'Flotte', items: [
-    { id: 'vehicles', label: 'Véhicules', icon: CubeIcon, href: '/vehicles' },
-    { id: 'drivers', label: 'Chauffeurs', icon: IdCardIcon, href: '/drivers' },
+  { key: 'nav.fleet', items: [
+    { id: 'vehicles', key: 'nav.vehicles', icon: CubeIcon, href: '/vehicles' },
+    { id: 'drivers', key: 'nav.drivers', icon: IdCardIcon, href: '/drivers' },
   ]},
-  { group: 'Facturation', items: [
-    { id: 'pricing', label: 'Tarification', icon: TokensIcon, href: '/pricing' },
-    { id: 'invoices', label: 'Factures', icon: FileTextIcon, href: '/invoices' },
-    { id: 'cash', label: 'Caisse', icon: CardStackIcon, href: '/cash' },
-    { id: 'payout', label: 'Reversement COD', icon: ArrowRightIcon, href: '/payout' },
+  { key: 'nav.billing', items: [
+    { id: 'pricing', key: 'nav.pricing', icon: TokensIcon, href: '/pricing' },
+    { id: 'invoices', key: 'nav.invoices', icon: FileTextIcon, href: '/invoices' },
+    { id: 'cash', key: 'nav.cash', icon: CardStackIcon, href: '/cash' },
+    { id: 'payout', key: 'nav.payout', icon: ArrowRightIcon, href: '/payout' },
   ]},
-  { group: 'Administration', items: [
-    { id: 'users', label: 'Utilisateurs', icon: PersonIcon, href: '/users' },
-    { id: 'notifications', label: 'Notifications', icon: BellIcon, href: '/notifications' },
-    { id: 'reviews', label: 'Avis clients', icon: StarIcon, href: '/reviews' },
-    { id: 'templates', label: 'Modèles de notif.', icon: PaperPlaneIcon, href: '/templates' },
-    { id: 'settings', label: 'Paramètres', icon: GearIcon, href: '/settings' },
+  { key: 'nav.administration', items: [
+    { id: 'users', key: 'nav.users', icon: PersonIcon, href: '/users' },
+    { id: 'notifications', key: 'nav.notifications', icon: BellIcon, href: '/notifications' },
+    { id: 'reviews', key: 'nav.reviews', icon: StarIcon, href: '/reviews' },
+    { id: 'templates', key: 'nav.templates', icon: PaperPlaneIcon, href: '/templates' },
+    { id: 'settings', key: 'nav.settings', icon: GearIcon, href: '/settings' },
   ]},
 ];
 
-function NavItem({ item, active }: { item: Item; active: boolean }) {
+function NavItem({ item, active, tr }: { item: Item; active: boolean; tr: Translate }) {
   const enabled = !!item.href;
   const Icon = item.icon;
   const btn = (
@@ -64,12 +66,12 @@ function NavItem({ item, active }: { item: Item; active: boolean }) {
       style={{ width: '100%', justifyContent: 'flex-start', gap: 'var(--space-2)' }}
     >
       <Icon width={16} height={16} />
-      <Text size="2">{item.label}</Text>
+      <Text size="2">{tr(item.key)}</Text>
     </Button>
   );
   if (!enabled) {
     return (
-      <Tooltip content="Écran à venir">
+      <Tooltip content={tr('common.loading')}>
         <span style={{ display: 'block', width: '100%' }}>{btn}</span>
       </Tooltip>
     );
@@ -77,7 +79,7 @@ function NavItem({ item, active }: { item: Item; active: boolean }) {
   return <Link href={item.href!} style={{ display: 'block', width: '100%' }}>{btn}</Link>;
 }
 
-function Sidebar({ active }: { active: string }) {
+function Sidebar({ active, tr }: { active: string; tr: Translate }) {
   return (
     <Box
       p="3"
@@ -93,18 +95,18 @@ function Sidebar({ active }: { active: string }) {
         </Flex>
         <Box>
           <Text as="div" weight="bold" size="3">Transpo</Text>
-          <Text as="div" size="1" color="gray">Console transport</Text>
+          <Text as="div" size="1" color="gray">{tr('login.subtitle')}</Text>
         </Box>
       </Flex>
       {NAV.map((grp) => (
-        <Box key={grp.group} mb="4">
+        <Box key={grp.key} mb="4">
           <Text as="div" size="1" color="gray" weight="medium" ml="2" mb="1"
             style={{ textTransform: 'uppercase', letterSpacing: '.04em', fontSize: 11 }}>
-            {grp.group}
+            {tr(grp.key)}
           </Text>
           <Flex direction="column" gap="1">
             {grp.items.map((it) => (
-              <NavItem key={it.id} item={it} active={active === it.id} />
+              <NavItem key={it.id} item={it} active={active === it.id} tr={tr} />
             ))}
           </Flex>
         </Box>
@@ -113,7 +115,7 @@ function Sidebar({ active }: { active: string }) {
   );
 }
 
-function Topbar({ name, role }: { name: string; role: string }) {
+function Topbar({ name, role, lang, tr }: { name: string; role: string; lang: Lang; tr: Translate }) {
   const { appearance, toggle } = useAppTheme();
   const router = useRouter();
   const [q, setQ] = React.useState('');
@@ -133,7 +135,7 @@ function Topbar({ name, role }: { name: string; role: string }) {
       style={{ borderBottom: '1px solid var(--gray-a4)', position: 'sticky', top: 0, background: 'var(--color-panel-solid)', zIndex: 5, minHeight: 56 }}>
       <Box style={{ flex: 1, minWidth: 180, maxWidth: 380 }}>
         <form onSubmit={search}>
-          <TextField.Root size="2" radius="large" placeholder="Rechercher une commande, un marchand, un code…"
+          <TextField.Root size="2" radius="large" placeholder={tr('nav.searchPlaceholder')}
             value={q} onChange={(e) => setQ(e.target.value)}>
             <TextField.Slot><MagnifyingGlassIcon height={16} width={16} /></TextField.Slot>
             {q
@@ -148,9 +150,10 @@ function Topbar({ name, role }: { name: string; role: string }) {
             {appearance === 'dark' ? <SunIcon /> : <MoonIcon />}
           </IconButton>
         </Tooltip>
-        <Tooltip content="Notifications">
+        <Tooltip content={tr('nav.notifications')}>
           <IconButton size="2" variant="ghost" color="gray"><BellIcon /></IconButton>
         </Tooltip>
+        <LangSwitch lang={lang} label={tr('common.language')} />
         <Separator orientation="vertical" size="1" />
         <DropdownMenu.Root>
           <DropdownMenu.Trigger>
@@ -165,7 +168,7 @@ function Topbar({ name, role }: { name: string; role: string }) {
           </DropdownMenu.Trigger>
           <DropdownMenu.Content align="end">
             <DropdownMenu.Item color="red" onSelect={logout}>
-              <ExitIcon /> Se déconnecter
+              <ExitIcon /> {tr('common.logout')}
             </DropdownMenu.Item>
           </DropdownMenu.Content>
         </DropdownMenu.Root>
@@ -175,15 +178,18 @@ function Topbar({ name, role }: { name: string; role: string }) {
 }
 
 /** Coquille applicative : sidebar + topbar autour du contenu de page. */
-export function AppShell({ name, role, children }: { name: string; role: string; children: React.ReactNode }) {
+export function AppShell({ name, role, lang, children }: {
+  name: string; role: string; lang: Lang; children: React.ReactNode;
+}) {
   const pathname = usePathname();
   // id de nav actif dérivé du 1er segment de l'URL (/orders → orders, etc.)
   const active = (pathname || '/').split('/')[1] || 'dashboard';
+  const tr = t(lang);
   return (
     <Flex align="stretch" style={{ minHeight: '100vh' }}>
-      <Sidebar active={active} />
+      <Sidebar active={active} tr={tr} />
       <Flex direction="column" style={{ flex: 1, minWidth: 0 }}>
-        <Topbar name={name} role={role} />
+        <Topbar name={name} role={role} lang={lang} tr={tr} />
         <Box p={{ initial: '4', md: '5' }} style={{ flex: 1 }}>
           {children}
         </Box>

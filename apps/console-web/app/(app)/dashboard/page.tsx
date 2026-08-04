@@ -9,6 +9,7 @@ import { StatusBadge, CodChip, money } from '@transpo/ui-web';
 import type { Order } from '@transpo/domain';
 import type { Vehicle } from '@transpo/api-client';
 import { load } from '../../../lib/page';
+import { i18n } from '../../../lib/i18n';
 import { serverClient } from '../../../lib/server';
 import { PageHeader, KPI, ActivityChart } from '../../../components/ui';
 
@@ -23,6 +24,7 @@ function daysUntil(due: string | null): number | null {
 }
 
 export default async function DashboardPage() {
+  const { lang, tr } = i18n();
   const orders = await load((c) => c.getOrders());
   // Véhicules réservés ADMIN : optionnels (un DISPATCHER n'y a pas accès).
   let vehicles: Vehicle[] = [];
@@ -63,22 +65,22 @@ export default async function DashboardPage() {
     else if (ct != null && ct <= 15) alerts.push({ color: 'orange', icon: <ClockIcon />, text: <><strong>Contrôle technique</strong> — {v.type} {v.plate}, échéance dans {ct} j</> });
   }
 
-  const today = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
+  const today = new Intl.DateTimeFormat(lang === 'ar' ? 'ar-MA' : 'fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
 
   return (
     <Box style={{ maxWidth: 1200, margin: '0 auto' }}>
       <PageHeader
-        title="Tableau de bord"
-        subtitle={`Vue opérationnelle du ${today}`}
-        actions={<Button variant="soft" color="gray"><DownloadIcon /> Exporter</Button>}
+        title={tr('dashboard.title')}
+        subtitle={tr('dashboard.subtitle', { date: today })}
+        actions={<Button variant="soft" color="gray"><DownloadIcon /> {tr('dashboard.export')}</Button>}
       />
 
       <Grid columns={{ initial: '2', md: '3', lg: '5' }} gap="3" mb="4">
-        <KPI label="Commandes" value={String(orders.length)} delta="total en base" deltaColor="gray" icon={<ArchiveIcon width="15" />} accent="indigo" />
-        <KPI label="En cours" value={String(enCours)} delta={`${nonAffectees} non affectées`} deltaColor="amber" icon={<LapTimerIcon width="15" />} accent="cyan" />
-        <KPI label="Livrées" value={String(livrees)} delta="cumul" deltaColor="green" icon={<CheckCircledIcon width="15" />} accent="green" />
-        <KPI label="Échouées" value={String(echouees)} delta="à traiter" deltaColor="red" icon={<CrossCircledIcon width="15" />} accent="red" />
-        <KPI label="COD encaissé" value={money(codEncaisse)} delta="reversable" deltaColor="amber" icon={<DownloadIcon width="15" />} accent="amber" />
+        <KPI label={tr('dashboard.orders')} value={String(orders.length)} delta={tr('dashboard.total')} deltaColor="gray" icon={<ArchiveIcon width="15" />} accent="indigo" />
+        <KPI label={tr('dashboard.inProgress')} value={String(enCours)} delta={tr('dashboard.unassigned', { n: nonAffectees })} deltaColor="amber" icon={<LapTimerIcon width="15" />} accent="cyan" />
+        <KPI label={tr('dashboard.delivered')} value={String(livrees)} delta={tr('dashboard.cumul')} deltaColor="green" icon={<CheckCircledIcon width="15" />} accent="green" />
+        <KPI label={tr('dashboard.failed')} value={String(echouees)} delta={tr('dashboard.toProcess')} deltaColor="red" icon={<CrossCircledIcon width="15" />} accent="red" />
+        <KPI label={tr('dashboard.codCollected')} value={money(codEncaisse)} delta={tr('dashboard.reversable')} deltaColor="amber" icon={<DownloadIcon width="15" />} accent="amber" />
       </Grid>
 
       <Grid columns={{ initial: '1', lg: '3' }} gap="4">
@@ -86,21 +88,21 @@ export default async function DashboardPage() {
           <Card size="3" mb="4">
             <Flex justify="between" align="center" mb="4">
               <Box>
-                <Heading size="4">Activité de la journée</Heading>
-                <Text size="1" color="gray">Commandes créées par heure</Text>
+                <Heading size="4">{tr('dashboard.activity')}</Heading>
+                <Text size="1" color="gray">{tr('dashboard.activityHint')}</Text>
               </Box>
-              {peak.count > 0 && <Badge color="indigo" variant="soft">Pic à {String(peak.hour).padStart(2, '0')}h</Badge>}
+              {peak.count > 0 && <Badge color="indigo" variant="soft">{tr('dashboard.peak', { hour: String(peak.hour).padStart(2, '0') })}</Badge>}
             </Flex>
             <ActivityChart buckets={buckets} peakHour={peak.hour} />
           </Card>
 
           <Card size="3">
             <Flex justify="between" align="center" mb="3">
-              <Heading size="4">Commandes urgentes</Heading>
-              <Button asChild size="1" variant="ghost"><Link href="/orders">Tout voir <ChevronRightIcon /></Link></Button>
+              <Heading size="4">{tr('dashboard.urgent')}</Heading>
+              <Button asChild size="1" variant="ghost"><Link href="/orders">{tr('dashboard.seeAll')} <ChevronRightIcon /></Link></Button>
             </Flex>
             <Flex direction="column" gap="2">
-              {urgentes.length === 0 && <Text size="2" color="gray">Aucune commande urgente.</Text>}
+              {urgentes.length === 0 && <Text size="2" color="gray">{tr('dashboard.noUrgent')}</Text>}
               {urgentes.map((o) => (
                 <Link key={o.ref} href={`/orders/${encodeURIComponent(o.ref)}`} style={{ textDecoration: 'none' }}>
                   <Flex align="center" justify="between" gap="3" p="2" style={{ borderRadius: 'var(--radius-3)', border: '1px solid var(--gray-a4)' }}>
@@ -121,10 +123,10 @@ export default async function DashboardPage() {
 
         <Box>
           <Card size="3" mb="4">
-            <Heading size="4" mb="1">Conformité flotte</Heading>
-            <Text size="1" color="gray" mb="3" as="div">Échéances à traiter</Text>
+            <Heading size="4" mb="1">{tr('dashboard.compliance')}</Heading>
+            <Text size="1" color="gray" mb="3" as="div">{tr('dashboard.complianceHint')}</Text>
             <Flex direction="column" gap="2">
-              {alerts.length === 0 && <Text size="2" color="gray">Aucune échéance en alerte.</Text>}
+              {alerts.length === 0 && <Text size="2" color="gray">{tr('dashboard.noAlert')}</Text>}
               {alerts.map((a, i) => (
                 <Callout.Root key={i} color={a.color} size="1"><Callout.Icon>{a.icon}</Callout.Icon><Callout.Text>{a.text}</Callout.Text></Callout.Root>
               ))}
@@ -133,22 +135,22 @@ export default async function DashboardPage() {
 
           <Card size="3">
             <Flex justify="between" align="center" mb="3">
-              <Heading size="4">COD du jour</Heading>
-              <Badge color="amber" variant="soft">à reverser</Badge>
+              <Heading size="4">{tr('dashboard.codToday')}</Heading>
+              <Badge color="amber" variant="soft">{tr('dashboard.toPay')}</Badge>
             </Flex>
             <Flex direction="column" gap="3">
               <Box>
-                <Flex justify="between" mb="1"><Text size="1" color="gray">Encaissé</Text><Text size="1" weight="medium">{money(codEncaisse)}</Text></Flex>
+                <Flex justify="between" mb="1"><Text size="1" color="gray">{tr('dashboard.collected')}</Text><Text size="1" weight="medium">{money(codEncaisse)}</Text></Flex>
                 <Progress value={Math.round((codEncaisse / codTotal) * 100)} color="green" />
               </Box>
               <Box>
-                <Flex justify="between" mb="1"><Text size="1" color="gray">À encaisser</Text><Text size="1" weight="medium">{money(codAEncaisser)}</Text></Flex>
+                <Flex justify="between" mb="1"><Text size="1" color="gray">{tr('dashboard.toCollect')}</Text><Text size="1" weight="medium">{money(codAEncaisser)}</Text></Flex>
                 <Progress value={Math.round((codAEncaisser / codTotal) * 100)} color="amber" />
               </Box>
               <Separator size="4" />
               <Flex justify="between" align="center">
-                <Text size="2" color="gray">Reversement marchands</Text>
-                <Button asChild size="1" variant="soft"><Link href="/payout">Ouvrir</Link></Button>
+                <Text size="2" color="gray">{tr('dashboard.merchantPayout')}</Text>
+                <Button asChild size="1" variant="soft"><Link href="/payout">{tr('dashboard.open')}</Link></Button>
               </Flex>
             </Flex>
           </Card>
