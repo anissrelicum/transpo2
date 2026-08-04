@@ -6,18 +6,23 @@ Document de lotissement produit par le tech lead. Source de vérité fonctionnel
 
 ---
 
-## 0. Fondations (agent « socle ») — dépendance de tous les lots
+## 0. Fondations (agent « socle ») — dépendance de tous les lots — **contrat figé par le tech lead**
 
-Les 4 lots ci-dessous importent, sans jamais les modifier, les livrables de l'agent socle :
+Les 4 lots ci-dessous importent, sans jamais les modifier, les livrables de l'agent socle. Noms d'export réels (à utiliser tels quels, plus de noms indicatifs) :
 
-- `apps/driver-app/app/_layout.tsx` (racine, Stack) + `apps/driver-app/app/(tabs)/_layout.tsx` (Tabs — Missions/Tournée/Scanner/Shift/Profil, 64px, actif `indigo-11`/inactif `gray-9`, masqué sur les écrans de flux).
-- Primitives `PhoneShell`, `BottomAction`, `PrimaryBtn` (52px, pleine largeur), `ScreenHead` (retour 44×44 + titre + sous-titre), équivalents RN des primitives de `lib-design-system.md`.
-- Le pont `@transpo/design-tokens` / `@transpo/i18n` → RN (ni l'un ni l'autre n'est aujourd'hui dans `apps/driver-app/package.json` — à ajouter côté socle) et le thème clair/sombre.
-- Le support RTL (arabe) au niveau shell.
+- `apps/driver-app/components/shell/TabBar.tsx` — 5 onglets (Missions/Tournée/Scanner/Shift/Profil), hauteur 64px, actif `indigo-11`/inactif `gray-9`. Montée par `apps/driver-app/app/(tabs)/_layout.tsx`.
+- `apps/driver-app/components/shell/ScreenHead.tsx` — retour 44×44 + titre + sous-titre.
+- `apps/driver-app/components/shell/PrimaryBtn.tsx` — pleine largeur, hauteur 52px.
+- `apps/driver-app/components/shell/BottomAction.tsx` — collé en bas, dégradé.
+- **Pas de `PhoneShell`** : c'est le cadre de simulation (390×844, bordure de téléphone) de la maquette, il n'a pas de sens dans une vraie app. Son équivalent réel = le layout Expo Router lui-même : `app/(tabs)/_layout.tsx` porte la `TabBar` ; les écrans de flux (connexion, détail mission, statut, preuve, échec…) vivent **hors** du groupe `(tabs)` et n'ont donc naturellement pas d'onglets — c'est la traduction correcte du `showTabs` de la maquette, pas un composant à écrire.
+- **Pas de `StatusBar` reproduite** : la maquette dessine une fausse barre iOS (9:41 etc.) pour la simulation ; sur un vrai téléphone c'est l'OS qui la rend. Gérer uniquement les safe areas via `react-native-safe-area-context` (déjà en dépendance) — ne pas redessiner l'horloge/le réseau/la batterie.
+- Thème clair/sombre : `packages/design-tokens/src/index.ts` étendu (palette, `resolveColor`, `statusColorHex`) + `apps/driver-app/lib/theme.ts` réécrit par socle.
+- `@transpo/design-tokens` et `@transpo/i18n` sont **déjà** en `workspace:*` dans `apps/driver-app/package.json` — rien à ajouter, contrairement à ce qui était supposé initialement.
+- Support RTL (arabe) au niveau shell.
 
-Un message a été envoyé à l'agent socle pour figer les noms d'export exacts ; **les 4 lots doivent s'aligner sur sa réponse plutôt que sur les noms hypothétiques utilisés ci-dessous** (`(tabs)/missions.tsx` etc. — les chemins de route sont fiables, les noms d'import de primitives sont indicatifs).
+**État à la date de rédaction** : tokens et `theme.ts` faits ; les 4 primitives (`TabBar`, `ScreenHead`, `PrimaryBtn`, `BottomAction`) sont en cours d'écriture par socle, pas encore livrées. Les lots peuvent commencer à coder contre ces noms/chemins dès maintenant — le contrat ne bougera plus.
 
-Aucun lot ne touche : `lib/theme.ts` (probablement absorbé/étendu par socle), les fichiers `_layout.tsx`.
+Aucun lot ne touche : `apps/driver-app/lib/theme.ts`, `packages/design-tokens/src/index.ts`, les fichiers `components/shell/*.tsx`, `app/_layout.tsx`, `app/(tabs)/_layout.tsx`.
 
 ---
 
@@ -36,7 +41,7 @@ Aucun lot ne touche : `lib/theme.ts` (probablement absorbé/étendu par socle), 
 | 6 | Mise à jour de statut | `app/mission/[ref]/status.tsx` | flux | `driverAdvance()` → `POST .../advance` (via outbox, kind `advance`) | B |
 | 7 | Preuve de livraison | `app/mission/[ref]/proof.tsx` | flux | `driverProof()` → `POST .../proof` (via outbox, kind `proof`) | B |
 | 8 | Encaissement COD | **fusionné dans `proof.tsx`** (2ᵉ étape interne, pas de route séparée — voir §3) | flux | même appel que #7 | B |
-| 9 | Échec de livraison | `app/mission/[ref]/fail.tsx` | flux | — (aucun endpoint « marquer échec » côté API) | B |
+| 9 | Échec de livraison | `app/mission/[ref]/fail.tsx` | flux | `driverFail(ref, reason, idemKey)` → `POST /v1/driver/orders/:ref/fail` **(nouveau, ajouté par le tech lead — déjà en place backend + client)**, borné au statut `LIVRAISON`, délègue à `ReturnsService.fail` → `ECHOUEE` + retour `A_TRAITER` | B |
 | 10 | Confirmation de livraison | `app/mission/[ref]/done.tsx` | flux | — (écran local post-#7) | B |
 | 11 | Ma tournée | `app/(tabs)/route.tsx` | onglet **Tournée** | dérivé de `getMissions()` ; algo plus-proche-voisin 100 % client ; **pas de lat/lng** → pas de vraie carte | C |
 | 12 | Scanner de colis | `app/(tabs)/scan.tsx` | onglet **Scanner** | — (scan simulé, PRD §9.2) | C |
@@ -52,9 +57,9 @@ Aucun lot ne touche : `lib/theme.ts` (probablement absorbé/étendu par socle), 
 | 22 | Aide / FAQ | `app/help.tsx` | flux (depuis Profil) | — (FAQ statique) | D |
 | 23 | Hors-ligne / file de sync | `app/sync-queue.tsx` | flux (depuis bandeau missions) | — (expose l'état de `lib/outbox.ts`, aucun endpoint dédié) | A |
 | 24 | Onboarding / recrutement | `app/onboarding.tsx` | flux (depuis Connexion, « Devenir livreur ») | — | A |
-| 25 | Ma caisse | `app/macaisse.tsx` | flux (depuis Profil) | `getCashSessions()`/`depositCashSession()` **existent mais semblent scopés admin/dispatcher** (`/v1/cash/...`) — accès rôle DRIVER non confirmé. **Tant que non confirmé, traiter comme pas de backend** (démo, comme la maquette) | D |
+| 25 | Ma caisse | ~~`app/macaisse.tsx`~~ **hors périmètre** | — | **Confirmé par le tech lead : `cash.controller.ts` porte `@Roles(ADMIN, DISPATCHER, COMPTABLE)` au niveau classe — un DRIVER reçoit 403 sur tout `/v1/cash`. Aucun endpoint caisse scopé livreur n'existe.** Ne pas construire cet écran avec des données statiques : un écran d'argent qui affiche du faux est pire que pas d'écran. **Retiré du Lot D**, à traiter comme un trou produit (« backend à créer ») hors de cette refonte. | — |
 
-**Liste blanche des appels API driver autorisés** (à vérifier par grep `authedClient()\.` dans chaque PR) : `getMissions`, `driverAdvance`, `driverProof`, `reportIncident`, `getMyIncidents`, `getSupportThread`, `sendSupportMessage`, `getDriverHistory`, `pushDriverPosition`. Tout autre appel doit être justifié explicitement ou signalé au tech lead — ne pas inventer d'endpoint.
+**Liste blanche des appels API driver autorisés** (à vérifier par grep `authedClient()\.` dans chaque PR) : `getMissions`, `driverAdvance`, `driverProof`, `driverFail`, `reportIncident`, `getMyIncidents`, `getSupportThread`, `sendSupportMessage`, `getDriverHistory`, `pushDriverPosition`. Tout autre appel doit être justifié explicitement ou signalé au tech lead — ne pas inventer d'endpoint. `getCashSessions`/`depositCashSession` sont **explicitement exclus** de cette liste pour l'app livreur (403 garanti côté serveur).
 
 **Divergence à corriger vs. la maquette** : `INCIDENT_TYPES` réel (`@transpo/domain`) = `ADRESSE, CLIENT_INJOIGNABLE, COLIS_ENDOMMAGE, VEHICULE, AUTRE` (5 valeurs, pas de champ gravité/SOS). La maquette a 6 types + gravité + bandeau urgence. Lot C garde l'esthétique (grille, bandeau rouge si pertinent) mais soumet un des 5 types réels — ne pas envoyer de champ `severity` inexistant côté API.
 
@@ -79,7 +84,7 @@ Fichiers à créer (propriété exclusive) :
 - `apps/driver-app/app/mission/[ref]/index.tsx` — détail (remplace l'actuel `app/mission/[ref].tsx`, **à supprimer en premier** puisqu'Expo Router n'autorise pas la coexistence fichier/dossier au même chemin). Carte statique/placeholder (pas de lat/lng réel dans `Order` — ne pas inventer de coordonnées), bloc retrait/livraison, bloc colis, bouton « Naviguer » → `status.tsx`.
 - `apps/driver-app/app/mission/[ref]/status.tsx` — machine à états séquentielle (branche `!atDelivery` de l'actuel fichier). Appelle `submit('advance')` → `enqueue({kind:'advance', ...})` → `driverAdvance`, **identique à l'existant**. Bouton « Signaler un échec » → `fail.tsx`.
 - `apps/driver-app/app/mission/[ref]/proof.tsx` — capture preuve **et** encaissement COD **dans le même écran, en deux étapes internes (state local)**, exactement comme le fait déjà la branche `atDelivery` de l'actuel fichier. **Ne pas séparer en deux routes** : `driverProof()` est un appel unique qui bundle `codCollected` + `photo` + `signature` avec un seul `idemKey` — scinder la route obligerait à faire transiter des data URI de plusieurs centaines de Ko par des query params, ce que l'app ne fait pas aujourd'hui et ne doit pas commencer à faire. Réutilise `capturePhoto` (`lib/proof.ts`), `<SignaturePad>` (`components/SignaturePad.tsx`, restylage léger de conteneur uniquement — ne pas toucher au `PanResponder`), `missingProof`/`proofRequirements` (`@transpo/domain`).
-- `apps/driver-app/app/mission/[ref]/fail.tsx` — nouveau, formulaire de motif d'échec. **Pas de backend** : ne pas appeler `driverAdvance`/`driverProof` avec un statut ECHOUEE inventé. Recommandation : rediriger l'action de confirmation vers `reportIncident({type:'AUTRE', ref, note})` (seul endpoint réel proche) avec un libellé honnête, ou désactiver la soumission avec un callout « Signalement transmis au dispatch — traitement manuel » — trancher en review, ne pas simuler un succès silencieux.
+- `apps/driver-app/app/mission/[ref]/fail.tsx` — nouveau, formulaire de motif d'échec. **Backend réel désormais disponible** : `driverFail(ref, reason, idemKey)` → `POST /v1/driver/orders/:ref/fail`, même forme que `proof` (idempotent, ownership vérifié, borné au statut `LIVRAISON`, délègue à `ReturnsService.fail` → commande `ECHOUEE` + retour `A_TRAITER`). **Ne pas rediriger vers `reportIncident`** : un incident ne fait pas passer la commande en `ECHOUEE`, le retour ne partirait jamais — ce serait un contournement silencieux. `idemKey(ref, 'fail')` suit le même format que les deux autres actions. Passer par l'outbox comme `advance`/`proof` (cf. §4 — troisième `kind` autorisé explicitement).
 - `apps/driver-app/app/mission/[ref]/done.tsx` — écran de succès (reprend la logique « commande introuvable = livrée » déjà présente en fin de l'actuel fichier).
 
 Ce lot porte le risque de régression le plus élevé (seul lot qui touche à l'enchaînement outbox/idempotence) — cf. §4.
@@ -94,16 +99,17 @@ Fichiers :
 
 ### Lot D — Profil, Historique, Objectifs, Récap, Documents, Réglages, Aide, Caisse
 Fichiers :
-- `apps/driver-app/app/(tabs)/profil.tsx` — nouveau, hub de navigation (avatar, disponibilité, fiche véhicule/permis, boutons vers tous les écrans ci-dessous). **Reçoit** la fonction `logout()` déplacée depuis `missions.tsx` (lot A) — même garde sur la file en attente (`Alert` si `pending.length > 0`), même appel `clearOutbox()` + `clearSession()`.
+- `apps/driver-app/app/(tabs)/profil.tsx` — nouveau, hub de navigation (avatar, disponibilité, fiche véhicule/permis, boutons vers tous les écrans ci-dessous). **Reçoit** la fonction `logout()` déplacée depuis `missions.tsx` (lot A) — même garde sur la file en attente (`Alert` si `pending.length > 0`), même appel `clearOutbox()` + `clearSession()`. **Exigence non négociable (confirmée tech lead)** : cette garde doit être préservée à l'identique — la perdre exposerait l'app à supprimer des actions non transmises au logout, une régression de données et non d'affichage.
 - `apps/driver-app/app/gains.tsx` — **redesign visuel uniquement**. Conserver `getDriverHistory()`, le cache `readJson/writeJson(CACHE_KEY)`, l'affichage conditionnel freelance/salarié piloté par les champs réels de `DriverHistory` (pas de nouvelle logique de contrat inventée si l'API ne l'expose pas déjà — vérifier `DriverHistory` avant d'afficher un badge « Freelance »/« Salarié » ; sinon garder l'affichage générique actuel).
 - `apps/driver-app/app/objectives.tsx` — nouveau, pas de backend (`GOALS` statique partagé, cf. `lib-design-system.md`).
 - `apps/driver-app/app/recap.tsx` — nouveau. Les 4 stats + COD peuvent être calculées côté client à partir de `getMissions()`/cache pour ce qui est calculable (courses livrées du jour) ; le reste (distance, temps de conduite, gains estimés, cash à déposer) n'a pas d'endpoint — données de démo, signalées comme telles.
 - `apps/driver-app/app/docs.tsx` — nouveau, pas de backend, liste statique de documents.
 - `apps/driver-app/app/settings.tsx` — nouveau. Notifications/langue/thème persistés localement (`lib/storage.ts`). Le partage de position est en **lecture seule** ici (cf. décision lot A/C).
 - `apps/driver-app/app/help.tsx` — nouveau, FAQ statique + recherche locale.
-- `apps/driver-app/app/macaisse.tsx` — nouveau. Ne pas appeler `getCashSessions()`/`depositCashSession()` sans confirmation d'accès rôle DRIVER (cf. §1, ligne 25) — démarrer en mode démo comme la maquette, brancher au vrai endpoint dans une itération ultérieure une fois le scope confirmé.
 
-**Note d'équilibrage** : ce lot a le plus grand nombre de fichiers (8) mais la charge individuelle est la plus faible (écrans majoritairement statiques, un seul lien vers un endpoint réel) — comparable en effort aux 3 autres lots qui ont moins de fichiers mais une complexité par fichier plus élevée (offline, idempotence, algorithmes).
+**« Ma caisse » est retirée du périmètre** (cf. §1 ligne 25 — confirmé par le tech lead, aucun endpoint scopé DRIVER, 403 garanti). Ne pas créer `app/macaisse.tsx`. Si un lien y menait dans le hub Profil, le retirer aussi plutôt que de pointer vers un écran inexistant.
+
+**Note d'équilibrage** : ce lot a le plus grand nombre de fichiers (7) mais la charge individuelle est la plus faible (écrans majoritairement statiques, un seul lien vers un endpoint réel) — comparable en effort aux 3 autres lots qui ont moins de fichiers mais une complexité par fichier plus élevée (offline, idempotence, algorithmes).
 
 ---
 
@@ -122,7 +128,7 @@ Fichiers :
 
 ## 4. Risques de régression — ne jamais toucher sans validation tech lead
 
-- **`lib/outbox.ts`** — file d'attente offline, idempotence (`enqueue`/`flush`/`applyPending`). Deux `PendingAction.kind` existent (`advance`, `proof`) ; n'en ajoutez pas un troisième (ex. pour « fail ») sans revue explicite — cela change le contrat de rejeu et de dédoublonnage en prod.
+- **`lib/outbox.ts`** — file d'attente offline, idempotence (`enqueue`/`flush`/`applyPending`). Deux `PendingAction.kind` existent (`advance`, `proof`). **Exception explicitement autorisée pour ce lot** : Lot B ajoute un troisième `kind: 'fail'` (`{ kind: 'fail'; ref: string; reason: string; idemKey: string }`), en réutilisant strictement le même schéma de dédoublonnage (`id = fail:${ref}:${idemKey}`) et le même traitement 4xx-définitif / réseau-5xx-retryable dans `flush()`. C'est la **seule** modification permise sur ce fichier dans toute la refonte — aucune autre, et uniquement par Lot B (pas de double implémentation par un autre lot).
 - **`lib/api.ts`** — session, `idemKey()` (stable par `ref:action:driver`, condition du dédoublonnage serveur). Toute modification casse la garantie « un rejeu après coupure = un seul effet ».
 - **`lib/proof.ts`** / **`lib/signature.ts`** — compression photo sous 700 Ko (paliers dégressifs), sérialisation SVG de la signature. Ne pas remplacer par le placeholder SVG figé de la maquette : l'implémentation réelle est **plus avancée** que la maquette sur ce point précis.
 - **`lib/tracking.ts`** — remontée de position **sans file d'attente** (design volontaire : une position périmée n'a pas de valeur, cf. commentaire du fichier). Ne pas la faire passer par `outbox.ts`.
@@ -134,15 +140,64 @@ Fichiers :
 
 ---
 
-## 5. Critères d'acceptation
+## 5. Écrans sans backend — liste explicite pour les relecteurs
 
-1. **Couverture** : les 25 lignes du tableau §1 existent au chemin indiqué et sont atteignables depuis l'onglet ou l'écran parent listé.
-2. **Aucun appel API hors liste blanche** : `grep -rn "authedClient()\." apps/driver-app/app` ne fait apparaître que les méthodes listées en §1 ; toute nouvelle méthode a été validée par le tech lead au préalable.
-3. **Zéro diff** sur `lib/outbox.ts`, `lib/api.ts`, `lib/proof.ts`, `lib/signature.ts`, `lib/tracking.ts`, `lib/storage.ts` sauf autorisation explicite (vérifiable via `git diff --stat` sur chaque PR de lot).
-4. **Pas de collision de fichiers** entre lots — la liste de fichiers modifiés/créés de chaque PR ne recoupe aucune autre.
-5. **Écrans « pas de backend »** clairement signalés à l'utilisateur (callout, badge) — jamais de faux succès réseau implicite ; les changements d'état purement locaux (ex. toggle, upload simulé) sont acceptables s'ils ne prétendent pas avoir persisté côté serveur.
-6. **Bilingue FR/AR complet dès la livraison** (skill `transpo-i18n`) — pas de chaîne en dur non traduite, RTL vérifié à l'œil (bascule `lang`).
-7. **Cibles tactiles** ≥44px, action principale 52px, barre d'onglets 64px — via les tokens (`@transpo/design-tokens` une fois branché), pas de valeurs codées en dur redondantes.
-8. **Typecheck** (`pnpm --filter @transpo/driver-app typecheck`) vert, sans `any`/`as` de contournement sur `Order`, `OrderStatus`, `ProofLevel`.
-9. **Lot B spécifiquement** : un scénario manuel « avancer une commande hors-ligne → couper le réseau → forcer une preuve+COD → revenir en ligne » doit produire exactement les mêmes appels serveur (mêmes `idemKey`) qu'avant la refonte — non-régression fonctionnelle vérifiée en plus du visuel.
-10. **`INCIDENT_TYPES`** soumis = les 5 valeurs réelles du domaine, jamais les 6 de la maquette telles quelles.
+Pour qu'un relecteur ne prenne pas une donnée statique pour un bug d'intégration. « Signalé » = un indice visuel obligatoire (badge « démo »/« à venir », callout, ou simplement l'absence de tout état de chargement réseau) — pas de simulation d'un appel serveur qui n'existe pas.
+
+| Écran | Route | Ce qui est affiché | Statut |
+|---|---|---|---|
+| Notifications | `app/notifications.tsx` | Liste figée, aucune source serveur | Toujours statique |
+| Contact client (sheet) | composant dans le flux mission | Numéro masqué, appel/SMS simulés | Toujours simulé |
+| Scanner de colis | `app/(tabs)/scan.tsx` | Codes reconnus/doublons simulés (`SCAN_ITEMS`), pas de caméra native | Toujours simulé (hors périmètre v1, PRD §9.2) |
+| Shift & conduite (EU 561) | `app/(tabs)/shift.tsx` | Minuteur 100 % local (`lib/storage.ts`), aucune remontée serveur | Toujours local |
+| Profil | `app/(tabs)/profil.tsx` | Nom = session réelle ; reste (contrat, fiche véhicule détaillée) = démo | Partiel — signaler la partie démo |
+| Objectifs & primes | `app/objectives.tsx` | `GOALS` statique partagé avec le back-office (cf. `lib-design-system.md`) | Toujours statique |
+| Récap fin de journée | `app/recap.tsx` | Courses livrées : dérivable de `getMissions()`/cache (réel). Distance, temps de conduite, gains estimés, cash à déposer : aucun endpoint | Partiel — signaler la partie démo |
+| Mes documents | `app/docs.tsx` | Liste statique, aucun upload/statut réel | Toujours statique |
+| Aide / FAQ | `app/help.tsx` | FAQ statique, recherche locale | Toujours statique |
+| Onboarding / recrutement | `app/onboarding.tsx` | Assistant local, aucune soumission serveur | Toujours statique |
+| ~~Ma caisse~~ | — | **Écran retiré du périmètre**, pas construit du tout (cf. §1 ligne 25) — pas de version « démo » | Hors périmètre |
+
+Ne figurent pas ici les écrans qui appellent un vrai endpoint mais affichent en plus des champs dérivés côté client (ex. Ma tournée : ordre d'arrêts réel via `getMissions()`, mais optimisation nearest-neighbour et carte en placeholder faute de lat/lng) — ceux-là sont détaillés dans leur ligne du tableau §1 plutôt que dupliqués ici.
+
+---
+
+## 6. Critères d'acceptation — checklist binaire pour les relecteurs
+
+Chaque ligne doit pouvoir être cochée oui/non sans jugement d'appréciation. Une case « non » bloque la PR.
+
+**Couverture et lotissement**
+- [ ] Les 24 écrans construits du tableau §1 (tout sauf « Ma caisse ») existent au chemin exact indiqué et sont atteignables depuis l'onglet ou l'écran parent listé.
+- [ ] `app/macaisse.tsx` n'existe pas dans l'arborescence.
+- [ ] La liste des fichiers créés/modifiés de la PR ne recoupe aucun fichier listé dans un autre lot au §2 (comparaison directe des deux listes, pas d'estimation).
+
+**API — liste blanche**
+- [ ] `grep -rn "authedClient()\." apps/driver-app/app` ne renvoie que des appels parmi : `getMissions`, `driverAdvance`, `driverProof`, `driverFail`, `reportIncident`, `getMyIncidents`, `getSupportThread`, `sendSupportMessage`, `getDriverHistory`, `pushDriverPosition`.
+- [ ] `grep -rn "getCashSessions\|depositCashSession" apps/driver-app` ne renvoie aucun résultat.
+- [ ] `INCIDENT_TYPES` utilisé dans `incidents.tsx` provient d'un `import` depuis `@transpo/domain` — aucune liste recopiée en dur dans le fichier.
+
+**Fichiers protégés**
+- [ ] `git diff --stat main -- apps/driver-app/lib/api.ts apps/driver-app/lib/proof.ts apps/driver-app/lib/signature.ts apps/driver-app/lib/tracking.ts apps/driver-app/lib/storage.ts` est vide.
+- [ ] `git diff main -- apps/driver-app/lib/outbox.ts` ne contient que l'ajout du `kind: 'fail'` (aucune ligne modifiée/supprimée hors ajout), et provient uniquement d'une PR du Lot B.
+- [ ] Le scénario manuel « avancer une commande hors-ligne → couper le réseau → forcer une preuve+COD → revenir en ligne » (Lot B) produit les mêmes `idemKey` qu'avant la refonte, vérifiable dans les logs réseau.
+- [ ] La garde de `logout()` sur la file en attente (`Alert` si `pending.length > 0`) est présente et bloque le logout dans `app/(tabs)/profil.tsx`.
+
+**Design**
+- [ ] La barre d'onglets (`components/shell/TabBar.tsx`) mesure 64px de haut et affiche 5 onglets (Missions/Tournée/Scanner/Shift/Profil).
+- [ ] Le bouton d'action principal (`PrimaryBtn`) mesure 52px de haut et occupe la largeur de l'écran sur chaque écran de flux qui en a un.
+- [ ] Toutes les cibles tactiles interactives mesurent ≥44×44px (mesure directe sur les composants, pas d'estimation visuelle).
+- [ ] `grep -rn "#[0-9a-fA-F]\{3,6\}\|rgb(" apps/driver-app/app apps/driver-app/components` ne renvoie aucun résultat hors fichiers de tokens — toute couleur passe par `@transpo/design-tokens`.
+- [ ] Aucun écran de flux (connexion, détail mission, statut, preuve, échec, confirmation) n'affiche la `TabBar`.
+- [ ] Le thème sombre est fonctionnel sur chaque écran livré (bascule testée à l'œil, pas de fond blanc résiduel codé en dur).
+
+**i18n**
+- [ ] `pnpm --filter driver-app run <script de détection de chaînes en dur>` (ou revue manuelle si le script n'existe pas encore) ne trouve aucune chaîne visible non traduite.
+- [ ] Le passage en arabe (`lang=ar`) inverse la mise en page (RTL) sur chaque écran livré, vérifié à l'œil.
+
+**Build**
+- [ ] `pnpm --filter @transpo/driver-app typecheck` passe sans erreur.
+- [ ] Aucun `any` ni `as` de contournement sur les types `Order`, `OrderStatus`, `ProofLevel` dans le diff de la PR.
+
+**Écrans sans backend**
+- [ ] Chaque écran listé au §5 affiche un indice visuel (badge, callout) distinguant la donnée statique/démo de la donnée réelle — vérifiable écran par écran contre le tableau du §5.
+- [ ] Aucun écran ne simule un succès réseau pour une action qui n'a pas d'endpoint (ex. pas de toast « Envoyé » sur un formulaire sans appel serveur réel).
