@@ -20,6 +20,17 @@ export class DriverController {
     return this.svc.advance(req.tenantSchema, req.user?.driver, ref, key);
   }
 
+  @Post('orders/:ref/fail')
+  @HttpCode(200)
+  fail(
+    @Req() req: any,
+    @Param('ref') ref: string,
+    @Body() body: { reason?: string },
+    @Headers('idempotency-key') key?: string,
+  ) {
+    return this.svc.fail(req.tenantSchema, req.user?.driver, ref, body?.reason ?? '', key);
+  }
+
   @Post('orders/:ref/proof')
   @HttpCode(200)
   proof(

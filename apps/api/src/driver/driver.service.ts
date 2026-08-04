@@ -1,4 +1,5 @@
-import { Injectable, BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException, NotFoundException, Inject } from '@nestjs/common';
+import { ReturnsService } from '../returns/returns.service.js';
 import { withTenantDb, orders as ordersTable, idempotencyKeys, deliveryProofs } from '@transpo/db';
 import { and, desc, eq, inArray } from 'drizzle-orm';
 import { LIFECYCLE, missingProof, type Order, type OrderStatus, type ProofLevel } from '@transpo/domain';
@@ -29,6 +30,9 @@ function assertArtifact(value: string | null | undefined, name: string, mimes: s
 
 @Injectable()
 export class DriverService {
+  // @Inject explicite : requis sous tsx/esbuild (pas de métadonnée de type émise).
+  constructor(@Inject(ReturnsService) private readonly returns: ReturnsService) {}
+
   private ensure(driver?: string): string {
     if (!driver) throw new ForbiddenException('Compte non rattaché à un livreur.');
     return driver;
@@ -87,6 +91,26 @@ export class DriverService {
         const [r] = await db.update(ordersTable).set({ status: next }).where(eq(ordersTable.ref, ref)).returning();
         return rowToOrder(r);
       });
+    });
+  }
+
+  /**
+   * Échec de livraison constaté sur le terrain → ECHOUEE + entrée de retour.
+   * Le livreur est celui qui constate l'échec ; jusqu'ici seule l'exploitation
+   * pouvait l'enregistrer (`/v1/returns/fail`, réservé ADMIN/DISPATCHER), ce qui
+   * laissait le terrain sans moyen de déclencher le flux de retours.
+   * Délègue à `ReturnsService` pour que les deux chemins produisent le même effet.
+   */
+  async fail(schema: string, driver: string | undefined, ref: string, reason: string, key?: string) {
+    const d = this.ensure(driver);
+    if (!reason?.trim()) throw new BadRequestException('Motif requis.');
+    return this.idempotent(schema, key, async () => {
+      const cur = await this.ownedOrder(schema, d, ref);
+      // Même borne que la preuve : on ne déclare un échec qu'en cours de livraison.
+      if (cur.status !== 'LIVRAISON') {
+        throw new BadRequestException('Échec déclarable en cours de livraison uniquement.');
+      }
+      return this.returns.fail(schema, ref, reason.trim());
     });
   }
 
