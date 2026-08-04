@@ -19,7 +19,11 @@ export type PendingAction =
       // Artefacts déjà compressés (data URI) : ils partent avec l'action et
       // survivent donc à une coupure réseau comme à un redémarrage de l'app.
       photo?: string; signature?: string;
-    };
+    }
+  // Un échec constaté hors ligne ne doit pas se perdre : il déclenche le flux de
+  // retours côté serveur, et son rejeu est dédoublonné par la clé d'idempotence
+  // (sans quoi le compteur de tentatives grimperait à chaque reprise réseau).
+  | { kind: 'fail'; ref: string; reason: string; idemKey: string };
 
 /** L'action telle que persistée, avec son identité et sa date de mise en file. */
 export type Pending = PendingAction & { id: string; at: number };
@@ -70,6 +74,7 @@ export async function enqueue(entry: PendingAction): Promise<Pending> {
 async function send(p: Pending): Promise<void> {
   const c = authedClient();
   if (p.kind === 'advance') await c.driverAdvance(p.ref, p.idemKey);
+  else if (p.kind === 'fail') await c.driverFail(p.ref, p.reason, p.idemKey);
   else await c.driverProof(p.ref, { codCollected: p.codCollected, photo: p.photo, signature: p.signature }, p.idemKey);
 }
 
@@ -119,6 +124,8 @@ export function applyPending(orders: Order[], q: Pending[]): Order[] {
         const i = LIFECYCLE.indexOf(status);
         const next = i >= 0 ? LIFECYCLE[i + 1] : undefined;
         if (next && next !== 'LIVREE') status = next;
+      } else if (p.kind === 'fail') {
+        status = 'ECHOUEE';
       } else {
         status = 'LIVREE';
         codPaid = o.cod > 0 ? p.codCollected >= o.cod : false;
