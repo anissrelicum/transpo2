@@ -375,6 +375,12 @@ export class TranspoClient {
   pushDriverPosition(lat: number, lng: number): Promise<{ ok: boolean; at: string }> {
     return this.req('/v1/tracking/position', { method: 'POST', body: { lat, lng } });
   }
+  /** Échec de livraison constaté sur le terrain → ECHOUEE + retour. Idempotent. */
+  driverFail(ref: string, reason: string, idemKey: string): Promise<{ ref: string; reason: string; attempts: number; status: string }> {
+    return this.req(`/v1/driver/orders/${encodeURIComponent(ref)}/fail`, {
+      method: 'POST', body: { reason }, headers: { 'idempotency-key': idemKey },
+    });
+  }
   driverProof(
     ref: string,
     body: { codCollected?: number; photo?: string; signature?: string },
