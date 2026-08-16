@@ -47,7 +47,9 @@ export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: 
   const actifs = by('ACTIF').length;
   const essais = by('ESSAI').length;
   const impayes = by('IMPAYE');
-  const coupes = tenants.filter((t) => t.subStatus === 'SUSPENDU' || t.subStatus === 'RESILIE');
+  // L'accès réel, c'est `tenants.status` — la projection. Se fier au statut d'abonnement
+  // manquerait les tenants résiliés, qui n'ont plus d'abonnement courant du tout.
+  const coupes = tenants.filter((t) => t.status === 'SUSPENDU');
 
   // Revenu récurrent : seuls les abonnements actifs au forfait sont un montant garanti.
   const planOf = (t: Tenant) => plans.find((p) => p.code === t.planCode);
@@ -188,7 +190,9 @@ export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: 
                   <Table.Cell>
                     <Box>
                       <Text as="div" size="2">{plan ? priceLabel(plan.current) : '—'}</Text>
-                      <Text as="div" size="1" color="gray">{plan ? quotaLabel(plan.current) : 'hors catalogue'}</Text>
+                      <Text as="div" size="1" color="gray">
+                        {plan ? quotaLabel(plan.current) : t.subStatus ? 'hors catalogue' : 'sans contrat'}
+                      </Text>
                     </Box>
                   </Table.Cell>
                   <Table.Cell><SubscriptionCell tenant={t} /></Table.Cell>
