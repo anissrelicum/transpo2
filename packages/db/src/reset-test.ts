@@ -23,6 +23,10 @@ async function main(): Promise<void> {
     for (const r of rows) {
       await client.query(`DROP SCHEMA IF EXISTS "${r.nspname}" CASCADE`);
     }
+    // Les factures plateforme référencent les abonnements, eux-mêmes supprimés en
+    // cascade avec leur tenant : sans ce premier DELETE, la purge échouerait.
+    // Le catalogue de plans, lui, n'est pas un objet de tenant : il est conservé.
+    await client.query('DELETE FROM platform.platform_invoices');
     await client.query('DELETE FROM platform.audit_log');
     await client.query('DELETE FROM platform.tenants');
 
