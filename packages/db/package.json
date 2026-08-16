@@ -8,7 +8,10 @@
   "exports": { ".": "./src/index.ts" },
   "scripts": {
     "migrate": "tsx src/migrate.ts",
+    "migrate-plans": "tsx src/migrate-plans.ts",
     "seed": "tsx src/seed.ts",
+    "reset-test": "tsx src/reset-test.ts",
+    "account": "tsx src/create-account.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

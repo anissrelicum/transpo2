@@ -1,6 +1,6 @@
 import { Injectable, ConflictException, BadRequestException, NotFoundException, Inject } from '@nestjs/common';
 import { pool, provisionTenant, schemaFor, type TenantInput } from '@transpo/db';
-import { SAAS_PLANS, TENANT_STATUSES, RESERVED_SUBDOMAINS, planByCode, type TenantStatus } from '@transpo/domain';
+import { TENANT_STATUSES, RESERVED_SUBDOMAINS, planByCode, type TenantStatus } from '@transpo/domain';
 import { AuditService } from '../audit/audit.service.js';
 import type { JwtUser } from '../auth/jwt.js';
 
@@ -33,11 +33,6 @@ export class SaasService {
     return { slug: input.slug, provisioned: true };
   }
 
-  /** Catalogue des plans (source unique : domaine). */
-  plans() {
-    return SAAS_PLANS;
-  }
-
   private async tenantOrThrow(slug: string) {
     const { rows } = await pool.query('SELECT slug, plan, status FROM platform.tenants WHERE slug = $1', [slug]);
     if (!rows.length) throw new NotFoundException(`Tenant inconnu : ${slug}`);
@@ -47,7 +42,12 @@ export class SaasService {
   /** Change le plan d'abonnement d'un tenant. Réservé SUPER_ADMIN. Tracé. */
   async changePlan(actor: JwtUser, slug: string, plan: string) {
     await this.tenantOrThrow(slug);
-    if (!planByCode(plan)) throw new BadRequestException(`Plan inconnu : ${plan}`);
+    // Le catalogue fait foi (platform.plans) ; `tenants.plan` porte le libellé FR.
+    // Repli sur la liste en dur tant que `migrate-plans` n'a pas tourné.
+    const known = await pool.query(
+      'SELECT 1 FROM platform.plans WHERE label_fr = $1 AND archived_at IS NULL', [plan],
+    );
+    if (!known.rowCount && !planByCode(plan)) throw new BadRequestException(`Plan inconnu : ${plan}`);
     const { rows } = await pool.query(
       'UPDATE platform.tenants SET plan = $2 WHERE slug = $1 RETURNING slug, plan, status',
       [slug, plan],
@@ -75,11 +75,23 @@ export class SaasService {
     const { rows: tenants } = await pool.query(
       'SELECT slug, name, plan, status FROM platform.tenants ORDER BY name',
     );
+    // Tarif courant du catalogue, indexé par libellé (= valeur de `tenants.plan`).
+    const { rows: catalog } = await pool.query<{ label: string; monthlyDH: number; quota: number | null }>(
+      `SELECT p.label_fr AS label, (v.monthly_centimes / 100) AS "monthlyDH", v.included_orders AS quota
+         FROM platform.plans p
+         JOIN platform.plan_versions v ON v.plan_id = p.id AND v.effective_to IS NULL`,
+    );
+    const byLabel = new Map(catalog.map((r) => [r.label, r]));
+
     const client = await pool.connect();
     try {
       const out = [];
       for (const t of tenants) {
-        const p = planByCode(t.plan);
+        const fromCatalog = byLabel.get(t.plan);
+        const legacy = planByCode(t.plan);
+        const p = fromCatalog
+          ? { monthlyDH: fromCatalog.monthlyDH, maxOrdersMonth: fromCatalog.quota }
+          : legacy && { monthlyDH: legacy.monthlyDH, maxOrdersMonth: legacy.maxOrdersMonth };
         let orders = 0;
         try {
           await client.query(`SET search_path TO "${schemaFor(t.slug)}", platform`);

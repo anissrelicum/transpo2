@@ -7,7 +7,10 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "declaration": true,
-    "noEmit": true
+    "noEmit": true,
+    // Les tests tournent sous `node --test` (typage effacé nativement) : Node exige le
+    // chemin réel du fichier, donc l'extension .ts. Sans effet sur le code publié (noEmit).
+    "allowImportingTsExtensions": true
   },
   "include": ["src/**/*"]
 }

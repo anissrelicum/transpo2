@@ -68,7 +68,31 @@ export interface MerchantInvoice {
   merchant: string; deliveries: number; codCollected: number;
   commission: number; netHt: number; tva: number; ttc: number;
 }
-export interface SaasPlanRow { code: string; label: string; monthlyDH: number; maxOrdersMonth: number | null }
+// Catalogue de plans versionné — design/SPEC-PLANS-ABONNEMENTS.md.
+// Montants en CENTIMES (suffixe `Centimes`) : le pay-as-you-go a des prix unitaires
+// sous le dirham, impossibles à représenter en entier DH comme le reste du dépôt.
+// `PlanBillingMode` : `BillingMode` désigne déjà le mode de règlement d'un marchand.
+export type PlanBillingMode = 'FORFAIT' | 'USAGE';
+export type TierMode = 'VOLUME' | 'GRADUE';
+export interface PlanTierRow { fromQty: number; toQty: number | null; unitCentimes: number }
+export interface PlanVersionRow {
+  id: string; version: number; billingMode: PlanBillingMode;
+  monthlyCentimes: number; includedOrders: number | null; overageCentimes: number | null;
+  baseCentimes: number; tierMode: TierMode; minCentimes: number;
+  effectiveFrom: string; tiers: PlanTierRow[];
+}
+export interface PlanVersionHistoryRow extends PlanVersionRow { effectiveTo: string | null; subscribers: number }
+export interface SaasPlanRow {
+  code: string; labelFr: string; labelAr: string; description: string | null;
+  sortOrder: number; archived: boolean; subscribers: number;
+  current: PlanVersionRow | null;
+}
+export interface PlanVersionInput {
+  billingMode: PlanBillingMode;
+  monthlyCentimes?: number; includedOrders?: number | null; overageCentimes?: number | null;
+  baseCentimes?: number; tierMode?: TierMode; minCentimes?: number;
+  tiers?: PlanTierRow[]; effectiveFrom?: string;
+}
 export interface SaasBillingRow {
   slug: string; name: string; plan: string; status: string;
   monthlyDH: number; orders: number; quota: number | null; overQuota: boolean;
@@ -310,7 +334,27 @@ export class TranspoClient {
 
   // --- Console SaaS (SUPER_ADMIN, realm plateforme) ---
   listTenants(): Promise<Tenant[]> { return this.req('/v1/saas/tenants'); }
-  getSaasPlans(): Promise<SaasPlanRow[]> { return this.req('/v1/saas/plans'); }
+  getSaasPlans(includeArchived = false): Promise<SaasPlanRow[]> {
+    return this.req(`/v1/saas/plans${includeArchived ? '?include=archived' : ''}`);
+  }
+  createSaasPlan(input: { code: string; labelFr: string; labelAr: string; description?: string; sortOrder?: number }): Promise<{ code: string }> {
+    return this.req('/v1/saas/plans', { method: 'POST', body: input });
+  }
+  updateSaasPlan(code: string, patch: { labelFr?: string; labelAr?: string; description?: string; sortOrder?: number }): Promise<{ code: string }> {
+    return this.req(`/v1/saas/plans/${encodeURIComponent(code)}`, { method: 'PATCH', body: patch });
+  }
+  archiveSaasPlan(code: string, force = false): Promise<{ code: string; archived: boolean; subscribers: number }> {
+    return this.req(`/v1/saas/plans/${encodeURIComponent(code)}/archive`, { method: 'POST', body: { force } });
+  }
+  restoreSaasPlan(code: string): Promise<{ code: string; archived: boolean }> {
+    return this.req(`/v1/saas/plans/${encodeURIComponent(code)}/restore`, { method: 'POST', body: {} });
+  }
+  getSaasPlanVersions(code: string): Promise<PlanVersionHistoryRow[]> {
+    return this.req(`/v1/saas/plans/${encodeURIComponent(code)}/versions`);
+  }
+  createSaasPlanVersion(code: string, input: PlanVersionInput): Promise<{ code: string; version: number; effectiveFrom: string }> {
+    return this.req(`/v1/saas/plans/${encodeURIComponent(code)}/versions`, { method: 'POST', body: input });
+  }
   getSaasBilling(): Promise<SaasBillingRow[]> { return this.req('/v1/saas/billing'); }
   provisionTenant(input: { slug: string; name: string; city?: string; plan?: string }): Promise<{ slug: string; provisioned: boolean }> {
     return this.req('/v1/saas/tenants', { method: 'POST', body: input });

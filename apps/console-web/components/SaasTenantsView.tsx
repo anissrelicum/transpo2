@@ -11,6 +11,7 @@ import {
 } from '@radix-ui/react-icons';
 import type { Tenant, SaasPlanRow } from '@transpo/api-client';
 import { PageHeader, KPI } from './ui';
+import { priceLabel, quotaLabel, planOfTenant } from '../lib/plans';
 
 const SLUG_RE = /^[a-z0-9]+$/;
 const STATUS_COLOR: Record<string, 'green' | 'amber' | 'red' | 'gray'> = { ACTIF: 'green', ESSAI: 'amber', SUSPENDU: 'red' };
@@ -33,10 +34,17 @@ export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: 
   const actifs = tenants.filter((t) => t.status === 'ACTIF').length;
   const essais = tenants.filter((t) => t.status === 'ESSAI').length;
   const suspendus = tenants.filter((t) => t.status === 'SUSPENDU');
-  // Revenu récurrent : seuls les tenants actifs sont facturés.
+  // Revenu récurrent : seuls les tenants actifs et au forfait ont un montant garanti.
+  // Les plans à l'usage n'entrent pas dans le MRR — leur montant dépend du volume du mois.
   const mrr = tenants
     .filter((t) => t.status === 'ACTIF')
-    .reduce((a, t) => a + (plans.find((p) => p.code === t.plan)?.monthlyDH ?? 0), 0);
+    .reduce((a, t) => {
+      const v = planOfTenant(plans, t.plan)?.current;
+      return a + (v?.billingMode === 'FORFAIT' ? v.monthlyCentimes / 100 : 0);
+    }, 0);
+  const usageTenants = tenants.filter(
+    (t) => t.status === 'ACTIF' && planOfTenant(plans, t.plan)?.current?.billingMode === 'USAGE',
+  ).length;
 
   const rows = tenants.filter((t) => {
     if (status !== 'all' && t.status !== status) return false;
@@ -68,7 +76,12 @@ export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: 
         <KPI label="Organisations" value={String(tenants.length)} delta="tous statuts" deltaColor="gray" icon={<HomeIcon width="15" />} accent="indigo" />
         <KPI label="Actives" value={String(actifs)} delta="facturées" deltaColor="green" icon={<CheckCircledIcon width="15" />} accent="green" />
         <KPI label="En essai" value={String(essais)} delta="à convertir" deltaColor="amber" icon={<RocketIcon width="15" />} accent="amber" />
-        <KPI label="Revenu mensuel" value={money(mrr)} delta="tenants actifs" deltaColor="gray" icon={<LockClosedIcon width="15" />} accent="cyan" />
+        <KPI
+          label="Revenu mensuel"
+          value={money(mrr)}
+          delta={usageTenants ? `hors ${usageTenants} à l’usage` : 'forfaits actifs'}
+          deltaColor="gray" icon={<LockClosedIcon width="15" />} accent="cyan"
+        />
       </Grid>
 
       {suspendus.length > 0 && (
@@ -106,7 +119,7 @@ export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: 
           </Table.Row></Table.Header>
           <Table.Body>
             {rows.map((t) => {
-              const plan = plans.find((p) => p.code === t.plan);
+              const plan = planOfTenant(plans, t.plan);
               return (
                 <Table.Row key={t.slug} align="center">
                   <Table.RowHeaderCell>
@@ -124,10 +137,8 @@ export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: 
                   <Table.Cell><Badge variant="soft" color="gray">{t.plan}</Badge></Table.Cell>
                   <Table.Cell>
                     <Box>
-                      <Text as="div" size="2">{plan ? money(plan.monthlyDH) : '—'}<Text size="1" color="gray"> /mois</Text></Text>
-                      <Text as="div" size="1" color="gray">
-                        {plan?.maxOrdersMonth != null ? `${plan.maxOrdersMonth.toLocaleString('fr-FR')} cmd/mois` : 'sans quota'}
-                      </Text>
+                      <Text as="div" size="2">{plan ? priceLabel(plan.current) : '—'}</Text>
+                      <Text as="div" size="1" color="gray">{plan ? quotaLabel(plan.current) : 'hors catalogue'}</Text>
                     </Box>
                   </Table.Cell>
                   <Table.Cell><Badge color={STATUS_COLOR[t.status] || 'gray'} variant="soft">{STATUS_LABEL[t.status] || t.status}</Badge></Table.Cell>
@@ -181,8 +192,8 @@ function PlanItem({ tenant, plans, onChange }: {
         <Select.Root value={plan} onValueChange={setPlan}>
           <Select.Trigger style={{ width: '100%' }} />
           <Select.Content>
-            {plans.map((p) => (
-              <Select.Item key={p.code} value={p.code}>{p.label} — {money(p.monthlyDH)}/mois</Select.Item>
+            {plans.filter((p) => !p.archived).map((p) => (
+              <Select.Item key={p.code} value={p.labelFr}>{p.labelFr} — {priceLabel(p.current)}</Select.Item>
             ))}
           </Select.Content>
         </Select.Root>
@@ -219,7 +230,7 @@ function SuspendItem({ tenant, onSuspend }: { tenant: Tenant; onSuspend: () => v
 function ProvisionDialog({ plans, onCreate, busy }: {
   plans: SaasPlanRow[]; onCreate: (b: any) => Promise<boolean>; busy: boolean;
 }) {
-  const empty = { slug: '', name: '', city: 'Casablanca', plan: plans[0]?.code ?? 'Essai' };
+  const empty = { slug: '', name: '', city: 'Casablanca', plan: plans[0]?.labelFr ?? 'Essai' };
   const [open, setOpen] = React.useState(false);
   const [f, setF] = React.useState(empty);
 
@@ -257,7 +268,11 @@ function ProvisionDialog({ plans, onCreate, busy }: {
               <Text as="div" size="2" weight="medium" mb="1">Plan</Text>
               <Select.Root value={f.plan} onValueChange={(v) => setF({ ...f, plan: v })}>
                 <Select.Trigger style={{ width: '100%' }} />
-                <Select.Content>{plans.map((p) => <Select.Item key={p.code} value={p.code}>{p.label}</Select.Item>)}</Select.Content>
+                <Select.Content>
+                  {plans.filter((p) => !p.archived).map((p) => (
+                    <Select.Item key={p.code} value={p.labelFr}>{p.labelFr}</Select.Item>
+                  ))}
+                </Select.Content>
               </Select.Root>
             </Box>
           </Grid>

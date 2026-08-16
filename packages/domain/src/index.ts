@@ -176,6 +176,160 @@ export function planByCode(code: string): SaasPlan | undefined {
   return SAAS_PLANS.find((p) => p.code === code);
 }
 
+/* ========= SaaS — catalogue versionné, abonnements, facturation (spec §3-6) =========
+ * Spécification : design/SPEC-PLANS-ABONNEMENTS.md
+ * SAAS_PLANS ci-dessus n'est plus le catalogue : il ne sert qu'à amorcer les tables
+ * `platform.plans` (packages/db/src/migrate-plans.ts) et sera retiré une fois la
+ * migration passée sur tous les environnements.
+ */
+
+// `PlanBillingMode` et non `BillingMode` : ce dernier existe déjà pour le mode de
+// règlement d'un marchand (prepaid/postpaid), qui n'a aucun rapport.
+export const PLAN_BILLING_MODES = ['FORFAIT', 'USAGE'] as const;
+export type PlanBillingMode = (typeof PLAN_BILLING_MODES)[number];
+
+/** VOLUME : le palier atteint tarife TOUT le volume. GRADUE : chaque tranche à son prix. */
+export const TIER_MODES = ['VOLUME', 'GRADUE'] as const;
+export type TierMode = (typeof TIER_MODES)[number];
+
+export const SUBSCRIPTION_STATUSES = ['ESSAI', 'ACTIF', 'IMPAYE', 'SUSPENDU', 'RESILIE'] as const;
+export type SubscriptionStatus = (typeof SUBSCRIPTION_STATUSES)[number];
+
+export const PLATFORM_INVOICE_STATUSES = ['EMISE', 'PAYEE', 'ANNULEE'] as const;
+export type PlatformInvoiceStatus = (typeof PLATFORM_INVOICE_STATUSES)[number];
+
+export const PAYMENT_METHODS = ['VIREMENT', 'CHEQUE', 'ESPECES'] as const;
+export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+
+export const TRIAL_DAYS = 14;        // durée de l'essai (spec §5.1)
+export const GRACE_DAYS = 7;         // délai de grâce avant suspension (spec §13.4)
+export const DEFAULT_VAT_RATE = 20;  // TVA plateforme, figée sur la facture à l'émission
+
+/** Palier de volume. `toQty: null` = palier ouvert (obligatoirement le dernier). */
+export interface PlanTier { fromQty: number; toQty: number | null; unitCentimes: number }
+
+/** Tarif d'une version de plan. Tous les montants en centimes (spec §4.6). */
+export interface PlanPricing {
+  billingMode: PlanBillingMode;
+  monthlyCentimes: number;
+  includedOrders: number | null;
+  overageCentimes: number | null;
+  baseCentimes: number;
+  tierMode: TierMode;
+  minCentimes: number;
+  tiers: PlanTier[];
+}
+
+export interface BillingLine { label: string; qty: number; unitCentimes: number; totalCentimes: number }
+
+/**
+ * Invariants d'une grille de paliers (spec §4.3) : premier palier à 1, paliers contigus
+ * et sans recouvrement, exactement un palier ouvert et c'est le dernier.
+ * Retourne le message d'erreur, ou `null` si la grille est valide.
+ */
+export function validateTiers(tiers: PlanTier[]): string | null {
+  if (!tiers.length) return 'Au moins un palier est requis.';
+  const s = [...tiers].sort((a, b) => a.fromQty - b.fromQty);
+  if (s[0].fromQty !== 1) return 'Le premier palier doit commencer à 1.';
+  for (let i = 0; i < s.length; i++) {
+    const t = s[i];
+    const n = i + 1;
+    if (!Number.isInteger(t.fromQty) || t.fromQty < 1) return `Palier ${n} : borne basse invalide.`;
+    if (!Number.isInteger(t.unitCentimes) || t.unitCentimes < 0) return `Palier ${n} : prix unitaire invalide.`;
+    if (i === s.length - 1) {
+      if (t.toQty !== null) return 'Le dernier palier doit être ouvert (sans borne haute).';
+    } else {
+      if (t.toQty === null) return `Palier ${n} : seul le dernier palier peut être ouvert.`;
+      if (t.toQty < t.fromQty) return `Palier ${n} : borne haute inférieure à la borne basse.`;
+      if (s[i + 1].fromQty !== t.toQty + 1) {
+        return `Paliers ${n} et ${n + 1} non contigus : le suivant doit commencer à ${t.toQty + 1}.`;
+      }
+    }
+  }
+  return null;
+}
+
+const sumLines = (l: BillingLine[]): number => l.reduce((a, x) => a + x.totalCentimes, 0);
+const tierLabel = (t: PlanTier): string => `${t.fromQty}–${t.toQty ?? '∞'}`;
+
+/**
+ * Calcule les lignes de facture d'une période (spec §6.2/6.3). Fonction pure : c'est le
+ * seul endroit où un bug coûte de l'argent réel, il se teste sans base.
+ *
+ * Grille 1–100 → 6 DH, 101–500 → 4,50 DH, 501+ → 3 DH, pour 600 commandes :
+ *   VOLUME → 600 × 3,00 = 1 800 DH · GRADUE → 100×6 + 400×4,50 + 100×3 = 2 700 DH
+ */
+export function computeBilling(
+  pricing: PlanPricing,
+  orders: number,
+  planLabel: string,
+): { lines: BillingLine[]; subtotalCentimes: number } {
+  const qty = Math.max(0, Math.trunc(orders));
+  const lines: BillingLine[] = [];
+
+  if (pricing.billingMode === 'FORFAIT') {
+    lines.push({
+      label: `Abonnement ${planLabel}`,
+      qty: 1, unitCentimes: pricing.monthlyCentimes, totalCentimes: pricing.monthlyCentimes,
+    });
+    const { includedOrders: inc, overageCentimes: over } = pricing;
+    // overageCentimes null = dépassement affiché mais NON facturé (spec §6.3).
+    if (inc != null && over != null && qty > inc) {
+      const n = qty - inc;
+      lines.push({
+        label: `Commandes au-delà du quota (${inc})`,
+        qty: n, unitCentimes: over, totalCentimes: n * over,
+      });
+    }
+    return { lines, subtotalCentimes: sumLines(lines) };
+  }
+
+  const tiers = [...pricing.tiers].sort((a, b) => a.fromQty - b.fromQty);
+  if (pricing.tierMode === 'VOLUME') {
+    const t = tiers.find((x) => qty >= x.fromQty && (x.toQty === null || qty <= x.toQty));
+    if (t && qty > 0) {
+      lines.push({
+        label: `Commandes — palier ${tierLabel(t)}`,
+        qty, unitCentimes: t.unitCentimes, totalCentimes: qty * t.unitCentimes,
+      });
+    }
+  } else {
+    for (const t of tiers) {
+      const hi = t.toQty === null ? qty : Math.min(qty, t.toQty);
+      const n = hi - t.fromQty + 1;
+      if (n > 0) {
+        lines.push({
+          label: `Commandes ${tierLabel(t)}`,
+          qty: n, unitCentimes: t.unitCentimes, totalCentimes: n * t.unitCentimes,
+        });
+      }
+    }
+  }
+
+  // Plancher d'abord, part fixe ensuite (spec §6.2).
+  const usage = sumLines(lines);
+  if (usage < pricing.minCentimes) {
+    const d = pricing.minCentimes - usage;
+    lines.push({ label: 'Complément — facture plancher', qty: 1, unitCentimes: d, totalCentimes: d });
+  }
+  if (pricing.baseCentimes > 0) {
+    lines.push({
+      label: 'Part fixe mensuelle',
+      qty: 1, unitCentimes: pricing.baseCentimes, totalCentimes: pricing.baseCentimes,
+    });
+  }
+  return { lines, subtotalCentimes: sumLines(lines) };
+}
+
+/** TVA appliquée sur le sous-total, jamais ligne à ligne (spec §6.5). */
+export function applyVat(subtotalCentimes: number, vatRate: number): { vatCentimes: number; totalCentimes: number } {
+  const vatCentimes = Math.round((subtotalCentimes * vatRate) / 100);
+  return { vatCentimes, totalCentimes: subtotalCentimes + vatCentimes };
+}
+
+export const centimesToDh = (c: number): number => c / 100;
+export const dhToCentimes = (dh: number): number => Math.round(dh * 100);
+
 /* ====================== Notifications (T19) ====================== */
 export const NOTIF_CHANNELS = ['SMS', 'WHATSAPP', 'PUSH', 'EMAIL'] as const;
 export type NotifChannel = (typeof NOTIF_CHANNELS)[number];

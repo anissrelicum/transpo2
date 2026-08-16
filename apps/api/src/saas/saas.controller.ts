@@ -11,10 +11,7 @@ import { Roles } from '../auth/roles.decorator.js';
 export class SaasController {
   constructor(@Inject(SaasService) private readonly saas: SaasService) {}
 
-  @Get('plans')
-  plans() {
-    return this.saas.plans();
-  }
+  // GET plans → PlansController (catalogue en base, spec §8).
 
   @Get('billing')
   billing() {
