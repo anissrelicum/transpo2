@@ -52,3 +52,12 @@ echo "  ./deploy/gen-wildcard-cert.sh $BASE_DOMAIN /tmp/certs"
 echo "  tar -cf /tmp/certs.tar -C /tmp/certs fullchain.pem key.pem && dokku certs:add transpo-web < /tmp/certs.tar"
 echo
 echo "JWT_SECRET utilisé : $JWT_SECRET"
+
+# --- Cycle d'abonnement quotidien (spec §7) ---------------------------------
+# Sans ce passage, aucun essai n'expire et aucune période ne se reconduit.
+# Volontairement en crontab de l'hôte : Dokku 0.34.9 n'extrait pas la clé `cron`
+# d'un app.json pour un déploiement par Dockerfile — vérifié sur cette VM.
+# Idempotent côté métier (rejouable) ET côté installation (grep avant ajout).
+CRON_LINE="0 3 * * * dokku run transpo-api sh -c 'cd /repo/apps/api && pnpm cycle' >> /var/log/transpo-cycle.log 2>&1"
+( crontab -l 2>/dev/null | grep -Fv 'pnpm cycle'; echo "$CRON_LINE" ) | crontab -
+echo "== Cron du cycle d'abonnement installé (03:00 quotidien) =="

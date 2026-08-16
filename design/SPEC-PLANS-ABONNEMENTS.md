@@ -452,7 +452,7 @@ Hors périmètre, à trancher plus tard : proration lors d'un changement de plan
 | Lot | Statut | Éléments livrés |
 |---|---|---|
 | **L1 — Socle** | ✅ **livré** | `migrations/platform/0002_plans.sql` (5 tables) · enums + `validateTiers` + `computeBilling` + `applyVat` dans `@transpo/domain` (24 tests) · `packages/db/src/migrate-plans.ts` · `PlansService`/`PlansController` (7 routes) · `SaasPlansView` + éditeur de paliers + simulateur |
-| **L2 — Abonnement** | à faire | Machine à états §5, projection `tenants.status`, `/cycle/run`, cron Dokku |
+| **L2 — Abonnement** | ✅ **livré** | `migrations/platform/0003_subscription_cycle.sql` · `cycleStep` + projection dans `@transpo/domain` (20 tests) · `SubscriptionsService` (souscrire, convertir, réactiver, suspendre, résilier) · `POST /v1/saas/cycle/run` + `pnpm cycle` + cron quotidien · colonne Abonnement et actions de contrat dans `/saas` |
 | **L3 — Facturation** | à faire | Assiette §6.1, émission, paiement hors ligne, `/saas/billing` |
 | **L4 — Finition** | à faire | Historique par tenant, relances d'échéance, alerte côté tenant |
 
@@ -463,11 +463,19 @@ parce qu'ils étaient peu coûteux et qu'ils dérisquent une décision commercia
 - Le **simulateur** (prévu L4) : sans lui, le choix `VOLUME`/`GRADUE` reste abstrait au moment
   même où l'on publie un tarif.
 
-**Restes à faire connus sur le périmètre L1**, à traiter en L2 :
+**Écart au plan en L2** — le cron devait passer par la clé `cron` d'un `app.json` (§7).
+Dokku 0.34.9 **n'extrait pas** cette clé pour un déploiement par Dockerfile : vérifié sur la VM,
+`dokku cron:list` reste vide et rien n'est extrait côté serveur. Le passage quotidien est donc
+installé en **crontab de l'hôte**, et versionné dans `deploy/setup-dokku.sh` pour rester
+reproductible sur une VM neuve.
+
+**Restes à faire connus**, à traiter en L3 :
 
 - `saas.service.billing()` compte toujours **toutes** les commandes depuis la création du tenant
-  (constat §1.4) : la correction dépend de la règle d'assiette §6.1, donc de L3.
-- Le provisioning force encore `status: ESSAI` sur comparaison littérale du libellé `'Essai'`
-  (`saas.controller.ts`) : disparaît quand l'abonnement pilote le statut.
-- `tenants.plan` reste un libellé libre rapproché par `label_fr` — renommer un plan depuis
-  `/saas/plans` désaligne les tenants existants tant que L2 n'a pas posé la clé étrangère.
+  (constat §1.4) : la correction dépend de la règle d'assiette §6.1.
+- La reconduction (`RENEW`) avance les périodes sans rien émettre — c'est là que L3 accrochera
+  la facture, et c'est pourquoi le rattrapage produit une période par mois sans en sauter.
+- Les transitions `ACTIF → IMPAYE` sur facture échue et `IMPAYE → ACTIF` sur paiement ne sont pas
+  encore câblées : en L2, seule la fin d'essai alimente `past_due_since`.
+- `tenants.plan` reste un libellé, désormais **écrit par la projection** — il n'est plus saisi,
+  mais la clé étrangère vers `plans` reste à poser.

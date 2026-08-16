@@ -1,9 +1,0 @@
-{
-  "_comment": "Lu par Dokku au déploiement (chemin relatif au WORKDIR de l'image, /repo/apps/api). Le cycle d'abonnement doit tourner tous les jours : sans lui, aucun essai n'expire et aucune période ne se reconduit. Cf. design/SPEC-PLANS-ABONNEMENTS.md §7. Idempotent — un passage manqué est rattrapé au suivant.",
-  "cron": [
-    {
-      "command": "cd /repo/apps/api && pnpm cycle",
-      "schedule": "0 3 * * *"
-    }
-  ]
-}
