@@ -42,10 +42,14 @@ async function main(): Promise<void> {
     // 1) Catalogue : un plan + sa version 1 par entrée de SAAS_PLANS.
     for (const [i, p] of SAAS_PLANS.entries()) {
       const code = CODES[p.code] ?? p.code.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      // label_fr = `code` de SAAS_PLANS, PAS `label` : c'est le code qui est stocké dans
+      // `tenants.plan`, et le rapprochement se fait par libellé. Les deux ne divergent que
+      // pour l'essai (code « Essai », libellé « Essai (14 j) ») — assez pour qu'un tenant
+      // en essai devienne introuvable au catalogue. La durée part en description.
       const ins = await client.query(
-        `INSERT INTO platform.plans (code, label_fr, label_ar, sort_order)
-         VALUES ($1,$2,$3,$4) ON CONFLICT (code) DO NOTHING RETURNING id`,
-        [code, p.label, LABELS_AR[p.code] ?? p.label, i],
+        `INSERT INTO platform.plans (code, label_fr, label_ar, description, sort_order)
+         VALUES ($1,$2,$3,$4,$5) ON CONFLICT (code) DO NOTHING RETURNING id`,
+        [code, p.code, LABELS_AR[p.code] ?? p.code, p.label !== p.code ? p.label : null, i],
       );
       createdPlans += ins.rowCount ?? 0;
 
