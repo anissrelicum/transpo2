@@ -7,15 +7,21 @@ import {
 } from '@radix-ui/themes';
 import {
   PlusIcon, DotsHorizontalIcon, MagnifyingGlassIcon, HomeIcon, CheckCircledIcon,
-  LockClosedIcon, ExclamationTriangleIcon, RocketIcon,
+  LockClosedIcon, ExclamationTriangleIcon, RocketIcon, UpdateIcon, CrossCircledIcon,
 } from '@radix-ui/react-icons';
-import type { Tenant, SaasPlanRow } from '@transpo/api-client';
+import type { Tenant, SaasPlanRow, SubscriptionStatus } from '@transpo/api-client';
 import { PageHeader, KPI } from './ui';
-import { priceLabel, quotaLabel, planOfTenant } from '../lib/plans';
+import { priceLabel, quotaLabel } from '../lib/plans';
 
 const SLUG_RE = /^[a-z0-9]+$/;
-const STATUS_COLOR: Record<string, 'green' | 'amber' | 'red' | 'gray'> = { ACTIF: 'green', ESSAI: 'amber', SUSPENDU: 'red' };
-const STATUS_LABEL: Record<string, string> = { ACTIF: 'Actif', ESSAI: 'Essai', SUSPENDU: 'Suspendu' };
+
+// Statut d'ABONNEMENT — c'est lui qui pilote. `tenants.status` n'en est que la projection.
+const SUB_COLOR: Record<SubscriptionStatus, 'green' | 'amber' | 'orange' | 'red' | 'gray'> = {
+  ESSAI: 'amber', ACTIF: 'green', IMPAYE: 'orange', SUSPENDU: 'red', RESILIE: 'gray',
+};
+const SUB_LABEL: Record<SubscriptionStatus, string> = {
+  ESSAI: 'Essai', ACTIF: 'Actif', IMPAYE: 'Impayé', SUSPENDU: 'Suspendu', RESILIE: 'Résilié',
+};
 
 function money(dh: number): string {
   return `${dh.toLocaleString('fr-FR')} DH`;
@@ -25,29 +31,34 @@ function when(iso: string): string {
   return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
+/** Jours restants avant une date, borné à 0. */
+function daysUntil(iso: string): number {
+  const ms = Date.parse(`${iso}T00:00:00Z`) - Date.parse(`${new Date().toISOString().slice(0, 10)}T00:00:00Z`);
+  return Math.max(0, Math.round(ms / 86400000));
+}
+
 export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: SaasPlanRow[] }) {
   const router = useRouter();
   const [busy, setBusy] = React.useState(false);
   const [q, setQ] = React.useState('');
   const [status, setStatus] = React.useState('all');
 
-  const actifs = tenants.filter((t) => t.status === 'ACTIF').length;
-  const essais = tenants.filter((t) => t.status === 'ESSAI').length;
-  const suspendus = tenants.filter((t) => t.status === 'SUSPENDU');
-  // Revenu récurrent : seuls les tenants actifs et au forfait ont un montant garanti.
-  // Les plans à l'usage n'entrent pas dans le MRR — leur montant dépend du volume du mois.
-  const mrr = tenants
-    .filter((t) => t.status === 'ACTIF')
-    .reduce((a, t) => {
-      const v = planOfTenant(plans, t.plan)?.current;
-      return a + (v?.billingMode === 'FORFAIT' ? v.monthlyCentimes / 100 : 0);
-    }, 0);
-  const usageTenants = tenants.filter(
-    (t) => t.status === 'ACTIF' && planOfTenant(plans, t.plan)?.current?.billingMode === 'USAGE',
-  ).length;
+  const by = (s: SubscriptionStatus) => tenants.filter((t) => t.subStatus === s);
+  const actifs = by('ACTIF').length;
+  const essais = by('ESSAI').length;
+  const impayes = by('IMPAYE');
+  const coupes = tenants.filter((t) => t.subStatus === 'SUSPENDU' || t.subStatus === 'RESILIE');
+
+  // Revenu récurrent : seuls les abonnements actifs au forfait sont un montant garanti.
+  const planOf = (t: Tenant) => plans.find((p) => p.code === t.planCode);
+  const mrr = by('ACTIF').reduce((a, t) => {
+    const v = planOf(t)?.current;
+    return a + (v?.billingMode === 'FORFAIT' ? v.monthlyCentimes / 100 : 0);
+  }, 0);
+  const usageTenants = by('ACTIF').filter((t) => planOf(t)?.current?.billingMode === 'USAGE').length;
 
   const rows = tenants.filter((t) => {
-    if (status !== 'all' && t.status !== status) return false;
+    if (status !== 'all' && t.subStatus !== status) return false;
     if (q && !`${t.slug} ${t.name} ${t.city ?? ''}`.toLowerCase().includes(q.toLowerCase())) return false;
     return true;
   });
@@ -64,12 +75,35 @@ export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: 
     return res.ok;
   }
 
+  async function runCycle() {
+    setBusy(true);
+    const res = await fetch('/api/proxy/v1/saas/cycle/run', {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
+    });
+    const d = await res.json().catch(() => null);
+    setBusy(false);
+    if (!res.ok) { alert(d?.message ?? 'Cycle impossible'); return; }
+    alert(
+      `Cycle du ${d.day}\n\n` +
+      `${d.trialsExpired} essai(s) expiré(s)\n${d.suspended} suspension(s)\n` +
+      `${d.renewed} reconduction(s)\n${d.projected} statut(s) tenant réaligné(s)`,
+    );
+    router.refresh();
+  }
+
   return (
     <>
       <PageHeader
         title="Organisations"
         subtitle={`${tenants.length} tenants · ${actifs} actifs · ${essais} en essai`}
-        actions={<ProvisionDialog plans={plans} onCreate={(b) => call('tenants', 'POST', b)} busy={busy} />}
+        actions={
+          <Flex gap="2">
+            <Button variant="soft" color="gray" disabled={busy} onClick={runCycle}>
+              <UpdateIcon /> Lancer le cycle
+            </Button>
+            <ProvisionDialog plans={plans} onCreate={(b) => call('tenants', 'POST', b)} busy={busy} />
+          </Flex>
+        }
       />
 
       <Grid columns={{ initial: '2', md: '4' }} gap="3" mb="4">
@@ -77,19 +111,28 @@ export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: 
         <KPI label="Actives" value={String(actifs)} delta="facturées" deltaColor="green" icon={<CheckCircledIcon width="15" />} accent="green" />
         <KPI label="En essai" value={String(essais)} delta="à convertir" deltaColor="amber" icon={<RocketIcon width="15" />} accent="amber" />
         <KPI
-          label="Revenu mensuel"
-          value={money(mrr)}
+          label="Revenu mensuel" value={money(mrr)}
           delta={usageTenants ? `hors ${usageTenants} à l’usage` : 'forfaits actifs'}
           deltaColor="gray" icon={<LockClosedIcon width="15" />} accent="cyan"
         />
       </Grid>
 
-      {suspendus.length > 0 && (
-        <Callout.Root color="red" mb="4">
+      {impayes.length > 0 && (
+        <Callout.Root color="orange" mb="3">
           <Callout.Icon><ExclamationTriangleIcon /></Callout.Icon>
           <Callout.Text>
-            <strong>{suspendus.length} organisation(s) suspendue(s)</strong> — le paywall bloque la connexion de tous leurs
-            utilisateurs : {suspendus.map((t) => t.slug).join(', ')}.
+            <strong>{impayes.length} abonnement(s) impayé(s)</strong> — l’accès reste ouvert, la suspension
+            est automatique à la fin du délai de grâce : {impayes.map((t) => t.slug).join(', ')}.
+          </Callout.Text>
+        </Callout.Root>
+      )}
+
+      {coupes.length > 0 && (
+        <Callout.Root color="red" mb="4">
+          <Callout.Icon><LockClosedIcon /></Callout.Icon>
+          <Callout.Text>
+            <strong>{coupes.length} organisation(s) sans accès</strong> — le paywall bloque la connexion de
+            tous leurs utilisateurs, administrateurs compris : {coupes.map((t) => t.slug).join(', ')}.
           </Callout.Text>
         </Callout.Root>
       )}
@@ -102,7 +145,9 @@ export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: 
           <Select.Trigger />
           <Select.Content>
             <Select.Item value="all">Tous statuts</Select.Item>
-            {Object.keys(STATUS_LABEL).map((s) => <Select.Item key={s} value={s}>{STATUS_LABEL[s]}</Select.Item>)}
+            {(Object.keys(SUB_LABEL) as SubscriptionStatus[]).map((s) => (
+              <Select.Item key={s} value={s}>{SUB_LABEL[s]}</Select.Item>
+            ))}
           </Select.Content>
         </Select.Root>
       </Flex>
@@ -112,14 +157,14 @@ export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: 
           <Table.Header><Table.Row>
             <Table.ColumnHeaderCell>Organisation</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Plan</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Tarif</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Abonnement</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Statut</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Créée le</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell />
           </Table.Row></Table.Header>
           <Table.Body>
             {rows.map((t) => {
-              const plan = planOfTenant(plans, t.plan);
+              const plan = planOf(t);
               return (
                 <Table.Row key={t.slug} align="center">
                   <Table.RowHeaderCell>
@@ -134,29 +179,49 @@ export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: 
                       </Box>
                     </Flex>
                   </Table.RowHeaderCell>
-                  <Table.Cell><Badge variant="soft" color="gray">{t.plan}</Badge></Table.Cell>
+                  <Table.Cell>
+                    <Badge variant="soft" color="gray">{t.plan}</Badge>
+                    {t.nextPlanLabel && (
+                      <Text as="div" size="1" color="gray">→ {t.nextPlanLabel} à l’échéance</Text>
+                    )}
+                  </Table.Cell>
                   <Table.Cell>
                     <Box>
                       <Text as="div" size="2">{plan ? priceLabel(plan.current) : '—'}</Text>
                       <Text as="div" size="1" color="gray">{plan ? quotaLabel(plan.current) : 'hors catalogue'}</Text>
                     </Box>
                   </Table.Cell>
-                  <Table.Cell><Badge color={STATUS_COLOR[t.status] || 'gray'} variant="soft">{STATUS_LABEL[t.status] || t.status}</Badge></Table.Cell>
+                  <Table.Cell><SubscriptionCell tenant={t} /></Table.Cell>
                   <Table.Cell><Text size="1" color="gray">{when(t.createdAt)}</Text></Table.Cell>
                   <Table.Cell>
                     <DropdownMenu.Root>
                       <DropdownMenu.Trigger><IconButton size="1" variant="ghost" color="gray"><DotsHorizontalIcon /></IconButton></DropdownMenu.Trigger>
                       <DropdownMenu.Content>
-                        <PlanItem tenant={t} plans={plans} onChange={(plan) => call(`tenants/${t.slug}/plan`, 'POST', { plan })} />
+                        <SubscribeDialog
+                          tenant={t} plans={plans}
+                          onSave={(b) => call(`tenants/${t.slug}/subscription`, 'POST', b)}
+                        />
                         <DropdownMenu.Separator />
-                        {t.status !== 'ACTIF' && (
-                          <DropdownMenu.Item onSelect={() => call(`tenants/${t.slug}/status`, 'POST', { status: 'ACTIF' })}>Activer</DropdownMenu.Item>
+                        {(t.subStatus === 'SUSPENDU' || t.subStatus === 'IMPAYE') && (
+                          <DropdownMenu.Item onSelect={() => call(`tenants/${t.slug}/subscription/reactivate`, 'POST', {})}>
+                            <CheckCircledIcon /> Réactiver
+                          </DropdownMenu.Item>
                         )}
-                        {t.status !== 'ESSAI' && (
-                          <DropdownMenu.Item onSelect={() => call(`tenants/${t.slug}/status`, 'POST', { status: 'ESSAI' })}>Repasser en essai</DropdownMenu.Item>
+                        {t.subStatus && t.subStatus !== 'SUSPENDU' && t.subStatus !== 'RESILIE' && (
+                          <ReasonItem
+                            label="Suspendre" color="red" icon={<LockClosedIcon />}
+                            title={`Suspendre ${t.name} ?`}
+                            body="Le paywall bloquera la connexion de tous les utilisateurs de cette organisation, administrateurs compris. Les données sont conservées."
+                            onConfirm={(reason) => call(`tenants/${t.slug}/subscription/suspend`, 'POST', { reason })}
+                          />
                         )}
-                        {t.status !== 'SUSPENDU' && (
-                          <SuspendItem tenant={t} onSuspend={() => call(`tenants/${t.slug}/status`, 'POST', { status: 'SUSPENDU' })} />
+                        {t.subStatus && t.subStatus !== 'RESILIE' && (
+                          <ReasonItem
+                            label="Résilier" color="red" icon={<CrossCircledIcon />}
+                            title={`Résilier l’abonnement de ${t.name} ?`}
+                            body="L’abonnement est clos définitivement et l’accès coupé. Un nouvel abonnement pourra être souscrit ensuite, mais l’historique de celui-ci est figé."
+                            onConfirm={(reason) => call(`tenants/${t.slug}/subscription/cancel`, 'POST', { reason })}
+                          />
                         )}
                       </DropdownMenu.Content>
                     </DropdownMenu.Root>
@@ -174,53 +239,111 @@ export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: 
   );
 }
 
-function PlanItem({ tenant, plans, onChange }: {
-  tenant: Tenant; plans: SaasPlanRow[]; onChange: (plan: string) => void;
+/** Statut d'abonnement + l'échéance qui compte selon l'état. */
+function SubscriptionCell({ tenant: t }: { tenant: Tenant }) {
+  if (!t.subStatus) return <Text size="1" color="gray">Aucun abonnement</Text>;
+  const detail =
+    t.subStatus === 'ESSAI' && t.trialEndsAt ? `${daysUntil(t.trialEndsAt)} j restants`
+    : t.subStatus === 'ACTIF' && t.renewsAt ? `échéance ${t.renewsAt}`
+    : t.subStatus === 'IMPAYE' && t.pastDueSince ? `impayé depuis ${t.pastDueSince}`
+    : t.statusReason ?? null;
+  return (
+    <Box>
+      <Badge color={SUB_COLOR[t.subStatus]} variant="soft">{SUB_LABEL[t.subStatus]}</Badge>
+      {detail && <Text as="div" size="1" color="gray" mt="1">{detail}</Text>}
+    </Box>
+  );
+}
+
+/** Souscrire ou changer de plan. L'effet dépend de l'état courant — le dialogue le dit. */
+function SubscribeDialog({ tenant, plans, onSave }: {
+  tenant: Tenant; plans: SaasPlanRow[]; onSave: (b: any) => Promise<boolean>;
 }) {
+  const available = plans.filter((p) => !p.archived && p.current);
   const [open, setOpen] = React.useState(false);
-  const [plan, setPlan] = React.useState(tenant.plan);
+  const [code, setCode] = React.useState(tenant.planCode ?? available[0]?.code ?? '');
+  const [immediate, setImmediate] = React.useState(false);
+
+  React.useEffect(() => {
+    if (open) { setCode(tenant.planCode ?? available[0]?.code ?? ''); setImmediate(false); }
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const isActive = tenant.subStatus === 'ACTIF';
+  const unchanged = isActive && code === tenant.planCode && !immediate;
+
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger>
-        <DropdownMenu.Item onSelect={(e) => { e.preventDefault(); setPlan(tenant.plan); setOpen(true); }}>
-          Changer de plan
+        <DropdownMenu.Item onSelect={(e) => { e.preventDefault(); setOpen(true); }}>
+          {tenant.subStatus === 'ESSAI' ? 'Convertir l’essai' : 'Souscrire / changer de plan'}
         </DropdownMenu.Item>
       </Dialog.Trigger>
-      <Dialog.Content maxWidth="400px">
-        <Dialog.Title>Changer le plan</Dialog.Title>
-        <Dialog.Description size="2" color="gray" mb="3">{tenant.name} — plan actuel : {tenant.plan}.</Dialog.Description>
-        <Select.Root value={plan} onValueChange={setPlan}>
+      <Dialog.Content maxWidth="460px">
+        <Dialog.Title>{tenant.name}</Dialog.Title>
+        <Dialog.Description size="2" color="gray" mb="3">
+          {tenant.subStatus === 'ESSAI'
+            ? 'L’essai se transforme en abonnement actif dès aujourd’hui, sur la période en cours.'
+            : isActive
+              ? <>Le changement prend effet <strong>à la prochaine échéance</strong> ({tenant.renewsAt}) — le mois en cours reste facturé au plan actuel.</>
+              : 'L’abonnement est régularisé et repart sur la période en cours.'}
+        </Dialog.Description>
+
+        <Select.Root value={code} onValueChange={setCode}>
           <Select.Trigger style={{ width: '100%' }} />
           <Select.Content>
-            {plans.filter((p) => !p.archived).map((p) => (
-              <Select.Item key={p.code} value={p.labelFr}>{p.labelFr} — {priceLabel(p.current)}</Select.Item>
+            {available.map((p) => (
+              <Select.Item key={p.code} value={p.code}>{p.labelFr} — {priceLabel(p.current)}</Select.Item>
             ))}
           </Select.Content>
         </Select.Root>
+
+        {isActive && (
+          <Flex align="center" gap="2" mt="3" asChild>
+            <label>
+              <input type="checkbox" checked={immediate} onChange={(e) => setImmediate(e.target.checked)} />
+              <Text size="2" color="gray">Appliquer immédiatement (sans proration du mois en cours)</Text>
+            </label>
+          </Flex>
+        )}
+
         <Flex gap="3" mt="4" justify="end">
           <Dialog.Close><Button variant="soft" color="gray">Annuler</Button></Dialog.Close>
-          <Button disabled={plan === tenant.plan} onClick={() => { onChange(plan); setOpen(false); }}>Enregistrer</Button>
+          <Button
+            disabled={!code || unchanged}
+            onClick={async () => { if (await onSave({ planCode: code, immediate })) setOpen(false); }}
+          >Valider</Button>
         </Flex>
       </Dialog.Content>
     </Dialog.Root>
   );
 }
 
-function SuspendItem({ tenant, onSuspend }: { tenant: Tenant; onSuspend: () => void }) {
+/** Action destructive exigeant un motif — il est conservé sur l'abonnement et tracé. */
+function ReasonItem({ label, color, icon, title, body, onConfirm }: {
+  label: string; color: 'red'; icon: React.ReactNode; title: string; body: string;
+  onConfirm: (reason: string) => Promise<boolean>;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const [reason, setReason] = React.useState('');
   return (
-    <AlertDialog.Root>
+    <AlertDialog.Root open={open} onOpenChange={(o) => { setOpen(o); if (o) setReason(''); }}>
       <AlertDialog.Trigger>
-        <DropdownMenu.Item color="red" onSelect={(e) => e.preventDefault()}><LockClosedIcon /> Suspendre</DropdownMenu.Item>
+        <DropdownMenu.Item color={color} onSelect={(e) => { e.preventDefault(); setOpen(true); }}>
+          {icon} {label}
+        </DropdownMenu.Item>
       </AlertDialog.Trigger>
-      <AlertDialog.Content maxWidth="400px">
-        <AlertDialog.Title>Suspendre {tenant.name} ?</AlertDialog.Title>
-        <AlertDialog.Description size="2">
-          Le paywall bloquera la connexion de <strong>tous les utilisateurs</strong> de cette organisation,
-          y compris ses administrateurs. Les données sont conservées.
-        </AlertDialog.Description>
+      <AlertDialog.Content maxWidth="440px">
+        <AlertDialog.Title>{title}</AlertDialog.Title>
+        <AlertDialog.Description size="2">{body}</AlertDialog.Description>
+        <Box mt="3">
+          <Text as="div" size="2" weight="medium" mb="1">Motif</Text>
+          <TextField.Root value={reason} placeholder="Impayé relancé trois fois…" onChange={(e) => setReason(e.target.value)} />
+        </Box>
         <Flex gap="3" mt="4" justify="end">
           <AlertDialog.Cancel><Button variant="soft" color="gray">Annuler</Button></AlertDialog.Cancel>
-          <AlertDialog.Action><Button color="red" onClick={onSuspend}>Suspendre</Button></AlertDialog.Action>
+          <Button color={color} disabled={!reason.trim()} onClick={async () => { if (await onConfirm(reason.trim())) setOpen(false); }}>
+            {label}
+          </Button>
         </Flex>
       </AlertDialog.Content>
     </AlertDialog.Root>
@@ -230,7 +353,8 @@ function SuspendItem({ tenant, onSuspend }: { tenant: Tenant; onSuspend: () => v
 function ProvisionDialog({ plans, onCreate, busy }: {
   plans: SaasPlanRow[]; onCreate: (b: any) => Promise<boolean>; busy: boolean;
 }) {
-  const empty = { slug: '', name: '', city: 'Casablanca', plan: plans[0]?.labelFr ?? 'Essai' };
+  const available = plans.filter((p) => !p.archived && p.current);
+  const empty = { slug: '', name: '', city: 'Casablanca', planCode: available[0]?.code ?? 'essai' };
   const [open, setOpen] = React.useState(false);
   const [f, setF] = React.useState(empty);
 
@@ -265,19 +389,18 @@ function ProvisionDialog({ plans, onCreate, busy }: {
               <TextField.Root value={f.city} onChange={(e) => setF({ ...f, city: e.target.value })} />
             </Box>
             <Box>
-              <Text as="div" size="2" weight="medium" mb="1">Plan</Text>
-              <Select.Root value={f.plan} onValueChange={(v) => setF({ ...f, plan: v })}>
+              <Text as="div" size="2" weight="medium" mb="1">Plan visé</Text>
+              <Select.Root value={f.planCode} onValueChange={(v) => setF({ ...f, planCode: v })}>
                 <Select.Trigger style={{ width: '100%' }} />
                 <Select.Content>
-                  {plans.filter((p) => !p.archived).map((p) => (
-                    <Select.Item key={p.code} value={p.labelFr}>{p.labelFr}</Select.Item>
-                  ))}
+                  {available.map((p) => <Select.Item key={p.code} value={p.code}>{p.labelFr}</Select.Item>)}
                 </Select.Content>
               </Select.Root>
             </Box>
           </Grid>
           <Text size="1" color="gray">
-            Un plan « Essai » crée l’organisation au statut Essai ; tout autre plan la crée active.
+            L’organisation démarre toujours par un <strong>essai de 14 jours</strong> sur le plan choisi.
+            À son terme, sans souscription, elle passe en impayé puis est suspendue.
           </Text>
         </Flex>
         <Flex gap="3" mt="4" justify="end">
@@ -285,7 +408,7 @@ function ProvisionDialog({ plans, onCreate, busy }: {
           <Button
             disabled={!valid || busy}
             onClick={async () => {
-              const ok = await onCreate({ slug: f.slug.trim(), name: f.name.trim(), city: f.city.trim() || undefined, plan: f.plan });
+              const ok = await onCreate({ slug: f.slug.trim(), name: f.name.trim(), city: f.city.trim() || undefined, planCode: f.planCode });
               if (ok) { setOpen(false); setF(empty); }
             }}
           >Provisionner</Button>

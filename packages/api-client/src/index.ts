@@ -10,8 +10,27 @@ export interface ClientOptions {
 
 export interface LoginResult { token: string; role: Role; name: string }
 export interface SuperLoginResult { token: string; name: string }
+export type SubscriptionStatus = 'ESSAI' | 'ACTIF' | 'IMPAYE' | 'SUSPENDU' | 'RESILIE';
 export interface Tenant {
   slug: string; name: string; city: string | null; plan: string; status: string; createdAt: string;
+  // Abonnement courant (spec §5). `status` du tenant en est la projection, pas l'inverse.
+  subStatus: SubscriptionStatus | null;
+  planCode: string | null;
+  trialEndsAt: string | null; renewsAt: string | null; pastDueSince: string | null;
+  statusReason: string | null;
+  nextPlanCode: string | null; nextPlanLabel: string | null;
+}
+export interface Subscription {
+  id: string; status: SubscriptionStatus;
+  startedAt: string; trialEndsAt: string | null; pastDueSince: string | null;
+  currentPeriod: string; renewsAt: string | null; endedAt: string | null; statusReason: string | null;
+  planCode: string; planLabel: string; planVersion: number;
+  billingMode: PlanBillingMode; monthlyCentimes: number;
+  nextPlanCode: string | null; nextPlanLabel: string | null;
+  trialDaysLeft: number | null;
+}
+export interface CycleResult {
+  day: string; trialsExpired: number; suspended: number; renewed: number; projected: number;
 }
 export interface AnalyticsSummary {
   total: number; byStatus: Record<string, number>;
@@ -356,14 +375,30 @@ export class TranspoClient {
     return this.req(`/v1/saas/plans/${encodeURIComponent(code)}/versions`, { method: 'POST', body: input });
   }
   getSaasBilling(): Promise<SaasBillingRow[]> { return this.req('/v1/saas/billing'); }
-  provisionTenant(input: { slug: string; name: string; city?: string; plan?: string }): Promise<{ slug: string; provisioned: boolean }> {
+  provisionTenant(input: { slug: string; name: string; city?: string; planCode?: string }): Promise<{ slug: string; provisioned: boolean }> {
     return this.req('/v1/saas/tenants', { method: 'POST', body: input });
   }
-  setTenantPlan(slug: string, plan: string): Promise<Tenant> {
-    return this.req(`/v1/saas/tenants/${encodeURIComponent(slug)}/plan`, { method: 'POST', body: { plan } });
+  // Abonnement (spec §5, §8). Remplace setTenantPlan/setTenantStatus : `tenants.status`
+  // n'est plus écrit directement, il découle de ces transitions.
+  getSubscription(slug: string): Promise<Subscription | null> {
+    return this.req(`/v1/saas/tenants/${encodeURIComponent(slug)}/subscription`);
   }
-  setTenantStatus(slug: string, status: string): Promise<Tenant> {
-    return this.req(`/v1/saas/tenants/${encodeURIComponent(slug)}/status`, { method: 'POST', body: { status } });
+  subscribeTenant(slug: string, planCode: string, immediate = false): Promise<{ slug: string; plan: string; outcome: string }> {
+    return this.req(`/v1/saas/tenants/${encodeURIComponent(slug)}/subscription`, {
+      method: 'POST', body: { planCode, immediate },
+    });
+  }
+  cancelSubscription(slug: string, reason?: string): Promise<{ slug: string; status: string }> {
+    return this.req(`/v1/saas/tenants/${encodeURIComponent(slug)}/subscription/cancel`, { method: 'POST', body: { reason } });
+  }
+  suspendSubscription(slug: string, reason?: string): Promise<{ slug: string; status: string }> {
+    return this.req(`/v1/saas/tenants/${encodeURIComponent(slug)}/subscription/suspend`, { method: 'POST', body: { reason } });
+  }
+  reactivateSubscription(slug: string): Promise<{ slug: string; status: string }> {
+    return this.req(`/v1/saas/tenants/${encodeURIComponent(slug)}/subscription/reactivate`, { method: 'POST', body: {} });
+  }
+  runSaasCycle(): Promise<CycleResult> {
+    return this.req('/v1/saas/cycle/run', { method: 'POST', body: {} });
   }
 
   // --- Utilisateurs & rôles ---

@@ -1,22 +1,44 @@
 import { Injectable, ConflictException, BadRequestException, NotFoundException, Inject } from '@nestjs/common';
 import { pool, provisionTenant, schemaFor, type TenantInput } from '@transpo/db';
-import { TENANT_STATUSES, RESERVED_SUBDOMAINS, planByCode, type TenantStatus } from '@transpo/domain';
+import { RESERVED_SUBDOMAINS, planByCode } from '@transpo/domain';
 import { AuditService } from '../audit/audit.service.js';
+import { SubscriptionsService } from './subscriptions.service.js';
 import type { JwtUser } from '../auth/jwt.js';
 
 @Injectable()
 export class SaasService {
   // @Inject explicite : requis sous tsx/esbuild (pas de métadonnée de type émise).
-  constructor(@Inject(AuditService) private readonly audit: AuditService) {}
+  constructor(
+    @Inject(AuditService) private readonly audit: AuditService,
+    @Inject(SubscriptionsService) private readonly subs: SubscriptionsService,
+  ) {}
 
+  /** Tenants + abonnement courant : la console affiche l'un sans l'autre nulle part. */
   list() {
     return pool
-      .query('SELECT slug, name, city, plan, status, created_at AS "createdAt" FROM platform.tenants ORDER BY created_at DESC')
+      .query(
+        `SELECT t.slug, t.name, t.city, t.plan, t.status, t.created_at AS "createdAt",
+                s.status AS "subStatus", s.trial_ends_at::text AS "trialEndsAt",
+                s.renews_at::text AS "renewsAt", s.past_due_since::text AS "pastDueSince",
+                s.status_reason AS "statusReason",
+                p.code AS "planCode", np.code AS "nextPlanCode", np.label_fr AS "nextPlanLabel"
+           FROM platform.tenants t
+           LEFT JOIN platform.subscriptions s ON s.tenant_id = t.id AND s.ended_at IS NULL
+           LEFT JOIN platform.plan_versions v ON v.id = s.plan_version_id
+           LEFT JOIN platform.plans p ON p.id = v.plan_id
+           LEFT JOIN platform.plan_versions nv ON nv.id = s.next_plan_version_id
+           LEFT JOIN platform.plans np ON np.id = nv.plan_id
+          ORDER BY t.created_at DESC`,
+      )
       .then((r) => r.rows);
   }
 
-  /** Provisionne un tenant (crée le schéma + tables + ligne). Réservé SUPER_ADMIN. Tracé. */
-  async provision(actor: JwtUser, input: TenantInput) {
+  /**
+   * Provisionne un tenant : schéma + tables + ligne plateforme, puis **abonnement d'essai**.
+   * Tout tenant naît en essai daté (spec §5.1) — le plan choisi n'est pas le statut, c'est
+   * l'offre vers laquelle l'essai convertira.
+   */
+  async provision(actor: JwtUser, input: TenantInput & { planCode?: string }) {
     if (RESERVED_SUBDOMAINS.includes(input.slug)) {
       throw new BadRequestException(`Slug réservé à l’infrastructure : ${input.slug}`);
     }
@@ -25,49 +47,22 @@ export class SaasService {
 
     const client = await pool.connect();
     try {
+      await client.query('BEGIN');
       await provisionTenant(client, input);
+      const { rows } = await client.query<{ id: string }>(
+        'SELECT id FROM platform.tenants WHERE slug = $1', [input.slug],
+      );
+      // Sans plan explicite, l'essai porte sur le plan d'essai du catalogue.
+      await this.subs.startTrial(client, rows[0].id, input.planCode ?? 'essai');
+      await client.query('COMMIT');
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
     } finally {
       client.release();
     }
     await this.audit.record(actor, 'tenant.provision', { target: input.slug, detail: { plan: input.plan } });
     return { slug: input.slug, provisioned: true };
-  }
-
-  private async tenantOrThrow(slug: string) {
-    const { rows } = await pool.query('SELECT slug, plan, status FROM platform.tenants WHERE slug = $1', [slug]);
-    if (!rows.length) throw new NotFoundException(`Tenant inconnu : ${slug}`);
-    return rows[0];
-  }
-
-  /** Change le plan d'abonnement d'un tenant. Réservé SUPER_ADMIN. Tracé. */
-  async changePlan(actor: JwtUser, slug: string, plan: string) {
-    await this.tenantOrThrow(slug);
-    // Le catalogue fait foi (platform.plans) ; `tenants.plan` porte le libellé FR.
-    // Repli sur la liste en dur tant que `migrate-plans` n'a pas tourné.
-    const known = await pool.query(
-      'SELECT 1 FROM platform.plans WHERE label_fr = $1 AND archived_at IS NULL', [plan],
-    );
-    if (!known.rowCount && !planByCode(plan)) throw new BadRequestException(`Plan inconnu : ${plan}`);
-    const { rows } = await pool.query(
-      'UPDATE platform.tenants SET plan = $2 WHERE slug = $1 RETURNING slug, plan, status',
-      [slug, plan],
-    );
-    await this.audit.record(actor, 'tenant.plan', { target: slug, detail: { plan } });
-    return rows[0];
-  }
-
-  /** Change le statut (paywall : SUSPENDU bloque le login des utilisateurs du tenant). Tracé. */
-  async setStatus(actor: JwtUser, slug: string, status: string) {
-    await this.tenantOrThrow(slug);
-    if (!TENANT_STATUSES.includes(status as TenantStatus)) {
-      throw new BadRequestException(`Statut invalide : ${status}`);
-    }
-    const { rows } = await pool.query(
-      'UPDATE platform.tenants SET status = $2 WHERE slug = $1 RETURNING slug, plan, status',
-      [slug, status],
-    );
-    await this.audit.record(actor, 'tenant.status', { target: slug, detail: { status } });
-    return rows[0];
   }
 
   /** Facturation plateforme : montant mensuel par tenant (plan) + usage (commandes). */

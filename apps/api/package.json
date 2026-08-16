@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "tsx src/main.ts",
+    "cycle": "tsx src/cycle.ts",
     "start:watch": "tsx watch src/main.ts",
     "typecheck": "tsc --noEmit",
     "test": "node --test"

@@ -208,13 +208,16 @@ ATT : 2 organisations listées.
 PAS : taper `tanger` dans la recherche ; puis filtrer sur chaque statut.
 ATT : filtrage réel de la liste, **Réinitialiser** l'état (vider le champ) restaure les 2 lignes.
 
-**TC-A08 — Changer le plan**
-PAS : menu « … » de `rabatexpress` → **Changer le plan** → `Entreprise` → **Enregistrer**.
-ATT : plan mis à jour dans la liste ; le bouton **Enregistrer** est désactivé si le plan choisi est identique.
+**TC-A08 — Convertir l'essai en abonnement**
+PAS : menu « … » de `rabatexpress` → **Convertir l'essai** → plan `Entreprise` → **Valider**.
+ATT : la colonne **Abonnement** passe de *Essai — n j restants* à **Actif — échéance le 1er du mois
+prochain** ; le plan affiché devient `Entreprise`.
 
-**TC-A09 — Activer / repasser en essai**
-PAS : menu → **Activer**, vérifier ; puis **Repasser en essai**, vérifier ; remettre **Activer**.
-ATT : le statut change à chaque fois.
+**TC-A09 — Changement de plan à l'échéance**
+PAS : sur l'abonnement désormais actif, menu → **Souscrire / changer de plan** → `Transporteur` → **Valider**.
+ATT : le plan courant **ne change pas** ; la colonne Plan affiche « → Transporteur à l'échéance ».
+Cocher *Appliquer immédiatement* applique en revanche le changement tout de suite.
+Choisir le plan déjà en cours, sans la case, laisse **Valider** désactivé.
 
 **TC-A10 — Facturation plateforme**
 PAS : `/saas/billing`.
@@ -277,10 +280,53 @@ PAS : après TC-A13 à TC-A18, consulter `/v1/audit`.
 ATT : les actions `plan.create`, `plan.version`, `plan.archive`, `plan.restore` sont tracées avec
 leur acteur et leur cible.
 
-> Les cas d'abonnement (expiration d'essai, suspension automatique, factures plateforme)
-> arrivent avec les lots **L2** et **L3** — cf. §11 de la spec. À ce stade, `/saas/billing`
-> et les boutons **Activer / Repasser en essai / Suspendre** de `/saas` gardent leur
-> comportement manuel actuel (TC-A09, TC-B05 inchangés).
+#### A-ter. Cycle de vie de l'abonnement (lot L2)
+
+Le statut d'une organisation **ne se saisit plus** : il découle de son abonnement. Le bouton
+**Lancer le cycle** de `/saas` rejoue le traitement quotidien à la demande — c'est lui qui rend
+ces cas testables sans attendre 14 jours.
+
+**TC-A21 — Tout tenant naît en essai daté**
+PAS : provisionner une organisation en choisissant le plan `Transporteur`.
+ATT : abonnement **Essai — 14 j restants**, et non « Actif ». Le plan visé est bien `Transporteur` :
+le plan choisi est la cible de la conversion, pas le statut.
+
+**TC-A22 — Le cycle est neutre quand il n'y a rien à faire**
+PAS : cliquer **Lancer le cycle** deux fois de suite.
+ATT : les deux exécutions rapportent les mêmes compteurs à zéro, et aucun statut ne bouge.
+
+**TC-A23 — Expiration de l'essai**
+PAS : forcer l'échéance en base
+(`UPDATE platform.subscriptions SET trial_ends_at = current_date - 1 WHERE …`), puis **Lancer le cycle**.
+ATT : l'abonnement passe **Impayé**, le bandeau orange apparaît, et **l'accès du tenant reste ouvert**
+(connexion possible) — on relance avant de couper.
+
+**TC-A24 — Suspension après le délai de grâce**
+PAS : forcer `past_due_since = current_date - 8`, puis **Lancer le cycle**.
+ATT : l'abonnement passe **Suspendu**, `tenants.status` suit, et la connexion au tenant est refusée.
+Sept jours pleins doivent s'être écoulés : à `- 6`, rien ne se passe.
+
+**TC-A25 — Rattrapage d'un cron manqué**
+PAS : forcer `renews_at` trois mois en arrière sur un abonnement actif, puis **Lancer le cycle** une fois.
+ATT : `current_period` avance mois par mois jusqu'au mois courant — **aucune période sautée**
+(c'est sur elles que L3 accrochera les factures) — et `renews_at` repasse dans le futur.
+
+**TC-A26 — Régularisation**
+PAS : sur un abonnement impayé ou suspendu, menu → **Réactiver**.
+ATT : retour en **Actif** sur la période courante, motif effacé, connexion au tenant rétablie.
+
+**TC-A27 — Résiliation**
+PAS : menu → **Résilier**, motif obligatoire, confirmer.
+ATT : l'abonnement disparaît des abonnements courants, le tenant est **sans accès**, et une nouvelle
+souscription redevient possible via **Souscrire / changer de plan**.
+
+**TC-A28 — Cohérence statut d'abonnement / accès**
+PAS : pour chacun des 5 statuts, comparer la colonne Abonnement et la connexion au tenant.
+ATT : Essai et Actif → connexion OK ; **Impayé → connexion OK** (relance, pas coupure) ;
+Suspendu et Résilié → connexion refusée.
+
+> Les factures plateforme (émission, échéance, paiement hors ligne) arrivent avec le lot **L3**.
+> À ce stade, `/saas/billing` garde son calcul provisoire.
 
 ### B. Amorçage des comptes & authentification
 
@@ -301,8 +347,10 @@ PAS : sur `/login?org=rabatexpress`, 6 tentatives avec un mauvais mot de passe.
 ATT : les 5 premières → « Identifiants invalides » ; la 6ᵉ → **429 « Trop de tentatives. Réessayez plus tard. »**. Attendre ou changer d'email pour la suite.
 
 **TC-B05 — Paywall : organisation suspendue**
-PAS : en super-admin, **Suspendre** `rabatexpress` (confirmer) ; puis tenter de se connecter sur `/login?org=rabatexpress`.
-ATT : « Espace suspendu — contactez la plateforme. » — connexion bloquée. **Réactiver** ensuite (TC-A09) et vérifier que la connexion repasse.
+PAS : en super-admin, menu de `rabatexpress` → **Suspendre**, saisir un motif, confirmer ; puis tenter
+de se connecter sur `/login?org=rabatexpress`.
+ATT : « Espace suspendu — contactez la plateforme. » — connexion bloquée. Le motif saisi s'affiche
+sous le statut d'abonnement. **Réactiver** ensuite et vérifier que la connexion repasse.
 
 **TC-B06 — Déconnexion**
 PAS : connecté en admin → menu avatar → **Se déconnecter**.

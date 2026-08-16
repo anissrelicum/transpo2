@@ -330,6 +330,74 @@ export function applyVat(subtotalCentimes: number, vatRate: number): { vatCentim
 export const centimesToDh = (c: number): number => c / 100;
 export const dhToCentimes = (dh: number): number => Math.round(dh * 100);
 
+/* ============ Cycle d'abonnement — machine à états (spec §5, §7) ============ */
+
+/**
+ * Dates manipulées en 'YYYY-MM-DD' et calculées en UTC de bout en bout : passer par
+ * un Date local ferait dériver d'un jour selon le fuseau du serveur, et une échéance
+ * décalée d'un jour suspend un client trop tôt.
+ */
+const parseIso = (iso: string): number => {
+  const [y, m, d] = iso.split('-').map(Number);
+  return Date.UTC(y, m - 1, d);
+};
+const fmtIso = (ms: number): string => new Date(ms).toISOString().slice(0, 10);
+
+export const addDaysIso = (iso: string, n: number): string => fmtIso(parseIso(iso) + n * 86400000);
+export const periodOf = (iso: string): string => iso.slice(0, 7);
+export function firstOfNextMonthIso(iso: string): string {
+  const [y, m] = iso.split('-').map(Number);
+  return fmtIso(Date.UTC(y, m, 1));
+}
+
+/** Projection du statut d'abonnement vers `tenants.status`, que lit le paywall (spec §5.2). */
+export const TENANT_STATUS_OF_SUBSCRIPTION: Record<SubscriptionStatus, TenantStatus> = {
+  ESSAI: 'ESSAI',
+  ACTIF: 'ACTIF',
+  IMPAYE: 'ACTIF',     // relancé, mais il travaille encore : on ne coupe pas
+  SUSPENDU: 'SUSPENDU',
+  RESILIE: 'SUSPENDU',
+};
+
+export interface CycleSubscription {
+  status: SubscriptionStatus;
+  trialEndsAt: string | null;
+  pastDueSince: string | null;
+  renewsAt: string | null;
+  hasNextPlan: boolean;
+}
+
+export type CycleAction =
+  | { kind: 'TRIAL_EXPIRED'; pastDueSince: string }
+  | { kind: 'SUSPEND' }
+  | { kind: 'RENEW'; period: string; renewsAt: string; applyNextPlan: boolean }
+  | null;
+
+/**
+ * Prochaine transition à appliquer, ou `null` si l'abonnement est à jour.
+ *
+ * Une seule transition par appel : l'appelant boucle jusqu'à `null`, ce qui fait
+ * converger un abonnement en retard de plusieurs mois en une seule exécution du cycle
+ * — et rend la fonction rejouable sans effet de bord (spec §7).
+ */
+export function cycleStep(s: CycleSubscription, today: string): CycleAction {
+  if (s.status === 'ESSAI' && s.trialEndsAt && s.trialEndsAt < today) {
+    return { kind: 'TRIAL_EXPIRED', pastDueSince: s.trialEndsAt };
+  }
+  if (s.status === 'IMPAYE' && s.pastDueSince && addDaysIso(s.pastDueSince, GRACE_DAYS) <= today) {
+    return { kind: 'SUSPEND' };
+  }
+  if (s.status === 'ACTIF' && s.renewsAt && s.renewsAt <= today) {
+    return {
+      kind: 'RENEW',
+      period: periodOf(s.renewsAt),
+      renewsAt: firstOfNextMonthIso(s.renewsAt),
+      applyNextPlan: s.hasNextPlan,
+    };
+  }
+  return null;
+}
+
 /* ====================== Notifications (T19) ====================== */
 export const NOTIF_CHANNELS = ['SMS', 'WHATSAPP', 'PUSH', 'EMAIL'] as const;
 export type NotifChannel = (typeof NOTIF_CHANNELS)[number];
