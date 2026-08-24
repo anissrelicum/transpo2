@@ -116,6 +116,10 @@ export interface SaasBillingRow {
   slug: string; name: string; plan: string; status: string;
   monthlyDH: number; orders: number; quota: number | null; overQuota: boolean;
 }
+export interface AuditEntry {
+  id: string; at: string; actor: string; actorRole: string;
+  tenant: string | null; action: string; target: string | null; detail: unknown;
+}
 export interface NotifTemplate {
   event: string; fr: string; ar: string; transactional: boolean; active: boolean;
   customized: boolean; updatedAt: string | null;
@@ -375,7 +379,7 @@ export class TranspoClient {
     return this.req(`/v1/saas/plans/${encodeURIComponent(code)}/versions`, { method: 'POST', body: input });
   }
   getSaasBilling(): Promise<SaasBillingRow[]> { return this.req('/v1/saas/billing'); }
-  provisionTenant(input: { slug: string; name: string; city?: string; planCode?: string }): Promise<{ slug: string; provisioned: boolean }> {
+  provisionTenant(input: { slug: string; name: string; city?: string; planCode?: string; adminEmail?: string; adminName?: string }): Promise<{ slug: string; provisioned: boolean; admin: { email: string; name: string; tempPassword: string } | null }> {
     return this.req('/v1/saas/tenants', { method: 'POST', body: input });
   }
   // Abonnement (spec §5, §8). Remplace setTenantPlan/setTenantStatus : `tenants.status`
@@ -399,6 +403,15 @@ export class TranspoClient {
   }
   runSaasCycle(): Promise<CycleResult> {
     return this.req('/v1/saas/cycle/run', { method: 'POST', body: {} });
+  }
+  // Journal d'audit plateforme (GET /v1/audit, SUPER_ADMIN). Limite API : 500.
+  getAudit(filters: { tenant?: string; action?: string; limit?: number } = {}): Promise<AuditEntry[]> {
+    const p = new URLSearchParams();
+    if (filters.tenant) p.set('tenant', filters.tenant);
+    if (filters.action) p.set('action', filters.action);
+    if (filters.limit) p.set('limit', String(filters.limit));
+    const qs = p.toString();
+    return this.req(`/v1/audit${qs ? `?${qs}` : ''}`);
   }
 
   // --- Utilisateurs & rôles ---

@@ -8,6 +8,7 @@ import {
 import {
   PlusIcon, DotsHorizontalIcon, MagnifyingGlassIcon, HomeIcon, CheckCircledIcon,
   LockClosedIcon, ExclamationTriangleIcon, RocketIcon, UpdateIcon, CrossCircledIcon,
+  CopyIcon, CheckIcon, InfoCircledIcon,
 } from '@radix-ui/react-icons';
 import type { Tenant, SaasPlanRow, SubscriptionStatus } from '@transpo/api-client';
 import { PageHeader, KPI } from './ui';
@@ -42,6 +43,8 @@ export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: 
   const [busy, setBusy] = React.useState(false);
   const [q, setQ] = React.useState('');
   const [status, setStatus] = React.useState('all');
+  // Mot de passe temporaire du 1er admin, affiché une seule fois après provisionnement (AN-01).
+  const [revealed, setRevealed] = React.useState<{ label: string; password: string } | null>(null);
 
   const by = (s: SubscriptionStatus) => tenants.filter((t) => t.subStatus === s);
   const actifs = by('ACTIF').length;
@@ -72,9 +75,10 @@ export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: 
       body: body ? JSON.stringify(body) : undefined,
     });
     setBusy(false);
-    if (res.ok) router.refresh();
-    else { const d = await res.json().catch(() => null); alert(d?.message ?? d?.error ?? 'Action impossible'); }
-    return res.ok;
+    if (res.ok) { router.refresh(); return res.json().catch(() => ({})); }
+    const d = await res.json().catch(() => null);
+    alert(d?.message ?? d?.error ?? 'Action impossible');
+    return null;
   }
 
   async function runCycle() {
@@ -103,7 +107,10 @@ export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: 
             <Button variant="soft" color="gray" disabled={busy} onClick={runCycle}>
               <UpdateIcon /> Lancer le cycle
             </Button>
-            <ProvisionDialog plans={plans} onCreate={(b) => call('tenants', 'POST', b)} busy={busy} />
+            <ProvisionDialog
+              plans={plans} onCreate={(b) => call('tenants', 'POST', b)} busy={busy}
+              onProvisioned={(a) => setRevealed({ label: `${a.name} (${a.email})`, password: a.tempPassword })}
+            />
           </Flex>
         }
       />
@@ -239,7 +246,36 @@ export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: 
           <Box p="4"><Text size="2" color="gray">{tenants.length ? 'Aucune organisation ne correspond au filtre.' : 'Aucune organisation.'}</Text></Box>
         )}
       </Card>
+      <RevealPassword revealed={revealed} onClose={() => setRevealed(null)} />
     </>
+  );
+}
+
+/** Mot de passe temporaire du 1er admin, affiché une seule fois (même pattern que l'invitation /users). */
+function RevealPassword({ revealed, onClose }: { revealed: { label: string; password: string } | null; onClose: () => void }) {
+  const [copied, setCopied] = React.useState(false);
+  React.useEffect(() => { if (revealed) setCopied(false); }, [revealed]);
+  return (
+    <Dialog.Root open={!!revealed} onOpenChange={(v) => { if (!v) onClose(); }}>
+      <Dialog.Content maxWidth="380px">
+        <Dialog.Title>Compte administrateur créé</Dialog.Title>
+        <Dialog.Description size="2" color="gray" mb="3">{revealed?.label}</Dialog.Description>
+        <Callout.Root color="amber" size="1" mb="3">
+          <Callout.Icon><InfoCircledIcon /></Callout.Icon>
+          <Callout.Text>Ce mot de passe ne sera plus affiché — communiquez-le à l'administrateur maintenant.</Callout.Text>
+        </Callout.Root>
+        <Flex align="center" gap="2" p="3" style={{ borderRadius: 'var(--radius-3)', background: 'var(--gray-a3)' }}>
+          <Text size="4" weight="bold" style={{ fontFamily: 'var(--code-font-family)', flex: 1, wordBreak: 'break-all' }}>{revealed?.password}</Text>
+          <IconButton
+            size="1" variant="soft" color={copied ? 'green' : 'gray'}
+            onClick={() => { if (revealed) { navigator.clipboard.writeText(revealed.password); setCopied(true); } }}
+          >{copied ? <CheckIcon /> : <CopyIcon />}</IconButton>
+        </Flex>
+        <Flex gap="3" mt="4" justify="end">
+          <Dialog.Close><Button>Fermer</Button></Dialog.Close>
+        </Flex>
+      </Dialog.Content>
+    </Dialog.Root>
   );
 }
 
@@ -354,16 +390,18 @@ function ReasonItem({ label, color, icon, title, body, onConfirm }: {
   );
 }
 
-function ProvisionDialog({ plans, onCreate, busy }: {
-  plans: SaasPlanRow[]; onCreate: (b: any) => Promise<boolean>; busy: boolean;
+function ProvisionDialog({ plans, onCreate, busy, onProvisioned }: {
+  plans: SaasPlanRow[]; onCreate: (b: any) => Promise<any>; busy: boolean;
+  onProvisioned: (admin: { email: string; name: string; tempPassword: string }) => void;
 }) {
   const available = plans.filter((p) => !p.archived && p.current);
-  const empty = { slug: '', name: '', city: 'Casablanca', planCode: available[0]?.code ?? 'essai' };
+  const empty = { slug: '', name: '', city: 'Casablanca', planCode: available[0]?.code ?? 'essai', adminEmail: '', adminName: '' };
   const [open, setOpen] = React.useState(false);
   const [f, setF] = React.useState(empty);
 
   const slugOk = SLUG_RE.test(f.slug.trim());
-  const valid = slugOk && f.name.trim().length > 1;
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.adminEmail.trim());
+  const valid = slugOk && f.name.trim().length > 1 && emailOk && f.adminName.trim().length > 1;
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -372,7 +410,8 @@ function ProvisionDialog({ plans, onCreate, busy }: {
         <Dialog.Title>Provisionner une organisation</Dialog.Title>
         <Dialog.Description size="2" color="gray" mb="4">
           Crée le schéma dédié, ses tables et la ligne plateforme. Le slug devient le sous-domaine
-          d’accès (<code>slug.transpo.wedo.technology</code>) et n’est plus modifiable.
+          d’accès (<code>slug.transpo.wedo.technology</code>) et n’est plus modifiable. Le compte
+          administrateur est créé dans la même opération, avec un mot de passe temporaire affiché une seule fois.
         </Dialog.Description>
         <Flex direction="column" gap="3">
           <Box>
@@ -402,6 +441,20 @@ function ProvisionDialog({ plans, onCreate, busy }: {
               </Select.Root>
             </Box>
           </Grid>
+          <Grid columns="2" gap="3">
+            <Box>
+              <Text as="div" size="2" weight="medium" mb="1">Nom de l'administrateur</Text>
+              <TextField.Root value={f.adminName} onChange={(e) => setF({ ...f, adminName: e.target.value })} placeholder="Youssef Tazi" />
+            </Box>
+            <Box>
+              <Text as="div" size="2" weight="medium" mb="1">Email de l'administrateur</Text>
+              <TextField.Root
+                value={f.adminEmail} onChange={(e) => setF({ ...f, adminEmail: e.target.value })}
+                placeholder="admin@rabatexpress.ma" color={f.adminEmail && !emailOk ? 'red' : undefined}
+              />
+              {f.adminEmail && !emailOk && <Text size="1" color="red">Email invalide.</Text>}
+            </Box>
+          </Grid>
           <Text size="1" color="gray">
             L’organisation démarre toujours par un <strong>essai de 14 jours</strong> sur le plan choisi.
             À son terme, sans souscription, elle passe en impayé puis est suspendue.
@@ -412,8 +465,14 @@ function ProvisionDialog({ plans, onCreate, busy }: {
           <Button
             disabled={!valid || busy}
             onClick={async () => {
-              const ok = await onCreate({ slug: f.slug.trim(), name: f.name.trim(), city: f.city.trim() || undefined, planCode: f.planCode });
-              if (ok) { setOpen(false); setF(empty); }
+              const res = await onCreate({
+                slug: f.slug.trim(), name: f.name.trim(), city: f.city.trim() || undefined,
+                planCode: f.planCode, adminEmail: f.adminEmail.trim(), adminName: f.adminName.trim(),
+              });
+              if (res) {
+                setOpen(false); setF(empty);
+                if (res.admin) onProvisioned(res.admin);
+              }
             }}
           >Provisionner</Button>
         </Flex>

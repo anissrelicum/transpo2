@@ -67,7 +67,7 @@ export class SaasController {
   }
 
   @Post('tenants')
-  provision(@Req() req: any, @Body() body: { slug?: string; name?: string; city?: string; planCode?: string }) {
+  provision(@Req() req: any, @Body() body: { slug?: string; name?: string; city?: string; planCode?: string; adminEmail?: string; adminName?: string }) {
     if (!body?.slug || !/^[a-z0-9]+$/.test(body.slug)) {
       throw new BadRequestException('slug requis (minuscules/chiffres).');
     }
@@ -77,6 +77,7 @@ export class SaasController {
     return this.saas.provision(req.user, {
       slug: body.slug, name: body.name, city: body.city,
       planCode: body.planCode, status: 'ESSAI',
+      adminEmail: body.adminEmail, adminName: body.adminName,
     });
   }
 }

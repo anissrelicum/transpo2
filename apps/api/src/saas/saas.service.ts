@@ -1,5 +1,6 @@
 import { Injectable, ConflictException, BadRequestException, NotFoundException, Inject } from '@nestjs/common';
-import { pool, provisionTenant, schemaFor, type TenantInput } from '@transpo/db';
+import { randomBytes } from 'node:crypto';
+import { pool, provisionTenant, schemaFor, hashPassword, type TenantInput } from '@transpo/db';
 import { RESERVED_SUBDOMAINS, planByCode } from '@transpo/domain';
 import { AuditService } from '../audit/audit.service.js';
 import { SubscriptionsService } from './subscriptions.service.js';
@@ -37,13 +38,25 @@ export class SaasService {
    * Provisionne un tenant : schéma + tables + ligne plateforme, puis **abonnement d'essai**.
    * Tout tenant naît en essai daté (spec §5.1) — le plan choisi n'est pas le statut, c'est
    * l'offre vers laquelle l'essai convertira.
+   * Si un compte admin est fourni (adminEmail + adminName), il est créé dans la même
+   * transaction, avec un mot de passe temporaire retourné une seule fois (AN-01).
    */
-  async provision(actor: JwtUser, input: TenantInput & { planCode?: string }) {
+  async provision(actor: JwtUser, input: TenantInput & { planCode?: string; adminEmail?: string; adminName?: string }) {
     if (RESERVED_SUBDOMAINS.includes(input.slug)) {
       throw new BadRequestException(`Slug réservé à l’infrastructure : ${input.slug}`);
     }
     const exists = await pool.query('SELECT 1 FROM platform.tenants WHERE slug = $1', [input.slug]);
     if (exists.rowCount) throw new ConflictException(`Tenant déjà existant : ${input.slug}`);
+
+    const adminEmail = input.adminEmail?.trim().toLowerCase() || null;
+    const adminName = input.adminName?.trim() || null;
+    if ((adminEmail || adminName) && !(adminEmail && adminName)) {
+      throw new BadRequestException('adminEmail et adminName vont de pair.');
+    }
+    if (adminEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adminEmail)) {
+      throw new BadRequestException('Email admin invalide.');
+    }
+    const tempPassword = adminEmail ? randomBytes(9).toString('base64url') : null;
 
     const client = await pool.connect();
     try {
@@ -54,6 +67,14 @@ export class SaasService {
       );
       // Sans plan explicite, l'essai porte sur le plan d'essai du catalogue.
       await this.subs.startTrial(client, rows[0].id, input.planCode ?? 'essai');
+      if (adminEmail && adminName && tempPassword) {
+        const hash = await hashPassword(tempPassword);
+        await client.query(
+          `INSERT INTO "${schemaFor(input.slug)}".users (email, password_hash, name, role)
+           VALUES ($1, $2, $3, 'ADMIN')`,
+          [adminEmail, hash, adminName],
+        );
+      }
       await client.query('COMMIT');
     } catch (e) {
       await client.query('ROLLBACK');
@@ -61,8 +82,15 @@ export class SaasService {
     } finally {
       client.release();
     }
-    await this.audit.record(actor, 'tenant.provision', { target: input.slug, detail: { plan: input.plan } });
-    return { slug: input.slug, provisioned: true };
+    await this.audit.record(actor, 'tenant.provision', {
+      target: input.slug,
+      detail: { plan: input.plan, admin: adminEmail },
+    });
+    return {
+      slug: input.slug,
+      provisioned: true,
+      admin: adminEmail ? { email: adminEmail, name: adminName, tempPassword } : null,
+    };
   }
 
   /** Facturation plateforme : montant mensuel par tenant (plan) + usage (commandes). */

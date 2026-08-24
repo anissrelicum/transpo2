@@ -9,6 +9,7 @@ const TABS = [
   { href: '/saas', label: 'Organisations' },
   { href: '/saas/billing', label: 'Facturation' },
   { href: '/saas/plans', label: 'Plans' },
+  { href: '/saas/audit', label: 'Audit' },
 ];
 
 export function SaasNav({ name }: { name: string }) {
