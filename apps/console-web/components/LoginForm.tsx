@@ -31,7 +31,9 @@ export function LoginForm({ lang }: { lang: Lang }) {
     setOrg(qOrg);
     setDetected(qOrg || host || 'par défaut');
     if (params.get('realm') === 'saas') setSuperAdmin(true);
-  }, []);
+    // Renvoyé par /api/suspendu : le tenant a été suspendu alors que la session était ouverte.
+    if (params.get('suspendu')) setError(tr('login.suspended'));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps — tr est stable
 
   function switchRealm(toSuper: boolean) {
     setSuperAdmin(toSuper);

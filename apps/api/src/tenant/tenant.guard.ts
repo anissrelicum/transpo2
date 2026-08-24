@@ -21,8 +21,15 @@ export class TenantGuard implements CanActivate {
     if (fromJwt && fromHeader && fromJwt !== fromHeader) {
       throw new ForbiddenException('Incohérence de tenant.'); // le JWT prime
     }
-    const { rows } = await pool.query('SELECT slug FROM platform.tenants WHERE slug = $1', [slug]);
+    const { rows } = await pool.query('SELECT slug, status FROM platform.tenants WHERE slug = $1', [slug]);
     if (!rows.length) throw new BadRequestException(`Tenant inconnu : ${slug}`);
+    // Paywall (AN-10) : la suspension coupe les sessions déjà ouvertes — le JWT vit 12 h,
+    // ne vérifier qu'au login laisserait l'accès en lecture/écriture pendant tout ce délai.
+    // Le realm plateforme (/v1/saas, /v1/audit) ne passe PAS par ce garde : il doit rester
+    // utilisable pour réactiver les tenants, même si tous sont suspendus.
+    if (rows[0].status === 'SUSPENDU') {
+      throw new ForbiddenException('Espace suspendu — contactez la plateforme.');
+    }
     req.tenantSlug = slug;
     req.tenantSchema = `tenant_${slug}`;
     return true;

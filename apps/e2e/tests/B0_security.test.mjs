@@ -50,3 +50,41 @@ test('sécurité : anti-bruteforce sur le login (429 après 5 échecs)', async (
   const locked = await api('/v1/auth/login', { method: 'POST', tenant: 'casaexpress', body: bad });
   assert.equal(locked.status, 429);
 });
+
+// AN-10 : la suspension doit couper les sessions déjà ouvertes (le JWT vit 12 h),
+// sans jamais bloquer le realm plateforme — sinon plus personne ne peut réactiver.
+test('paywall : la suspension coupe les sessions en cours, la plateforme reste utilisable', async () => {
+  // Garantit un abonnement courant sur e2e (la suspension exige un abonnement).
+  const sub = await api('/v1/saas/tenants/e2e/subscription', { token: sa });
+  if (!sub.json) {
+    const plans = await api('/v1/saas/plans', { token: sa });
+    const plan = plans.json.find((p) => p.code === 'essai') ?? plans.json[0];
+    const s = await api('/v1/saas/tenants/e2e/subscription', { method: 'POST', token: sa, body: { planCode: plan.code } });
+    assert.equal(s.status, 200, `souscription e2e → ${JSON.stringify(s.json)}`);
+  }
+
+  // Session ouverte AVANT la suspension : le token est valide.
+  const tok = await login('e2e', 'admin@e2e.ma');
+  assert.equal((await api('/v1/orders', { token: tok })).status, 200);
+
+  const s = await api('/v1/saas/tenants/e2e/subscription/suspend', { method: 'POST', token: sa, body: { reason: 'test AN-10' } });
+  assert.equal(s.status, 200, `suspend e2e → ${JSON.stringify(s.json)}`);
+
+  try {
+    // Lecture ET écriture refusées immédiatement pour le token vivant.
+    const read = await api('/v1/orders', { token: tok });
+    assert.equal(read.status, 403);
+    assert.match(read.json?.message ?? '', /suspendu/);
+    const write = await api('/v1/orders', { method: 'POST', token: tok, body: { fromCity: 'A', toCity: 'B' } });
+    assert.equal(write.status, 403);
+
+    // Le realm plateforme ne passe pas par TenantGuard : tout reste pilotable.
+    assert.equal((await api('/v1/saas/tenants', { token: sa })).status, 200);
+    assert.equal((await api('/v1/audit?limit=1', { token: sa })).status, 200);
+  } finally {
+    // Toujours réactiver pour ne pas polluer les suites suivantes.
+    await api('/v1/saas/tenants/e2e/subscription/reactivate', { method: 'POST', token: sa, body: {} });
+  }
+  // L'accès revient immédiatement pour la même session.
+  assert.equal((await api('/v1/orders', { token: tok })).status, 200);
+});
