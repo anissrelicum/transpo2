@@ -6,23 +6,24 @@ Document de lotissement produit par le tech lead. Source de vérité fonctionnel
 
 ---
 
-## 0. Fondations (agent « socle ») — dépendance de tous les lots — **contrat figé par le tech lead**
+## 0. Fondations (agent « socle ») — dépendance de tous les lots — **livré, contrat figé**
 
-Les 4 lots ci-dessous importent, sans jamais les modifier, les livrables de l'agent socle. Noms d'export réels (à utiliser tels quels, plus de noms indicatifs) :
+Les 4 lots ci-dessous importent, sans jamais les modifier, les livrables de l'agent socle, tous exportés depuis `apps/driver-app/components/shell/index.ts` :
 
-- `apps/driver-app/components/shell/TabBar.tsx` — 5 onglets (Missions/Tournée/Scanner/Shift/Profil), hauteur 64px, actif `indigo-11`/inactif `gray-9`. Montée par `apps/driver-app/app/(tabs)/_layout.tsx`.
-- `apps/driver-app/components/shell/ScreenHead.tsx` — retour 44×44 + titre + sous-titre.
-- `apps/driver-app/components/shell/PrimaryBtn.tsx` — pleine largeur, hauteur 52px.
-- `apps/driver-app/components/shell/BottomAction.tsx` — collé en bas, dégradé.
+- `TabBar({ active, onChange, lang, rtl })` (+ types `TabBarProps`, `TabId = 'missions' | 'route' | 'scan' | 'shift' | 'profil'`) — 5 onglets, hauteur 64px, actif `indigo-11`/inactif `gray-9`. Montée par `apps/driver-app/app/(tabs)/_layout.tsx`.
+- `ScreenHead({ title, sub, onBack, right, rtl })` — retour 44×44 + titre + sous-titre.
+- `PrimaryBtn({ children, onPress, disabled, loading })` — pleine largeur, hauteur 52px.
+- `BottomAction({ children })` — collé en bas, dégradé.
+- Module `icons` (icônes SVG maison, socle en a eu besoin faute de Radix Icons en RN) — les lots doivent réutiliser ces icônes plutôt qu'en importer d'ailleurs (`react-native-vector-icons`, emojis, etc.).
 - **Pas de `PhoneShell`** : c'est le cadre de simulation (390×844, bordure de téléphone) de la maquette, il n'a pas de sens dans une vraie app. Son équivalent réel = le layout Expo Router lui-même : `app/(tabs)/_layout.tsx` porte la `TabBar` ; les écrans de flux (connexion, détail mission, statut, preuve, échec…) vivent **hors** du groupe `(tabs)` et n'ont donc naturellement pas d'onglets — c'est la traduction correcte du `showTabs` de la maquette, pas un composant à écrire.
 - **Pas de `StatusBar` reproduite** : la maquette dessine une fausse barre iOS (9:41 etc.) pour la simulation ; sur un vrai téléphone c'est l'OS qui la rend. Gérer uniquement les safe areas via `react-native-safe-area-context` (déjà en dépendance) — ne pas redessiner l'horloge/le réseau/la batterie.
 - Thème clair/sombre : `packages/design-tokens/src/index.ts` étendu (palette, `resolveColor`, `statusColorHex`) + `apps/driver-app/lib/theme.ts` réécrit par socle.
-- `@transpo/design-tokens` et `@transpo/i18n` sont **déjà** en `workspace:*` dans `apps/driver-app/package.json` — rien à ajouter, contrairement à ce qui était supposé initialement.
-- Support RTL (arabe) au niveau shell.
+- `@transpo/design-tokens` et `@transpo/i18n` étaient déjà en `workspace:*` dans `apps/driver-app/package.json`.
+- Support RTL (arabe) au niveau shell — porté par les props `lang`/`rtl` de `TabBar`/`ScreenHead`, pas à redéfinir par écran.
 
-**État à la date de rédaction** : tokens et `theme.ts` faits ; les 4 primitives (`TabBar`, `ScreenHead`, `PrimaryBtn`, `BottomAction`) sont en cours d'écriture par socle, pas encore livrées. Les lots peuvent commencer à coder contre ces noms/chemins dès maintenant — le contrat ne bougera plus.
+**État : livré, typecheck vert.** Les 4 lots codent contre ces signatures exactes, sans variante locale.
 
-Aucun lot ne touche : `apps/driver-app/lib/theme.ts`, `packages/design-tokens/src/index.ts`, les fichiers `components/shell/*.tsx`, `app/_layout.tsx`, `app/(tabs)/_layout.tsx`.
+Aucun lot ne touche : `apps/driver-app/lib/theme.ts`, `packages/design-tokens/src/index.ts`, les fichiers `components/shell/*.tsx` (dont `index.ts` et `icons`), `app/_layout.tsx`, `app/(tabs)/_layout.tsx`.
 
 ---
 
@@ -84,7 +85,7 @@ Fichiers à créer (propriété exclusive) :
 - `apps/driver-app/app/mission/[ref]/index.tsx` — détail (remplace l'actuel `app/mission/[ref].tsx`, **à supprimer en premier** puisqu'Expo Router n'autorise pas la coexistence fichier/dossier au même chemin). Carte statique/placeholder (pas de lat/lng réel dans `Order` — ne pas inventer de coordonnées), bloc retrait/livraison, bloc colis, bouton « Naviguer » → `status.tsx`.
 - `apps/driver-app/app/mission/[ref]/status.tsx` — machine à états séquentielle (branche `!atDelivery` de l'actuel fichier). Appelle `submit('advance')` → `enqueue({kind:'advance', ...})` → `driverAdvance`, **identique à l'existant**. Bouton « Signaler un échec » → `fail.tsx`.
 - `apps/driver-app/app/mission/[ref]/proof.tsx` — capture preuve **et** encaissement COD **dans le même écran, en deux étapes internes (state local)**, exactement comme le fait déjà la branche `atDelivery` de l'actuel fichier. **Ne pas séparer en deux routes** : `driverProof()` est un appel unique qui bundle `codCollected` + `photo` + `signature` avec un seul `idemKey` — scinder la route obligerait à faire transiter des data URI de plusieurs centaines de Ko par des query params, ce que l'app ne fait pas aujourd'hui et ne doit pas commencer à faire. Réutilise `capturePhoto` (`lib/proof.ts`), `<SignaturePad>` (`components/SignaturePad.tsx`, restylage léger de conteneur uniquement — ne pas toucher au `PanResponder`), `missingProof`/`proofRequirements` (`@transpo/domain`).
-- `apps/driver-app/app/mission/[ref]/fail.tsx` — nouveau, formulaire de motif d'échec. **Backend réel désormais disponible** : `driverFail(ref, reason, idemKey)` → `POST /v1/driver/orders/:ref/fail`, même forme que `proof` (idempotent, ownership vérifié, borné au statut `LIVRAISON`, délègue à `ReturnsService.fail` → commande `ECHOUEE` + retour `A_TRAITER`). **Ne pas rediriger vers `reportIncident`** : un incident ne fait pas passer la commande en `ECHOUEE`, le retour ne partirait jamais — ce serait un contournement silencieux. `idemKey(ref, 'fail')` suit le même format que les deux autres actions. Passer par l'outbox comme `advance`/`proof` (cf. §4 — troisième `kind` autorisé explicitement).
+- `apps/driver-app/app/mission/[ref]/fail.tsx` — nouveau, formulaire de motif d'échec. **Backend réel désormais disponible** : `driverFail(ref, reason, idemKey)` → `POST /v1/driver/orders/:ref/fail`, même forme que `proof` (idempotent, ownership vérifié, borné au statut `LIVRAISON`, délègue à `ReturnsService.fail` → commande `ECHOUEE` + retour `A_TRAITER`). **Ne pas rediriger vers `reportIncident`** : un incident ne fait pas passer la commande en `ECHOUEE`, le retour ne partirait jamais — ce serait un contournement silencieux. `idemKey(ref, 'fail')` suit le même format que les deux autres actions. Le support offline (`kind: 'fail'` dans `lib/outbox.ts`, routage `send()` vers `driverFail`, `applyPending` reflétant `ECHOUEE`) **est déjà livré par le tech lead** — Lot B ne fait que consommer `enqueue({kind:'fail', ref, reason, idemKey})`, aucune modification de `lib/outbox.ts` de sa part (cf. §4 : zéro exception, ce fichier reste totalement hors des mains des lots).
 - `apps/driver-app/app/mission/[ref]/done.tsx` — écran de succès (reprend la logique « commande introuvable = livrée » déjà présente en fin de l'actuel fichier).
 
 Ce lot porte le risque de régression le plus élevé (seul lot qui touche à l'enchaînement outbox/idempotence) — cf. §4.
@@ -128,7 +129,7 @@ Fichiers :
 
 ## 4. Risques de régression — ne jamais toucher sans validation tech lead
 
-- **`lib/outbox.ts`** — file d'attente offline, idempotence (`enqueue`/`flush`/`applyPending`). Deux `PendingAction.kind` existent (`advance`, `proof`). **Exception explicitement autorisée pour ce lot** : Lot B ajoute un troisième `kind: 'fail'` (`{ kind: 'fail'; ref: string; reason: string; idemKey: string }`), en réutilisant strictement le même schéma de dédoublonnage (`id = fail:${ref}:${idemKey}`) et le même traitement 4xx-définitif / réseau-5xx-retryable dans `flush()`. C'est la **seule** modification permise sur ce fichier dans toute la refonte — aucune autre, et uniquement par Lot B (pas de double implémentation par un autre lot).
+- **`lib/outbox.ts`** — file d'attente offline, idempotence (`enqueue`/`flush`/`applyPending`). **Intouchable par les 4 lots, sans exception.** Le tech lead a lui-même porté le troisième `kind: 'fail'` (`{ kind: 'fail'; ref: string; reason: string; idemKey: string }`, dédoublonnage `id = fail:${ref}:${idemKey}`, `send()` route vers `driverFail`, `applyPending` reflète `ECHOUEE`) — c'est déjà en place. Lot B consomme (`enqueue({kind:'fail', ...})`) mais ne modifie jamais ce fichier.
 - **`lib/api.ts`** — session, `idemKey()` (stable par `ref:action:driver`, condition du dédoublonnage serveur). Toute modification casse la garantie « un rejeu après coupure = un seul effet ».
 - **`lib/proof.ts`** / **`lib/signature.ts`** — compression photo sous 700 Ko (paliers dégressifs), sérialisation SVG de la signature. Ne pas remplacer par le placeholder SVG figé de la maquette : l'implémentation réelle est **plus avancée** que la maquette sur ce point précis.
 - **`lib/tracking.ts`** — remontée de position **sans file d'attente** (design volontaire : une position périmée n'a pas de valeur, cf. commentaire du fichier). Ne pas la faire passer par `outbox.ts`.
@@ -177,8 +178,7 @@ Chaque ligne doit pouvoir être cochée oui/non sans jugement d'appréciation. U
 - [ ] `INCIDENT_TYPES` utilisé dans `incidents.tsx` provient d'un `import` depuis `@transpo/domain` — aucune liste recopiée en dur dans le fichier.
 
 **Fichiers protégés**
-- [ ] `git diff --stat main -- apps/driver-app/lib/api.ts apps/driver-app/lib/proof.ts apps/driver-app/lib/signature.ts apps/driver-app/lib/tracking.ts apps/driver-app/lib/storage.ts` est vide.
-- [ ] `git diff main -- apps/driver-app/lib/outbox.ts` ne contient que l'ajout du `kind: 'fail'` (aucune ligne modifiée/supprimée hors ajout), et provient uniquement d'une PR du Lot B.
+- [ ] `git diff --stat main -- apps/driver-app/lib/outbox.ts apps/driver-app/lib/api.ts apps/driver-app/lib/proof.ts apps/driver-app/lib/signature.ts apps/driver-app/lib/tracking.ts apps/driver-app/lib/storage.ts` est vide dans chaque PR de lot (le `kind: 'fail'` de `outbox.ts` est déjà en base, porté par le tech lead — aucun lot n'y touche, zéro exception).
 - [ ] Le scénario manuel « avancer une commande hors-ligne → couper le réseau → forcer une preuve+COD → revenir en ligne » (Lot B) produit les mêmes `idemKey` qu'avant la refonte, vérifiable dans les logs réseau.
 - [ ] La garde de `logout()` sur la file en attente (`Alert` si `pending.length > 0`) est présente et bloque le logout dans `app/(tabs)/profil.tsx`.
 

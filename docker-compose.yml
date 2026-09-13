@@ -23,7 +23,9 @@ services:
   migrate:
     image: transpo/app:dev
     working_dir: /repo/packages/db
-    command: sh -c "pnpm migrate && pnpm seed"
+    # migrate-plans après seed : catalogue de plans (requis par le provisioning /v1/saas/tenants)
+    # + abonnements des tenants seedés. Rejouable : chaque étape est conditionnée à l'absence.
+    command: sh -c "pnpm migrate && pnpm seed && pnpm migrate-plans"
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-transpo}:${POSTGRES_PASSWORD:-transpo_dev}@postgres:5432/${POSTGRES_DB:-transpo}
       NODE_ENV: ${NODE_ENV:-development}

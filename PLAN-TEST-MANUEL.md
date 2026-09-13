@@ -62,9 +62,9 @@ on amorce chaque compte manquant en ligne de commande :
 
 ```bash
 # Usage : <slug> <email> "<Nom>" <ROLE> <motdepasse> ["<scope>"]
-pnpm --filter @transpo/db account -- rabatexpress admin@rabatexpress.ma "Nadia Alaoui" ADMIN Test1234
-pnpm --filter @transpo/db account -- rabatexpress marchand@rabatexpress.ma "Boutique Test" MERCHANT Test1234 "Boutique Test"
-pnpm --filter @transpo/db account -- rabatexpress livreur@rabatexpress.ma "Hamid Ouali" DRIVER Test1234 "Hamid Ouali"
+pnpm --filter @transpo/db account rabatexpress admin@rabatexpress.ma "Nadia Alaoui" ADMIN Test1234
+pnpm --filter @transpo/db account rabatexpress marchand@rabatexpress.ma "Boutique Test" MERCHANT Test1234 "Boutique Test"
+pnpm --filter @transpo/db account rabatexpress livreur@rabatexpress.ma "Hamid Ouali" DRIVER Test1234 "Hamid Ouali"
 ```
 
 Le `scope` (6ᵉ argument) doit être **exactement** le nom du marchand tel qu'il sera saisi dans
@@ -325,6 +325,15 @@ PAS : pour chacun des 5 statuts, comparer la colonne Abonnement et la connexion 
 ATT : Essai et Actif → connexion OK ; **Impayé → connexion OK** (relance, pas coupure) ;
 Suspendu et Résilié → connexion refusée.
 
+**TC-A29 — Créer / réinitialiser l'administrateur d'une organisation existante**
+PAS : `/saas` → menu d'une organisation → **Créer / réinitialiser l'administrateur** → nom + email
+d'une adresse **inconnue** de l'organisation → **Enregistrer** ; recommencer avec l'adresse de
+l'administrateur **existant**.
+ATT : un mot de passe temporaire est affiché **une seule fois** dans les deux cas, la connexion avec
+ce mot de passe aboutit, l'action apparaît au journal d'audit (`tenant.admin.create` /
+`tenant.admin.reset`). Une organisation sans administrateur actif doit être récupérable **depuis la
+console**, sans accès shell à la production (AN-11).
+
 > Les factures plateforme (émission, échéance, paiement hors ligne) arrivent avec le lot **L3**.
 > À ce stade, `/saas/billing` garde son calcul provisoire.
 
@@ -338,9 +347,11 @@ ATT : « Identifiants invalides ». *Consigner AN-01 (§3).*
 PAS : exécuter la commande `account` de §0.3 pour `admin@rabatexpress.ma`.
 ATT : la connexion `/login?org=rabatexpress` avec `Test1234` aboutit sur `/dashboard`.
 
-**TC-B03 — Tenant inconnu**
+**TC-B03 — Organisation inconnue**
 PAS : `/login?org=inexistant` → n'importe quel identifiant.
-ATT : erreur « Tenant inconnu : inexistant » (400).
+ATT : **exactement la même réponse qu'un mot de passe faux** — « Identifiants invalides. » (401).
+Le nom de l'organisation ne doit apparaître ni dans le message, ni dans le code HTTP : comparer
+deux réponses permettait d'énumérer les clients de la plateforme (OBS-01).
 
 **TC-B04 — Anti-bruteforce**
 PAS : sur `/login?org=rabatexpress`, 6 tentatives avec un mauvais mot de passe.
@@ -406,6 +417,14 @@ ATT :
 
 Toute action interdite doit être **absente ou désactivée** dans l'UI **et** refusée par l'API (403) si l'URL est appelée directement.
 
+**TC-B16 — Le comptage anti-bruteforce est partagé et compte aussi par source**
+PAS : épuiser le quota d'échecs sur une adresse (`/login?org=rabatexpress`), **redémarrer l'API**,
+puis réessayer ; enchaîner ensuite des échecs sur des adresses **toutes différentes** depuis la
+même machine.
+ATT : après redémarrage le blocage **tient toujours** (compteur en base, pas en mémoire du
+processus), et le balayage d'adresses finit par être freiné à son tour — le seuil par source est
+plus haut que le seuil par compte, une sortie NAT pouvant être partagée par tout un bureau (OBS-02).
+
 ### C. Paramètres de l'organisation
 
 **TC-C01 — Renseigner l'identité légale**
@@ -467,8 +486,71 @@ PAS : basculer la disponibilité de `Sara Bennis` sur *indisponible* (accessible
 ATT : bascule persistée ; un chauffeur indisponible ne doit plus être proposé par le dispatch (vérifié en TC-F03).
 
 **TC-D11 — Retirer un chauffeur**
-PAS : créer un chauffeur jetable → **Retirer** → confirmer.
-ATT : suppression effective ; le retrait d'un chauffeur avec des courses en cours doit être refusé (consigner).
+PAS : créer un chauffeur jetable → **Retirer** → confirmer. Puis, sur un chauffeur **porteur de
+commandes en cours** : **Retirer** → choisir le repreneur → **Transférer et retirer**.
+ATT : sans commande en cours, retrait direct. **Avec** des commandes en cours, le retrait est
+possible **à condition de désigner un repreneur** : le dialogue annonce le nombre de courses
+concernées et exige un chauffeur affectable ; les courses **en cours** passent à son nom, les
+courses **clôturées** restent au nom du partant (l'historique dit qui a livré). Sans repreneur,
+refus **400** « … Transférez-les à un autre chauffeur. » ; repreneur non affectable, refus aussi.
+
+**TC-D12 — Immatriculation en doublon**
+PAS : `/vehicles` → **Ajouter un véhicule** → plaque `1111-A-11`, déjà au parc.
+ATT : refus **409** « Un véhicule porte déjà cette immatriculation. » ; rien créé, le parc est inchangé.
+La plaque identifie le véhicule sur le terrain : deux lignes homonymes rendraient tout
+rattachement et toute preuve ambigus.
+
+**TC-D13 — Immatriculation au format invalide**
+PAS : ajouter un véhicule de plaque `ABCD`.
+ATT : refus « Immatriculation invalide (format marocain NNNN-L-NN). », dans l'UI **et** par l'API.
+
+**TC-D14 — Chauffeur homonyme**
+PAS : `/drivers` → **Ajouter un chauffeur** → `Hamid Ouali`, déjà à l'effectif.
+ATT : refus **409** « Un chauffeur porte déjà ce nom. ». Les commandes référencent le chauffeur
+par son nom : l'unicité est une règle métier, pas un confort d'affichage.
+
+**TC-D15 — Un véhicule non actif n'est pas rattachable**
+PAS : passer `1111-A-11` en **maintenance**, puis ouvrir **Rattacher un véhicule** sur un chauffeur.
+ATT : le véhicule n'est pas proposé ; forcé par appel direct, l'API refuse **400** « Véhicule non
+actif : rattachement impossible. ».
+
+**TC-D16 — Véhicule déjà rattaché à un autre chauffeur**
+PAS : rattacher `1111-A-11` (déjà sur `Hamid Ouali`) à `Sara Bennis`.
+ATT : le sélecteur annonce « déjà sur Hamid Ouali » et un avertissement s'affiche **avant**
+validation. Le partage n'est pas interdit — il ne doit simplement pas se découvrir après coup.
+
+**TC-D17 — Retrait d'un véhicule rattaché**
+PAS : menu de `1111-A-11` (rattaché à `Hamid Ouali`) → **Retirer** → confirmer.
+ATT : refus explicite **nommant le chauffeur** (« véhicule rattaché à Hamid Ouali. Détachez-le
+d'abord… ») ; le véhicule reste au parc et la fiche chauffeur est intacte.
+
+**TC-D18 — Renouvellement dans le passé**
+PAS : **Renouveler la visite médicale** d'un chauffeur avec une date d'hier ; idem sur l'assurance
+d'un véhicule.
+ATT : le champ est borné au jour même, **Enregistrer** reste désactivé, et l'appel API direct est
+refusé **400** « La nouvelle échéance doit être postérieure à aujourd'hui. ». Un « renouvellement »
+ne doit pas pouvoir déclasser une fiche conforme.
+
+**TC-D19 — Modifier la fiche d'un chauffeur**
+PAS : menu de `Sara Bennis` → **Modifier la fiche** → changer ville, type de véhicule déclaré,
+téléphone et n° de permis → **Enregistrer**. Puis rattacher un véhicule à `Hamid Ouali` et le
+détacher (« Aucun »).
+ATT : les quatre champs persistent après rechargement ; le **type déclaré du chauffeur survit au
+détachement**. Renommer un chauffeur qui porte des commandes est refusé, avec le nombre de
+commandes en cause.
+
+**TC-D20 — Écriture flotte réservée à l'admin**
+PAS : se connecter en **dispatcher** → `/vehicles` puis `/drivers`.
+ATT : consultation possible ; **Ajouter**, **Retirer**, **Renouveler**, **Rattacher** et **Modifier**
+absents ou désactivés, et les appels API correspondants refusés **403**. Seule la bascule de
+**disponibilité** reste ouverte au dispatcher (TC-D10).
+
+**TC-D21 — Aucune action de la flotte ne fige la console**
+PAS : sur `/drivers` et `/vehicles`, enchaîner sans jamais recharger : rattacher un véhicule,
+renouveler une échéance, modifier une fiche, changer un état.
+ATT : après chaque enregistrement, la page reste **cliquable** — `pointer-events` rendu, verrou de
+défilement levé, racine non `aria-hidden` — et la donnée est à jour. C'est la non-régression
+d'AN-13 : le défaut ne se voyait pas à l'œil, seulement en essayant d'agir ensuite.
 
 ### E. Zones
 
@@ -491,6 +573,24 @@ ATT : les deux opérations sont effectives après rechargement.
 **TC-E05 — Zones visibles au dispatch et au PC flotte**
 PAS : ouvrir `/dispatch` puis `/fleet`.
 ATT : le cercle/la zone `Rabat Centre` est affiché sur les deux cartes.
+
+**TC-E06 — Nom vide et livreur inexistant**
+PAS : vider le nom d'une zone et **Enregistrer** ; puis, par appel direct, affecter à la zone
+un livreur absent de l'effectif.
+ATT : refus **400** dans les deux cas (« Nom de zone requis. », « Livreur inconnu : … »).
+Une zone anonyme est introuvable dans la console, et le dispatch affectant **par nom**, un
+livreur fantôme ne pourrait jamais être joint.
+
+**TC-E07 — Polygone à moins de trois sommets**
+PAS : tracer deux sommets et enregistrer sans effacer ; forcer ensuite par appel direct.
+ATT : refus **400** « Un polygone demande au moins trois sommets. » ; le tracé enregistré ne
+bouge pas. Une zone à deux sommets ne délimite rien, ne se voit pas sur la carte, et rendrait
+tout géofencing muet.
+
+**TC-E08 — Écriture des zones : dispatcher oui, comptable non**
+PAS : ouvrir `/zones` en **dispatcher**, puis en **comptable**.
+ATT : conforme à la matrice §B — le dispatcher crée, modifie et supprime ; le comptable
+consulte, sans bouton d'écriture, et ses appels `POST` / `PATCH` / `DELETE` sont refusés **403**.
 
 ### F. Commandes — cycle de vie complet
 

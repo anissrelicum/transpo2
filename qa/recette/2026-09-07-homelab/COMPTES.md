@@ -1,0 +1,13 @@
+TC-A03 rabatexpress ADMIN admin@rabatexpress.ma tempPassword=Test1234 (B02 : amorcé CLI, mdp fixé Test1234)
+TC-A06 tangerlog ADMIN admin@tangerlog.ma tempPassword=TfVXbSzfYS7H
+TC-A21 atlasfret ADMIN admin@atlasfret.ma tempPassword=f9f1bJZ8Eebl
+TC-A28 demoimpaye ADMIN admin@demoimpaye.ma tempPassword=IG8BwsH-H6p6
+TC-A28 demosuspendu ADMIN admin@demosuspendu.ma tempPassword=vW4CNAaoQRCV
+TC-B07 rabatexpress DISPATCHER dispatch@rabatexpress.ma tempPassword=BuN2_D4pnObb
+TC-B07 rabatexpress DISPATCHER dispatch@rabatexpress.ma tempPassword=VNb65TjlKGrX
+TC-B07 rabatexpress DISPATCHER dispatch@rabatexpress.ma tempPassword=X3zv45hwK1Tc
+TC-B08 rabatexpress COMPTABLE compta@rabatexpress.ma tempPassword=QjlS6vFbgAMU
+TC-B11 rabatexpress DISPATCHER dispatch@rabatexpress.ma tempPassword=hT03a5YbHBgd
+TC-B11 rabatexpress DISPATCHER dispatch@rabatexpress.ma tempPassword=8sYa1LEZF0Ew
+TC-B11 rabatexpress DISPATCHER dispatch@rabatexpress.ma tempPassword=TBggHvXW8rRL
+TC-B11 retest rabatexpress DISPATCHER dispatch@rabatexpress.ma tempPassword=8s9xU2jf0R7g

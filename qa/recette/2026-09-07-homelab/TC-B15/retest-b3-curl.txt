@@ -1,0 +1,8 @@
+== Retest BUG-B3 — 2026-09-08 23:11 ==
+token dispatcher obtenu : 231 caractères
+--- POST /v1/orders {} ---
+{"message":"Incohérence de tenant.","error":"Forbidden","statusCode":403}
+HTTP 403
+--- POST /v1/orders {} (token DISPATCHER + x-tenant-slug) ---
+{"message":"Champs requis manquants : fromCity, toCity.","error":"Bad Request","statusCode":400}
+HTTP 400
