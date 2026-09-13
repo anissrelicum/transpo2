@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useSafeRefresh } from '../lib/safe-refresh';
 import {
   Card, Flex, Box, Grid, Text, Heading, Badge, Button, IconButton, Table, Callout, Separator,
   TextField, Switch, Slider,
@@ -19,8 +19,8 @@ function gridFor(d: number, tiers: PriceTier[]): number {
   return t.perKm != null ? Math.round(t.perKm * d) : (t.base ?? 0);
 }
 
-export function PricingView({ config }: { config: PriceConfig }) {
-  const router = useRouter();
+export function PricingView({ config, canEdit }: { config: PriceConfig; canEdit: boolean }) {
+  const refresh = useSafeRefresh();
   const [tiers, setTiers] = React.useState<PriceTier[]>(config.tiers);
   const [fragile, setFragile] = React.useState(config.fragileSurcharge);
   const [scheduled, setScheduled] = React.useState(config.scheduledSurcharge);
@@ -71,7 +71,7 @@ export function PricingView({ config }: { config: PriceConfig }) {
       }),
     });
     setBusy(false);
-    if (res.ok) { setSaved(true); router.refresh(); setTimeout(() => setSaved(false), 2500); }
+    if (res.ok) { setSaved(true); refresh(); setTimeout(() => setSaved(false), 2500); }
     else { const e = await res.json().catch(() => null); alert(e?.error ?? 'Enregistrement impossible'); }
   }
 
@@ -90,7 +90,7 @@ export function PricingView({ config }: { config: PriceConfig }) {
         actions={
           <Flex gap="2">
             <Button variant="soft" color="gray" onClick={exportCsv}><DownloadIcon /> Export grille</Button>
-            <Button disabled={busy} onClick={save}><CheckIcon /> {saved ? 'Enregistré ✓' : 'Enregistrer'}</Button>
+            {canEdit && <Button disabled={busy} onClick={save}><CheckIcon /> {saved ? 'Enregistré ✓' : 'Enregistrer'}</Button>}
           </Flex>
         }
       />
@@ -108,7 +108,7 @@ export function PricingView({ config }: { config: PriceConfig }) {
           <Card size="3">
             <Flex justify="between" align="center" mb="3">
               <Heading size="4">Grille par distance</Heading>
-              <Button size="1" variant="soft" onClick={addTier}><PlusIcon /> Palier</Button>
+              {canEdit && <Button size="1" variant="soft" onClick={addTier}><PlusIcon /> Palier</Button>}
             </Flex>
             <Table.Root size="2" variant="ghost">
               <Table.Header><Table.Row>
@@ -123,26 +123,26 @@ export function PricingView({ config }: { config: PriceConfig }) {
                   return (
                     <Table.Row key={i} style={{ background: active ? 'var(--indigo-a2)' : undefined }}>
                       <Table.Cell>
-                        <TextField.Root size="1" type="number" value={String(tr.from)} onChange={(e) => setTierField(i, 'from', e.target.value)} style={{ width: 68 }} />
+                        <TextField.Root size="1" type="number" value={String(tr.from)} disabled={!canEdit} onChange={(e) => setTierField(i, 'from', e.target.value)} style={{ width: 68 }} />
                       </Table.Cell>
                       <Table.Cell>
-                        <TextField.Root size="1" value={tr.to == null ? '∞' : String(tr.to)} onChange={(e) => setTierField(i, 'to', e.target.value)} style={{ width: 68 }} />
+                        <TextField.Root size="1" value={tr.to == null ? '∞' : String(tr.to)} disabled={!canEdit} onChange={(e) => setTierField(i, 'to', e.target.value)} style={{ width: 68 }} />
                       </Table.Cell>
                       <Table.Cell>
                         {tr.perKm != null ? (
                           <Flex align="center" gap="1">
-                            <TextField.Root size="1" type="number" value={String(tr.perKm)} onChange={(e) => setTierField(i, 'perKm', e.target.value)} style={{ width: 70 }} />
+                            <TextField.Root size="1" type="number" value={String(tr.perKm)} disabled={!canEdit} onChange={(e) => setTierField(i, 'perKm', e.target.value)} style={{ width: 70 }} />
                             <Text size="1" color="gray">DH/km</Text>
                           </Flex>
                         ) : (
                           <Flex align="center" gap="1">
-                            <TextField.Root size="1" type="number" value={String(tr.base ?? 0)} onChange={(e) => setTierField(i, 'base', e.target.value)} style={{ width: 70 }} />
+                            <TextField.Root size="1" type="number" value={String(tr.base ?? 0)} disabled={!canEdit} onChange={(e) => setTierField(i, 'base', e.target.value)} style={{ width: 70 }} />
                             <Text size="1" color="gray">DH</Text>
                           </Flex>
                         )}
                       </Table.Cell>
                       <Table.Cell>
-                        <IconButton size="1" variant="ghost" color="red" onClick={() => removeTier(i)} disabled={tiers.length <= 1}><TrashIcon /></IconButton>
+                        {canEdit && <IconButton size="1" variant="ghost" color="red" onClick={() => removeTier(i)} disabled={tiers.length <= 1}><TrashIcon /></IconButton>}
                       </Table.Cell>
                     </Table.Row>
                   );
@@ -154,25 +154,25 @@ export function PricingView({ config }: { config: PriceConfig }) {
             <Grid columns="4" gap="3">
               <Box>
                 <Text as="div" size="1" color="gray" mb="1">Supplément fragile</Text>
-                <TextField.Root size="2" type="number" value={String(fragile)} onChange={(e) => setFragile(Number(e.target.value) || 0)}>
+                <TextField.Root size="2" type="number" value={String(fragile)} disabled={!canEdit} onChange={(e) => setFragile(Number(e.target.value) || 0)}>
                   <TextField.Slot side="right"><Text size="1" color="gray">DH</Text></TextField.Slot>
                 </TextField.Root>
               </Box>
               <Box>
                 <Text as="div" size="1" color="gray" mb="1">Supplément programmé</Text>
-                <TextField.Root size="2" type="number" value={String(scheduled)} onChange={(e) => setScheduled(Number(e.target.value) || 0)}>
+                <TextField.Root size="2" type="number" value={String(scheduled)} disabled={!canEdit} onChange={(e) => setScheduled(Number(e.target.value) || 0)}>
                   <TextField.Slot side="right"><Text size="1" color="gray">DH</Text></TextField.Slot>
                 </TextField.Root>
               </Box>
               <Box>
                 <Text as="div" size="1" color="gray" mb="1">Remise standard</Text>
-                <TextField.Root size="2" type="number" value={String(Math.round(discountRate * 100))} onChange={(e) => setDiscountRate((Number(e.target.value) || 0) / 100)}>
+                <TextField.Root size="2" type="number" value={String(Math.round(discountRate * 100))} disabled={!canEdit} onChange={(e) => setDiscountRate((Number(e.target.value) || 0) / 100)}>
                   <TextField.Slot side="right"><Text size="1" color="gray">%</Text></TextField.Slot>
                 </TextField.Root>
               </Box>
               <Box>
                 <Text as="div" size="1" color="gray" mb="1">TVA</Text>
-                <TextField.Root size="2" type="number" value={String(Math.round(vatRate * 100))} onChange={(e) => setVatRate((Number(e.target.value) || 0) / 100)}>
+                <TextField.Root size="2" type="number" value={String(Math.round(vatRate * 100))} disabled={!canEdit} onChange={(e) => setVatRate((Number(e.target.value) || 0) / 100)}>
                   <TextField.Slot side="right"><Text size="1" color="gray">%</Text></TextField.Slot>
                 </TextField.Root>
               </Box>

@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useSafeRefresh } from '../lib/safe-refresh';
 import { DropdownMenu, IconButton } from '@radix-ui/themes';
 import { DotsHorizontalIcon } from '@radix-ui/react-icons';
 
@@ -11,7 +11,7 @@ export function OrderActions({ ref_, status, driver, drivers, cod = 0, codPaid =
   ref_: string; status: string; driver: string | null; drivers: string[];
   cod?: number; codPaid?: boolean;
 }) {
-  const router = useRouter();
+  const refresh = useSafeRefresh();
   const [busy, setBusy] = React.useState(false);
 
   async function post(url: string, body?: any) {
@@ -22,7 +22,7 @@ export function OrderActions({ ref_, status, driver, drivers, cod = 0, codPaid =
       body: JSON.stringify(body ?? {}),
     });
     setBusy(false);
-    if (res.ok) router.refresh();
+    if (res.ok) refresh();
     else { const d = await res.json().catch(() => null); alert(d?.error ?? 'Action impossible'); }
   }
   const act = (action: string, body?: any) => post(`/api/orders/${encodeURIComponent(ref_)}/${action}`, body);

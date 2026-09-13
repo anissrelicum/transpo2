@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useSafeRefresh } from '../lib/safe-refresh';
 import { Button } from '@radix-ui/themes';
 
 // Bouton d'action générique : POST authentifié via le proxy, puis rafraîchit la page.
@@ -15,7 +15,7 @@ export function ActionButton({
   size?: '1' | '2' | '3';
   confirm?: string;
 }) {
-  const router = useRouter();
+  const refresh = useSafeRefresh();
   const [busy, setBusy] = React.useState(false);
 
   async function run() {
@@ -27,7 +27,7 @@ export function ActionButton({
       body: body ? JSON.stringify(body) : undefined,
     });
     setBusy(false);
-    if (res.ok) router.refresh();
+    if (res.ok) refresh();
     else { const d = await res.json().catch(() => null); alert(d?.error ?? 'Action impossible'); }
   }
 

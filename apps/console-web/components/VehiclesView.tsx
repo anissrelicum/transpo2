@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useSafeRefresh } from '../lib/safe-refresh';
 import {
   Card, Flex, Box, Grid, Text, Badge, Button, IconButton, Table, Callout, Dialog, AlertDialog,
   Select, TextField, Checkbox, DropdownMenu,
@@ -9,6 +9,7 @@ import {
   PlusIcon, ExclamationTriangleIcon, CubeIcon, DotFilledIcon, DotsHorizontalIcon,
   Pencil1Icon, TrashIcon, ReloadIcon,
 } from '@radix-ui/react-icons';
+import { RowMenu, useFermerMenu } from '../lib/row-menu';
 import type { Vehicle } from '@transpo/api-client';
 import { PageHeader } from './ui';
 
@@ -16,6 +17,9 @@ const CITIES = ['Casablanca', 'Rabat', 'Marrakech', 'Tanger', 'Fès', 'Agadir', 
 const STATE_COLOR: Record<string, 'green' | 'amber' | 'gray'> = { ACTIF: 'green', MAINTENANCE: 'amber', 'HORS SERVICE': 'gray' };
 const STATE_LABEL: Record<string, string> = { ACTIF: 'Actif', MAINTENANCE: 'Maintenance', 'HORS SERVICE': 'Hors service' };
 const PLATE_RE = /^[0-9]{1,5}-[A-Za-z؀-ۿ]{1,2}-[0-9]{1,3}$/;
+// Une échéance ne se renouvelle pas dans le passé : champ borné au jour même, et l'API
+// refuse de toute façon une date antérieure (OBS-10).
+const AUJOURDHUI = new Date().toISOString().slice(0, 10);
 
 function dueBadge(due: string | null): { color: 'red' | 'amber' | 'green' | 'gray'; txt: string } {
   if (!due) return { color: 'gray', txt: 'Non renseigné' };
@@ -26,7 +30,7 @@ function dueBadge(due: string | null): { color: 'red' | 'amber' | 'green' | 'gra
 }
 
 export function VehiclesView({ vehicles, isAdmin }: { vehicles: Vehicle[]; isAdmin: boolean }) {
-  const router = useRouter();
+  const refresh = useSafeRefresh();
   const [busy, setBusy] = React.useState(false);
   const active = vehicles.filter((v) => v.state === 'ACTIF').length;
   const alerts = vehicles.filter((v) => v.insuranceExpired || v.ctExpired).length;
@@ -38,7 +42,7 @@ export function VehiclesView({ vehicles, isAdmin }: { vehicles: Vehicle[]; isAdm
       body: body ? JSON.stringify(body) : undefined,
     });
     setBusy(false);
-    if (res.ok) router.refresh();
+    if (res.ok) refresh();
     else { const d = await res.json().catch(() => null); alert(d?.error ?? 'Action impossible'); }
     return res.ok;
   }
@@ -96,9 +100,7 @@ export function VehiclesView({ vehicles, isAdmin }: { vehicles: Vehicle[]; isAdm
                   <Table.Cell><Flex align="center" gap="1"><DotFilledIcon color={`var(--${ct.color}-9)`} /><Text size="1" color={ct.color === 'green' ? 'gray' : ct.color}>{ct.txt}</Text></Flex></Table.Cell>
                   {isAdmin && (
                     <Table.Cell>
-                      <DropdownMenu.Root>
-                        <DropdownMenu.Trigger><IconButton size="1" variant="ghost" color="gray"><DotsHorizontalIcon /></IconButton></DropdownMenu.Trigger>
-                        <DropdownMenu.Content>
+                      <RowMenu>
                           {v.state !== 'ACTIF' && <DropdownMenu.Item onSelect={() => call(`vehicles/${v.id}/state`, 'PATCH', { state: 'ACTIF' })}>Réactiver</DropdownMenu.Item>}
                           {v.state !== 'MAINTENANCE' && <DropdownMenu.Item onSelect={() => call(`vehicles/${v.id}/state`, 'PATCH', { state: 'MAINTENANCE' })}>Mettre en maintenance</DropdownMenu.Item>}
                           {v.state !== 'HORS SERVICE' && <DropdownMenu.Item onSelect={() => call(`vehicles/${v.id}/state`, 'PATCH', { state: 'HORS SERVICE' })}>Hors service</DropdownMenu.Item>}
@@ -107,8 +109,7 @@ export function VehiclesView({ vehicles, isAdmin }: { vehicles: Vehicle[]; isAdm
                           <RenewItem vehicle={v} field="ct" onRenew={(due) => call(`vehicles/${v.id}/renew`, 'POST', { field: 'ct', due })} />
                           <DropdownMenu.Separator />
                           <RemoveItem vehicle={v} onRemove={() => call(`vehicles/${v.id}`, 'DELETE')} />
-                        </DropdownMenu.Content>
-                      </DropdownMenu.Root>
+                      </RowMenu>
                     </Table.Cell>
                   )}
                 </Table.Row>
@@ -122,20 +123,26 @@ export function VehiclesView({ vehicles, isAdmin }: { vehicles: Vehicle[]; isAdm
   );
 }
 
-function RenewItem({ vehicle, field, onRenew }: { vehicle: Vehicle; field: 'insurance' | 'ct'; onRenew: (due: string) => void }) {
+function RenewItem({ vehicle, field, onRenew }: { vehicle: Vehicle; field: 'insurance' | 'ct'; onRenew: (due: string) => Promise<boolean> }) {
   const [open, setOpen] = React.useState(false);
+  const fermerMenu = useFermerMenu();
+  // Fermeture programmatique : referme le dialogue ET le menu qui l'a ouvert.
+  const fermer = () => { setOpen(false); fermerMenu(); };
   const [due, setDue] = React.useState('');
   const label = field === 'insurance' ? 'Renouveler l’assurance' : 'Renouveler le contrôle technique';
   return (
-    <Dialog.Root open={open} onOpenChange={setOpen}>
+    <Dialog.Root open={open} onOpenChange={(o) => { setOpen(o); if (!o) fermerMenu(); }}>
       <Dialog.Trigger><DropdownMenu.Item onSelect={(e) => { e.preventDefault(); setOpen(true); }}><ReloadIcon /> {label}</DropdownMenu.Item></Dialog.Trigger>
       <Dialog.Content maxWidth="360px">
         <Dialog.Title>{label}</Dialog.Title>
         <Dialog.Description size="2" color="gray" mb="3">{vehicle.plate} — nouvelle date d’échéance.</Dialog.Description>
-        <TextField.Root type="date" value={due} onChange={(e) => setDue(e.target.value)} />
+        <TextField.Root type="date" min={AUJOURDHUI} value={due} onChange={(e) => setDue(e.target.value)} />
+        {due !== '' && due < AUJOURDHUI && (
+          <Text as="p" size="1" color="red" mt="2">La nouvelle échéance doit être postérieure à aujourd’hui.</Text>
+        )}
         <Flex gap="3" mt="4" justify="end">
           <Dialog.Close><Button variant="soft" color="gray">Annuler</Button></Dialog.Close>
-          <Button disabled={!due} onClick={() => { onRenew(due); setOpen(false); }}>Enregistrer</Button>
+          <Button disabled={!due || due < AUJOURDHUI} onClick={async () => { if (await onRenew(due)) fermer(); }}>Enregistrer</Button>
         </Flex>
       </Dialog.Content>
     </Dialog.Root>
@@ -143,9 +150,11 @@ function RenewItem({ vehicle, field, onRenew }: { vehicle: Vehicle; field: 'insu
 }
 
 function RemoveItem({ vehicle, onRemove }: { vehicle: Vehicle; onRemove: () => void }) {
+  const fermerMenu = useFermerMenu();
+  const [ouvert, setOuvert] = React.useState(false);
   return (
-    <AlertDialog.Root>
-      <AlertDialog.Trigger><DropdownMenu.Item color="red" onSelect={(e) => e.preventDefault()}><TrashIcon /> Retirer</DropdownMenu.Item></AlertDialog.Trigger>
+    <AlertDialog.Root open={ouvert} onOpenChange={(o) => { setOuvert(o); if (!o) fermerMenu(); }}>
+      <AlertDialog.Trigger><DropdownMenu.Item color="red" onSelect={(e) => { e.preventDefault(); setOuvert(true); }}><TrashIcon /> Retirer</DropdownMenu.Item></AlertDialog.Trigger>
       <AlertDialog.Content maxWidth="360px">
         <AlertDialog.Title>Retirer {vehicle.plate} ?</AlertDialog.Title>
         <AlertDialog.Description size="2">Le véhicule sera retiré du parc. Cette action est définitive.</AlertDialog.Description>

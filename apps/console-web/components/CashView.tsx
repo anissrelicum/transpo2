@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useSafeRefresh } from '../lib/safe-refresh';
 import {
   Card, Flex, Box, Grid, Text, Heading, Badge, Button, IconButton, Avatar, Table, Callout,
   Separator, Dialog, RadioGroup, TextArea, Tooltip,
@@ -33,7 +33,7 @@ const RESOLVE_REASONS = [
 ];
 
 export function CashView({ sessions }: { sessions: CashSession[] }) {
-  const router = useRouter();
+  const refresh = useSafeRefresh();
   const [sel, setSel] = React.useState<string | null>(null);
   const detail = sel ? sessions.find((s) => s.id === sel) ?? null : null;
 
@@ -134,7 +134,7 @@ export function CashView({ sessions }: { sessions: CashSession[] }) {
 
         {detail && (
           <Box style={{ gridColumn: 'span 2' }}>
-            <SessionDetail session={detail} onClose={() => setSel(null)} router={router} />
+            <SessionDetail session={detail} onClose={() => setSel(null)} refresh={refresh} />
           </Box>
         )}
       </Grid>
@@ -142,8 +142,8 @@ export function CashView({ sessions }: { sessions: CashSession[] }) {
   );
 }
 
-function SessionDetail({ session, onClose, router }: {
-  session: CashSession; onClose: () => void; router: ReturnType<typeof useRouter>;
+function SessionDetail({ session, onClose, refresh }: {
+  session: CashSession; onClose: () => void; refresh: () => void;
 }) {
   const [busy, setBusy] = React.useState(false);
   const ecart = session.ecart;
@@ -152,7 +152,7 @@ function SessionDetail({ session, onClose, router }: {
     setBusy(true);
     const res = await fetch(`/api/proxy/v1/cash/sessions/${session.id}/deposit`, { method: 'POST' });
     setBusy(false);
-    if (res.ok) router.refresh();
+    if (res.ok) refresh();
     else { const d = await res.json().catch(() => null); alert(d?.error ?? 'Action impossible'); }
   }
 
@@ -210,7 +210,7 @@ function SessionDetail({ session, onClose, router }: {
       )}
 
       {session.status === 'ECART'
-        ? <ResolveDialog session={session} ecart={ecart ?? 0} router={router} />
+        ? <ResolveDialog session={session} ecart={ecart ?? 0} refresh={refresh} />
         : session.status === 'A_DEPOSER'
           ? <Button size="3" color="green" style={{ width: '100%' }} disabled={busy} onClick={deposit}>
               <BackpackIcon /> Enregistrer le dépôt en agence
@@ -228,8 +228,8 @@ function SessionDetail({ session, onClose, router }: {
   );
 }
 
-function ResolveDialog({ session, ecart, router }: {
-  session: CashSession; ecart: number; router: ReturnType<typeof useRouter>;
+function ResolveDialog({ session, ecart, refresh }: {
+  session: CashSession; ecart: number; refresh: () => void;
 }) {
   const [open, setOpen] = React.useState(false);
   const [reason, setReason] = React.useState(RESOLVE_REASONS[0]);
@@ -244,7 +244,7 @@ function ResolveDialog({ session, ecart, router }: {
       body: JSON.stringify({ reason, note: note || undefined }),
     });
     setBusy(false);
-    if (res.ok) { setOpen(false); router.refresh(); }
+    if (res.ok) { setOpen(false); refresh(); }
     else { const d = await res.json().catch(() => null); alert(d?.error ?? 'Action impossible'); }
   }
 

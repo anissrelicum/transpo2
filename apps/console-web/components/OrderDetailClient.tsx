@@ -1,6 +1,7 @@
 'use client';
 import * as React from 'react';
 import Link from 'next/link';
+import { copyText } from '../lib/clipboard';
 import {
   Card, Flex, Box, Grid, Text, Heading, Button, IconButton, Badge, Separator,
   Tabs, Code, Callout, Tooltip,
@@ -74,10 +75,29 @@ function ProofPanel({ order, proof }: { order: Order; proof: DeliveryProof | nul
   );
 }
 
-export function OrderDetailClient({ order, drivers, proof, canWrite, commissionRate, vatRate }: { order: Order; drivers: string[]; proof: DeliveryProof | null; canWrite: boolean; commissionRate: number; vatRate: number }) {
+/** Un fait du journal de la commande. */
+export type OrderEvent = { status: string; actor: string | null; note: string | null; at: string };
+
+/** « 13/09/2026 · 14:32 » — date ET heure : un historique sans heure ne tranche aucun litige. */
+function horodatage(iso: string): string {
+  const d = new Date(iso);
+  return `${d.toLocaleDateString('fr-FR')} · ${d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+}
+
+export function OrderDetailClient({ order, drivers, proof, events, canWrite, commissionRate, vatRate }: { order: Order; drivers: string[]; proof: DeliveryProof | null; events: OrderEvent[]; canWrite: boolean; commissionRate: number; vatRate: number }) {
   const [copied, setCopied] = React.useState(false);
+  const [copyError, setCopyError] = React.useState(false);
   const idx = LIFECYCLE.indexOf(order.status as OrderStatus);
-  const copy = () => { navigator.clipboard?.writeText(order.code); setCopied(true); setTimeout(() => setCopied(false), 1500); };
+  /**
+   * Hors contexte sécurisé (HTTP), `navigator.clipboard` est absent : l'appel optionnel
+   * ne faisait rien mais la coche verte s'affichait quand même. Un retour qui ment est
+   * pire que pas de retour — `copyText` tente le repli et dit s'il a échoué.
+   */
+  const copy = async () => {
+    const ok = await copyText(order.code);
+    setCopied(ok); setCopyError(!ok);
+    setTimeout(() => { setCopied(false); setCopyError(false); }, 1800);
+  };
 
   // Facturation dérivée du COD, aux taux commission/TVA configurés par le tenant (Paramètres).
   const codCollected = order.codPaid ? order.cod : 0;
@@ -103,8 +123,11 @@ export function OrderDetailClient({ order, drivers, proof, canWrite, commissionR
           <Flex align="center" gap="2">
             <Text size="2" color="gray">Code de suivi</Text>
             <Code variant="soft" size="2">{order.code}</Code>
-            <Tooltip content={copied ? 'Copié !' : 'Copier le code'}>
-              <IconButton size="1" variant="ghost" color={copied ? 'green' : 'gray'} onClick={copy}>{copied ? <CheckIcon /> : <CopyIcon />}</IconButton>
+            <Tooltip content={copyError ? 'Copie impossible — sélectionnez le code' : copied ? 'Copié !' : 'Copier le code'}>
+              <IconButton
+                size="1" variant="ghost" aria-label="Copier le code"
+                color={copyError ? 'red' : copied ? 'green' : 'gray'} onClick={copy}
+              >{copied ? <CheckIcon /> : <CopyIcon />}</IconButton>
             </Tooltip>
           </Flex>
         </Box>
@@ -153,9 +176,35 @@ export function OrderDetailClient({ order, drivers, proof, canWrite, commissionR
               <Box pt="4">
                 <Tabs.Content value="details">
                   <Grid columns={{ initial: '1', sm: '2' }} gap="4">
-                    <InfoBlock icon={<HomeIcon />} title="Retrait" lines={[order.merchant ?? '—', order.fromCity]} />
-                    <InfoBlock icon={<SewingPinFilledIcon />} title="Livraison" lines={[order.driver ?? 'À affecter', order.toCity]} />
-                    <InfoBlock icon={<CubeIcon />} title="Colis" lines={[`Taille : ${order.size}`, `Preuve : ${order.proofLevel}`]} />
+                    {/* Les coordonnées des deux points sont désormais saisies ET conservées :
+                        elles étaient collectées par l'assistant puis jetées (cf. TC-F01). */}
+                    <InfoBlock
+                      icon={<HomeIcon />} title="Retrait"
+                      lines={[
+                        order.pickupContact || order.merchant || '—',
+                        order.pickupAddress || order.fromCity,
+                        [order.fromCity, order.pickupPhone].filter(Boolean).join(' · '),
+                        ...(order.pickupNotes ? [order.pickupNotes] : []),
+                      ]}
+                    />
+                    <InfoBlock
+                      icon={<SewingPinFilledIcon />} title="Livraison"
+                      lines={[
+                        order.dropContact || order.driver || 'À affecter',
+                        order.dropAddress || order.toCity,
+                        [order.toCity, order.dropPhone].filter(Boolean).join(' · '),
+                        ...(order.dropNotes ? [order.dropNotes] : []),
+                      ]}
+                    />
+                    <InfoBlock
+                      icon={<CubeIcon />} title="Colis"
+                      lines={[
+                        `Taille : ${order.size}`,
+                        `Preuve : ${order.proofLevel}`,
+                        ...(order.vehicleType ? [`Véhicule : ${order.vehicleType}`] : []),
+                        ...(order.description ? [order.description] : []),
+                      ]}
+                    />
                     <InfoBlock icon={<DownloadIcon />} title="Encaissement (COD)" lines={[<CodChip key="c" amount={order.cod} paid={order.codPaid} />, order.codPaid ? 'À reverser au marchand' : 'En attente d’encaissement']} />
                   </Grid>
                 </Tabs.Content>
@@ -165,14 +214,32 @@ export function OrderDetailClient({ order, drivers, proof, canWrite, commissionR
                 </Tabs.Content>
 
                 <Tabs.Content value="history">
+                  {/* Faits réellement enregistrés, horodatés et attribués — et non le chemin
+                      nominal déroulé jusqu'au statut courant, qui inventait des étapes pour
+                      toute commande sortie du parcours nominal. */}
                   <Flex direction="column">
-                    {LIFECYCLE.slice(0, idx + 1).reverse().map((s, i, arr) => (
-                      <Flex key={s} gap="3" py="2" style={{ borderBottom: i < arr.length - 1 ? '1px solid var(--gray-a3)' : 'none' }}>
-                        <Box style={{ width: 24, flex: '0 0 24px' }}><Box style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--green-9)', marginTop: 6 }} /></Box>
-                        <Box><Text as="div" size="2">Statut → {STATUS_META[s].fr}</Text><Text as="div" size="1" color="gray">Étape du cycle de vie</Text></Box>
+                    {events.map((e, i) => (
+                      <Flex key={`${e.at}-${i}`} gap="3" py="2" data-testid="order-event"
+                        style={{ borderBottom: i < events.length - 1 ? '1px solid var(--gray-a3)' : 'none' }}>
+                        <Box style={{ width: 24, flex: '0 0 24px' }}>
+                          <Box style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--green-9)', marginTop: 6 }} />
+                        </Box>
+                        <Box>
+                          <Text as="div" size="2">
+                            Statut → {STATUS_META[e.status as OrderStatus]?.fr ?? e.status}
+                            {e.note ? ` · ${e.note}` : ''}
+                          </Text>
+                          <Text as="div" size="1" color="gray">
+                            {horodatage(e.at)}{e.actor ? ` · ${e.actor}` : ''}
+                          </Text>
+                        </Box>
                       </Flex>
                     ))}
-                    {idx < 0 && <Text size="2" color="gray">Aucun historique.</Text>}
+                    {events.length === 0 && (
+                      <Text size="2" color="gray">
+                        Aucun évènement enregistré — cette commande est antérieure au journal.
+                      </Text>
+                    )}
                   </Flex>
                 </Tabs.Content>
 

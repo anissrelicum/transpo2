@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useSafeRefresh } from '../lib/safe-refresh';
 import {
   Card, Flex, Box, Grid, Text, Heading, Badge, Button, IconButton, Avatar, Table, Callout,
   Progress, Separator, AlertDialog,
@@ -32,7 +32,7 @@ function ScoreBubble({ s, size = 34 }: { s: number; size?: number }) {
 }
 
 export function FraudView({ cases, leaderboard, isAdmin }: { cases: FraudCase[]; leaderboard: RiskDriver[]; isAdmin: boolean }) {
-  const router = useRouter();
+  const refresh = useSafeRefresh();
   const [sel, setSel] = React.useState<string | null>(null);
   const [busy, setBusy] = React.useState(false);
   const detail = sel ? cases.find((c) => c.id === sel) ?? null : null;
@@ -45,7 +45,7 @@ export function FraudView({ cases, leaderboard, isAdmin }: { cases: FraudCase[];
     setBusy(true);
     const res = await fetch(`/api/proxy/v1/fraud/cases/${id}/${action}`, { method: 'POST' });
     setBusy(false);
-    if (res.ok) router.refresh(); else { const d = await res.json().catch(() => null); alert(d?.error ?? 'Action impossible'); }
+    if (res.ok) refresh(); else { const d = await res.json().catch(() => null); alert(d?.error ?? 'Action impossible'); }
   }
 
   return (

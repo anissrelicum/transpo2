@@ -1,7 +1,7 @@
 'use client';
 import * as React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useSafeRefresh } from '../lib/safe-refresh';
 import {
   Card, Flex, Box, Text, Table, Badge, Button, IconButton, TextField, Select,
   Avatar, Checkbox, Code, DropdownMenu, Callout,
@@ -23,7 +23,7 @@ export function OrdersClient({ orders, drivers, cities, merchants, canWrite, ini
   orders: Order[]; drivers: string[]; cities: string[]; merchants: string[];
   canWrite: boolean; initialQuery?: string;
 }) {
-  const router = useRouter();
+  const refresh = useSafeRefresh();
   const [query, setQuery] = React.useState(initialQuery ?? '');
   const [statusF, setStatusF] = React.useState('__all');
   const [cityF, setCityF] = React.useState('__all');
@@ -53,11 +53,12 @@ export function OrdersClient({ orders, drivers, cities, merchants, canWrite, ini
     setBusy(true);
     const res = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body ?? {}) });
     setBusy(false);
-    if (res.ok) router.refresh(); else { const d = await res.json().catch(() => null); alert(d?.error ?? 'Action impossible'); }
+    if (res.ok) refresh(); else { const d = await res.json().catch(() => null); alert(d?.error ?? 'Action impossible'); }
   }
   const act = (ref: string, action: string, body?: any) => post(`/api/orders/${encodeURIComponent(ref)}/${action}`, body);
-  const firstDriver = drivers[0];
-  async function bulkAssign() { for (const r of sel) await act(r, 'assign', { driver: firstDriver }); setSel([]); }
+  // L'action de masse affectait en silence au PREMIER chauffeur de la liste : l'exploitant
+  // ne choisissait rien et ne savait qu'après coup qui avait hérité des courses.
+  async function bulkAssign(driver: string) { for (const r of sel) await act(r, 'assign', { driver }); setSel([]); }
   async function bulkHold() { for (const r of sel) await act(r, 'advance'); setSel([]); }
 
   const reset = () => { setQuery(''); setStatusF('__all'); setCityF('__all'); setMerchF('__all'); setDriverF('__all'); };
@@ -102,7 +103,17 @@ export function OrdersClient({ orders, drivers, cities, merchants, canWrite, ini
             <Flex align="center" justify="between" px="3" py="2" style={{ background: 'var(--indigo-a3)', borderRadius: 'var(--radius-2)', margin: 'var(--space-1)' }}>
               <Text size="2" weight="medium">{sel.length} sélectionnée(s)</Text>
               <Flex gap="2">
-                <Button size="1" variant="soft" disabled={busy || !firstDriver} onClick={bulkAssign}><PersonIcon /> Assigner</Button>
+                <DropdownMenu.Root>
+                  <DropdownMenu.Trigger>
+                    <Button size="1" variant="soft" disabled={busy || drivers.length === 0}><PersonIcon /> Assigner</Button>
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Content>
+                    {drivers.map((d) => (
+                      <DropdownMenu.Item key={d} onSelect={() => bulkAssign(d)}>{d}</DropdownMenu.Item>
+                    ))}
+                    {drivers.length === 0 && <DropdownMenu.Item disabled>Aucun livreur</DropdownMenu.Item>}
+                  </DropdownMenu.Content>
+                </DropdownMenu.Root>
                 <Button size="1" variant="soft" color="gray" disabled={busy} onClick={bulkHold}><PauseIcon /> Faire avancer</Button>
               </Flex>
             </Flex>

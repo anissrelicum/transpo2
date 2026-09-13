@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useSafeRefresh } from '../lib/safe-refresh';
 import {
   Card, Flex, Box, Grid, Text, Heading, Badge, Button, Avatar, Table, Callout, Separator,
   Dialog, Select, TextField, TextArea, Code, SegmentedControl, DropdownMenu, Tooltip,
@@ -21,7 +21,7 @@ function Row({ label, value, muted }: { label: string; value: string; muted?: bo
 }
 
 export function BillingView({ invoices, modes }: { invoices: Invoice[]; modes: BillingMode[] }) {
-  const router = useRouter();
+  const refresh = useSafeRefresh();
   const [selId, setSelId] = React.useState<string | null>(invoices[0]?.id ?? null);
   const [busy, setBusy] = React.useState(false);
   const sel = invoices.find((i) => i.id === selId) ?? invoices[0] ?? null;
@@ -40,7 +40,7 @@ export function BillingView({ invoices, modes }: { invoices: Invoice[]; modes: B
       body: body ? JSON.stringify(body) : undefined,
     });
     setBusy(false);
-    if (res.ok) router.refresh();
+    if (res.ok) refresh();
     else { const d = await res.json().catch(() => null); alert(d?.error ?? 'Action impossible'); }
     return res.ok;
   }
@@ -202,7 +202,7 @@ function MerchantBillingCard({ modes, onSet, busy }: {
 }
 
 function DisputeDialog({ invoice, onDispute, busy }: {
-  invoice: Invoice; onDispute: (amount: number, note: string) => void; busy: boolean;
+  invoice: Invoice; onDispute: (amount: number, note: string) => Promise<unknown>; busy: boolean;
 }) {
   const [open, setOpen] = React.useState(false);
   const [amount, setAmount] = React.useState('1200');
@@ -221,7 +221,7 @@ function DisputeDialog({ invoice, onDispute, busy }: {
           <TextArea placeholder="Décrivez l’objet du litige…" value={note} onChange={(e) => setNote(e.target.value)} /></Box>
         <Flex gap="3" mt="4" justify="end">
           <Dialog.Close><Button variant="soft" color="gray">Annuler</Button></Dialog.Close>
-          <Button color="amber" disabled={busy} onClick={() => { onDispute(Number(amount) || 0, note); setOpen(false); }}>Ouvrir le litige</Button>
+          <Button color="amber" disabled={busy} onClick={async () => { if (await onDispute(Number(amount) || 0, note)) setOpen(false); }}>Ouvrir le litige</Button>
         </Flex>
       </Dialog.Content>
     </Dialog.Root>
@@ -229,7 +229,7 @@ function DisputeDialog({ invoice, onDispute, busy }: {
 }
 
 function ResolveDialog({ invoice, onResolve, busy }: {
-  invoice: Invoice; onResolve: (decision: string) => void; busy: boolean;
+  invoice: Invoice; onResolve: (decision: string) => Promise<unknown>; busy: boolean;
 }) {
   const [open, setOpen] = React.useState(false);
   const [decision, setDecision] = React.useState('avoir');
@@ -251,7 +251,7 @@ function ResolveDialog({ invoice, onResolve, busy }: {
         </Select.Root>
         <Flex gap="3" mt="4" justify="end">
           <Dialog.Close><Button variant="soft" color="gray">Annuler</Button></Dialog.Close>
-          <Button color="green" disabled={busy} onClick={() => { onResolve(decision); setOpen(false); }}>Valider</Button>
+          <Button color="green" disabled={busy} onClick={async () => { if (await onResolve(decision)) setOpen(false); }}>Valider</Button>
         </Flex>
       </Dialog.Content>
     </Dialog.Root>

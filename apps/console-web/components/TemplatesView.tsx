@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useSafeRefresh } from '../lib/safe-refresh';
 import {
   Card, Flex, Box, Text, Badge, Button, IconButton, Table, Callout, Dialog, AlertDialog,
   Switch, TextField, TextArea, DropdownMenu, Separator,
@@ -9,6 +9,7 @@ import {
   PlusIcon, Pencil1Icon, DotsHorizontalIcon, ResetIcon, InfoCircledIcon, ChatBubbleIcon,
 } from '@radix-ui/react-icons';
 import { templateVars, renderTemplate } from '@transpo/domain';
+import { RowMenu, useFermerMenu } from '../lib/row-menu';
 import type { NotifTemplate } from '@transpo/api-client';
 import { PageHeader } from './ui';
 
@@ -17,7 +18,7 @@ const EVENT_RE = /^[a-z][a-z0-9]*(\.[a-z0-9]+)*$/;
 const SAMPLE: Record<string, string> = { code: 'TRACK123', x: 'Boutique Zellige', ref: 'CMD-20260712-013' };
 
 export function TemplatesView({ templates, isAdmin }: { templates: NotifTemplate[]; isAdmin: boolean }) {
-  const router = useRouter();
+  const refresh = useSafeRefresh();
   const [busy, setBusy] = React.useState(false);
 
   const marketing = templates.filter((t) => !t.transactional).length;
@@ -31,7 +32,7 @@ export function TemplatesView({ templates, isAdmin }: { templates: NotifTemplate
       body: body ? JSON.stringify(body) : undefined,
     });
     setBusy(false);
-    if (res.ok) router.refresh();
+    if (res.ok) refresh();
     else { const d = await res.json().catch(() => null); alert(d?.message ?? d?.error ?? 'Action impossible'); }
     return res.ok;
   }
@@ -105,14 +106,11 @@ export function TemplatesView({ templates, isAdmin }: { templates: NotifTemplate
                   </Table.Cell>
                   {isAdmin && (
                     <Table.Cell>
-                      <DropdownMenu.Root>
-                        <DropdownMenu.Trigger><IconButton size="1" variant="ghost" color="gray"><DotsHorizontalIcon /></IconButton></DropdownMenu.Trigger>
-                        <DropdownMenu.Content>
+                      <RowMenu>
                           <EditDialog template={t} onSave={(ev, b) => call(`templates/${encodeURIComponent(ev)}`, 'PUT', b)} busy={busy} asItem />
                           <DropdownMenu.Separator />
                           <ResetItem template={t} onReset={() => call(`templates/${encodeURIComponent(t.event)}/reset`, 'POST')} />
-                        </DropdownMenu.Content>
-                      </DropdownMenu.Root>
+                      </RowMenu>
                     </Table.Cell>
                   )}
                 </Table.Row>
@@ -127,8 +125,10 @@ export function TemplatesView({ templates, isAdmin }: { templates: NotifTemplate
 }
 
 function ResetItem({ template, onReset }: { template: NotifTemplate; onReset: () => void }) {
+  const fermerMenu = useFermerMenu();
+  const [ouvert, setOuvert] = React.useState(false);
   return (
-    <AlertDialog.Root>
+    <AlertDialog.Root open={ouvert} onOpenChange={(o) => { setOuvert(o); if (!o) fermerMenu(); }}>
       <AlertDialog.Trigger>
         <DropdownMenu.Item color="red" onSelect={(e) => e.preventDefault()}><ResetIcon /> Rétablir l’original</DropdownMenu.Item>
       </AlertDialog.Trigger>
@@ -154,6 +154,9 @@ function EditDialog({ template, onSave, busy, asItem }: {
   busy: boolean;
   asItem?: boolean;
 }) {
+  const fermerMenu = useFermerMenu();
+  // Fermeture programmatique : referme le dialogue ET le menu qui l'a ouvert.
+  const fermer = () => { setOpen(false); fermerMenu(); };
   const creating = !template;
   const [open, setOpen] = React.useState(false);
   const [f, setF] = React.useState({
@@ -178,7 +181,7 @@ function EditDialog({ template, onSave, busy, asItem }: {
     const ok = await onSave(creating ? f.event.trim() : template!.event, {
       fr: f.fr.trim(), ar: f.ar.trim(), transactional: f.transactional,
     });
-    if (ok) { setOpen(false); if (creating) setF({ event: '', fr: '', ar: '', transactional: true }); }
+    if (ok) { fermer(); if (creating) setF({ event: '', fr: '', ar: '', transactional: true }); }
   }
 
   const trigger = asItem
@@ -186,7 +189,7 @@ function EditDialog({ template, onSave, busy, asItem }: {
     : <Button><PlusIcon /> Nouveau modèle</Button>;
 
   return (
-    <Dialog.Root open={open} onOpenChange={(o) => { setOpen(o); if (o) reset(); }}>
+    <Dialog.Root open={open} onOpenChange={(o) => { setOpen(o); if (o) reset(); else fermerMenu(); }}>
       <Dialog.Trigger>{trigger}</Dialog.Trigger>
       <Dialog.Content maxWidth="620px">
         <Dialog.Title>{creating ? 'Nouveau modèle' : `Modifier « ${template!.event} »`}</Dialog.Title>

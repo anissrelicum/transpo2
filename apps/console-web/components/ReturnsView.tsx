@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useSafeRefresh } from '../lib/safe-refresh';
 import {
   Card, Flex, Box, Grid, Text, Heading, Badge, Button, IconButton, Table, Tabs, Callout, Separator,
 } from '@radix-ui/themes';
@@ -21,7 +21,7 @@ const RET: Record<string, { label: string; color: 'red' | 'amber' | 'violet' | '
 function RetBadge({ s }: { s: string }) { const c = RET[s] ?? { label: s, color: 'gray' as const }; return <Badge color={c.color} variant="soft" radius="full">{c.label}</Badge>; }
 
 export function ReturnsView({ returns, canWrite }: { returns: Ret[]; canWrite: boolean }) {
-  const router = useRouter();
+  const refresh = useSafeRefresh();
   const [sel, setSel] = React.useState<string | null>(null);
   const [tab, setTab] = React.useState('actifs');
   const [busy, setBusy] = React.useState(false);
@@ -37,7 +37,7 @@ export function ReturnsView({ returns, canWrite }: { returns: Ret[]; canWrite: b
     setBusy(true);
     const res = await fetch(`/api/proxy/v1/returns/${encodeURIComponent(ref)}/${action}`, { method: 'POST' });
     setBusy(false);
-    if (res.ok) router.refresh(); else { const d = await res.json().catch(() => null); alert(d?.error ?? 'Action impossible'); }
+    if (res.ok) refresh(); else { const d = await res.json().catch(() => null); alert(d?.error ?? 'Action impossible'); }
   }
 
   return (

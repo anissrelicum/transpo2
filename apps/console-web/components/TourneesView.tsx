@@ -1,6 +1,5 @@
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
 import {
   Card, Flex, Box, Grid, Text, Heading, Badge, Button, IconButton, ScrollArea,
   Separator, Callout, Inset, Dialog, Select, TextField,
@@ -39,7 +38,6 @@ function nearestNeighbor(orders: Order[]): Order[] {
 export function TourneesView({ tournees: initial, drivers, unassigned, canWrite }: {
   tournees: Tournee[]; drivers: string[]; unassigned: { ref: string; toCity: string }[]; canWrite: boolean;
 }) {
-  const router = useRouter();
   const [tournees, setTournees] = React.useState<Tournee[]>(initial);
   const [selId, setSelId] = React.useState<string | null>(initial[0]?.id ?? null);
   const [orders, setOrders] = React.useState<Order[]>([]);      // arrêts résolus, dans l'ordre courant

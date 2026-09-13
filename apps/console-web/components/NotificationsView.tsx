@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useSafeRefresh } from '../lib/safe-refresh';
 import {
   Card, Flex, Box, Grid, Text, Badge, Button, IconButton, Table, Callout, Dialog,
   Select, TextField, DropdownMenu, Separator,
@@ -24,7 +24,7 @@ function when(iso: string): string {
 export function NotificationsView({ notifications, templates, canWrite }: {
   notifications: NotificationRow[]; templates: NotifTemplate[]; canWrite: boolean;
 }) {
-  const router = useRouter();
+  const refresh = useSafeRefresh();
   const [busy, setBusy] = React.useState(false);
   const [q, setQ] = React.useState('');
   const [status, setStatus] = React.useState('all');
@@ -49,7 +49,7 @@ export function NotificationsView({ notifications, templates, canWrite }: {
       body: body ? JSON.stringify(body) : undefined,
     });
     setBusy(false);
-    if (res.ok) router.refresh();
+    if (res.ok) refresh();
     else { const d = await res.json().catch(() => null); alert(d?.message ?? d?.error ?? 'Action impossible'); }
     return res.ok;
   }

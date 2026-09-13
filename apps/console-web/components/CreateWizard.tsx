@@ -1,6 +1,7 @@
 'use client';
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
+import { useSafeRefresh } from '../lib/safe-refresh';
 import {
   Card, Flex, Box, Grid, Text, Heading, Button, TextField, TextArea, Select,
   SegmentedControl, Switch, Separator, Callout, Badge, Spinner,
@@ -22,45 +23,80 @@ const STEPS = [
   { n: 3, label: 'Colis & options', icon: CubeIcon },
 ];
 
+/**
+ * Champ étiqueté. Le libellé ENVELOPPE le contrôle : sans association, un lecteur d'écran
+ * annonce un champ anonyme et le libellé n'est pas cliquable.
+ */
 function Field({ label, hint, required, children }: { label: string; hint?: string; required?: boolean; children: React.ReactNode }) {
   return (
     <Box>
-      <Flex gap="1" align="center" mb="1">
-        <Text as="label" size="2" weight="medium">{label}</Text>
-        {required && <Text size="2" color="red">*</Text>}
-      </Flex>
-      {children}
+      <Text as="label" size="2" weight="medium" style={{ display: 'block' }}>
+        <Flex gap="1" align="center" mb="1">
+          <Text size="2" weight="medium">{label}</Text>
+          {required && <Text size="2" color="red">*</Text>}
+        </Flex>
+        {children}
+      </Text>
       {hint && <Text as="p" size="1" color="gray" mt="1">{hint}</Text>}
     </Box>
   );
 }
+
+/** Coordonnées d'un point de la course. */
+type Point = { contact: string; phone: string; address: string; notes: string };
+const POINT_VIDE: Point = { contact: '', phone: '', address: '', notes: '' };
 function PriceRow({ label, value }: { label: string; value: string }) {
   return <Flex justify="between" align="center"><Text size="2" color="gray">{label}</Text><Text size="2" weight="medium">{value}</Text></Flex>;
 }
 
-function AddressForm({ which, city, onCity }: { which: 'retrait' | 'livraison'; city: string; onCity: (v: string) => void }) {
+/**
+ * Coordonnées d'un point de la course.
+ * Ces champs étaient purement décoratifs : ni liés à un état, ni transmis à la création.
+ * Deux écrans entiers de saisie — contact, téléphone, adresse, notes — partaient à la
+ * poubelle à chaque commande, alors même qu'ils portent la mention « requis ».
+ */
+function AddressForm({ which, city, onCity, point, onPoint }: {
+  which: 'retrait' | 'livraison'; city: string; onCity: (v: string) => void;
+  point: Point; onPoint: (p: Partial<Point>) => void;
+}) {
   const isRet = which === 'retrait';
   return (
     <Flex direction="column" gap="4">
       <Heading size="4">{isRet ? 'Point de retrait' : 'Point de livraison'}</Heading>
       <Grid columns={{ initial: '1', sm: '2' }} gap="4">
-        <Field label="Contact" required><TextField.Root placeholder="Nom du contact" size="2" /></Field>
-        <Field label="Téléphone" required><TextField.Root placeholder="+212 6 00 00 00 00" size="2" /></Field>
+        <Field label="Contact" required>
+          <TextField.Root value={point.contact} onChange={(e) => onPoint({ contact: e.target.value })} placeholder="Nom du contact" size="2" />
+        </Field>
+        <Field label="Téléphone" required>
+          <TextField.Root value={point.phone} onChange={(e) => onPoint({ phone: e.target.value })} placeholder="+212 6 00 00 00 00" size="2" />
+        </Field>
       </Grid>
-      <Field label="Adresse" required><TextField.Root placeholder="N°, rue, quartier" size="2" /></Field>
+      <Field label="Adresse" required>
+        <TextField.Root value={point.address} onChange={(e) => onPoint({ address: e.target.value })} placeholder="N°, rue, quartier" size="2" />
+      </Field>
       <Field label="Ville" required>
         <Select.Root value={city} onValueChange={onCity} size="2">
           <Select.Trigger style={{ width: '100%' }} />
           <Select.Content>{CITIES_WITH_COORDS.map((c) => <Select.Item key={c} value={c}>{c}</Select.Item>)}</Select.Content>
         </Select.Root>
       </Field>
-      <Field label="Notes pour le livreur"><TextArea placeholder="Instructions d’accès, étage, code…" size="2" /></Field>
+      <Field label="Notes pour le livreur">
+        <TextArea value={point.notes} onChange={(e) => onPoint({ notes: e.target.value })} placeholder="Instructions d’accès, étage, code…" size="2" />
+      </Field>
     </Flex>
   );
 }
 
-export function CreateWizard({ merchants }: { merchants: string[] }) {
+/**
+ * Assistant de création, partagé par la console d'exploitation et le portail marchand.
+ * En espace marchand, le champ Marchand disparaît (l'API force celui du compte) et le
+ * retour se fait vers les commandes du portail.
+ */
+export function CreateWizard({ merchants, espace = 'console' }: { merchants: string[]; espace?: 'console' | 'marchand' }) {
+  const marchandConnecte = espace === 'marchand';
+  const retour = marchandConnecte ? '/portail/commandes' : '/orders';
   const router = useRouter();
+  const refresh = useSafeRefresh();
   const [step, setStep] = React.useState(1);
   const [size, setSize] = React.useState<string>(PARCEL_SIZES[1]);
   const [merchant, setMerchant] = React.useState('');
@@ -70,6 +106,10 @@ export function CreateWizard({ merchants }: { merchants: string[] }) {
   const [fragile, setFragile] = React.useState(false);
   const [scheduled, setScheduled] = React.useState(false);
   const [cod, setCod] = React.useState('');
+  const [retrait, setRetrait] = React.useState<Point>(POINT_VIDE);
+  const [livraison, setLivraison] = React.useState<Point>(POINT_VIDE);
+  const [description, setDescription] = React.useState('');
+  const [vehicleType, setVehicleType] = React.useState<string>(VEHICLES[0]);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -94,9 +134,25 @@ export function CreateWizard({ merchants }: { merchants: string[] }) {
     setBusy(true); setError(null);
     const res = await fetch('/api/orders', {
       method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ merchant: merchant || undefined, fromCity, toCity, cod: Number(cod) || 0, size, proofLevel: proof, scheduled }),
+      body: JSON.stringify({
+        merchant: merchant || undefined, fromCity, toCity, cod: Number(cod) || 0,
+        size, proofLevel: proof, scheduled,
+        pickupContact: retrait.contact, pickupPhone: retrait.phone,
+        pickupAddress: retrait.address, pickupNotes: retrait.notes,
+        dropContact: livraison.contact, dropPhone: livraison.phone,
+        dropAddress: livraison.address, dropNotes: livraison.notes,
+        description, vehicleType,
+      }),
     });
-    if (res.ok) { router.push('/orders'); router.refresh(); return; }
+    if (res.ok) {
+      // On atterrit sur LA commande créée : jusqu'ici l'assistant renvoyait à la liste,
+      // en laissant l'exploitant deviner laquelle des lignes était la sienne.
+      const cree = await res.json().catch(() => null);
+      // Le marchand n'a pas accès à la fiche d'exploitation : il revient à ses commandes.
+      router.push(marchandConnecte ? retour : (cree?.ref ? `/orders/${cree.ref}` : '/orders'));
+      refresh();
+      return;
+    }
     setBusy(false);
     const d = await res.json().catch(() => null);
     setError(d?.error ?? 'Création impossible');
@@ -107,7 +163,7 @@ export function CreateWizard({ merchants }: { merchants: string[] }) {
       <PageHeader
         title="Nouvelle commande"
         subtitle="Créer une livraison en trois étapes"
-        actions={<Button variant="soft" color="gray" onClick={() => router.push('/orders')}><ArrowLeftIcon /> Retour aux commandes</Button>}
+        actions={<Button variant="soft" color="gray" onClick={() => router.push(retour)}><ArrowLeftIcon /> Retour aux commandes</Button>}
       />
 
       <Card size="2" mb="4">
@@ -133,11 +189,12 @@ export function CreateWizard({ merchants }: { merchants: string[] }) {
         <Box style={{ gridColumn: 'span 2' }}>
           <Card size="3">
             {error && <Callout.Root color="red" size="1" mb="3" role="alert"><Callout.Text>{error}</Callout.Text></Callout.Root>}
-            {step === 1 && <AddressForm which="retrait" city={fromCity} onCity={setFromCity} />}
-            {step === 2 && <AddressForm which="livraison" city={toCity} onCity={setToCity} />}
+            {step === 1 && <AddressForm which="retrait" city={fromCity} onCity={setFromCity} point={retrait} onPoint={(p) => setRetrait({ ...retrait, ...p })} />}
+            {step === 2 && <AddressForm which="livraison" city={toCity} onCity={setToCity} point={livraison} onPoint={(p) => setLivraison({ ...livraison, ...p })} />}
             {step === 3 && (
               <Flex direction="column" gap="4">
                 <Heading size="4">Colis & options</Heading>
+                {!marchandConnecte && (
                 <Field label="Marchand" hint={merchants.length ? 'Marchands existants proposés' : undefined}>
                   {merchants.length ? (
                     <Select.Root value={merchant || '__none'} onValueChange={(v) => setMerchant(v === '__none' ? '' : v)} size="2">
@@ -152,15 +209,18 @@ export function CreateWizard({ merchants }: { merchants: string[] }) {
                     <TextField.Root data-testid="wizard-merchant" value={merchant} onChange={(e) => setMerchant(e.target.value)} placeholder="Nom du marchand" size="2" />
                   )}
                 </Field>
+                )}
                 <Field label="Taille du colis" required>
                   <SegmentedControl.Root value={size} onValueChange={setSize} size="2">
                     {PARCEL_SIZES.map((s) => <SegmentedControl.Item key={s} value={s}>{s}</SegmentedControl.Item>)}
                   </SegmentedControl.Root>
                 </Field>
-                <Field label="Description du contenu"><TextArea placeholder="Ex. : coffret de 6 tasses en céramique" size="2" /></Field>
+                <Field label="Description du contenu">
+                  <TextArea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Ex. : coffret de 6 tasses en céramique" size="2" />
+                </Field>
                 <Grid columns={{ initial: '1', sm: '2' }} gap="4">
                   <Field label="Type de véhicule requis">
-                    <Select.Root defaultValue={VEHICLES[0]} size="2"><Select.Trigger style={{ width: '100%' }} />
+                    <Select.Root value={vehicleType} onValueChange={setVehicleType} size="2"><Select.Trigger style={{ width: '100%' }} />
                       <Select.Content>{VEHICLES.map((v) => <Select.Item key={v} value={v}>{v}</Select.Item>)}</Select.Content>
                     </Select.Root>
                   </Field>

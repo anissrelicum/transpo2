@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useSafeRefresh } from '../lib/safe-refresh';
 import {
   Card, Flex, Box, Grid, Text, Badge, Button, IconButton, Table, Callout, Dialog, AlertDialog,
   Select, TextField, DropdownMenu,
@@ -8,10 +8,12 @@ import {
 import {
   PlusIcon, DotsHorizontalIcon, MagnifyingGlassIcon, HomeIcon, CheckCircledIcon,
   LockClosedIcon, ExclamationTriangleIcon, RocketIcon, UpdateIcon, CrossCircledIcon,
-  CopyIcon, CheckIcon, InfoCircledIcon,
+  CopyIcon, CheckIcon, InfoCircledIcon, PersonIcon,
 } from '@radix-ui/react-icons';
+import { RowMenu, useFermerMenu } from '../lib/row-menu';
 import type { Tenant, SaasPlanRow, SubscriptionStatus } from '@transpo/api-client';
 import { PageHeader, KPI } from './ui';
+import { copyText } from '../lib/clipboard';
 import { priceLabel, quotaLabel } from '../lib/plans';
 
 const SLUG_RE = /^[a-z0-9]+$/;
@@ -39,7 +41,7 @@ function daysUntil(iso: string): number {
 }
 
 export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: SaasPlanRow[] }) {
-  const router = useRouter();
+  const refresh = useSafeRefresh();
   const [busy, setBusy] = React.useState(false);
   const [q, setQ] = React.useState('');
   const [status, setStatus] = React.useState('all');
@@ -75,7 +77,7 @@ export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: 
       body: body ? JSON.stringify(body) : undefined,
     });
     setBusy(false);
-    if (res.ok) { router.refresh(); return res.json().catch(() => ({})); }
+    if (res.ok) { refresh(); return res.json().catch(() => ({})); }
     const d = await res.json().catch(() => null);
     alert(d?.message ?? d?.error ?? 'Action impossible');
     return null;
@@ -94,7 +96,7 @@ export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: 
       `${d.trialsExpired} essai(s) expiré(s)\n${d.suspended} suspension(s)\n` +
       `${d.renewed} reconduction(s)\n${d.projected} statut(s) tenant réaligné(s)`,
     );
-    router.refresh();
+    refresh();
   }
 
   return (
@@ -205,12 +207,21 @@ export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: 
                   <Table.Cell><SubscriptionCell tenant={t} /></Table.Cell>
                   <Table.Cell><Text size="1" color="gray">{when(t.createdAt)}</Text></Table.Cell>
                   <Table.Cell>
-                    <DropdownMenu.Root>
-                      <DropdownMenu.Trigger><IconButton size="1" variant="ghost" color="gray"><DotsHorizontalIcon /></IconButton></DropdownMenu.Trigger>
-                      <DropdownMenu.Content>
+                    <RowMenu>
                         <SubscribeDialog
                           tenant={t} plans={plans}
                           onSave={(b) => call(`tenants/${t.slug}/subscription`, 'POST', b)}
+                        />
+                        <ResetAdminDialog
+                          tenant={t}
+                          onReset={async (b) => {
+                            const r = await call(`tenants/${t.slug}/admin`, 'POST', b);
+                            if (r?.admin) {
+                              setRevealed({ label: `${r.admin.name} (${r.admin.email})`, password: r.admin.tempPassword });
+                              return true;
+                            }
+                            return false;
+                          }}
                         />
                         <DropdownMenu.Separator />
                         {(t.subStatus === 'SUSPENDU' || t.subStatus === 'IMPAYE') && (
@@ -234,8 +245,7 @@ export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: 
                             onConfirm={(reason) => call(`tenants/${t.slug}/subscription/cancel`, 'POST', { reason })}
                           />
                         )}
-                      </DropdownMenu.Content>
-                    </DropdownMenu.Root>
+                    </RowMenu>
                   </Table.Cell>
                 </Table.Row>
               );
@@ -248,6 +258,54 @@ export function SaasTenantsView({ tenants, plans }: { tenants: Tenant[]; plans: 
       </Card>
       <RevealPassword revealed={revealed} onClose={() => setRevealed(null)} />
     </>
+  );
+}
+
+/**
+ * Crée ou réinitialise l'administrateur d'une organisation existante.
+ *
+ * Sans cette action, une organisation sans administrateur actif — provisionnée avant le
+ * correctif AN-01, ou dont le dernier admin a été désactivé — n'était récupérable que par
+ * un accès shell à la production (AN-11). Le mot de passe temporaire est affiché une fois,
+ * comme au provisionnement, et l'action est tracée au journal d'audit.
+ */
+function ResetAdminDialog({ tenant, onReset }: {
+  tenant: Tenant; onReset: (body: { email: string; name: string }) => Promise<boolean>;
+}) {
+  const fermerMenu = useFermerMenu();
+  // Fermeture programmatique : referme le dialogue ET le menu qui l'a ouvert.
+  const fermer = () => { setOpen(false); fermerMenu(); };
+  const [open, setOpen] = React.useState(false);
+  const [f, setF] = React.useState({ email: '', name: '' });
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim());
+  return (
+    <Dialog.Root open={open} onOpenChange={(o) => { setOpen(o); if (o) setF({ email: '', name: '' }); }}>
+      <Dialog.Trigger>
+        <DropdownMenu.Item onSelect={(e) => { e.preventDefault(); setF({ email: '', name: '' }); setOpen(true); }}>
+          <PersonIcon /> Créer / réinitialiser l’administrateur
+        </DropdownMenu.Item>
+      </Dialog.Trigger>
+      <Dialog.Content maxWidth="440px">
+        <Dialog.Title>Administrateur de {tenant.name}</Dialog.Title>
+        <Dialog.Description size="2" color="gray" mb="3">
+          Un mot de passe temporaire sera généré et affiché une seule fois. Si l’adresse existe
+          déjà dans l’organisation, le compte est réactivé et repassé administrateur.
+        </Dialog.Description>
+        <Flex direction="column" gap="3">
+          <Box><Text as="div" size="1" color="gray" mb="1">Nom complet</Text>
+            <TextField.Root value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} placeholder="Nadia Alaoui" /></Box>
+          <Box><Text as="div" size="1" color="gray" mb="1">Email</Text>
+            <TextField.Root type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} placeholder={`admin@${tenant.slug}.ma`} /></Box>
+        </Flex>
+        <Flex gap="3" mt="4" justify="end">
+          <Dialog.Close><Button variant="soft" color="gray">Annuler</Button></Dialog.Close>
+          <Button
+            disabled={!emailOk || f.name.trim().length < 2}
+            onClick={async () => { if (await onReset({ email: f.email.trim(), name: f.name.trim() })) fermer(); }}
+          >Enregistrer</Button>
+        </Flex>
+      </Dialog.Content>
+    </Dialog.Root>
   );
 }
 
@@ -268,7 +326,11 @@ function RevealPassword({ revealed, onClose }: { revealed: { label: string; pass
           <Text size="4" weight="bold" style={{ fontFamily: 'var(--code-font-family)', flex: 1, wordBreak: 'break-all' }}>{revealed?.password}</Text>
           <IconButton
             size="1" variant="soft" color={copied ? 'green' : 'gray'}
-            onClick={() => { if (revealed) { navigator.clipboard.writeText(revealed.password); setCopied(true); } }}
+            onClick={async () => {
+              if (!revealed) return;
+              if (await copyText(revealed.password)) setCopied(true);
+              else alert('Copie impossible — sélectionnez le mot de passe et copiez-le manuellement.');
+            }}
           >{copied ? <CheckIcon /> : <CopyIcon />}</IconButton>
         </Flex>
         <Flex gap="3" mt="4" justify="end">
@@ -299,6 +361,9 @@ function SubscriptionCell({ tenant: t }: { tenant: Tenant }) {
 function SubscribeDialog({ tenant, plans, onSave }: {
   tenant: Tenant; plans: SaasPlanRow[]; onSave: (b: any) => Promise<boolean>;
 }) {
+  const fermerMenu = useFermerMenu();
+  // Fermeture programmatique : referme le dialogue ET le menu qui l'a ouvert.
+  const fermer = () => { setOpen(false); fermerMenu(); };
   const available = plans.filter((p) => !p.archived && p.current);
   const [open, setOpen] = React.useState(false);
   const [code, setCode] = React.useState(tenant.planCode ?? available[0]?.code ?? '');
@@ -312,7 +377,7 @@ function SubscribeDialog({ tenant, plans, onSave }: {
   const unchanged = isActive && code === tenant.planCode && !immediate;
 
   return (
-    <Dialog.Root open={open} onOpenChange={setOpen}>
+    <Dialog.Root open={open} onOpenChange={(o) => { setOpen(o); if (!o) fermerMenu(); }}>
       <Dialog.Trigger>
         <DropdownMenu.Item onSelect={(e) => { e.preventDefault(); setOpen(true); }}>
           {tenant.subStatus === 'ESSAI' ? 'Convertir l’essai' : 'Souscrire / changer de plan'}
@@ -350,7 +415,7 @@ function SubscribeDialog({ tenant, plans, onSave }: {
           <Dialog.Close><Button variant="soft" color="gray">Annuler</Button></Dialog.Close>
           <Button
             disabled={!code || unchanged}
-            onClick={async () => { if (await onSave({ planCode: code, immediate })) setOpen(false); }}
+            onClick={async () => { if (await onSave({ planCode: code, immediate })) fermer(); }}
           >Valider</Button>
         </Flex>
       </Dialog.Content>
@@ -363,6 +428,9 @@ function ReasonItem({ label, color, icon, title, body, onConfirm }: {
   label: string; color: 'red'; icon: React.ReactNode; title: string; body: string;
   onConfirm: (reason: string) => Promise<boolean>;
 }) {
+  const fermerMenu = useFermerMenu();
+  // Fermeture programmatique : referme le dialogue ET le menu qui l'a ouvert.
+  const fermer = () => { setOpen(false); fermerMenu(); };
   const [open, setOpen] = React.useState(false);
   const [reason, setReason] = React.useState('');
   return (
@@ -381,7 +449,7 @@ function ReasonItem({ label, color, icon, title, body, onConfirm }: {
         </Box>
         <Flex gap="3" mt="4" justify="end">
           <AlertDialog.Cancel><Button variant="soft" color="gray">Annuler</Button></AlertDialog.Cancel>
-          <Button color={color} disabled={!reason.trim()} onClick={async () => { if (await onConfirm(reason.trim())) setOpen(false); }}>
+          <Button color={color} disabled={!reason.trim()} onClick={async () => { if (await onConfirm(reason.trim())) fermer(); }}>
             {label}
           </Button>
         </Flex>

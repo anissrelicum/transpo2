@@ -2,7 +2,7 @@
 import * as React from 'react';
 import {
   Card, Flex, Box, Grid, Text, Heading, Badge, Button, TextField, Select,
-  Avatar, Popover, Inset, Spinner,
+  Avatar, Popover, Inset, Spinner, AlertDialog,
 } from '@radix-ui/themes';
 import { PlusIcon, Cross2Icon, CheckIcon, GlobeIcon, Pencil1Icon, TrashIcon } from '@radix-ui/react-icons';
 import { CITY_COORDS } from '@transpo/domain';
@@ -72,7 +72,7 @@ export function ZonesView({ zones: initial, drivers, canWrite }: { zones: Zone[]
     setDrawing(false);
   }
   async function deleteZone() {
-    if (!zone || !confirm(`Supprimer la zone « ${zone.nameFr} » ?`)) return;
+    if (!zone) return;
     const r = await req(`/api/proxy/v1/dispatch/zones/${zone.id}`, 'DELETE');
     if (r) { const rest = zones.filter((z) => z.id !== zone.id); setZones(rest); setSelId(rest[0]?.id ?? null); }
   }
@@ -127,7 +127,11 @@ export function ZonesView({ zones: initial, drivers, canWrite }: { zones: Zone[]
                 <Map center={center} zoom={11} polygons={polygons} onMapClick={canWrite ? onMapClick : undefined} />
                 {canWrite && zone && (
                   <Flex align="center" gap="2" style={{ position: 'absolute', top: 12, insetInlineStart: 12, zIndex: 400 }}>
-                    <Button size="1" variant={drawing ? 'solid' : 'soft'} color={drawing ? 'indigo' : 'gray'} onClick={() => setDrawing((d) => !d)}><Pencil1Icon /> Dessiner un polygone</Button>
+                    {/* Entrer en tracé repart d'un polygone VIDE : les sommets cliqués
+                        s'ajoutaient jusqu'ici à la forme existante (le carré par défaut de la
+                        zone), produisant un polygone incohérent sans que rien ne le signale.
+                        Sortir du mode sans enregistrer restaure la forme enregistrée. */}
+                    <Button size="1" variant={drawing ? 'solid' : 'soft'} color={drawing ? 'indigo' : 'gray'} onClick={() => { const ouvre = !drawing; set({ polygon: ouvre ? [] : toDraft(zone).polygon }); setDrawing(ouvre); }}><Pencil1Icon /> {drawing ? 'Terminer le tracé' : 'Dessiner un polygone'}</Button>
                     {drawing && draft.polygon.length > 0 && <Button size="1" variant="soft" color="gray" onClick={() => set({ polygon: [] })}>Effacer</Button>}
                   </Flex>
                 )}
@@ -140,7 +144,27 @@ export function ZonesView({ zones: initial, drivers, canWrite }: { zones: Zone[]
             <Card size="3">
               <Flex align="center" justify="between" mb="4">
                 <Flex align="center" gap="2"><Box style={{ width: 12, height: 12, borderRadius: 3, background: `var(--${draft.color}-9)` }} /><Heading size="4">Éditeur de zone</Heading></Flex>
-                {canWrite && <Button variant="soft" color="red" size="1" onClick={deleteZone} disabled={busy}><TrashIcon /> Supprimer la zone</Button>}
+                {canWrite && (
+                  // Confirmation en dialogue de l'application, et non en `confirm()` natif :
+                  // le reste de la console (retrait d'un véhicule, d'un chauffeur, d'un
+                  // utilisateur) confirme ainsi, et une boîte native n'est ni traduisible,
+                  // ni thématisable, ni lisible en arabe RTL.
+                  <AlertDialog.Root>
+                    <AlertDialog.Trigger>
+                      <Button variant="soft" color="red" size="1" disabled={busy}><TrashIcon /> Supprimer la zone</Button>
+                    </AlertDialog.Trigger>
+                    <AlertDialog.Content maxWidth="400px">
+                      <AlertDialog.Title>Supprimer la zone « {zone.nameFr} » ?</AlertDialog.Title>
+                      <AlertDialog.Description size="2">
+                        Le découpage et les livreurs qui y sont affectés seront perdus. Cette action est définitive.
+                      </AlertDialog.Description>
+                      <Flex gap="3" mt="4" justify="end">
+                        <AlertDialog.Cancel><Button variant="soft" color="gray">Annuler</Button></AlertDialog.Cancel>
+                        <AlertDialog.Action><Button color="red" onClick={deleteZone}>Supprimer</Button></AlertDialog.Action>
+                      </Flex>
+                    </AlertDialog.Content>
+                  </AlertDialog.Root>
+                )}
               </Flex>
               <Grid columns={{ initial: '1', sm: '2' }} gap="4">
                 <Fld label="Nom (français)"><TextField.Root value={draft.nameFr} disabled={!canWrite} onChange={(e) => set({ nameFr: e.target.value })} size="2" /></Fld>
@@ -167,7 +191,10 @@ export function ZonesView({ zones: initial, drivers, canWrite }: { zones: Zone[]
                   ))}
                   {canWrite && (
                     <Popover.Root>
-                      <Popover.Trigger><Button size="1" variant="soft" color="gray" disabled={busy || !available.length}><PlusIcon /> Ajouter</Button></Popover.Trigger>
+                      {/* Le bouton reste cliquable quand l'effectif est déjà tout affecté :
+                          sinon le message « Tous les livreurs sont affectés. » — seule
+                          explication donnée à l'exploitant — n'était jamais atteignable. */}
+                      <Popover.Trigger><Button size="1" variant="soft" color="gray" disabled={busy}><PlusIcon /> Ajouter</Button></Popover.Trigger>
                       <Popover.Content width="260px">
                         <Text as="div" size="1" color="gray" mb="2">Choisir un livreur pour cette zone</Text>
                         <Flex direction="column" gap="1">
@@ -195,8 +222,19 @@ export function ZonesView({ zones: initial, drivers, canWrite }: { zones: Zone[]
   );
 }
 
+/**
+ * Champ étiqueté. Le libellé ENVELOPPE le contrôle : sans association, un lecteur d'écran
+ * annonce un champ anonyme, et le libellé n'est pas cliquable.
+ */
 function Fld({ label, children }: { label: string; children: React.ReactNode }) {
-  return <Box><Text as="label" size="2" weight="medium" mb="1" style={{ display: 'block' }}>{label}</Text>{children}</Box>;
+  return (
+    <Box>
+      <Text as="label" size="2" weight="medium" style={{ display: 'block' }}>
+        <Text as="div" size="2" weight="medium" mb="1">{label}</Text>
+        {children}
+      </Text>
+    </Box>
+  );
 }
 function Cascade({ value, options, onChange, disabled, placeholder }: { value: string; options: string[]; onChange: (v: string) => void; disabled?: boolean; placeholder?: string }) {
   return (

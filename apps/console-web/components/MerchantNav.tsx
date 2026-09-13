@@ -8,6 +8,7 @@ import { ExitIcon } from '@radix-ui/react-icons';
 const TABS = [
   { href: '/portail', label: 'Tableau de bord' },
   { href: '/portail/commandes', label: 'Mes commandes' },
+  { href: '/portail/commandes/nouvelle', label: 'Nouvelle commande' },
   { href: '/portail/portefeuille', label: 'Portefeuille' },
   { href: '/portail/facture', label: 'Facture' },
 ];

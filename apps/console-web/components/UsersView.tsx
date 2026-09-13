@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useSafeRefresh } from '../lib/safe-refresh';
 import {
   Card, Flex, Box, Grid, Text, Heading, Badge, Button, IconButton, Table, Dialog, AlertDialog,
   Select, TextField, DropdownMenu, Avatar, Separator, Callout,
@@ -9,12 +9,21 @@ import {
   PersonIcon, PlusIcon, DotsHorizontalIcon, ReloadIcon, LockClosedIcon, CheckIcon,
   CopyIcon, InfoCircledIcon,
 } from '@radix-ui/react-icons';
+import { RowMenu, useFermerMenu } from '../lib/row-menu';
 import type { ConsoleUser, ConsoleRole } from '@transpo/api-client';
 import { PageHeader, KPI } from './ui';
+import { copyText } from '../lib/clipboard';
 
 const ROLES: ConsoleRole[] = ['ADMIN', 'DISPATCHER', 'COMPTABLE'];
-const ROLE_LABEL: Record<ConsoleRole, string> = { ADMIN: 'Administrateur', DISPATCHER: 'Dispatcher', COMPTABLE: 'Comptable' };
-const ROLE_COLOR: Record<ConsoleRole, 'indigo' | 'cyan' | 'amber'> = { ADMIN: 'indigo', DISPATCHER: 'cyan', COMPTABLE: 'amber' };
+/**
+ * Rôles proposés à l'invitation. MERCHANT n'est pas un rôle de console — il n'ouvre que le
+ * portail marchand — mais aucun écran ne permettait de créer un tel compte : le portail
+ * était livré sans porte d'entrée.
+ */
+const ROLES_INVITABLES = [...ROLES, 'MERCHANT', 'DRIVER'] as const;
+type RoleInvitable = (typeof ROLES_INVITABLES)[number];
+const ROLE_LABEL: Record<string, string> = { ADMIN: 'Administrateur', DISPATCHER: 'Dispatcher', COMPTABLE: 'Comptable', MERCHANT: 'Marchand', DRIVER: 'Livreur' };
+const ROLE_COLOR: Record<string, 'indigo' | 'cyan' | 'amber' | 'grass' | 'violet'> = { ADMIN: 'indigo', DISPATCHER: 'cyan', COMPTABLE: 'amber', MERCHANT: 'grass', DRIVER: 'violet' };
 const ROLE_PERMISSIONS: Record<ConsoleRole, string> = {
   ADMIN: 'Accès complet à tous les modules de la console.',
   DISPATCHER: 'Commandes, Dispatch, Chauffeurs (lecture seule).',
@@ -25,8 +34,8 @@ function initials(name: string) {
   return name.split(' ').map((x) => x[0]).join('').slice(0, 2).toUpperCase();
 }
 
-export function UsersView({ users, isAdmin }: { users: ConsoleUser[]; isAdmin: boolean }) {
-  const router = useRouter();
+export function UsersView({ users, isAdmin, chauffeurs = [] }: { users: ConsoleUser[]; isAdmin: boolean; chauffeurs?: string[] }) {
+  const refresh = useSafeRefresh();
   const [busy, setBusy] = React.useState(false);
   const [revealed, setRevealed] = React.useState<{ label: string; password: string } | null>(null);
   const active = users.filter((u) => u.active).length;
@@ -40,12 +49,12 @@ export function UsersView({ users, isAdmin }: { users: ConsoleUser[]; isAdmin: b
     });
     setBusy(false);
     const data = await res.json().catch(() => null);
-    if (res.ok) { router.refresh(); return data; }
+    if (res.ok) { refresh(); return data; }
     alert(data?.error ?? 'Action impossible');
     return null;
   }
 
-  async function invite(input: { email: string; name: string; role: ConsoleRole }) {
+  async function invite(input: { email: string; name: string; role: RoleInvitable; merchant?: string; driver?: string }) {
     const res = await call('users', 'POST', input);
     if (res) setRevealed({ label: `${res.name} (${res.email})`, password: res.tempPassword });
     return !!res;
@@ -61,7 +70,7 @@ export function UsersView({ users, isAdmin }: { users: ConsoleUser[]; isAdmin: b
       <PageHeader
         title="Utilisateurs & rôles"
         subtitle={`${users.length} utilisateur(s) · ${active} actif(s) · ${admins} administrateur(s)`}
-        actions={isAdmin ? <InviteUserDialog onInvite={invite} busy={busy} /> : undefined}
+        actions={isAdmin ? <InviteUserDialog onInvite={invite} busy={busy} chauffeurs={chauffeurs} /> : undefined}
       />
 
       <Grid columns={{ initial: '2', md: '4' }} gap="3" mb="4">
@@ -94,9 +103,7 @@ export function UsersView({ users, isAdmin }: { users: ConsoleUser[]; isAdmin: b
                     <Table.Cell><Badge color={u.active ? 'green' : 'gray'} variant="soft">{u.active ? 'Actif' : 'Désactivé'}</Badge></Table.Cell>
                     {isAdmin && (
                       <Table.Cell>
-                        <DropdownMenu.Root>
-                          <DropdownMenu.Trigger><IconButton size="1" variant="ghost" color="gray"><DotsHorizontalIcon /></IconButton></DropdownMenu.Trigger>
-                          <DropdownMenu.Content>
+                        <RowMenu>
                             <ChangeRoleItem user={u} onChange={(role) => call(`users/${u.id}/role`, 'PATCH', { role })} />
                             <DropdownMenu.Item onSelect={() => resetPassword(u)}><ReloadIcon /> Réinitialiser le mot de passe</DropdownMenu.Item>
                             <DropdownMenu.Separator />
@@ -105,8 +112,7 @@ export function UsersView({ users, isAdmin }: { users: ConsoleUser[]; isAdmin: b
                             ) : (
                               <DropdownMenu.Item onSelect={() => call(`users/${u.id}/active`, 'PATCH', { active: true })}><CheckIcon /> Réactiver</DropdownMenu.Item>
                             )}
-                          </DropdownMenu.Content>
-                        </DropdownMenu.Root>
+                        </RowMenu>
                       </Table.Cell>
                     )}
                   </Table.Row>
@@ -139,8 +145,11 @@ export function UsersView({ users, isAdmin }: { users: ConsoleUser[]; isAdmin: b
   );
 }
 
-function ChangeRoleItem({ user, onChange }: { user: ConsoleUser; onChange: (role: ConsoleRole) => void }) {
+function ChangeRoleItem({ user, onChange }: { user: ConsoleUser; onChange: (role: ConsoleRole) => Promise<unknown> }) {
   const [open, setOpen] = React.useState(false);
+  const fermerMenu = useFermerMenu();
+  // Fermeture programmatique : referme le dialogue ET le menu qui l'a ouvert.
+  const fermer = () => { setOpen(false); fermerMenu(); };
   const [role, setRole] = React.useState<ConsoleRole>(user.role);
   return (
     <Dialog.Root open={open} onOpenChange={(v) => { setOpen(v); if (v) setRole(user.role); }}>
@@ -154,7 +163,7 @@ function ChangeRoleItem({ user, onChange }: { user: ConsoleUser; onChange: (role
         </Select.Root>
         <Flex gap="3" mt="4" justify="end">
           <Dialog.Close><Button variant="soft" color="gray">Annuler</Button></Dialog.Close>
-          <Button disabled={role === user.role} onClick={() => { onChange(role); setOpen(false); }}>Enregistrer</Button>
+          <Button disabled={role === user.role} onClick={async () => { if (await onChange(role)) fermer(); }}>Enregistrer</Button>
         </Flex>
       </Dialog.Content>
     </Dialog.Root>
@@ -162,9 +171,11 @@ function ChangeRoleItem({ user, onChange }: { user: ConsoleUser; onChange: (role
 }
 
 function DeactivateItem({ user, onConfirm }: { user: ConsoleUser; onConfirm: () => void }) {
+  const fermerMenu = useFermerMenu();
+  const [ouvert, setOuvert] = React.useState(false);
   return (
-    <AlertDialog.Root>
-      <AlertDialog.Trigger><DropdownMenu.Item color="red" onSelect={(e) => e.preventDefault()}><LockClosedIcon /> Désactiver</DropdownMenu.Item></AlertDialog.Trigger>
+    <AlertDialog.Root open={ouvert} onOpenChange={(o) => { setOuvert(o); if (!o) fermerMenu(); }}>
+      <AlertDialog.Trigger><DropdownMenu.Item color="red" onSelect={(e) => { e.preventDefault(); setOuvert(true); }}><LockClosedIcon /> Désactiver</DropdownMenu.Item></AlertDialog.Trigger>
       <AlertDialog.Content maxWidth="380px">
         <AlertDialog.Title>Désactiver {user.name} ?</AlertDialog.Title>
         <AlertDialog.Description size="2">
@@ -179,13 +190,26 @@ function DeactivateItem({ user, onConfirm }: { user: ConsoleUser; onConfirm: () 
   );
 }
 
-function InviteUserDialog({ onInvite, busy }: { onInvite: (b: { email: string; name: string; role: ConsoleRole }) => Promise<boolean>; busy: boolean }) {
+function InviteUserDialog({ onInvite, busy, chauffeurs }: {
+  onInvite: (b: { email: string; name: string; role: RoleInvitable; merchant?: string; driver?: string }) => Promise<boolean>;
+  busy: boolean; chauffeurs: string[];
+}) {
+  const vide = { email: '', name: '', role: 'DISPATCHER' as RoleInvitable, merchant: '', driver: '' };
   const [open, setOpen] = React.useState(false);
-  const [f, setF] = React.useState({ email: '', name: '', role: 'DISPATCHER' as ConsoleRole });
-  const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim()) && f.name.trim().length > 0;
+  const [f, setF] = React.useState(vide);
+  const marchand = f.role === 'MERCHANT';
+  const livreur = f.role === 'DRIVER';
+  const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())
+    && f.name.trim().length > 0
+    && (!marchand || f.merchant.trim().length > 0)
+    && (!livreur || f.driver.trim().length > 0);
   async function submit() {
-    const ok = await onInvite({ email: f.email.trim(), name: f.name.trim(), role: f.role });
-    if (ok) { setOpen(false); setF({ email: '', name: '', role: 'DISPATCHER' }); }
+    const ok = await onInvite({
+      email: f.email.trim(), name: f.name.trim(), role: f.role,
+      ...(marchand ? { merchant: f.merchant.trim() } : {}),
+      ...(livreur ? { driver: f.driver.trim() } : {}),
+    });
+    if (ok) { setOpen(false); setF(vide); }
   }
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -199,10 +223,35 @@ function InviteUserDialog({ onInvite, busy }: { onInvite: (b: { email: string; n
           <Box><Text as="div" size="2" weight="medium" mb="1">Email</Text>
             <TextField.Root type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} placeholder="prenom.nom@tenant.ma" /></Box>
           <Box><Text as="div" size="2" weight="medium" mb="1">Rôle</Text>
-            <Select.Root value={f.role} onValueChange={(v) => setF({ ...f, role: v as ConsoleRole })}>
+            <Select.Root value={f.role} onValueChange={(v) => setF({ ...f, role: v as RoleInvitable })}>
               <Select.Trigger style={{ width: '100%' }} />
-              <Select.Content>{ROLES.map((r) => <Select.Item key={r} value={r}>{ROLE_LABEL[r]}</Select.Item>)}</Select.Content>
+              <Select.Content>{ROLES_INVITABLES.map((r) => <Select.Item key={r} value={r}>{ROLE_LABEL[r]}</Select.Item>)}</Select.Content>
             </Select.Root></Box>
+          {livreur && (
+            <Box>
+              <Text as="div" size="2" weight="medium" mb="1">Chauffeur</Text>
+              <Select.Root value={f.driver || undefined} onValueChange={(v) => setF({ ...f, driver: v })}>
+                <Select.Trigger style={{ width: '100%' }} placeholder="Choisir un chauffeur" />
+                <Select.Content>
+                  {chauffeurs.map((d) => <Select.Item key={d} value={d}>{d}</Select.Item>)}
+                </Select.Content>
+              </Select.Root>
+              <Text as="p" size="1" color="gray" mt="1">
+                Le compte n’ouvre que l’application livreur : il verra les missions de ce chauffeur.
+                {chauffeurs.length === 0 && ' Aucun chauffeur à l’effectif — créez-en un d’abord.'}
+              </Text>
+            </Box>
+          )}
+          {marchand && (
+            <Box>
+              <Text as="div" size="2" weight="medium" mb="1">Nom du marchand</Text>
+              <TextField.Root value={f.merchant} onChange={(e) => setF({ ...f, merchant: e.target.value })} placeholder="Boutique Test" />
+              <Text as="p" size="1" color="gray" mt="1">
+                Le compte n’ouvre que le portail marchand : il verra les commandes de ce marchand,
+                sans accès à la console d’exploitation.
+              </Text>
+            </Box>
+          )}
         </Flex>
         <Flex gap="3" mt="4" justify="end">
           <Dialog.Close><Button variant="soft" color="gray">Annuler</Button></Dialog.Close>
@@ -229,7 +278,11 @@ function RevealPasswordDialog({ revealed, onClose }: { revealed: { label: string
           <Text size="4" weight="bold" style={{ fontFamily: 'var(--code-font-family)', flex: 1, wordBreak: 'break-all' }}>{revealed?.password}</Text>
           <IconButton
             size="1" variant="soft" color={copied ? 'green' : 'gray'}
-            onClick={() => { if (revealed) { navigator.clipboard.writeText(revealed.password); setCopied(true); } }}
+            onClick={async () => {
+              if (!revealed) return;
+              if (await copyText(revealed.password)) setCopied(true);
+              else alert('Copie impossible — sélectionnez le mot de passe et copiez-le manuellement.');
+            }}
           >{copied ? <CheckIcon /> : <CopyIcon />}</IconButton>
         </Flex>
         <Flex gap="3" mt="4" justify="end">

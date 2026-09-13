@@ -9,7 +9,10 @@ async function forward(req: NextRequest, path: string[], method: 'GET' | 'POST' 
   const token = cookies().get('token')?.value;
   if (!token) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
-  const target = `${API_URL}/${path.map(encodeURIComponent).join('/')}`;
+  // La chaîne de requête doit suivre : sans elle, un `?transferTo=…` ou un `?status=…`
+  // disparaissait en silence — le segment de chemin étant encodé, le « ? » devenait « %3F »
+  // et l'API recevait une adresse absurde sans jamais voir le paramètre.
+  const target = `${API_URL}/${path.map(encodeURIComponent).join('/')}${req.nextUrl.search}`;
   const body = method !== 'GET' ? await req.text() : undefined;
   const res = await fetch(target, {
     method,

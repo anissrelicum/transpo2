@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useSafeRefresh } from '../lib/safe-refresh';
 import {
   Card, Flex, Box, Text, Heading, Badge, Button, IconButton, ScrollArea, Avatar,
   Dialog, Separator, Tooltip, Inset,
@@ -40,7 +40,7 @@ function ScoreBar({ parts }: { parts: Suggestion['parts'] }) {
 export function DispatchView({ orders, zones, live, center }: {
   orders: Order[]; zones: Zone[]; live: FleetLive[]; center: [number, number];
 }) {
-  const router = useRouter();
+  const refresh = useSafeRefresh();
   const [mapObj, setMapObj] = React.useState<any>(null);
   const [target, setTarget] = React.useState<Order | null>(null);
   const [suggestions, setSuggestions] = React.useState<Suggestion[] | null>(null);
@@ -67,7 +67,7 @@ export function DispatchView({ orders, zones, live, center }: {
     setAssigning(driver);
     const res = await fetch(`/api/orders/${encodeURIComponent(target.ref)}/assign`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ driver }) });
     setAssigning(null);
-    if (res.ok) { setTarget(null); router.refresh(); }
+    if (res.ok) { setTarget(null); refresh(); }
     else { const d = await res.json().catch(() => null); alert(d?.error ?? 'Affectation impossible'); }
   }
 
@@ -93,7 +93,7 @@ export function DispatchView({ orders, zones, live, center }: {
             <Box style={{ width: 320, flex: '0 0 320px', borderInlineStart: '1px solid var(--gray-a4)', background: 'var(--color-panel-solid)', display: 'flex', flexDirection: 'column' }}>
               <Flex align="center" justify="between" p="3" style={{ borderBottom: '1px solid var(--gray-a4)' }}>
                 <Flex align="center" gap="2"><Text size="2" weight="bold">Non affectées</Text><Badge color="blue" radius="full">{unassigned.length}</Badge></Flex>
-                <Tooltip content="Actualiser"><IconButton size="1" variant="ghost" color="gray" onClick={() => router.refresh()}><ReloadIcon /></IconButton></Tooltip>
+                <Tooltip content="Actualiser"><IconButton size="1" variant="ghost" color="gray" onClick={() => refresh()}><ReloadIcon /></IconButton></Tooltip>
               </Flex>
               <ScrollArea style={{ flex: 1 }}>
                 {unassigned.length === 0 ? (

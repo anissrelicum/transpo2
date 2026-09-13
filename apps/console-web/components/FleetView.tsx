@@ -1,6 +1,5 @@
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Card, Flex, Box, Grid, Text, Heading, Badge, Button, IconButton, ScrollArea, Avatar,
@@ -20,7 +19,6 @@ const hhmm = (iso: string) => { try { return new Date(iso).toLocaleTimeString('f
 export function FleetView({ live, zones, drivers, center }: {
   live: FleetLive[]; zones: Zone[]; drivers: Driver[]; center: [number, number];
 }) {
-  const router = useRouter();
   const [sel, setSel] = React.useState<string | null>(live[0]?.driver ?? null);
   const [showZones, setShowZones] = React.useState(true);
   const [full, setFull] = React.useState(false);

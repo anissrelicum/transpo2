@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useSafeRefresh } from '../lib/safe-refresh';
 import {
   Card, Flex, Box, Grid, Text, Badge, Button, TextField, Code, Dialog, Table, Separator, ScrollArea,
 } from '@radix-ui/themes';
@@ -18,7 +18,7 @@ const COLS = [
 ] as const;
 
 export function HubView({ parcels, canWrite }: { parcels: Order[]; canWrite: boolean }) {
-  const router = useRouter();
+  const refresh = useSafeRefresh();
   const [scan, setScan] = React.useState('');
   const [busy, setBusy] = React.useState(false);
 
@@ -31,7 +31,7 @@ export function HubView({ parcels, canWrite }: { parcels: Order[]; canWrite: boo
     setBusy(true);
     const res = await fetch(url, { method: 'POST', headers: body ? { 'content-type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined });
     setBusy(false);
-    if (res.ok) { router.refresh(); return true; }
+    if (res.ok) { refresh(); return true; }
     const d = await res.json().catch(() => null); alert(d?.error ?? 'Action impossible'); return false;
   }
   async function doScan() { if (scan.length !== 8) return; const ok = await post('/api/proxy/v1/hub/scan', { code: scan }); if (ok) setScan(''); }

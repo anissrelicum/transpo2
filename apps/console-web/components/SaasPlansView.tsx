@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useSafeRefresh } from '../lib/safe-refresh';
 import {
   Card, Flex, Box, Grid, Text, Heading, Badge, Button, IconButton, Table, Dialog, AlertDialog,
   Select, TextField, TextArea, DropdownMenu, Switch, Callout, Separator,
@@ -27,7 +27,7 @@ const toTiers = (d: DraftTier[]): PlanTierRow[] =>
   d.map((t) => ({ fromQty: t.fromQty, toQty: t.toQty, unitCentimes: dhToCentimes(Number(t.unitDh) || 0) }));
 
 export function SaasPlansView({ plans }: { plans: SaasPlanRow[] }) {
-  const router = useRouter();
+  const refresh = useSafeRefresh();
   const [busy, setBusy] = React.useState(false);
   const [showArchived, setShowArchived] = React.useState(false);
 
@@ -39,7 +39,7 @@ export function SaasPlansView({ plans }: { plans: SaasPlanRow[] }) {
       body: body ? JSON.stringify(body) : undefined,
     });
     setBusy(false);
-    if (res.ok) router.refresh();
+    if (res.ok) refresh();
     else { const d = await res.json().catch(() => null); alert(d?.message ?? d?.error ?? 'Action impossible'); }
     return res.ok;
   }
@@ -84,6 +84,13 @@ export function SaasPlansView({ plans }: { plans: SaasPlanRow[] }) {
               <Text size="1" color="gray">
                 {p.current ? `Tarif v${p.current.version} · depuis le ${p.current.effectiveFrom}` : 'Aucune version de tarif'}
               </Text>
+              {/* Un tarif publié à effet futur s'ANNONCE : il était jusqu'ici présenté comme
+                  le prix courant, alors que personne ne le payait encore. */}
+              {p.next && (
+                <Text size="1" color="amber">
+                  À partir du {p.next.effectiveFrom} · {priceLabel(p.next)} (v{p.next.version})
+                </Text>
+              )}
             </Flex>
           </Card>
         ))}
@@ -122,7 +129,7 @@ export function SaasPlansView({ plans }: { plans: SaasPlanRow[] }) {
                 <Table.Cell><Text size="2" color="gray">{quotaLabel(p.current)}</Text></Table.Cell>
                 <Table.Cell>{p.subscribers}</Table.Cell>
                 <Table.Cell>
-                  <DropdownMenu.Root>
+                  <DropdownMenu.Root modal={false}>
                     <DropdownMenu.Trigger>
                       <IconButton size="1" variant="ghost" color="gray"><DotsHorizontalIcon /></IconButton>
                     </DropdownMenu.Trigger>

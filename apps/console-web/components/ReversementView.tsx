@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useSafeRefresh } from '../lib/safe-refresh';
 import {
   Card, Flex, Box, Grid, Text, Heading, Badge, Button, Avatar, Table, Callout, Separator,
   Dialog, Select, TextField,
@@ -16,7 +16,7 @@ const ini = (n: string) => n.split(' ').map((x) => x[0]).join('').slice(0, 2).to
 const METHOD_LABEL: Record<string, string> = { virement: 'Virement bancaire', especes: 'Espèces', cheque: 'Chèque' };
 
 export function ReversementView({ rows }: { rows: Reversement[] }) {
-  const router = useRouter();
+  const refresh = useSafeRefresh();
   const [selId, setSelId] = React.useState<string | null>(null);
   const [busy, setBusy] = React.useState(false);
   const sel = selId ? rows.find((r) => r.id === selId) ?? null : null;
@@ -35,7 +35,7 @@ export function ReversementView({ rows }: { rows: Reversement[] }) {
       body: body ? JSON.stringify(body) : undefined,
     });
     setBusy(false);
-    if (res.ok) router.refresh();
+    if (res.ok) refresh();
     else { const d = await res.json().catch(() => null); alert(d?.error ?? 'Action impossible'); }
     return res.ok;
   }
@@ -155,7 +155,7 @@ export function ReversementView({ rows }: { rows: Reversement[] }) {
 }
 
 function PayDialog({ reversement, onPay, busy }: {
-  reversement: Reversement; onPay: (method: string, reference: string) => void; busy: boolean;
+  reversement: Reversement; onPay: (method: string, reference: string) => Promise<unknown>; busy: boolean;
 }) {
   const [open, setOpen] = React.useState(false);
   const [method, setMethod] = React.useState('virement');
@@ -181,7 +181,7 @@ function PayDialog({ reversement, onPay, busy }: {
           <TextField.Root placeholder="ex. VIR-2026-07-0042" value={reference} onChange={(e) => setReference(e.target.value)} /></Box>
         <Flex gap="3" mt="4" justify="end">
           <Dialog.Close><Button variant="soft" color="gray">Annuler</Button></Dialog.Close>
-          <Button color="green" disabled={busy} onClick={() => { onPay(method, reference); setOpen(false); }}>Confirmer le reversement</Button>
+          <Button color="green" disabled={busy} onClick={async () => { if (await onPay(method, reference)) setOpen(false); }}>Confirmer le reversement</Button>
         </Flex>
       </Dialog.Content>
     </Dialog.Root>

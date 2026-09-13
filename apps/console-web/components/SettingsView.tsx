@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useSafeRefresh } from '../lib/safe-refresh';
 import { Card, Flex, Box, Grid, Text, Heading, Badge, Button, TextField, TextArea, Select, Callout } from '@radix-ui/themes';
 import { CheckIcon, InfoCircledIcon, GlobeIcon } from '@radix-ui/react-icons';
 import type { CompanySettings, PriceConfig } from '@transpo/api-client';
@@ -15,7 +15,7 @@ function SaveButton({ busy, saved, onClick }: { busy: boolean; saved: boolean; o
 }
 
 export function SettingsView({ tenant, company, pricing, isAdmin }: { tenant: string; company: CompanySettings; pricing: PriceConfig; isAdmin: boolean }) {
-  const router = useRouter();
+  const refresh = useSafeRefresh();
 
   const [identity, setIdentity] = React.useState({
     legalName: company.legalName ?? '', ice: company.ice ?? '', rc: company.rc ?? '', address: company.address ?? '',
@@ -33,7 +33,7 @@ export function SettingsView({ tenant, company, pricing, isAdmin }: { tenant: st
 
   function flash(which: 'identity' | 'regional' | 'rates') {
     setSaved(which);
-    router.refresh();
+    refresh();
     setTimeout(() => setSaved((s) => (s === which ? null : s)), 2000);
   }
 

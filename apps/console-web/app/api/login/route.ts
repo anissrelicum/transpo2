@@ -6,18 +6,25 @@ import { API_URL, DEFAULT_TENANT, tenantFromHost } from '../../../lib/server';
 // Un `tenant` explicite dans le corps reste accepté (override dev/test).
 export async function POST(req: NextRequest) {
   const { email, password, tenant: override, superAdmin } = await req.json();
+  // Le comptage anti-bruteforce de l'API se fait aussi par source : sans cette chaîne,
+  // toutes les tentatives lui arrivent avec l'adresse du BFF et se confondent.
+  const ipClient = req.headers.get('x-forwarded-for') ?? req.headers.get('x-real-ip') ?? '';
   // Realm plateforme : aucun tenant, endpoint séparé (console SaaS).
   const tenant = superAdmin ? '' : (override || tenantFromHost(req.headers.get('host')) || DEFAULT_TENANT);
 
   const res = superAdmin
     ? await fetch(`${API_URL}/v1/auth/super/login`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', ...(ipClient ? { 'x-forwarded-for': ipClient } : {}) },
         body: JSON.stringify({ email, password }),
       })
     : await fetch(`${API_URL}/v1/auth/login`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-tenant-slug': tenant },
+        headers: {
+          'content-type': 'application/json',
+          'x-tenant-slug': tenant,
+          ...(ipClient ? { 'x-forwarded-for': ipClient } : {}),
+        },
         body: JSON.stringify({ email, password }),
       });
   const data = await res.json().catch(() => null);

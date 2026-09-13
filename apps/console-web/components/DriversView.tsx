@@ -1,20 +1,24 @@
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useSafeRefresh } from '../lib/safe-refresh';
 import {
   Card, Flex, Box, Grid, Text, Badge, Button, IconButton, Table, Callout, Dialog, AlertDialog,
   Select, TextField, Switch, DropdownMenu, TextField as TF,
 } from '@radix-ui/themes';
 import {
   PlusIcon, ExclamationTriangleIcon, PersonIcon, DotFilledIcon, DotsHorizontalIcon,
-  TrashIcon, ReloadIcon, CubeIcon, MagnifyingGlassIcon,
+  TrashIcon, ReloadIcon, CubeIcon, MagnifyingGlassIcon, Pencil1Icon,
 } from '@radix-ui/react-icons';
+import { RowMenu, useFermerMenu } from '../lib/row-menu';
 import type { Driver, Vehicle } from '@transpo/api-client';
 import { PageHeader, KPI } from './ui';
 
 const CITIES = ['Casablanca', 'Rabat', 'Marrakech', 'Tanger', 'Fès', 'Agadir', 'Kénitra', 'Mohammedia'];
 const VEHICLE_TYPES = ['Moto', 'Voiture', 'Fourgon', 'Fourgon frigo', 'Camion'];
 const PHONE_RE = /^\+?[0-9\s-]{9,15}$/;
+// Une échéance ne se renouvelle pas dans le passé : le champ est borné au jour même,
+// et l'API refuse de toute façon une date antérieure (OBS-10).
+const AUJOURDHUI = new Date().toISOString().slice(0, 10);
 
 function initials(name: string): string {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]!.toUpperCase()).join('');
@@ -31,7 +35,7 @@ function dueBadge(due: string | null): { color: 'red' | 'amber' | 'green' | 'gra
 export function DriversView({ drivers, vehicles, isAdmin, canDispatch }: {
   drivers: Driver[]; vehicles: Vehicle[]; isAdmin: boolean; canDispatch: boolean;
 }) {
-  const router = useRouter();
+  const refresh = useSafeRefresh();
   const [busy, setBusy] = React.useState(false);
   const [q, setQ] = React.useState('');
   const [filter, setFilter] = React.useState('all');
@@ -41,6 +45,11 @@ export function DriversView({ drivers, vehicles, isAdmin, canDispatch }: {
   const onDuty = drivers.reduce((a, d) => a + d.stats.active, 0);
   const closed = drivers.reduce((a, d) => a + d.stats.delivered + d.stats.failed, 0);
   const globalRate = closed ? Math.round((drivers.reduce((a, d) => a + d.stats.delivered, 0) / closed) * 100) : null;
+
+  // Qui détient déjà quel véhicule : rien n'interdit d'affecter le même véhicule à deux
+  // chauffeurs, mais l'exploitant doit le voir avant de valider, pas le découvrir après.
+  const porteurs = new Map<string, string>();
+  for (const d of drivers) if (d.vehicleId) porteurs.set(d.vehicleId, d.name);
 
   const rows = drivers.filter((d) => {
     if (q && !`${d.name} ${d.city ?? ''} ${d.phone ?? ''}`.toLowerCase().includes(q.toLowerCase())) return false;
@@ -57,7 +66,7 @@ export function DriversView({ drivers, vehicles, isAdmin, canDispatch }: {
       body: body ? JSON.stringify(body) : undefined,
     });
     setBusy(false);
-    if (res.ok) router.refresh();
+    if (res.ok) refresh();
     else { const d = await res.json().catch(() => null); alert(d?.message ?? d?.error ?? 'Action impossible'); }
     return res.ok;
   }
@@ -173,17 +182,21 @@ export function DriversView({ drivers, vehicles, isAdmin, canDispatch }: {
                   </Table.Cell>
                   {isAdmin && (
                     <Table.Cell>
-                      <DropdownMenu.Root>
-                        <DropdownMenu.Trigger><IconButton size="1" variant="ghost" color="gray"><DotsHorizontalIcon /></IconButton></DropdownMenu.Trigger>
-                        <DropdownMenu.Content>
-                          <AssignVehicleItem driver={d} vehicles={vehicles} onAssign={(vid) => call(`drivers/${d.id}/vehicle`, 'PATCH', { vehicleId: vid })} />
+                      <RowMenu>
+                          <EditDriverItem driver={d} onSave={(b) => call(`drivers/${d.id}`, 'PATCH', b)} />
+                          <AssignVehicleItem driver={d} vehicles={vehicles} porteurs={porteurs} onAssign={(vid) => call(`drivers/${d.id}/vehicle`, 'PATCH', { vehicleId: vid })} />
                           <DropdownMenu.Separator />
                           <RenewItem driver={d} field="license" onRenew={(due) => call(`drivers/${d.id}/renew`, 'POST', { field: 'license', due })} />
                           <RenewItem driver={d} field="medical" onRenew={(due) => call(`drivers/${d.id}/renew`, 'POST', { field: 'medical', due })} />
                           <DropdownMenu.Separator />
-                          <RemoveItem driver={d} onRemove={() => call(`drivers/${d.id}`, 'DELETE')} />
-                        </DropdownMenu.Content>
-                      </DropdownMenu.Root>
+                          <RemoveItem
+                            driver={d}
+                            repreneurs={drivers.filter((x) => x.id !== d.id && x.assignable)}
+                            onRemove={(transfertVers) => call(
+                              `drivers/${d.id}${transfertVers ? `?transferTo=${transfertVers}` : ''}`, 'DELETE',
+                            )}
+                          />
+                      </RowMenu>
                     </Table.Cell>
                   )}
                 </Table.Row>
@@ -199,15 +212,19 @@ export function DriversView({ drivers, vehicles, isAdmin, canDispatch }: {
   );
 }
 
-function AssignVehicleItem({ driver, vehicles, onAssign }: {
-  driver: Driver; vehicles: Vehicle[]; onAssign: (vehicleId: string | null) => void;
+function AssignVehicleItem({ driver, vehicles, porteurs, onAssign }: {
+  driver: Driver; vehicles: Vehicle[]; porteurs: Map<string, string>;
+  onAssign: (vehicleId: string | null) => Promise<boolean>;
 }) {
   const [open, setOpen] = React.useState(false);
   const [sel, setSel] = React.useState(driver.vehicleId ?? 'none');
+  const fermerMenu = useFermerMenu();
+  // Fermeture programmatique : referme le dialogue ET le menu qui l'a ouvert.
+  const fermer = () => { setOpen(false); fermerMenu(); };
   // Un véhicule non actif (maintenance, hors service) n'est pas rattachable.
   const options = vehicles.filter((v) => v.state === 'ACTIF' || v.id === driver.vehicleId);
   return (
-    <Dialog.Root open={open} onOpenChange={setOpen}>
+    <Dialog.Root open={open} onOpenChange={(o) => { setOpen(o); if (!o) fermerMenu(); }}>
       <Dialog.Trigger>
         <DropdownMenu.Item onSelect={(e) => { e.preventDefault(); setSel(driver.vehicleId ?? 'none'); setOpen(true); }}>
           <CubeIcon /> Rattacher un véhicule
@@ -220,51 +237,180 @@ function AssignVehicleItem({ driver, vehicles, onAssign }: {
           <Select.Trigger style={{ width: '100%' }} />
           <Select.Content>
             <Select.Item value="none">Aucun</Select.Item>
-            {options.map((v) => <Select.Item key={v.id} value={v.id}>{v.plate} — {v.type}{v.city ? ` (${v.city})` : ''}</Select.Item>)}
+            {options.map((v) => {
+              const porteur = porteurs.get(v.id);
+              const occupe = porteur && porteur !== driver.name;
+              return (
+                <Select.Item key={v.id} value={v.id}>
+                  {v.plate} — {v.type}{v.city ? ` (${v.city})` : ''}{occupe ? ` · déjà sur ${porteur}` : ''}
+                </Select.Item>
+              );
+            })}
           </Select.Content>
         </Select.Root>
         {options.length === 0 && <Text as="p" size="1" color="gray" mt="2">Aucun véhicule actif au parc.</Text>}
+        {sel !== 'none' && porteurs.get(sel) && porteurs.get(sel) !== driver.name && (
+          <Callout.Root color="amber" mt="3" size="1">
+            <Callout.Icon><ExclamationTriangleIcon /></Callout.Icon>
+            <Callout.Text>
+              Ce véhicule est déjà rattaché à {porteurs.get(sel)}. Les deux chauffeurs le porteront
+              sur leur fiche tant que l’un des deux n’est pas détaché.
+            </Callout.Text>
+          </Callout.Root>
+        )}
         <Flex gap="3" mt="4" justify="end">
           <Dialog.Close><Button variant="soft" color="gray">Annuler</Button></Dialog.Close>
-          <Button onClick={() => { onAssign(sel === 'none' ? null : sel); setOpen(false); }}>Enregistrer</Button>
+          {/* La mutation est attendue AVANT la fermeture : sinon un refus de l'API (véhicule
+              non actif, par exemple) fermait quand même le dialogue, sans rien changer. */}
+          <Button onClick={async () => { if (await onAssign(sel === 'none' ? null : sel)) fermer(); }}>Enregistrer</Button>
         </Flex>
       </Dialog.Content>
     </Dialog.Root>
   );
 }
 
-function RenewItem({ driver, field, onRenew }: { driver: Driver; field: 'license' | 'medical'; onRenew: (due: string) => void }) {
+function RenewItem({ driver, field, onRenew }: { driver: Driver; field: 'license' | 'medical'; onRenew: (due: string) => Promise<boolean> }) {
   const [open, setOpen] = React.useState(false);
+  const fermerMenu = useFermerMenu();
+  // Fermeture programmatique : referme le dialogue ET le menu qui l'a ouvert.
+  const fermer = () => { setOpen(false); fermerMenu(); };
   const [due, setDue] = React.useState('');
   const label = field === 'license' ? 'Renouveler le permis' : 'Renouveler la visite médicale';
   return (
-    <Dialog.Root open={open} onOpenChange={setOpen}>
+    <Dialog.Root open={open} onOpenChange={(o) => { setOpen(o); if (!o) fermerMenu(); }}>
       <Dialog.Trigger><DropdownMenu.Item onSelect={(e) => { e.preventDefault(); setOpen(true); }}><ReloadIcon /> {label}</DropdownMenu.Item></Dialog.Trigger>
       <Dialog.Content maxWidth="360px">
         <Dialog.Title>{label}</Dialog.Title>
         <Dialog.Description size="2" color="gray" mb="3">{driver.name} — nouvelle date d’échéance.</Dialog.Description>
-        <TextField.Root type="date" value={due} onChange={(e) => setDue(e.target.value)} />
+        <TextField.Root type="date" min={AUJOURDHUI} value={due} onChange={(e) => setDue(e.target.value)} />
+        {due !== '' && due < AUJOURDHUI && (
+          <Text as="p" size="1" color="red" mt="2">La nouvelle échéance doit être postérieure à aujourd’hui.</Text>
+        )}
         <Flex gap="3" mt="4" justify="end">
           <Dialog.Close><Button variant="soft" color="gray">Annuler</Button></Dialog.Close>
-          <Button disabled={!due} onClick={() => { onRenew(due); setOpen(false); }}>Enregistrer</Button>
+          <Button disabled={!due || due < AUJOURDHUI} onClick={async () => { if (await onRenew(due)) fermer(); }}>Enregistrer</Button>
         </Flex>
       </Dialog.Content>
     </Dialog.Root>
   );
 }
 
-function RemoveItem({ driver, onRemove }: { driver: Driver; onRemove: () => void }) {
+/**
+ * Édition d'une fiche chauffeur. Sans elle, ville, type de véhicule, téléphone et numéro de
+ * permis étaient figés à la création : un détachement de véhicule effaçait le type déclaré
+ * sans aucun moyen de le ressaisir (AN-14). Le nom n'est modifiable que tant qu'aucune
+ * commande ne référence le chauffeur — l'API tranche et renvoie le motif.
+ */
+function EditDriverItem({ driver, onSave }: { driver: Driver; onSave: (body: unknown) => Promise<boolean> }) {
+  const vide = {
+    name: driver.name,
+    city: driver.city ?? '',
+    vehicle: driver.vehicle ?? '',
+    phone: driver.phone ?? '',
+    licenseNo: driver.licenseNo ?? '',
+  };
+  const [open, setOpen] = React.useState(false);
+  const [f, setF] = React.useState(vide);
+  const fermerMenu = useFermerMenu();
+  // Fermeture programmatique : referme le dialogue ET le menu qui l'a ouvert.
+  const fermer = () => { setOpen(false); fermerMenu(); };
+  const phoneOk = !f.phone || PHONE_RE.test(f.phone.trim());
   return (
-    <AlertDialog.Root>
-      <AlertDialog.Trigger><DropdownMenu.Item color="red" onSelect={(e) => e.preventDefault()}><TrashIcon /> Retirer</DropdownMenu.Item></AlertDialog.Trigger>
-      <AlertDialog.Content maxWidth="380px">
+    <Dialog.Root open={open} onOpenChange={(o) => { setOpen(o); if (o) setF(vide); else fermerMenu(); }}>
+      <Dialog.Trigger>
+        <DropdownMenu.Item onSelect={(e) => { e.preventDefault(); setF(vide); setOpen(true); }}>
+          <Pencil1Icon /> Modifier la fiche
+        </DropdownMenu.Item>
+      </Dialog.Trigger>
+      <Dialog.Content maxWidth="420px">
+        <Dialog.Title>Modifier la fiche</Dialog.Title>
+        <Dialog.Description size="2" color="gray" mb="3">{driver.name} — informations du chauffeur.</Dialog.Description>
+        <Flex direction="column" gap="3">
+          <Box><Text as="div" size="1" color="gray" mb="1">Nom</Text>
+            <TextField.Root value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></Box>
+          <Grid columns="2" gap="3">
+            <Box><Text as="div" size="1" color="gray" mb="1">Ville</Text>
+              <Select.Root value={f.city || CITIES[0]} onValueChange={(v) => setF({ ...f, city: v })}>
+                <Select.Trigger style={{ width: '100%' }} />
+                <Select.Content>{CITIES.map((c) => <Select.Item key={c} value={c}>{c}</Select.Item>)}</Select.Content>
+              </Select.Root></Box>
+            <Box><Text as="div" size="1" color="gray" mb="1">Véhicule déclaré</Text>
+              <Select.Root value={f.vehicle || VEHICLE_TYPES[0]} onValueChange={(v) => setF({ ...f, vehicle: v })}>
+                <Select.Trigger style={{ width: '100%' }} />
+                <Select.Content>{VEHICLE_TYPES.map((t) => <Select.Item key={t} value={t}>{t}</Select.Item>)}</Select.Content>
+              </Select.Root></Box>
+          </Grid>
+          <Grid columns="2" gap="3">
+            <Box><Text as="div" size="1" color="gray" mb="1">Téléphone</Text>
+              <TextField.Root value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} placeholder="+212600000000" color={!phoneOk ? 'red' : undefined} /></Box>
+            <Box><Text as="div" size="1" color="gray" mb="1">N° de permis</Text>
+              <TextField.Root value={f.licenseNo} onChange={(e) => setF({ ...f, licenseNo: e.target.value })} placeholder="AB123456" /></Box>
+          </Grid>
+          {!phoneOk && <Text size="1" color="red">Numéro invalide.</Text>}
+        </Flex>
+        <Flex gap="3" mt="4" justify="end">
+          <Dialog.Close><Button variant="soft" color="gray">Annuler</Button></Dialog.Close>
+          <Button
+            disabled={!f.name.trim() || !phoneOk}
+            onClick={async () => { if (await onSave({ ...f, name: f.name.trim() })) fermer(); }}
+          >Enregistrer</Button>
+        </Flex>
+      </Dialog.Content>
+    </Dialog.Root>
+  );
+}
+
+/**
+ * Retrait d'un chauffeur.
+ *
+ * Un départ ne se négocie pas avec le planning : si des courses sont en cours, le dialogue
+ * demande **à qui les confier** plutôt que de bloquer le retrait. Les courses clôturées ne
+ * bougent pas — l'historique dit qui a livré.
+ */
+function RemoveItem({ driver, repreneurs, onRemove }: {
+  driver: Driver; repreneurs: Driver[]; onRemove: (transfertVers?: string) => void;
+}) {
+  const fermerMenu = useFermerMenu();
+  const [ouvert, setOuvert] = React.useState(false);
+  const [repreneur, setRepreneur] = React.useState('');
+  const enCours = driver.stats.active;
+  const transfertRequis = enCours > 0;
+  React.useEffect(() => { if (ouvert) setRepreneur(''); }, [ouvert]);
+  return (
+    <AlertDialog.Root open={ouvert} onOpenChange={(o) => { setOuvert(o); if (!o) fermerMenu(); }}>
+      <AlertDialog.Trigger><DropdownMenu.Item color="red" onSelect={(e) => { e.preventDefault(); setOuvert(true); }}><TrashIcon /> Retirer</DropdownMenu.Item></AlertDialog.Trigger>
+      <AlertDialog.Content maxWidth="420px">
         <AlertDialog.Title>Retirer {driver.name} ?</AlertDialog.Title>
         <AlertDialog.Description size="2">
-          Le chauffeur sera retiré de l’effectif. Impossible s’il lui reste des commandes en cours.
+          {transfertRequis
+            ? `${enCours} commande(s) sont en cours sur ce chauffeur. Choisissez qui les reprend : elles lui seront transférées avant le retrait.`
+            : 'Le chauffeur sera retiré de l’effectif. Ses commandes clôturées restent à son nom dans l’historique.'}
         </AlertDialog.Description>
+        {transfertRequis && (
+          <Box mt="3">
+            <Text as="label" size="2" weight="medium" style={{ display: 'block' }}>
+              <Text as="div" size="2" weight="medium" mb="1">Transférer les commandes à</Text>
+              <Select.Root value={repreneur || undefined} onValueChange={setRepreneur}>
+                <Select.Trigger style={{ width: '100%' }} placeholder="Choisir un chauffeur" />
+                <Select.Content>
+                  {repreneurs.map((r) => <Select.Item key={r.id} value={r.id}>{r.name}</Select.Item>)}
+                </Select.Content>
+              </Select.Root>
+            </Text>
+            {repreneurs.length === 0 && (
+              <Text as="p" size="1" color="red" mt="2">
+                Aucun chauffeur affectable pour reprendre ces commandes.
+              </Text>
+            )}
+          </Box>
+        )}
         <Flex gap="3" mt="4" justify="end">
           <AlertDialog.Cancel><Button variant="soft" color="gray">Annuler</Button></AlertDialog.Cancel>
-          <AlertDialog.Action><Button color="red" onClick={onRemove}>Retirer</Button></AlertDialog.Action>
+          <AlertDialog.Action>
+            <Button color="red" disabled={transfertRequis && !repreneur} onClick={() => onRemove(repreneur || undefined)}>
+              {transfertRequis ? 'Transférer et retirer' : 'Retirer'}
+            </Button>
+          </AlertDialog.Action>
         </Flex>
       </AlertDialog.Content>
     </AlertDialog.Root>
