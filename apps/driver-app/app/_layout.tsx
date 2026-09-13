@@ -1,23 +1,24 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { C } from '../lib/theme';
+import { useTheme } from '../lib/theme';
 
 export default function RootLayout() {
+  const { mode, colors } = useTheme();
+
   return (
     <SafeAreaProvider>
-      <StatusBar style="light" />
+      {/* Suit le thème système : icônes claires sur fond sombre, et inversement. */}
+      <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: C.indigo },
-          headerTintColor: '#fff',
-          headerTitleStyle: { fontWeight: '700' },
-          contentStyle: { backgroundColor: C.bg },
+          // Chaque écran rend son propre ScreenHead : pas de header natif par
+          // défaut (les écrans qui le redemandent le font via <Stack.Screen>).
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.bg },
         }}
       >
         <Stack.Screen name="index" options={{ title: 'Transpo Livreur' }} />
-        <Stack.Screen name="missions" options={{ title: 'Mes missions' }} />
-        <Stack.Screen name="mission/[ref]" options={{ title: 'Mission' }} />
         <Stack.Screen name="incidents" options={{ title: 'Incidents' }} />
         <Stack.Screen name="support" options={{ title: 'Support' }} />
         <Stack.Screen name="gains" options={{ title: 'Historique & gains' }} />

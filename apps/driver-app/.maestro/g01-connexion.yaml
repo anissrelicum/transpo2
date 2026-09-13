@@ -1,0 +1,49 @@
+# TC-G01 — Connexion livreur.
+# PRÉ : compte livreur@rabatexpress.ma rattaché au chauffeur Hamid Ouali (créé depuis la
+#       console, action « Inviter » rôle Livreur).
+# ATT : écran des autorisations, puis onglet Missions.
+#
+# L'app tourne dans Expo Go (chargement depuis Metro) : `openLink` rouvre le projet, ce qui
+# rend le flow rejouable quel que soit l'écran laissé par le flow précédent.
+appId: host.exp.exponent
+---
+# Le processus est arrêté avant d'ouvrir le projet : sans cela, Expo Go recharge à chaud et
+# les champs du formulaire gardent la saisie du passage précédent. `clearState` serait trop
+# violent — il efface aussi le cache du projet, et le rechargement devient très long.
+- stopApp
+- openLink: exp://127.0.0.1:8081
+- extendedWaitUntil:
+    visible: "Transpo Livreur"
+    timeout: 60000
+# Le rechargement du bundle se termine APRÈS l'affichage : sans cette pause, la saisie part
+# dans un composant qui va être remonté.
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: qa/G01-01-connexion
+
+# L'e-mail est saisi EN PREMIER : le tout premier `tapOn` ouvre le clavier, et la saisie
+# qui le suit immédiatement se perd. On absorbe donc cette ouverture sur un champ qu'on
+# remplit de toute façon, puis on revient sur l'organisation.
+- tapOn:
+    id: "login-email"
+- inputText: "livreur@rabatexpress.ma"
+- tapOn:
+    id: "login-organisation"
+- inputText: "rabatexpress"
+- tapOn:
+    id: "login-mot-de-passe"
+- inputText: "XJ1WT-0yD2xd"
+- hideKeyboard
+- assertVisible:
+    id: "login-organisation"
+    text: "rabatexpress"
+- takeScreenshot: qa/G01-02-identifiants-saisis
+
+- tapOn:
+    id: "login-valider"
+
+# L'écran des autorisations s'intercale avant les missions (TC-G02 le détaille).
+- extendedWaitUntil:
+    visible: "Autorisations"
+    timeout: 40000
+- takeScreenshot: qa/G01-03-ecran-autorisations

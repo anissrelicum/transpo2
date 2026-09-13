@@ -5,11 +5,23 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "target": "ESNext",
-    "lib": ["ESNext", "DOM"],
+    "lib": [
+      "ESNext",
+      "DOM"
+    ],
     "esModuleInterop": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "types": ["react", "expo-router"]
+    "types": [
+      "react",
+      "expo-router"
+    ]
   },
-  "include": ["app", "lib", "*.ts", "*.tsx"]
+  "include": [
+    "app",
+    "lib",
+    "*.ts",
+    "*.tsx"
+  ],
+  "extends": "expo/tsconfig.base"
 }

@@ -5,6 +5,8 @@ import { useTheme } from '../../lib/theme';
 import { touch, radius } from '@transpo/design-tokens';
 
 export interface PrimaryBtnProps {
+  /** Identifiant de test, repris comme étiquette d'accessibilité par défaut. */
+  testID?: string;
   children: string;
   onPress?: (e: GestureResponderEvent) => void;
   disabled?: boolean;
@@ -13,14 +15,16 @@ export interface PrimaryBtnProps {
 }
 
 /** Bouton d'action principal, pleine largeur, hauteur 52px (constante structurante, cf. design/README.md). */
-export function PrimaryBtn({ children, onPress, disabled, loading }: PrimaryBtnProps) {
+export function PrimaryBtn({ children, onPress, disabled, loading, testID }: PrimaryBtnProps) {
   const { colors } = useTheme();
   const isDisabled = Boolean(disabled || loading);
   return (
     <Pressable
       onPress={onPress}
       disabled={isDisabled}
+      testID={testID}
       accessibilityRole="button"
+      accessibilityLabel={typeof children === 'string' ? children : undefined}
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       style={({ pressed }) => [
         styles.btn,
