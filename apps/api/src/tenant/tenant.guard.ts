@@ -4,8 +4,17 @@ import { RESERVED_SUBDOMAINS } from '@transpo/domain';
 
 /**
  * Résout le tenant du contexte serveur et pose req.tenantSchema.
- * Priorité : claim `tenant` du JWT (req.user) > header `x-tenant-slug` (dev) > sous-domaine.
- * Si le JWT porte un tenant, un header divergent est refusé (anti cross-tenant).
+ *
+ * Priorité : claim `tenant` du JWT (req.user) > header `x-tenant-slug` > sous-domaine.
+ * Un HEADER divergent du JWT est refusé : c'est une tentative inter-tenant délibérée.
+ * Le SOUS-DOMAINE, lui, ne sert que de repli quand rien d'autre ne désigne le tenant — il
+ * décrit l'infrastructure, pas l'intention de l'appelant.
+ *
+ * Cette distinction n'existait pas, et elle coûtait cher : l'API servie sur
+ * `transpo-api.wedowonders.com` se voyait déduire le tenant « transpo-api », qui divergeait
+ * du JWT — donc 403 « Incohérence de tenant » sur CHAQUE appel authentifié de l'application
+ * livreur. La réserve prévue pour `api.…` ne couvrait pas ce nom d'hôte.
+ *
  * À utiliser APRÈS JwtAuthGuard sur les routes authentifiées. Cf. skill transpo-auth-security.
  */
 @Injectable()
@@ -13,9 +22,9 @@ export class TenantGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();
     const fromJwt: string | undefined = req.user?.tenant;
-    const fromHeader =
-      (req.headers['x-tenant-slug'] as string | undefined)?.trim() || subdomainOf(req.headers.host);
-    const slug = fromJwt || fromHeader;
+    const fromHeader = (req.headers['x-tenant-slug'] as string | undefined)?.trim() || null;
+    const fromHost = subdomainOf(req.headers.host);
+    const slug = fromJwt || fromHeader || fromHost;
 
     if (!slug) throw new BadRequestException('Tenant manquant (header x-tenant-slug ou sous-domaine).');
     if (fromJwt && fromHeader && fromJwt !== fromHeader) {

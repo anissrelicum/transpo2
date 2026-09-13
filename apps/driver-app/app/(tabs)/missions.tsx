@@ -110,6 +110,8 @@ export default function MissionsScreen() {
   const [orders, setOrders] = React.useState<Order[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [stale, setStale] = React.useState(false);
+  // Refus du serveur (403, 500…) — distinct d'une coupure réseau, et affiché comme tel.
+  const [serverError, setServerError] = React.useState<string | null>(null);
   const [unread, setUnread] = React.useState(0);
   const [showPush, setShowPush] = React.useState(false);
   const name = getSession()?.name ?? '';
@@ -129,12 +131,20 @@ export default function MissionsScreen() {
       const fresh = await authedClient().getMissions();
       setOrders(fresh);
       setStale(false);
+      setServerError(null);
       await writeJson(CACHE_KEY, fresh); // dernier état connu, relu hors ligne
-    } catch {
+    } catch (e) {
       // Hors ligne : on retombe sur le cache plutôt que d'afficher une page vide.
+      //
+      // Un REFUS DU SERVEUR n'est pas une coupure réseau : le confondre avec l'absence de
+      // réseau a masqué pendant tout un lot une API qui répondait 403 sur chaque appel. Le
+      // livreur lisait « Aucune mission active » et en concluait qu'il n'avait pas de
+      // travail. Une erreur applicative doit se voir.
       const cached = await readJson<Order[]>(CACHE_KEY, []);
       setOrders(cached);
       setStale(true);
+      const statut = (e as { status?: number })?.status;
+      setServerError(statut ? `Le serveur a refusé la demande (${statut}).` : null);
     } finally {
       setLoading(false);
     }
@@ -229,6 +239,20 @@ export default function MissionsScreen() {
             <Pressable onPress={sync} hitSlop={16}><Text style={[s.bannerAction, { color: colors.indigo9 }]}>{t.retry}</Text></Pressable>
           )}
         </View>
+      )}
+
+      {serverError && (
+
+        <View style={{ paddingHorizontal: space[4], paddingBottom: space[2] }}>
+
+          <Text style={{ color: statusColorHex('ECHOUEE'), fontSize: 13 }} testID="missions-erreur-serveur">
+
+            {serverError}
+
+          </Text>
+
+        </View>
+
       )}
 
       <FlatList
