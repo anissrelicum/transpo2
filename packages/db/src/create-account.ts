@@ -3,7 +3,7 @@
 // tenant fraîchement provisionné, ni aucun compte MERCHANT ou DRIVER.
 //
 // Lancement :
-//   pnpm --filter @transpo/db account -- <slug> <email> "<Nom>" <ROLE> <motdepasse> ["<scope>"]
+//   pnpm --filter @transpo/db account <slug> <email> "<Nom>" <ROLE> <motdepasse> ["<scope>"]
 //
 //   <ROLE>  = ADMIN | DISPATCHER | COMPTABLE | MERCHANT | DRIVER
 //   <scope> = nom du marchand (rôle MERCHANT) ou nom du chauffeur (rôle DRIVER),
@@ -15,7 +15,9 @@ import { hashPassword } from './crypto.js';
 const ROLES = ['ADMIN', 'DISPATCHER', 'COMPTABLE', 'MERCHANT', 'DRIVER'];
 
 async function main(): Promise<void> {
-  const [slug, email, name, role, password, scope] = process.argv.slice(2);
+  // `pnpm account -- <args>` transmet le `--` littéralement selon les versions : on l'ignore.
+  const argv = process.argv.slice(2).filter((a, i) => !(i === 0 && a === '--'));
+  const [slug, email, name, role, password, scope] = argv;
   if (!slug || !email || !name || !role || !password) {
     throw new Error('Usage : <slug> <email> "<Nom>" <ROLE> <motdepasse> ["<scope>"]');
   }

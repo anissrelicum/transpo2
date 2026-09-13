@@ -1,6 +1,7 @@
 // Remise à zéro de l'environnement de test manuel.
-// Supprime TOUS les tenants (schémas + lignes platform.tenants) et le journal
-// d'audit ; ne conserve que les super-admins plateforme (platform.super_admins).
+// Supprime TOUS les tenants (schémas + lignes platform.tenants), le journal d'audit
+// et le catalogue de plans ; ne conserve que les super-admins plateforme
+// (platform.super_admins). Enchaîner `migrate-plans` pour ré-amorcer les 4 plans.
 // Lancement : pnpm --filter @transpo/db reset-test
 // Sécurité : refuse de tourner si RESET_CONFIRM !== 'oui' (garde-fou anti-prod).
 import { pool } from './client.js';
@@ -25,10 +26,17 @@ async function main(): Promise<void> {
     }
     // Les factures plateforme référencent les abonnements, eux-mêmes supprimés en
     // cascade avec leur tenant : sans ce premier DELETE, la purge échouerait.
-    // Le catalogue de plans, lui, n'est pas un objet de tenant : il est conservé.
     await client.query('DELETE FROM platform.platform_invoices');
     await client.query('DELETE FROM platform.audit_log');
     await client.query('DELETE FROM platform.tenants');
+
+    // Le catalogue de plans survivait aux resets : un run de recette y laissait ses
+    // plans d'essai (pay-as-you-go, usage-reg-*) et /saas/plans n'affichait plus les
+    // 4 plans attendus par TC-A11. On le vide aussi — `migrate-plans` le ré-amorce.
+    // Enfants d'abord : plan_tiers → plan_versions → plans.
+    await client.query('DELETE FROM platform.plan_tiers');
+    await client.query('DELETE FROM platform.plan_versions');
+    const { rowCount: plansSupprimes } = await client.query('DELETE FROM platform.plans');
 
     // Garantit qu'au moins un super-admin reste utilisable après le vidage.
     const hash = await hashPassword(SUPER_PASSWORD);
@@ -41,7 +49,9 @@ async function main(): Promise<void> {
 
     // eslint-disable-next-line no-console
     console.log(
-      `Reset OK — ${rows.length} schéma(s) tenant supprimé(s). ` +
+      `Reset OK — ${rows.length} schéma(s) tenant supprimé(s), ` +
+        `${plansSupprimes ?? 0} plan(s) purgé(s) du catalogue ` +
+        `(relancer \`migrate-plans\` pour ré-amorcer les 4 plans historiques). ` +
         `Super-admin conservé : ${SUPER_EMAIL} (mdp: "${SUPER_PASSWORD}").`,
     );
   } finally {

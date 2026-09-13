@@ -10,3 +10,18 @@ coverage/
 .turbo/
 .pnpm-store/
 pgdata/
+
+# --- Artefacts de recette ---------------------------------------------------
+# Les VERDICTS et le rapport sont versionnés (ce sont eux qui portent le raisonnement).
+# Les preuves binaires ne le sont pas : 138 vidéos pèsent 147 Mo et gonfleraient le dépôt
+# définitivement. À pousser vers un stockage d'artefacts (ou Git LFS) si on veut les garder.
+qa/recette/*/**/*.webm
+qa/recette/*/**/*.png
+qa/recette/*/**/*.mp4
+qa/recette/*/videos/
+qa/recette/*/artefacts/
+qa/recette/*/resultats.json
+apps/e2e-web/test-results/
+apps/e2e-web/playwright-report/
+.DS_Store
+*.tsbuildinfo

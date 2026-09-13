@@ -17,7 +17,33 @@ export const orders = pgTable('orders', {
   rating: integer('rating'),
   ratingComment: text('rating_comment'),
   hubPhase: text('hub_phase'),
+  // Coordonnées des deux points de la course : saisies par l'assistant de création, elles
+  // n'étaient jusqu'ici ni transmises ni stockées (cf. migration 0025).
+  pickupContact: text('pickup_contact'),
+  pickupPhone: text('pickup_phone'),
+  pickupAddress: text('pickup_address'),
+  pickupNotes: text('pickup_notes'),
+  dropContact: text('drop_contact'),
+  dropPhone: text('drop_phone'),
+  dropAddress: text('drop_address'),
+  dropNotes: text('drop_notes'),
+  description: text('description'),
+  vehicleType: text('vehicle_type'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * Journal des transitions d'une commande : un fait par ligne, horodaté et attribué.
+ * L'historique affiché était jusqu'ici déduit du statut courant — donc sans date, sans
+ * acteur, et faux dès qu'une commande sortait du chemin nominal (cf. migration 0026).
+ */
+export const orderEvents = pgTable('order_events', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  ref: text('ref').notNull(),
+  status: text('status').notNull(),
+  actor: text('actor'),
+  note: text('note'),
+  at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const drivers = pgTable('drivers', {
