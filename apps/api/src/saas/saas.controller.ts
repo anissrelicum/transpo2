@@ -66,6 +66,13 @@ export class SaasController {
     return this.subs.runCycle(req.user);
   }
 
+  /** Crée ou réinitialise l'administrateur d'une organisation existante (AN-11). */
+  @Post('tenants/:slug/admin')
+  @HttpCode(200)
+  resetAdmin(@Req() req: any, @Param('slug') slug: string, @Body() body: { email?: string; name?: string }) {
+    return this.saas.resetAdmin(req.user, slug, body ?? {});
+  }
+
   @Post('tenants')
   provision(@Req() req: any, @Body() body: { slug?: string; name?: string; city?: string; planCode?: string; adminEmail?: string; adminName?: string }) {
     if (!body?.slug || !/^[a-z0-9]+$/.test(body.slug)) {

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, Req, UseGuards, Inject, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Query, Body, Req, UseGuards, Inject, HttpCode } from '@nestjs/common';
 import { DriversService } from './drivers.service.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { TenantGuard } from '../tenant/tenant.guard.js';
@@ -22,6 +22,12 @@ export class DriversController {
     return this.drivers.create(req.tenantSchema, body);
   }
 
+  @Patch(':id')
+  @Roles('ADMIN')
+  update(@Req() req: any, @Param('id') id: string, @Body() body: any) {
+    return this.drivers.update(req.tenantSchema, id, body ?? {});
+  }
+
   // Le dispatcher pilote la disponibilité au quotidien ; le reste est réservé à l'admin.
   @Patch(':id/availability')
   @Roles('ADMIN', 'DISPATCHER')
@@ -42,9 +48,11 @@ export class DriversController {
     return this.drivers.assignVehicle(req.tenantSchema, id, body?.vehicleId ?? null);
   }
 
+  // `transferTo` en query : un DELETE porte mal un corps, et le repreneur fait partie de
+  // l'adresse de l'action (« retirer X en confiant ses courses à Y »).
   @Delete(':id')
   @Roles('ADMIN')
-  remove(@Req() req: any, @Param('id') id: string) {
-    return this.drivers.remove(req.tenantSchema, id);
+  remove(@Req() req: any, @Param('id') id: string, @Query('transferTo') transferTo?: string) {
+    return this.drivers.remove(req.tenantSchema, id, transferTo);
   }
 }

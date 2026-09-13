@@ -104,7 +104,10 @@ export interface PlanVersionHistoryRow extends PlanVersionRow { effectiveTo: str
 export interface SaasPlanRow {
   code: string; labelFr: string; labelAr: string; description: string | null;
   sortOrder: number; archived: boolean; subscribers: number;
+  /** Tarif EN VIGUEUR aujourd'hui. */
   current: PlanVersionRow | null;
+  /** Tarif publié mais pas encore entré en vigueur — à annoncer, jamais à confondre. */
+  next?: PlanVersionRow | null;
 }
 export interface PlanVersionInput {
   billingMode: PlanBillingMode;
@@ -214,12 +217,20 @@ export class TranspoClient {
   getOrders(): Promise<Order[]> {
     return this.req('/v1/orders');
   }
+  /** Journal horodaté des transitions d'une commande. */
+  getOrderEvents(ref: string): Promise<{ status: string; actor: string | null; note: string | null; at: string }[]> {
+    return this.req(`/v1/orders/${encodeURIComponent(ref)}/events`);
+  }
+
   getOrder(ref: string): Promise<Order> {
     return this.req(`/v1/orders/${encodeURIComponent(ref)}`);
   }
   createOrder(input: {
     merchant?: string; fromCity: string; toCity: string;
     cod?: number; size?: string; scheduled?: boolean;
+    pickupContact?: string; pickupPhone?: string; pickupAddress?: string; pickupNotes?: string;
+    dropContact?: string; dropPhone?: string; dropAddress?: string; dropNotes?: string;
+    description?: string; vehicleType?: string;
   }): Promise<Order> {
     return this.req('/v1/orders', { method: 'POST', body: input });
   }

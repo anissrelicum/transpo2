@@ -93,6 +93,66 @@ export class SaasService {
     };
   }
 
+  /**
+   * Crée ou réinitialise l'administrateur d'une organisation DÉJÀ provisionnée.
+   *
+   * Le provisioning crée l'admin (AN-01), mais une organisation antérieure à ce correctif —
+   * ou dont le dernier administrateur a été désactivé en base — n'avait plus aucun moyen de
+   * reprendre la main : ni écran, ni endpoint, même pour le super-admin. Il fallait un accès
+   * shell à la production (AN-11). Cette action referme ce trou, et elle est tracée.
+   *
+   * Si l'adresse existe déjà dans l'organisation, le compte est réactivé, repassé ADMIN et
+   * son mot de passe régénéré ; sinon un nouvel administrateur est créé. Le mot de passe
+   * temporaire n'est renvoyé qu'une fois.
+   */
+  async resetAdmin(actor: JwtUser, slug: string, input: { email?: string; name?: string }) {
+    const email = input?.email?.trim().toLowerCase();
+    const name = input?.name?.trim();
+    if (!email || !name) throw new BadRequestException('email et name requis.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new BadRequestException('Email admin invalide.');
+
+    const { rows } = await pool.query('SELECT slug FROM platform.tenants WHERE slug = $1', [slug]);
+    if (!rows.length) throw new NotFoundException(`Tenant inconnu : ${slug}`);
+
+    const tempPassword = randomBytes(9).toString('base64url');
+    const hash = await hashPassword(tempPassword);
+    const schema = schemaFor(slug);
+    const client = await pool.connect();
+    let cree = false;
+    try {
+      await client.query('BEGIN');
+      const existant = await client.query(
+        `SELECT email FROM "${schema}".users WHERE email = $1`, [email],
+      );
+      if (existant.rowCount) {
+        await client.query(
+          `UPDATE "${schema}".users
+              SET password_hash = $2, name = $3, role = 'ADMIN', active = true
+            WHERE email = $1`,
+          [email, hash, name],
+        );
+      } else {
+        cree = true;
+        await client.query(
+          `INSERT INTO "${schema}".users (email, password_hash, name, role)
+           VALUES ($1, $2, $3, 'ADMIN')`,
+          [email, hash, name],
+        );
+      }
+      await client.query('COMMIT');
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.release();
+    }
+    await this.audit.record(actor, cree ? 'tenant.admin.create' : 'tenant.admin.reset', {
+      target: slug,
+      detail: { admin: email },
+    });
+    return { slug, created: cree, admin: { email, name, tempPassword } };
+  }
+
   /** Facturation plateforme : montant mensuel par tenant (plan) + usage (commandes). */
   async billing() {
     const { rows: tenants } = await pool.query(
@@ -102,7 +162,11 @@ export class SaasService {
     const { rows: catalog } = await pool.query<{ label: string; monthlyDH: number; quota: number | null }>(
       `SELECT p.label_fr AS label, (v.monthly_centimes / 100) AS "monthlyDH", v.included_orders AS quota
          FROM platform.plans p
-         JOIN platform.plan_versions v ON v.plan_id = p.id AND v.effective_to IS NULL`,
+         -- Tarif EN VIGUEUR aujourd'hui, et non la dernière version publiée : une version
+         -- à effet futur ne doit pas être facturée avant sa date (cf. catalogue).
+         JOIN platform.plan_versions v ON v.plan_id = p.id
+           AND v.effective_from <= current_date
+           AND (v.effective_to IS NULL OR v.effective_to >= current_date)`,
     );
     const byLabel = new Map(catalog.map((r) => [r.label, r]));
 

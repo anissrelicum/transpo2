@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException, NotFoundException, Inject } from '@nestjs/common';
-import { withTenantDb, hashPassword, users as usersTable } from '@transpo/db';
+import { withTenantDb, hashPassword, users as usersTable, drivers as driversTable } from '@transpo/db';
 import { and, eq, ne } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { randomBytes } from 'node:crypto';
@@ -7,6 +7,16 @@ import { AuditService } from '../audit/audit.service.js';
 import type { JwtUser } from '../auth/jwt.js';
 
 const CONSOLE_ROLES = ['ADMIN', 'DISPATCHER', 'COMPTABLE'];
+/**
+ * Rôles créables depuis l'écran Utilisateurs.
+ *
+ * MERCHANT et DRIVER ne sont pas des rôles de console — l'un ouvre le portail marchand,
+ * l'autre l'application livreur — mais il n'existait AUCUN moyen de créer de tels comptes :
+ * les deux applications étaient livrées sans porte d'entrée, et le jeu de données de
+ * recette exigeait un accès shell à la production. Chacun porte en plus le nom auquel il
+ * est rattaché : le marchand pour l'un, le chauffeur de la fiche flotte pour l'autre.
+ */
+const ROLES_CREABLES = [...CONSOLE_ROLES, 'MERCHANT', 'DRIVER'];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function genTempPassword(): string {
@@ -25,17 +35,29 @@ export class UsersService {
   list(schema: string) {
     return withTenantDb(schema, async (db) => {
       const rows = await db.select().from(usersTable).orderBy(usersTable.name);
-      return rows.filter((u) => CONSOLE_ROLES.includes(u.role)).map(safe);
+      return rows.filter((u) => ROLES_CREABLES.includes(u.role)).map(safe);
     });
   }
 
-  /** Invite un utilisateur console (ADMIN/DISPATCHER/COMPTABLE) — mot de passe temporaire retourné une seule fois. */
-  async invite(schema: string, tenant: string, actor: JwtUser, input: { email?: string; name?: string; role?: string }) {
+  /**
+   * Invite un utilisateur — mot de passe temporaire retourné une seule fois.
+   * Rôles console (ADMIN/DISPATCHER/COMPTABLE) et MERCHANT, ce dernier rattaché au nom
+   * d'un marchand : sans quoi le portail marchand reste sans accès possible.
+   */
+  async invite(schema: string, tenant: string, actor: JwtUser, input: { email?: string; name?: string; role?: string; merchant?: string; driver?: string }) {
     const email = input.email?.trim().toLowerCase();
     const name = input.name?.trim();
     if (!email || !EMAIL_RE.test(email)) throw new BadRequestException('Email invalide.');
     if (!name) throw new BadRequestException('Nom requis.');
-    if (!input.role || !CONSOLE_ROLES.includes(input.role)) throw new BadRequestException('Rôle invalide.');
+    if (!input.role || !ROLES_CREABLES.includes(input.role)) throw new BadRequestException('Rôle invalide.');
+    const merchant = input.merchant?.trim() || null;
+    const driver = input.driver?.trim() || null;
+    if (input.role === 'MERCHANT' && !merchant) {
+      throw new BadRequestException('Nom du marchand requis pour un compte marchand.');
+    }
+    if (input.role === 'DRIVER' && !driver) {
+      throw new BadRequestException('Chauffeur requis pour un compte livreur.');
+    }
 
     const tempPassword = genTempPassword();
     const passwordHash = await hashPassword(tempPassword);
@@ -43,15 +65,29 @@ export class UsersService {
     const row = await withTenantDb(schema, async (db) => {
       const existing = await db.select().from(usersTable).where(eq(usersTable.email, email));
       if (existing.length) throw new BadRequestException('Cet email est déjà utilisé.');
-      const [u] = await db.insert(usersTable).values({ email, name, role: input.role!, passwordHash }).returning();
+      // Le compte livreur doit pointer un chauffeur RÉEL de la flotte : les missions, la
+      // caisse et les preuves sont rattachées au chauffeur par son nom.
+      if (input.role === 'DRIVER') {
+        const fiche = await db.select().from(driversTable).where(eq(driversTable.name, driver!));
+        if (!fiche.length) throw new BadRequestException(`Chauffeur inconnu : ${driver}.`);
+      }
+      const [u] = await db.insert(usersTable).values({
+        email, name, role: input.role!, passwordHash,
+        ...(input.role === 'MERCHANT' ? { merchant } : {}),
+        ...(input.role === 'DRIVER' ? { driver } : {}),
+      }).returning();
       return u;
     });
 
-    await this.audit.record(actor, 'user.invite', { tenant, target: row.id, detail: { email, role: input.role } });
+    await this.audit.record(actor, 'user.invite', {
+      tenant, target: row.id, detail: { email, role: input.role, merchant, driver },
+    });
     return { ...safe(row), tempPassword };
   }
 
   async setRole(schema: string, tenant: string, actor: JwtUser, id: string, role: string) {
+    // Un compte marchand n'est pas un compte d'exploitation : on ne le promeut pas, et on
+    // ne rétrograde pas un opérateur en marchand — les deux mondes n'ont pas le même accès.
     if (!CONSOLE_ROLES.includes(role)) throw new BadRequestException('Rôle invalide.');
     const updated = await withTenantDb(schema, async (db) => {
       const [target] = await db.select().from(usersTable).where(eq(usersTable.id, id));

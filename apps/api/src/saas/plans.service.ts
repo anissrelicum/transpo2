@@ -31,7 +31,15 @@ export class PlansService {
 
   /* -------------------------------- Lecture -------------------------------- */
 
-  /** Catalogue complet : plan + version de tarif courante + nb d'abonnés. */
+  /**
+   * Catalogue complet : plan + tarif EN VIGUEUR aujourd'hui + tarif à venir + nb d'abonnés.
+   *
+   * La version « courante » était jusqu'ici la dernière publiée (`effective_to IS NULL`),
+   * y compris à effet futur : le catalogue et la facturation annonçaient donc un montant
+   * que personne ne payait encore, alors même que la règle du produit est que les abonnés
+   * gardent leur prix jusqu'à la date d'effet. Le tarif à venir est renvoyé à part, pour
+   * être annoncé comme tel plutôt que confondu avec le prix pratiqué.
+   */
   async catalog(includeArchived = false) {
     const { rows } = await pool.query(
       `SELECT p.code, p.label_fr AS "labelFr", p.label_ar AS "labelAr", p.description,
@@ -42,19 +50,46 @@ export class PlansService {
               v.tier_mode AS "tierMode", v.min_centimes AS "minCentimes",
               -- ::text — sans ça, pg renvoie un Date JS et la sérialisation décale d'un jour.
               v.effective_from::text AS "effectiveFrom",
+              n.id AS "nextId", n.version AS "nextVersion", n.billing_mode AS "nextBillingMode",
+              n.monthly_centimes AS "nextMonthlyCentimes", n.included_orders AS "nextIncludedOrders",
+              n.overage_centimes AS "nextOverageCentimes", n.base_centimes AS "nextBaseCentimes",
+              n.tier_mode AS "nextTierMode", n.min_centimes AS "nextMinCentimes",
+              n.effective_from::text AS "nextEffectiveFrom",
               (SELECT count(*)::int FROM platform.subscriptions s
                  JOIN platform.plan_versions vv ON vv.id = s.plan_version_id
                 WHERE vv.plan_id = p.id AND s.ended_at IS NULL) AS subscribers
          FROM platform.plans p
-         LEFT JOIN platform.plan_versions v ON v.plan_id = p.id AND v.effective_to IS NULL
+         -- En vigueur AUJOURD'HUI : commencée, et pas encore close.
+         LEFT JOIN LATERAL (
+           SELECT * FROM platform.plan_versions x
+            WHERE x.plan_id = p.id AND x.effective_from <= current_date
+              AND (x.effective_to IS NULL OR x.effective_to >= current_date)
+            ORDER BY x.effective_from DESC LIMIT 1
+         ) v ON true
+         -- Prochaine version publiée, pas encore entrée en vigueur.
+         LEFT JOIN LATERAL (
+           SELECT * FROM platform.plan_versions x
+            WHERE x.plan_id = p.id AND x.effective_from > current_date
+            ORDER BY x.effective_from ASC LIMIT 1
+         ) n ON true
         ${includeArchived ? '' : 'WHERE p.archived_at IS NULL'}
         ORDER BY p.sort_order, p.label_fr`,
     );
-    const tiers = await this.tiersByVersion(rows.map((r) => r.versionId).filter(Boolean));
+    const ids = [...rows.map((r) => r.versionId), ...rows.map((r) => r.nextId)].filter(Boolean);
+    const tiers = await this.tiersByVersion(ids);
     return rows.map((r) => ({
       code: r.code, labelFr: r.labelFr, labelAr: r.labelAr, description: r.description,
       sortOrder: r.sortOrder, archived: r.archived, subscribers: r.subscribers,
       current: r.versionId ? this.versionRow(r, tiers[r.versionId] ?? []) : null,
+      next: r.nextId
+        ? this.versionRow({
+            versionId: r.nextId, version: r.nextVersion, billingMode: r.nextBillingMode,
+            monthlyCentimes: r.nextMonthlyCentimes, includedOrders: r.nextIncludedOrders,
+            overageCentimes: r.nextOverageCentimes, baseCentimes: r.nextBaseCentimes,
+            tierMode: r.nextTierMode, minCentimes: r.nextMinCentimes,
+            effectiveFrom: r.nextEffectiveFrom,
+          }, tiers[r.nextId] ?? [])
+        : null,
     }));
   }
 

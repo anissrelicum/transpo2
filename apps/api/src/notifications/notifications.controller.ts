@@ -11,7 +11,10 @@ import { Roles } from '../auth/roles.decorator.js';
 export class NotificationsController {
   constructor(@Inject(NotificationsService) private readonly svc: NotificationsService) {}
 
+  // Journal en lecture : ouvert au COMPTABLE (matrice RBAC TC-B15), comme les modèles ci-dessous.
+  // Les actions d'écriture (send/retry/consent) restent réservées à ADMIN/DISPATCHER (rôle de classe).
   @Get()
+  @Roles('ADMIN', 'DISPATCHER', 'COMPTABLE')
   list(
     @Req() req: any,
     @Query('status') status?: string,

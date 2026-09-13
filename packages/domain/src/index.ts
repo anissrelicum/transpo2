@@ -512,5 +512,17 @@ export interface Order {
   rating?: number | null;         // note client (1..5) post-livraison
   ratingComment?: string | null;
   hubPhase?: string | null;       // tri en hub : arrive | trier | quai
+  // Coordonnées des deux points de la course. Facultatives : les commandes créées avant
+  // qu'elles soient conservées n'en portent pas, et la ville reste le minimum vital.
+  pickupContact?: string | null;
+  pickupPhone?: string | null;
+  pickupAddress?: string | null;
+  pickupNotes?: string | null;
+  dropContact?: string | null;
+  dropPhone?: string | null;
+  dropAddress?: string | null;
+  dropNotes?: string | null;
+  description?: string | null;
+  vehicleType?: string | null;
   createdAt: string;
 }

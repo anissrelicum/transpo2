@@ -1,5 +1,5 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { withTenantDb, vehicles as vehiclesTable } from '@transpo/db';
+import { Injectable, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
+import { withTenantDb, vehicles as vehiclesTable, drivers as driversTable } from '@transpo/db';
 import { eq } from 'drizzle-orm';
 
 const PLATE_RE = /^[0-9]{1,5}-[A-Za-z؀-ۿ]{1,2}-[0-9]{1,3}$/;
@@ -32,9 +32,17 @@ export class FleetService {
       throw new BadRequestException('Immatriculation invalide (format marocain NNNN-L-NN).');
     }
     if (!input?.type) throw new BadRequestException('type requis.');
+    const plaque = input.plate.trim();
     return withTenantDb(schema, async (db) => {
+      // La plaque identifie le véhicule sur le terrain (affectation, preuve, tracking) :
+      // deux lignes homonymes rendraient tout rattachement ambigu. Le contrôle existait
+      // côté chauffeur (nom unique), il manquait ici (AN-16).
+      const existant = await db.select().from(vehiclesTable);
+      if (existant.some((v) => v.plate.trim().toLowerCase() === plaque.toLowerCase())) {
+        throw new ConflictException('Un véhicule porte déjà cette immatriculation.');
+      }
       const [v] = await db.insert(vehiclesTable).values({
-        plate: input.plate.trim(), type: input.type, city: input.city ?? null,
+        plate: plaque, type: input.type, city: input.city ?? null,
         state: input.state ?? 'ACTIF', insuranceDue: input.insuranceDue ?? null, ctDue: input.ctDue ?? null,
         capacity: input.capacity ?? null, equipment: Array.isArray(input.equipment) ? input.equipment : [],
       }).returning();
@@ -51,9 +59,15 @@ export class FleetService {
     });
   }
 
-  /** Renouvelle une échéance (assurance ou CT) à une nouvelle date ISO. */
+  /**
+   * Renouvelle une échéance (assurance ou CT) à une nouvelle date ISO.
+   * Une date passée est refusée, pour la même raison que côté chauffeur (OBS-10).
+   */
   renew(schema: string, id: string, field: 'insurance' | 'ct', due: string) {
     if (!due) throw new BadRequestException('Date requise.');
+    if (due < new Date().toISOString().slice(0, 10)) {
+      throw new BadRequestException('La nouvelle échéance doit être postérieure à aujourd’hui.');
+    }
     const col = field === 'ct' ? { ctDue: due } : { insuranceDue: due };
     return withTenantDb(schema, async (db) => {
       const [v] = await db.update(vehiclesTable).set(col).where(eq(vehiclesTable.id, id)).returning();
@@ -62,11 +76,25 @@ export class FleetService {
     });
   }
 
+  /**
+   * Retire un véhicule du parc.
+   * Un véhicule RATTACHÉ à un chauffeur n'est pas supprimable : la suppression laissait
+   * jusqu'ici une affectation morte côté chauffeur, sans le moindre avertissement, alors
+   * que le retrait d'un chauffeur, lui, est protégé de la même façon (AN-15).
+   */
   remove(schema: string, id: string) {
     return withTenantDb(schema, async (db) => {
-      const [v] = await db.delete(vehiclesTable).where(eq(vehiclesTable.id, id)).returning();
-      if (!v) throw new NotFoundException('Véhicule introuvable.');
-      return { ok: true, id: v.id };
+      const [cible] = await db.select().from(vehiclesTable).where(eq(vehiclesTable.id, id));
+      if (!cible) throw new NotFoundException('Véhicule introuvable.');
+      const attaches = await db.select().from(driversTable).where(eq(driversTable.vehicleId, id));
+      if (attaches.length) {
+        const noms = attaches.map((d) => d.name).join(', ');
+        throw new BadRequestException(
+          `Impossible : véhicule rattaché à ${noms}. Détachez-le d’abord depuis la fiche chauffeur.`,
+        );
+      }
+      await db.delete(vehiclesTable).where(eq(vehiclesTable.id, id));
+      return { ok: true, id: cible.id };
     });
   }
 }

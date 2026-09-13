@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, ForbiddenException, NotFoundException, Inject } from '@nestjs/common';
 import { ReturnsService } from '../returns/returns.service.js';
-import { withTenantDb, orders as ordersTable, idempotencyKeys, deliveryProofs } from '@transpo/db';
+import { withTenantDb, orders as ordersTable, orderEvents as orderEventsTable, idempotencyKeys, deliveryProofs } from '@transpo/db';
 import { and, desc, eq, inArray } from 'drizzle-orm';
 import { LIFECYCLE, missingProof, type Order, type OrderStatus, type ProofLevel } from '@transpo/domain';
 
@@ -89,6 +89,9 @@ export class DriverService {
       const next = LIFECYCLE[i + 1];
       return withTenantDb(schema, async (db) => {
         const [r] = await db.update(ordersTable).set({ status: next }).where(eq(ordersTable.ref, ref)).returning();
+        // Le terrain écrit au même journal que l'exploitation : un litige se tranche sur
+        // une seule suite de faits, pas sur deux versions.
+        await db.insert(orderEventsTable).values({ ref, status: next, actor: d });
         return rowToOrder(r);
       });
     });
@@ -144,6 +147,10 @@ export class DriverService {
         const [r] = await db.update(ordersTable)
           .set({ status: 'LIVREE', codPaid })
           .where(eq(ordersTable.ref, ref)).returning();
+        await db.insert(orderEventsTable).values({
+          ref, status: 'LIVREE', actor: d,
+          note: codPaid ? 'Livrée avec preuve · COD encaissé' : 'Livrée avec preuve',
+        });
         return rowToOrder(r);
       });
     });
