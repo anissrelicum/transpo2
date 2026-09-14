@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, sql } from './helpers';
+import { loginTenant, motDePasse, shotVp, sql } from './helpers';
 
 // TC-B16 — Le comptage anti-bruteforce est partagé et compte aussi par source.
 // PAS : épuiser le quota sur une adresse, redémarrer l'API, réessayer ; puis enchaîner des
@@ -44,29 +44,37 @@ test('TC-B16 — compteur d’échecs durable et comptage par source', async ({ 
   expect(apres).toContain('Trop de tentatives');
   await shotVp(page, 'TC-B16', '02-blocage-survit-au-redemarrage');
 
-  // 3. Password spraying : des adresses toutes différentes, depuis la même source.
+  // 3. Password spraying : des adresses toutes différentes, depuis la même machine.
+  //
+  // Ce que ce volet vérifie a CHANGÉ le 14/09, et le changement est le constat lui-même.
+  // Il attendait qu'un balayage soit freiné « par source ». Or derrière l'ingress, l'adresse
+  // du client n'arrive pas jusqu'à l'API : elle retombait sur celle d'un pod du cluster, la
+  // même pour tout le monde. Le compteur « par source » était donc un compteur UNIQUE et
+  // PARTAGÉ, et le voir freiner était une mauvaise nouvelle déguisée en bonne : trente
+  // mauvais mots de passe, venus de n'importe qui, refusaient la connexion à TOUS les
+  // utilisateurs pendant quinze minutes.
+  //
+  // Le produit ne compte plus par source quand la source n'est pas identifiable. Ce cas
+  // vérifie désormais la propriété qui compte : un balayage n'enferme PAS les comptes
+  // légitimes.
   const marque = Date.now().toString(36);
   let freine = 0;
   for (let i = 1; i <= 32; i++) {
     const err = await loginTenant(page, 'rabatexpress', `spray-${marque}-${i}@rabatexpress.ma`, 'Test1234');
     if (err?.includes('Trop de tentatives')) { freine = i; break; }
   }
-  console.log(`balayage freiné à la tentative n°${freine} (0 = jamais freiné)`);
-  expect(freine).toBeGreaterThan(0);
-  await shotVp(page, 'TC-B16', '03-balayage-freine');
+  console.log(`balayage freiné à la tentative n°${freine} (0 = jamais freiné, attendu ici)`);
+  await shotVp(page, 'TC-B16', '03-balayage-sans-verrouillage-collectif');
 
-  // Le compteur par source existe bien, distinct de celui par compte.
+  // Aucune clé de source ne doit avoir été créée : l'adresse du pod n'est pas une source.
   const parSource = sql(`SELECT count(*) FROM platform.login_attempts WHERE key LIKE 'ip:%'`);
-  console.log(`clés « ip: » en base → ${parSource}`);
-  expect(Number(parSource)).toBeGreaterThan(0);
+  console.log(`clés « ip: » en base → ${parSource} (0 = la source n'est pas identifiable ici)`);
+  expect(Number(parSource)).toBe(0);
 
-  // Nettoyage indispensable : le seuil par source vient d'être atteint pour CETTE machine,
-  // et il vaut 15 minutes — sans cela, plus aucun cas du run ne pourrait se connecter.
-  // C'est le comportement attendu du produit ; c'est la recette qui doit s'y adapter.
-  sql(`DELETE FROM platform.login_attempts WHERE key LIKE 'ip:%' OR key LIKE 'u:rabatexpress:brute-b16-%' OR key LIKE 'u:rabatexpress:spray-%'`);
-  const reste = sql(`SELECT count(*) FROM platform.login_attempts WHERE key LIKE 'ip:%'`);
-  console.log(`compteurs par source purgés → reste ${reste}`);
-  const ok = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  // Et le compte légitime, lui, se connecte toujours : le balayage n'a verrouillé personne.
+  // C'est le contraire exact de ce qui se passait avant, où ce cas laissait la plateforme
+  // inaccessible pour un quart d'heure — y compris à la suite de la recette.
+  const ok = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(ok).toBeNull();
   await shotVp(page, 'TC-B16', '04-run-debloque');
 });
