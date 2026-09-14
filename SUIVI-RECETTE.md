@@ -26,6 +26,20 @@ révéler un défaut). Environnement de référence : **prod Dokku**
 | TC-B05 | Super-admin | Prod | **OK (partiel)** | Connexion sur un tenant SUSPENDU (`tangerlog`) → 403 « Espace suspendu — contactez la plateforme. » côté API **et** BFF. **Volet « sessions en cours coupées » non vérifiable** : le correctif AN-10 n'est pas déployé. → **DEPL-01**, **OBS-03** | 31/08 |
 | TC-B06 → TC-B15 | Admin tenant | Prod | **BLOQUÉ** | Aucun compte connu sur `rabatexpress` ; la création d'un premier compte sur un tenant **déjà provisionné** exige un accès shell à la prod. → **AN-11** | 31/08 |
 
+## Run du 13-14/09/2026 — section G (app livreur)
+
+Environnement **local** (API sur l'hôte + PostgreSQL en conteneur + émulateur Android) : le
+homelab K8s était éteint, ses trois nœuds injoignables et `transpo-api.wedowonders.com` en 530.
+Détail, verdicts et constats : [qa/recette/2026-09-13-local/RAPPORT.md](qa/recette/2026-09-13-local/RAPPORT.md).
+
+| Cas | Rôle testeur | Env. | Statut | Constat / réf | Date |
+|---|---|---|---|---|---|
+| TC-G01 → TC-G18 | Livreur | Local | **OK (18/18)** | Section complète, rejouable d'un seul lancement (`node recette/run.mjs`). Huit anomalies corrigées dans le run : **AN-28** (file de synchro injoignable dès le retour du réseau), **AN-29** (scanner branché sur des colis de démonstration), **AN-30** (colis récupéré annoncé « hors tournée »), **AN-31** (refus de scan effacé en 1,6 s), **AN-32** (règle EU 561 en double exemplaire), **AN-33** (profil livreur écrit en dur), **AN-34** (disponibilité qui ne quittait pas le téléphone), **AN-35** (aucun champ de saisie annonçable). Ouverts : **OBS-12**, **OBS-13**, **OBS-14**. | 13-14/09 |
+
+**À refaire après rallumage du homelab :** redéployer et rejouer la section G telle quelle —
+ce run valide le produit, pas le déploiement.
+
+
 ## Constats produit
 
 **AN-11 — Un tenant provisionné avant le correctif AN-01 reste inaccessible.**

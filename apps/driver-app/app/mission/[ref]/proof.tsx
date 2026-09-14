@@ -212,6 +212,7 @@ export default function Proof() {
             value={cod}
             keyboardType="numeric"
             onChangeText={(v) => { setTouchedCod(true); setCod(v.replace(/[^0-9]/g, '')); }}
+            testID="cod-montant-recu" accessibilityLabel={t.received}
           />
           <View style={[s.quickRow, { flexDirection: rtl ? 'row-reverse' : 'row' }]}>
             {quick.map((v) => (

@@ -177,6 +177,7 @@ export default function Fail() {
           onChangeText={setNotes}
           multiline
           textAlignVertical="top"
+          testID="echec-notes" accessibilityLabel={t.notesLabel}
         />
       </ScrollView>
       <BottomAction>

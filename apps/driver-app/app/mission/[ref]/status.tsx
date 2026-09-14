@@ -96,6 +96,11 @@ export default function StatusUpdate() {
         idemKey: idemKey(order.ref, `advance-${order.status}`),
       });
       await sync();
+      // Relecture APRÈS envoi : la file vidée, l'état optimiste disparaît et l'écran
+      // retombait sur la commande d'avant. Le livreur revoyait l'étape qu'il venait de
+      // valider et la rejouait — sans effet grâce à l'idempotence, mais sans rien y
+      // comprendre non plus.
+      await reload();
     } finally {
       setBusy(false);
     }

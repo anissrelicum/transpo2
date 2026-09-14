@@ -126,28 +126,34 @@ export default function MissionDetail() {
       </View>
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={s.content}>
+        {/* Contact et adresse RÉELS de la course. Ils étaient jusqu'ici remplacés par la
+            ville et un libellé de démonstration : le livreur, seul à en avoir besoin sur le
+            terrain, lisait « Destinataire · Casablanca » et un badge « Démo ». */}
         <StepCard
           tone={resolveColor('slate', 9, mode)}
           toneSoft={resolveColor('slate', 3, mode)}
           title={t.stepRetrait}
-          name={order.merchant ?? t.merchantFallback}
-          addr={order.fromCity}
+          name={order.pickupContact || order.merchant || t.merchantFallback}
+          addr={[order.pickupAddress, order.fromCity].filter(Boolean).join(' · ')}
+          note={order.pickupNotes ?? undefined}
           rtl={rtl}
           colors={colors}
           onContact={() => setContactOpen('retrait')}
           contactLabel={t.contact}
+          demoBadge={order.pickupContact ? undefined : t.demo}
         />
         <StepCard
           tone={colors.indigo9}
           toneSoft={resolveColor('indigo', 3, mode)}
           title={t.stepLivraison}
-          name={t.recipient}
-          addr={order.toCity}
+          name={order.dropContact || t.recipient}
+          addr={[order.dropAddress, order.toCity].filter(Boolean).join(' · ')}
+          note={order.dropNotes ?? undefined}
           rtl={rtl}
           colors={colors}
           onContact={() => setContactOpen('livraison')}
           contactLabel={t.contact}
-          demoBadge={t.demo}
+          demoBadge={order.dropContact ? undefined : t.demo}
         />
 
         <View style={[s.card, { backgroundColor: colors.panel, borderColor: colors.border }]}>
@@ -196,10 +202,11 @@ function proofRequirementsLabels(level: Order['proofLevel'], lang: 'fr' | 'ar'):
 
 /** Bloc retrait/livraison — cf. maquette `StepCard`, réduit aux données réellement disponibles dans `Order`. */
 function StepCard({
-  tone, toneSoft, title, name, addr, rtl, colors, onContact, contactLabel, demoBadge,
+  tone, toneSoft, title, name, addr, note, rtl, colors, onContact, contactLabel, demoBadge,
 }: {
   tone: string; toneSoft: string; title: string; name: string; addr: string; rtl: boolean;
-  colors: ReturnType<typeof useTheme>['colors']; onContact: () => void; contactLabel: string; demoBadge?: string;
+  colors: ReturnType<typeof useTheme>['colors']; onContact: () => void; contactLabel: string;
+  demoBadge?: string; note?: string;
 }) {
   return (
     <View style={[s.card, { backgroundColor: colors.panel, borderColor: colors.border }]}>
@@ -216,6 +223,11 @@ function StepCard({
       </View>
       <Text style={[s.stepName, { color: colors.text, textAlign: rtl ? 'right' : 'left' }]}>{name}</Text>
       <Text style={[s.stepAddr, { color: colors.muted, textAlign: rtl ? 'right' : 'left' }]}>{addr}</Text>
+      {/* Les notes d'accès (étage, code, instructions) ne servent qu'ici : c'est le livreur
+          qui sonne à la porte. */}
+      {note ? (
+        <Text style={[s.stepAddr, { color: colors.muted, textAlign: rtl ? 'right' : 'left', fontStyle: 'italic' }]}>{note}</Text>
+      ) : null}
       <Pressable
         onPress={onContact}
         style={[s.contactBtn, { borderColor: colors.border }]}

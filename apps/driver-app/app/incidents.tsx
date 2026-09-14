@@ -135,6 +135,7 @@ export default function IncidentsScreen() {
           placeholder={t.refPlaceholder}
           placeholderTextColor={colors.muted}
           autoCapitalize="characters"
+          testID="incident-reference" accessibilityLabel={t.refLabel}
         />
 
         <Text style={[s.label, { color: colors.muted, textAlign: rtl ? 'right' : 'left' }]}>{t.noteLabel}</Text>
@@ -146,6 +147,7 @@ export default function IncidentsScreen() {
           placeholderTextColor={colors.muted}
           multiline
           numberOfLines={3}
+          testID="incident-note" accessibilityLabel={t.noteLabel}
         />
 
         <Text style={[s.historyTitle, { color: colors.text, textAlign: rtl ? 'right' : 'left' }]}>{t.historyTitle}</Text>

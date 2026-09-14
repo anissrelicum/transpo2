@@ -3,23 +3,19 @@
 //       console (action « Inviter », rôle Livreur).
 // ATT : écran des autorisations, puis onglet Missions.
 import assert from 'node:assert/strict';
-import * as fs from 'node:fs';
-import { cas, ouvrirApp, saisir, toucher, attendre, capture, clavierFerme, QA } from './lib.mjs';
+import { cas, ouvrirApp, saisir, toucher, attendre, capture, clavierFerme, motDePasseDe } from './lib.mjs';
 
-export const ORG = 'rabatexpress';
-export const EMAIL = 'livreur@rabatexpress.ma';
+export const ORG = process.env.TENANT_SLUG || 'rabatexpress';
+export const EMAIL = `livreur@${ORG}.ma`;
 
 /** Mot de passe du livreur, lu dans COMPTES.md — jamais écrit en dur dans un cas. */
-export function motDePasse() {
-  const lignes = fs.readFileSync(`${QA}/COMPTES.md`, 'utf-8').split('\n').filter((l) => l.includes(EMAIL));
-  const m = /tempPassword=(\S+)/.exec(lignes.at(-1) ?? '');
-  if (!m) throw new Error(`mot de passe introuvable pour ${EMAIL} dans COMPTES.md`);
-  return m[1];
-}
+export const motDePasse = () => motDePasseDe(EMAIL);
 
 /** Connexion complète, réutilisée par les cas suivants. */
-export async function seConnecter(tc) {
-  await ouvrirApp();
+export async function seConnecter(tc, { langue = 'fr' } = {}) {
+  // `langue` : l'app garde la langue choisie d'un lancement à l'autre. Les cas ordinaires
+  // repartent du français ; TC-G18 se connecte délibérément en arabe.
+  await ouvrirApp({ langue });
   await capture(tc, '01-ecran-de-connexion');
   await saisir('login-organisation', ORG);
   await saisir('login-email', EMAIL);

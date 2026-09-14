@@ -155,6 +155,7 @@ export default function OnboardingScreen() {
               <TextInput
                 style={[s.input, { borderColor: colors.border, color: colors.text, textAlign: rtl ? 'right' : 'left' }]}
                 value={name} onChangeText={setName}
+                testID="inscription-nom" accessibilityLabel={t.s1.name}
               />
             </View>
             <View>
@@ -164,6 +165,7 @@ export default function OnboardingScreen() {
                 <TextInput
                   style={[s.inputFlex, { color: colors.text, textAlign: rtl ? 'right' : 'left' }]}
                   value={phone} onChangeText={setPhone} keyboardType="phone-pad"
+                  testID="inscription-telephone" accessibilityLabel={t.s1.phone}
                 />
               </View>
             </View>

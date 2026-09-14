@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Req, UseGuards, Inject, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Req, UseGuards, Inject, HttpCode } from '@nestjs/common';
 import { FieldService } from './field.service.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { TenantGuard } from '../tenant/tenant.guard.js';
@@ -11,6 +11,16 @@ import { Roles } from '../auth/roles.decorator.js';
 @Roles('DRIVER')
 export class FieldDriverController {
   constructor(@Inject(FieldService) private readonly svc: FieldService) {}
+
+  /** Fiche du livreur telle que l'exploitation la tient (véhicule, permis, zone). */
+  @Get('me')
+  me(@Req() req: any) { return this.svc.me(req.tenantSchema, req.user?.driver); }
+
+  /** Le livreur se déclare disponible ou non — lu par le dispatch, pas seulement à l'écran. */
+  @Patch('availability')
+  availability(@Req() req: any, @Body() body: { available?: boolean }) {
+    return this.svc.setAvailability(req.tenantSchema, req.user?.driver, body?.available as boolean);
+  }
 
   @Post('incidents')
   @HttpCode(200)

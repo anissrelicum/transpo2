@@ -73,6 +73,13 @@ export interface DriverHistory {
   driver: string; deliveries: number; gains: number; feePerDelivery: number; codCollected: number;
   orders: { ref: string; toCity: string; cod: number; codPaid: boolean }[];
 }
+/** Fiche du livreur telle que l'exploitation la tient — source unique du profil mobile. */
+export interface DriverProfile {
+  name: string; city: string | null; available: boolean; phone: string | null;
+  vehicle: string | null; plate: string | null;
+  licenseNo: string | null; licenseDue: string | null; medicalDue: string | null;
+  zone: string | null;
+}
 export interface DeliveryProof {
   ref: string; proofLevel: string; captured: boolean;
   photo: string | null; signature: string | null;
@@ -473,6 +480,12 @@ export class TranspoClient {
     return this.req('/v1/driver/support', { method: 'POST', body: { body } });
   }
   getDriverHistory(): Promise<DriverHistory> { return this.req('/v1/driver/history'); }
+  getDriverProfile(): Promise<DriverProfile> { return this.req('/v1/driver/me'); }
+  /** Le livreur pour lui-même — à ne pas confondre avec `setDriverAvailability(id, …)`,
+   *  qui est le geste du dispatch sur la fiche d'un tiers. */
+  setMyAvailability(available: boolean): Promise<{ name: string; available: boolean }> {
+    return this.req('/v1/driver/availability', { method: 'PATCH', body: { available } });
+  }
 
   /** Position du livreur (scope = claim `driver`). Éphémère : pas d'idempotence. */
   pushDriverPosition(lat: number, lng: number): Promise<{ ok: boolean; at: string }> {

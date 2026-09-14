@@ -1,7 +1,11 @@
 // Profil — hub de navigation du livreur (onglet racine « Profil »).
-// Nom/tenant = session réelle (`getSession()`) ; le reste (véhicule, permis,
-// zone, horaire, disponibilité) n'a pas d'endpoint dédié côté serveur : données
-// de démonstration, signalées par le callout ci-dessous (cf. design/PLAN-REFONTE-MOBILE.md §5).
+//
+// Véhicule, permis, zone et disponibilité viennent de la FICHE tenue par l'exploitation
+// (`GET /v1/driver/me`). Ils étaient auparavant écrits en dur (« Moto · 7890-B-12 ») :
+// le livreur lisait le véhicule de quelqu'un d'autre sur l'écran censé porter le sien, et
+// son interrupteur de disponibilité ne quittait jamais le téléphone — le dispatch
+// continuait de lui affecter des courses. L'horaire du jour reste indicatif : aucune
+// notion d'horaire n'existe encore côté serveur, et c'est dit à l'écran.
 import * as React from 'react';
 import { View, Text, ScrollView, Pressable, Switch, Alert, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
@@ -9,7 +13,8 @@ import { space } from '@transpo/design-tokens';
 import { ScreenHead } from '../../components/shell';
 import { useTheme, resolveColor } from '../../lib/theme';
 import { useLanguage, type Lang } from '../../lib/i18n';
-import { getSession, clearSession } from '../../lib/api';
+import type { DriverProfile } from '@transpo/api-client';
+import { getSession, clearSession, authedClient } from '../../lib/api';
 import { clear as clearOutbox } from '../../lib/outbox';
 import { useOutbox } from '../../lib/useOutbox';
 
@@ -20,18 +25,19 @@ const STR = {
     available: 'Disponible',
     availableOn: 'Vous recevez des missions',
     availableOff: 'Hors ligne — aucune mission',
-    demoTitle: 'Informations de démonstration',
+    demoTitle: 'Horaire indicatif',
     demoBody:
-      "La disponibilité, le véhicule, le permis, la zone et l'horaire sont des exemples locaux : aucun endpoint de profil livreur n'existe encore côté serveur.",
+      "L'horaire affiché est un exemple : aucune notion d'horaire de travail n'existe encore côté serveur. Le véhicule, le permis, la zone et la disponibilité viennent, eux, de votre fiche.",
     vehicle: 'Véhicule',
-    vehicleVal: 'Moto · 7890-B-12',
     license: 'Permis',
-    licenseVal: 'A, B · exp. 09/2028',
-    licenseBadge: 'Valide',
+    licenseValid: 'Valide',
+    licenseExpired: 'Expiré',
     zone: 'Zone assignée',
-    zoneVal: 'Casablanca — Maârif',
     schedule: 'Horaire du jour',
     scheduleVal: '08:00 – 17:00',
+    unknown: 'Non renseigné',
+    noZone: 'Aucune zone',
+    availabilityFailed: 'Disponibilité non enregistrée — vérifiez votre connexion.',
     earnings: 'Historique & gains',
     objectives: 'Objectifs & primes',
     recap: 'Récap du jour',
@@ -52,18 +58,19 @@ const STR = {
     available: 'متاح',
     availableOn: 'تستقبل المهام',
     availableOff: 'غير متصل — لا مهام',
-    demoTitle: 'معلومات توضيحية',
+    demoTitle: 'توقيت إرشادي',
     demoBody:
-      'التوفر والمركبة ورخصة القيادة والمنطقة وتوقيت اليوم أمثلة محلية فقط: لا توجد بعد نقطة وصول خاصة بملف السائق على الخادم.',
+      'التوقيت المعروض مثال فقط: لا توجد بعد فكرة توقيت العمل على الخادم. أما المركبة ورخصة القيادة والمنطقة والتوفر فمن ملفك.',
     vehicle: 'المركبة',
-    vehicleVal: 'دراجة نارية · 7890-B-12',
     license: 'رخصة القيادة',
-    licenseVal: 'A, B · صالحة حتى 09/2028',
-    licenseBadge: 'سارية',
+    licenseValid: 'سارية',
+    licenseExpired: 'منتهية',
     zone: 'المنطقة المسندة',
-    zoneVal: 'الدار البيضاء — المعاريف',
     schedule: 'توقيت اليوم',
     scheduleVal: '08:00 – 17:00',
+    unknown: 'غير محدد',
+    noZone: 'لا توجد منطقة',
+    availabilityFailed: 'لم يُسجَّل التوفر — تحقق من اتصالك.',
     earnings: 'السجل والأرباح',
     objectives: 'الأهداف والمكافآت',
     recap: 'ملخص اليوم',
@@ -84,7 +91,31 @@ export default function ProfilScreen() {
   const { lang, rtl } = useLanguage();
   const t = STR[lang as Lang] ?? STR.fr;
   const session = getSession();
+  const [fiche, setFiche] = React.useState<DriverProfile | null>(null);
   const [available, setAvailable] = React.useState(true);
+
+  React.useEffect(() => {
+    authedClient().getDriverProfile()
+      .then((p) => { setFiche(p); setAvailable(p.available); })
+      .catch(() => { /* hors ligne : on garde ce qui est affiché */ });
+  }, []);
+
+  /**
+   * Bascule la disponibilité. L'affichage suit tout de suite, mais si le serveur refuse
+   * ou ne répond pas, on REVIENT en arrière : un interrupteur qui reste sur « indisponible »
+   * alors que le dispatch voit toujours le livreur disponible est pire que pas d'interrupteur.
+   */
+  async function basculerDisponibilite(valeur: boolean) {
+    const avant = available;
+    setAvailable(valeur);
+    try {
+      const r = await authedClient().setMyAvailability(valeur);
+      setAvailable(r.available);
+    } catch {
+      setAvailable(avant);
+      Alert.alert(t.available, t.availabilityFailed);
+    }
+  }
   // Garde de déconnexion : reprise à l'identique de l'ancien `missions.tsx`
   // (même hook, même seuil sur la file en attente).
   const { pending } = useOutbox();
@@ -113,10 +144,19 @@ export default function ProfilScreen() {
     .map((w) => w[0]!.toUpperCase())
     .join('');
 
+  const permisValide = fiche?.licenseDue ? fiche.licenseDue >= new Date().toISOString().slice(0, 10) : null;
+  const vehiculeLibelle = [fiche?.vehicle, fiche?.plate].filter(Boolean).join(' · ') || t.unknown;
+  const permisLibelle = fiche?.licenseNo
+    ? `${fiche.licenseNo}${fiche.licenseDue ? ` · exp. ${fiche.licenseDue}` : ''}`
+    : t.unknown;
+
   const rows: { label: string; value: string; badge?: string }[] = [
-    { label: t.vehicle, value: t.vehicleVal },
-    { label: t.license, value: t.licenseVal, badge: t.licenseBadge },
-    { label: t.zone, value: t.zoneVal },
+    { label: t.vehicle, value: vehiculeLibelle },
+    {
+      label: t.license, value: permisLibelle,
+      ...(permisValide === null ? {} : { badge: permisValide ? t.licenseValid : t.licenseExpired }),
+    },
+    { label: t.zone, value: fiche?.zone ?? (fiche ? t.noZone : t.unknown) },
     { label: t.schedule, value: t.scheduleVal },
   ];
 
@@ -158,7 +198,13 @@ export default function ProfilScreen() {
               {available ? t.availableOn : t.availableOff}
             </Text>
           </View>
-          <Switch value={available} onValueChange={setAvailable} trackColor={{ true: colors.indigo9 }} />
+          <Switch
+            value={available}
+            onValueChange={basculerDisponibilite}
+            trackColor={{ true: colors.indigo9 }}
+            testID="profil-disponibilite"
+            accessibilityLabel={t.available}
+          />
         </View>
 
         <View

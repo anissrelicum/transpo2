@@ -98,8 +98,8 @@ function codLabel(order: Order, lang: 'fr' | 'ar'): { text: string; color: 'gree
 }
 
 const L = {
-  fr: { title: 'Mes missions', active: (n: number) => `${n} active${n > 1 ? 's' : ''}`, toDeliver: 'À livrer', codLeft: 'COD à encaisser', prepaid: 'Prépayé', empty: 'Aucune mission active. Tirez pour rafraîchir.', queued: 'En attente d’envoi', pushTitle: 'Nouvelle mission assignée', pushBody: 'Consultez vos notifications', offline: 'Hors ligne', offlineStale: ' — missions du dernier chargement', offlineHint: '. Vos actions sont enregistrées et partiront au retour du réseau. Touchez pour voir le détail.', pending: (n: number) => `${n} action(s) en attente`, syncing: ' — envoi en cours…', retry: 'Réessayer' },
-  ar: { title: 'مهامي', active: (n: number) => `${n} نشطة`, toDeliver: 'للتسليم', codLeft: 'للتحصيل', prepaid: 'مدفوع مسبقاً', empty: 'لا توجد مهام نشطة. اسحب للتحديث.', queued: 'في انتظار الإرسال', pushTitle: 'مهمة جديدة مُسندة', pushBody: 'راجع إشعاراتك', offline: 'غير متصل', offlineStale: ' — مهام آخر تحميل', offlineHint: '. تُسجَّل إجراءاتك وتُرسَل عند عودة الشبكة. اضغط لرؤية التفاصيل.', pending: (n: number) => `${n} إجراء (إجراءات) في الانتظار`, syncing: ' — جارٍ الإرسال…', retry: 'إعادة المحاولة' },
+  fr: { title: 'Mes missions', active: (n: number) => `${n} active${n > 1 ? 's' : ''}`, toDeliver: 'À livrer', codLeft: 'COD à encaisser', prepaid: 'Prépayé', empty: 'Aucune mission active. Tirez pour rafraîchir.', queued: 'En attente d’envoi', pushTitle: 'Nouvelle mission assignée', pushBody: 'Consultez vos notifications', offline: 'Hors ligne', offlineStale: ' — missions du dernier chargement', offlineHint: '. Vos actions sont enregistrées et partiront au retour du réseau. Touchez pour voir le détail.', pending: (n: number) => `${n} action(s) en attente`, pendingHint: ' — voir le détail', syncing: ' — envoi en cours…', retry: 'Réessayer' },
+  ar: { title: 'مهامي', active: (n: number) => `${n} نشطة`, toDeliver: 'للتسليم', codLeft: 'للتحصيل', prepaid: 'مدفوع مسبقاً', empty: 'لا توجد مهام نشطة. اسحب للتحديث.', queued: 'في انتظار الإرسال', pushTitle: 'مهمة جديدة مُسندة', pushBody: 'راجع إشعاراتك', offline: 'غير متصل', offlineStale: ' — مهام آخر تحميل', offlineHint: '. تُسجَّل إجراءاتك وتُرسَل عند عودة الشبكة. اضغط لرؤية التفاصيل.', pending: (n: number) => `${n} إجراء (إجراءات) في الانتظار`, pendingHint: ' — عرض التفاصيل', syncing: ' — جارٍ الإرسال…', retry: 'إعادة المحاولة' },
 };
 
 export default function MissionsScreen() {
@@ -231,10 +231,16 @@ export default function MissionsScreen() {
       )}
 
       {pending.length > 0 && (
+        // Le compteur MÈNE à la file : tant qu'il n'était qu'un texte, l'écran de
+        // synchronisation n'était atteignable que par le bandeau « Hors ligne » — donc
+        // plus du tout dès que le réseau revenait avec des actions encore bloquées,
+        // exactement le moment où le livreur a besoin de voir ce qui coince.
         <View style={[s.banner, { backgroundColor: colors.indigo9 + '18', flexDirection: rtl ? 'row-reverse' : 'row' }]}>
-          <Text style={[s.bannerTxt, { color: colors.text, flex: 1 }]}>
-            {t.pending(pending.length)}{syncing ? t.syncing : ''}
-          </Text>
+          <Pressable style={{ flex: 1 }} onPress={() => router.push('/sync-queue')} accessibilityRole="button">
+            <Text style={[s.bannerTxt, { color: colors.text, textAlign: rtl ? 'right' : 'left' }]}>
+              {t.pending(pending.length)}{syncing ? t.syncing : ''}{t.pendingHint}
+            </Text>
+          </Pressable>
           {online && !syncing && (
             <Pressable onPress={sync} hitSlop={16}><Text style={[s.bannerAction, { color: colors.indigo9 }]}>{t.retry}</Text></Pressable>
           )}

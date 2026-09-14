@@ -24,6 +24,21 @@ function compteur(noeuds, libelle) {
   return null;
 }
 
+/**
+ * Amène à la liste des missions et s'assure qu'une référence donnée y est visible.
+ * L'app affiche d'abord les missions du dernier chargement : le geste « tirer pour
+ * rafraîchir » est joué si besoin, comme l'état vide y invite.
+ */
+export async function allerAuxMissions(ref) {
+  await attendre('Mes missions', { timeout: 45_000 });
+  await sleep(2500);
+  if (ref && !(await visible(ref))) {
+    await glisser([540, 900], [540, 1700]);
+    await sleep(3500);
+  }
+  if (ref) await attendre(ref, { timeout: 20_000, message: `la mission ${ref} n'apparaît pas` });
+}
+
 export default cas('TC-G03', 'Liste des missions', async () => {
   // Décor : trois missions pour le chauffeur du compte, une pour un autre chauffeur.
   await viderMissions(CHAUFFEUR);

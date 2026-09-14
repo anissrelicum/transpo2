@@ -118,6 +118,7 @@ export default function HelpScreen() {
           onChangeText={setQ}
           placeholder={t.search}
           placeholderTextColor={colors.muted}
+          testID="aide-recherche" accessibilityLabel={t.search}
           style={[
             s.search,
             { backgroundColor: colors.panel, borderColor: colors.border, color: colors.text, textAlign: align },

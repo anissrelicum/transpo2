@@ -58,16 +58,23 @@ async function actionPrincipale({ timeout = 15_000 } = {}) {
  * l'écran s'intercale après chaque connexion, il n'est le SUJET que de TC-G02.
  */
 export async function passerAutorisations() {
-  if (!(await visible('Autorisations'))) return false;
+  // L'écran existe dans les deux langues : le franchir en arabe est le préalable du
+  // parcours RTL de TC-G18. Chercher les seuls libellés français y laissait le cas
+  // bloqué sur les autorisations, sans le dire.
+  const titre = (await visible('Autorisations')) ? 'Autorisations'
+    : (await visible('الأذونات')) ? 'الأذونات' : null;
+  if (!titre) return false;
+  const accorder = titre === 'Autorisations' ? 'Autoriser' : 'السماح';
   for (let i = 0; i < 3; i++) {
-    if (!(await visible('Autoriser'))) break;
-    await toucher('Autoriser');
+    if (!(await visible(accorder))) break;
+    await toucher(accorder);
     await accepterDialogueSysteme();
     await sleep(1000);
   }
   const action = await actionPrincipale();
   await toucher(action.description);
-  await attendre('Mes missions', { timeout: 30_000 });
+  const missions = titre === 'Autorisations' ? 'Mes missions' : 'مهامي';
+  await attendre(missions, { timeout: 30_000 });
   return true;
 }
 

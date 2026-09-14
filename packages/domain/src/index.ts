@@ -100,6 +100,42 @@ export const COMMISSION_RATE = 0.15; // 15 % par défaut (configurable par tenan
 export const VAT_RATE = 0.20;        // TVA 20 %
 export const EU561_MAX_DRIVE_HOURS = 9;
 export const EU561_BREAK_MIN = 45;   // pause obligatoire après 4h30 cumulées
+export const EU561_BREAK_AFTER_HOURS = 4.5; // conduite continue avant pause obligatoire
+export const EU561_WARN_BEFORE_MIN = 30;    // alerte avant la limite journalière
+
+/** Niveau d'alerte réglementaire d'une journée de conduite. */
+export type Eu561Level = 'ok' | 'pause' | 'warn' | 'limite';
+
+export interface Eu561Status {
+  /** Conduite restante avant la limite journalière, en millisecondes (jamais négative). */
+  remainingMs: number;
+  /** Repos estimé : le temps de service qui n'était pas de la conduite. */
+  restMs: number;
+  level: Eu561Level;
+}
+
+/**
+ * Évalue une journée de conduite au regard du règlement EU 561/2006.
+ *
+ * La règle vivait en double : l'app livreur redéfinissait ses propres seuils en
+ * millisecondes à côté des constantes de ce module. Deux copies d'une règle
+ * réglementaire finissent par diverger — et c'est celle de l'écran qui décide de
+ * l'alerte affichée au conducteur. Une seule définition, testée ici.
+ */
+export function eu561Status(input: { drivenMs: number; amplitudeMs: number }): Eu561Status {
+  const maxMs = EU561_MAX_DRIVE_HOURS * 3_600_000;
+  const drivenMs = Math.max(0, input.drivenMs);
+  const remainingMs = Math.max(0, maxMs - drivenMs);
+  const restMs = Math.max(0, input.amplitudeMs - drivenMs);
+  const level: Eu561Level = drivenMs >= maxMs
+    ? 'limite'
+    : remainingMs <= EU561_WARN_BEFORE_MIN * 60_000
+      ? 'warn'
+      : drivenMs >= EU561_BREAK_AFTER_HOURS * 3_600_000
+        ? 'pause'
+        : 'ok';
+  return { remainingMs, restMs, level };
+}
 
 /** Reversement marchand : net = brut − commission. */
 export function merchantPayoutNet(codBrut: number, rate: number = COMMISSION_RATE): number {

@@ -10,7 +10,7 @@
 import * as React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { space, radius } from '@transpo/design-tokens';
-import { money } from '@transpo/domain';
+import { money, eu561Status, EU561_MAX_DRIVE_HOURS } from '@transpo/domain';
 import { readJson, writeJson } from '../../lib/storage';
 import { useTracking } from '../../lib/tracking';
 import { useTheme, resolveColor } from '../../lib/theme';
@@ -22,9 +22,9 @@ const SHIFT_KEY = 'transpo.shift.v1';
 // (lot D) la relit en lecture seule, ce shift en est désormais la seule source.
 const TRACK_KEY = 'transpo.tracking.enabled';
 
-const MAX_DRIVE_MS = 9 * 3_600_000; // limite journalière EU 561/2006 : 9h
-const PAUSE_AFTER_MS = 4.5 * 3_600_000; // pause obligatoire après 4h30 cumulées
-const WARN_BEFORE_MS = 30 * 60_000; // alerte 30 min avant la limite
+// Les seuils EU 561 vivent dans @transpo/domain (`eu561Status`), avec leurs tests :
+// l'écran les affiche, il ne les redéfinit plus.
+const MAX_DRIVE_MS = EU561_MAX_DRIVE_HOURS * 3_600_000;
 
 interface ShiftState {
   active: boolean;
@@ -140,12 +140,10 @@ export default function ShiftScreen() {
   const drivenMs =
     state.drivenMs + (state.active && state.resumedAt ? Date.now() - new Date(state.resumedAt).getTime() : 0);
   const amplitudeMs = state.startedAt ? Date.now() - new Date(state.startedAt).getTime() : 0;
-  const remainingMs = Math.max(0, MAX_DRIVE_MS - drivenMs);
-  const restMs = Math.max(0, amplitudeMs - drivenMs);
-
-  const atLimit = drivenMs >= MAX_DRIVE_MS;
-  const nearLimit = !atLimit && remainingMs <= WARN_BEFORE_MS;
-  const pauseRequired = !atLimit && !nearLimit && drivenMs >= PAUSE_AFTER_MS;
+  const { remainingMs, restMs, level } = eu561Status({ drivenMs, amplitudeMs });
+  const atLimit = level === 'limite';
+  const nearLimit = level === 'warn';
+  const pauseRequired = level === 'pause';
 
   // Le shift pilote le partage de position (cf. plan) : démarrer = activer `useTracking`.
   const tracking = loaded && state.active;

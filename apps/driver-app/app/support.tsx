@@ -135,6 +135,7 @@ export default function SupportScreen() {
           placeholder={t.placeholder}
           placeholderTextColor={colors.muted}
           multiline
+          testID="support-message" accessibilityLabel={t.placeholder}
         />
         <Pressable
           style={[s.sendBtn, { backgroundColor: colors.indigo9, opacity: !draft.trim() || busy ? 0.5 : 1 }]}
