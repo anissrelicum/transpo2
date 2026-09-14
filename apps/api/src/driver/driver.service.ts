@@ -5,7 +5,7 @@ import { TrackingService } from '../tracking/tracking.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { withTenantDb, orders as ordersTable, orderEvents as orderEventsTable, idempotencyKeys,
   deliveryProofs, cashSessions, cashMovements } from '@transpo/db';
-import { and, desc, eq, inArray } from 'drizzle-orm';
+import { and, desc, eq, inArray, ne } from 'drizzle-orm';
 import { LIFECYCLE, missingProof, type Order, type OrderStatus, type ProofLevel } from '@transpo/domain';
 
 const ACTIVE: OrderStatus[] = ['ASSIGNEE', 'RETRAIT', 'RECUPEREE', 'LIVRAISON'];
@@ -164,11 +164,18 @@ export class DriverService {
    */
   private async porterEnCaisse(db: any, driver: string, ref: string, recipient: string, amount: number) {
     const jour = new Date().toISOString().slice(0, 10);
-    const [existante] = await db.select().from(cashSessions)
-      .where(and(eq(cashSessions.driver, driver), eq(cashSessions.sessionDate, jour)));
-    // Une session déposée est close : l'encaissement suivant ouvre la caisse du jour d'après.
-    const ouverte = existante && existante.status !== 'DEPOSE' ? existante : null;
-    let session = ouverte;
+    // Une session déposée est close : l'encaissement suivant rouvre une caisse. Elle porte
+    // la MÊME date — il peut donc y avoir plusieurs sessions par livreur et par jour, et
+    // toute lecture qui se contente de (livreur, date) en prend une au hasard. On vise
+    // explicitement l'ouverte, la plus récente.
+    const [ouverte] = await db.select().from(cashSessions)
+      .where(and(
+        eq(cashSessions.driver, driver),
+        eq(cashSessions.sessionDate, jour),
+        ne(cashSessions.status, 'DEPOSE'),
+      ))
+      .orderBy(desc(cashSessions.createdAt));
+    let session = ouverte ?? null;
     if (!session) {
       const initiales = driver.split(/\s+/).filter(Boolean).slice(0, 2).map((m) => m[0]!.toUpperCase()).join('');
       [session] = await db.insert(cashSessions).values({

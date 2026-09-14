@@ -2,8 +2,32 @@ import { Injectable, BadRequestException, ForbiddenException, NotFoundException 
 import { withTenantDb, incidents, supportMessages, orders as ordersTable,
   drivers as driversTable, vehicles as vehiclesTable, zones as zonesTable,
   tournees as tourneesTable, cashSessions, cashMovements } from '@transpo/db';
-import { and, asc, desc, eq, inArray } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, ne } from 'drizzle-orm';
 import { DRIVER_DELIVERY_FEE, INCIDENT_TYPES, type IncidentType } from '@transpo/domain';
+
+/**
+ * Caisse du jour d'un livreur : l'OUVERTE d'abord, sinon la dernière déposée.
+ *
+ * Un dépôt clôt la session, et l'encaissement suivant en rouvre une portant la même date :
+ * il peut donc y avoir plusieurs sessions par livreur et par jour. Les lectures qui se
+ * contentaient de (livreur, date) en prenaient une au hasard — le livreur voyait tantôt sa
+ * caisse courante, tantôt celle qu'il avait déposée, et sa déclaration pouvait être refusée
+ * pour « caisse déjà déposée » alors qu'une caisse ouverte l'attendait (constaté TC-G07).
+ */
+async function sessionDuJour(db: any, driver: string, jour: string) {
+  const [ouverte] = await db.select().from(cashSessions)
+    .where(and(
+      eq(cashSessions.driver, driver),
+      eq(cashSessions.sessionDate, jour),
+      ne(cashSessions.status, 'DEPOSE'),
+    ))
+    .orderBy(desc(cashSessions.createdAt));
+  if (ouverte) return ouverte;
+  const [derniere] = await db.select().from(cashSessions)
+    .where(and(eq(cashSessions.driver, driver), eq(cashSessions.sessionDate, jour)))
+    .orderBy(desc(cashSessions.createdAt));
+  return derniere ?? null;
+}
 
 @Injectable()
 export class FieldService {
@@ -102,8 +126,10 @@ export class FieldService {
     const d = this.ensure(driver);
     const jour = new Date().toISOString().slice(0, 10);
     return withTenantDb(schema, async (db) => {
-      const [s] = await db.select().from(cashSessions)
-        .where(and(eq(cashSessions.driver, d), eq(cashSessions.sessionDate, jour)));
+      // Un dépôt ferme la caisse ; l'encaissement suivant en rouvre une, à la même date.
+      // Prendre « la » session du jour sans distinguer montrait au livreur, au hasard, la
+      // caisse déjà déposée plutôt que l'argent qu'il a réellement en poche.
+      const s = await sessionDuJour(db, d, jour);
       if (!s) return null;
       const moves = await db.select().from(cashMovements).where(eq(cashMovements.sessionId, s.id));
       return {
@@ -128,8 +154,7 @@ export class FieldService {
     if (!Number.isFinite(amount) || amount < 0) throw new BadRequestException('Montant déclaré invalide.');
     const jour = new Date().toISOString().slice(0, 10);
     return withTenantDb(schema, async (db) => {
-      const [s] = await db.select().from(cashSessions)
-        .where(and(eq(cashSessions.driver, d), eq(cashSessions.sessionDate, jour)));
+      const s = await sessionDuJour(db, d, jour);
       if (!s) throw new NotFoundException('Aucune caisse ouverte aujourd’hui.');
       if (s.status === 'DEPOSE') throw new BadRequestException('Caisse déjà déposée — déclaration close.');
       const montant = Math.round(amount);
