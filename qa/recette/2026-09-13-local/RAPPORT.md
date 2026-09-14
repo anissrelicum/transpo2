@@ -412,17 +412,19 @@ nuit : *un cas qui emprunte l'état d'un autre ne se rejoue pas*.
 
 ## Écarts PRD ↔ produit, relevés hors recette (14/09)
 
-En rédigeant la présentation commerciale, cinq règles décrites au PRD se sont révélées **non
+En rédigeant la présentation commerciale puis la documentation produit, sept règles décrites au PRD se sont révélées **non
 implémentées**. Elles ne sont couvertes par aucun cas de test — le plan de recette ne les
 prévoyait pas — et elles auraient été promises à un prospect :
 
 | Règle annoncée | Où | Réalité |
 |---|---|---|
-| Relais d'appel masquant le numéro du client | PRD-00 §5.4 | Aucune implémentation ; le livreur voit le numéro en clair |
+| Relais d'appel masquant le numéro du client | PRD-00 §5.4 | Aucune implémentation. Le numéro descendait en clair sur l'appareil du livreur — corrigé le 14/09 (il ne sort plus de l'API) — mais le livreur n'a toujours aucun moyen d'appeler son destinataire |
 | Remboursement d'un COD déjà encaissé | PRD-01 §19 | Aucun code côté API |
 | Modération des avis abusifs | PRD-01 | L'écran `/reviews` affiche et filtre, il ne modère pas |
 | Adresse de retrait pré-remplie pour le marchand | PRD-02 | `CreateWizard` ne préremplit rien |
 | Bordereau de transfert opposable | PRD-01 §11 | Cf. **AN-37** — sceller ne laisse aucune trace |
+| Quatre des six signaux du barème de fraude | PRD-01 §17 | Seuls `ecart_cash` et `hors_geo` sont réellement émis ; les quatre autres sont définis, pondérés, affichés — et sans producteur |
+| Portefeuille marchand prépayé et rechargeable | PRD-02 | Le code calcule le COD net dû au marchand ; il n'y a ni solde prépayé ni rechargement |
 
 Sévérité : **à arbitrer**, une par une. Ce ne sont pas des régressions mais des promesses de
 spécification jamais construites — le genre d'écart qui se découvre en clientèle, au pire
