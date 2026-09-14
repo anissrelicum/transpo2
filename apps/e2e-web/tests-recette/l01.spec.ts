@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, motDePasse, shotVp, sql } from './helpers';
+import { loginTenant, motDePasse, shotVp, sql, livrerCommeLivreur } from './helpers';
 
 // TC-L01 — Session de caisse alimentée par le terrain.
 // PRÉ : des livraisons avec COD encaissé par Hamid Ouali (TC-G07).
@@ -9,16 +9,27 @@ test('TC-L01 — la caisse du livreur se remplit de ses encaissements', async ({
   test.setTimeout(180_000);
   const jour = new Date().toISOString().slice(0, 10);
 
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
+  expect(err).toBeNull();
+
+  // Décor : deux livraisons encaissées, par le chemin du terrain (le parcours mobile
+  // lui-même est tenu par TC-G07 ; ici la caisse est le sujet).
+  sql(`DELETE FROM tenant_rabatexpress.cash_movements`);
+  sql(`DELETE FROM tenant_rabatexpress.cash_sessions WHERE session_date = '${jour}'`);
+  const livrees = [
+    await livrerCommeLivreur(page, { cod: 450 }),
+    await livrerCommeLivreur(page, { cod: 250 }),
+  ];
+  console.log(`  décor → ${livrees.map((l) => `${l.ref} (${l.cod} DH)`).join(', ')}`);
+
   const attendu = sql(`
     SELECT COALESCE(SUM(m.amount),0), COUNT(*)
     FROM tenant_rabatexpress.cash_movements m
     JOIN tenant_rabatexpress.cash_sessions s ON s.id = m.session_id
     WHERE s.driver = 'Hamid Ouali' AND s.session_date = '${jour}'`).split('|').map((x) => x.trim());
   console.log(`  mouvements du jour → ${attendu[1]} encaissement(s), ${attendu[0]} DH`);
-  expect(Number(attendu[1]), 'TC-G07 doit avoir produit au moins un encaissement').toBeGreaterThan(0);
-
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
-  expect(err).toBeNull();
+  expect(Number(attendu[1]), 'encaisser doit porter l’argent à la caisse du jour').toBe(2);
+  expect(Number(attendu[0])).toBe(700);
   await page.goto('/cash');
   await expect(page.getByRole('heading', { name: /Caisse|Rapprochement|Cash/i }).first()).toBeVisible({ timeout: 20_000 });
   await shotVp(page, 'TC-L01', '01-caisse');

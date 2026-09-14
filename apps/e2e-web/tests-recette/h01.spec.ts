@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, motDePasse, shotVp, sql } from './helpers';
+import { loginTenant, motDePasse, shotVp, sql, creerCommandes } from './helpers';
 
 // TC-H01 — Scanner une entrée au hub.
 // PRÉ : au moins 3 commandes au statut Récupérée.
@@ -7,18 +7,19 @@ import { loginTenant, motDePasse, shotVp, sql } from './helpers';
 test('TC-H01 — enregistrer l’entrée d’un colis au hub', async ({ page }) => {
   test.setTimeout(180_000);
 
-  // Décor : trois colis récupérés, aucun déjà présent dans le hub — le cas doit pouvoir
-  // se rejouer sans repartir d'une base neuve.
-  sql(`UPDATE tenant_rabatexpress.orders SET hub_phase = NULL`);
-  const codes = sql(`
-    UPDATE tenant_rabatexpress.orders SET status = 'RECUPEREE'
-    WHERE ref IN (SELECT ref FROM tenant_rabatexpress.orders
-                  WHERE status NOT IN ('ANNULEE','RETOUR') ORDER BY created_at DESC LIMIT 3)
-    RETURNING code`).split('\n').map((l) => l.trim()).filter(Boolean);
-  expect(codes.length, 'trois colis récupérés doivent exister').toBe(3);
-
   const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
+
+  // Décor posé par le cas lui-même : trois colis récupérés, hub vidé.
+  sql(`UPDATE tenant_rabatexpress.orders SET hub_phase = NULL`);
+  const refs = await creerCommandes(page, [
+    { cod: 120, toCity: 'Casablanca' }, { cod: 120, toCity: 'Casablanca' }, { cod: 120, toCity: 'Casablanca' },
+  ]);
+  sql(`UPDATE tenant_rabatexpress.orders SET status = 'RECUPEREE'
+       WHERE ref IN (${refs.map((r) => `'${r}'`).join(',')})`);
+  const codes = refs.map((r) =>
+    sql(`SELECT code FROM tenant_rabatexpress.orders WHERE ref = '${r}'`).trim());
+  console.log(`  décor → ${codes.join(', ')}`);
 
   await page.goto('/hub');
   await expect(page.getByRole('heading', { name: 'Tri en hub' })).toBeVisible();

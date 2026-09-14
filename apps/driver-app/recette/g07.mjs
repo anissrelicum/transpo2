@@ -91,10 +91,12 @@ export default cas('TC-G07', 'Encaissement du COD', async () => {
   assert.ok(sienne, 'le chauffeur doit apparaître à la réconciliation de caisse');
   assert.ok(sienne.theorique >= MONTANT, `le COD encaissé (${MONTANT}) doit être porté au théorique du chauffeur`);
 
-  // À CONSIGNER pour la section L : aucune SESSION de caisse n'est ouverte automatiquement
-  // pour un livreur qui encaisse. Le théorique existe, mais le déclaré, le dépôt et l'écart
-  // n'ont pas de support tant qu'une session n'est pas créée par ailleurs.
+  // L'encaissement OUVRE la caisse du jour du livreur : sans cela, l'argent existait au
+  // théorique d'une réconciliation mais n'avait ni session, ni dépôt, ni écart possibles
+  // — c'est ce que ce cas avait révélé, et que la section L tient désormais.
   const sessions = await api('/v1/cash/sessions');
   const session = sessions.find((x) => x.driver === 'Hamid Ouali');
-  console.log(`  session de caisse ouverte ? ${session ? 'oui' : 'NON — à confronter en section L'}`);
+  console.log(`  caisse du jour → ${session ? `${session.theorique} DH sur ${session.deliveries} encaissement(s), statut ${session.status}` : 'AUCUNE'}`);
+  assert.ok(session, 'encaisser doit ouvrir une session de caisse pour le livreur');
+  assert.ok(session.theorique >= MONTANT, 'le montant encaissé doit être porté à la caisse du jour');
 });

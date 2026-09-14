@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, motDePasse, shotVp, sql } from './helpers';
+import { loginTenant, motDePasse, shotVp, sql, creerCommandes } from './helpers';
 
 // TC-H04 — Manifeste de transfert.
 // ATT : liste des colis du quai, total COD embarqué correct, « Sceller le bordereau »
@@ -8,19 +8,19 @@ import { loginTenant, motDePasse, shotVp, sql } from './helpers';
 test('TC-H04 — manifeste de transfert d’une destination', async ({ page }) => {
   test.setTimeout(180_000);
 
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
+  expect(err).toBeNull();
+
   // Décor : deux colis sur quai pour Casablanca, avec des COD connus.
   sql(`UPDATE tenant_rabatexpress.orders SET hub_phase = NULL`);
-  const refs = sql(`
-    UPDATE tenant_rabatexpress.orders SET status = 'RECUPEREE', hub_phase = 'quai', to_city = 'Casablanca'
-    WHERE ref IN (SELECT ref FROM tenant_rabatexpress.orders
-                  WHERE status NOT IN ('ANNULEE','RETOUR','LIVREE') ORDER BY created_at DESC LIMIT 2)
-    RETURNING ref`).split('\n').map((l) => l.trim()).filter(Boolean);
-  expect(refs.length, 'deux colis doivent être sur quai').toBe(2);
+  const refs = await creerCommandes(page, [
+    { cod: 250, toCity: 'Casablanca' }, { cod: 250, toCity: 'Casablanca' },
+  ]);
+  sql(`UPDATE tenant_rabatexpress.orders SET status = 'RECUPEREE', hub_phase = 'quai'
+       WHERE ref IN (${refs.map((r) => `'${r}'`).join(',')})`);
   const totalAttendu = Number(sql(
     `SELECT COALESCE(SUM(cod),0) FROM tenant_rabatexpress.orders WHERE hub_phase = 'quai'`).trim());
 
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
-  expect(err).toBeNull();
   await page.goto('/hub');
   await expect(page.getByRole('heading', { name: 'Tri en hub' })).toBeVisible();
   await shotVp(page, 'TC-H04', '01-quai-casablanca');

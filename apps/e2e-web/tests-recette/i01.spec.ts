@@ -1,25 +1,24 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, motDePasse, shotVp, sql } from './helpers';
+import { loginTenant, motDePasse, shotVp, sql, creerCommandes } from './helpers';
 
 // TC-I01 — Créer une tournée.
 // ATT : tournée au statut Planifiée, arrêts dans l'ordre de sélection, COD total juste.
 test('TC-I01 — créer une tournée de trois arrêts', async ({ page }) => {
   test.setTimeout(180_000);
 
-  // Décor : trois commandes non affectées, avec des COD connus, et aucune tournée du jour.
   const jour = new Date().toISOString().slice(0, 10);
-  sql(`DELETE FROM tenant_rabatexpress.tournees WHERE day = '${jour}'`);
-  sql(`UPDATE tenant_rabatexpress.orders SET driver = NULL, status = 'NOUVELLE'
-       WHERE ref IN (SELECT ref FROM tenant_rabatexpress.orders
-                     WHERE status NOT IN ('ANNULEE','RETOUR','LIVREE') ORDER BY created_at DESC LIMIT 3)`);
-  const libres = sql(`SELECT ref, cod FROM tenant_rabatexpress.orders WHERE driver IS NULL AND status = 'NOUVELLE'`)
-    .split('\n').map((l) => l.split('|').map((x) => x.trim())).filter((c) => c[0]);
-  expect(libres.length, 'trois commandes libres attendues').toBeGreaterThanOrEqual(3);
-  const choisies = libres.slice(0, 3);
-  const codAttendu = choisies.reduce((s, [, cod]) => s + Number(cod), 0);
-
   const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
+
+  // Décor posé par le cas : trois commandes libres, aucune tournée du jour.
+  sql(`DELETE FROM tenant_rabatexpress.tournees WHERE day = '${jour}'`);
+  const creees = await creerCommandes(page, [
+    { cod: 150, toCity: 'Casablanca' }, { cod: 150, toCity: 'Salé' }, { cod: 150, toCity: 'Kénitra' },
+  ]);
+  const choisies = creees.map((ref) => [ref, '150'] as [string, string]);
+  const codAttendu = 150 * 3;
+  console.log(`  décor → ${choisies.map(([r]) => r).join(', ')}`);
+
   await page.goto('/tournees');
   await shotVp(page, 'TC-I01', '01-tournees');
 

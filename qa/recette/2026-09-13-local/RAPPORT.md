@@ -185,3 +185,19 @@ est plus grave qu'un cas qui ne passe pas.
   lecture optique ne l'est pas : c'est la saisie manuelle du code à 8 caractères qui agit.
 - **Sections H à T** non jouées dans ce run (consoles web) — elles supposent l'environnement
   complet (console Next.js + Playwright), incompatible en mémoire avec l'émulateur sur ce poste.
+
+---
+
+# Sections H à T — environnement local (suite du run)
+
+Le homelab restant éteint, les sections consoles sont jouées sur le même environnement
+local : API sur l'hôte (`http://localhost:3000`), console Next.js (`http://localhost:3001`),
+PostgreSQL en conteneur. Le harnais Playwright n'était jusqu'ici jouable **que** sur le
+cluster — `sql()` passait par `kubectl exec` en dur. Il prend maintenant `PG_EXEC` :
+
+```bash
+apps/e2e-web/lancer-recette-locale.sh          # toutes les sections
+apps/e2e-web/lancer-recette-locale.sh h01 k02  # quelques cas
+```
+
+*(Section en cours de déroulé — verdicts et constats ajoutés au fil de l'exécution.)*

@@ -15,15 +15,24 @@ test('TC-J03 — sortie de géofence signalée au PC flotte', async ({ page }) =
   const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
 
-  // Une position DANS la zone : aucune alerte.
-  sql(`INSERT INTO tenant_rabatexpress.driver_positions (driver, lat, lng) VALUES ('Hamid Ouali', 34.0215, -6.8420)`);
+  // Une position DANS la zone, remontée comme le ferait le téléphone.
+  const API = process.env.API_URL || 'http://localhost:3000';
+  const jeton = (await (await page.request.post(`${API}/v1/auth/login`, {
+    headers: { 'content-type': 'application/json', 'x-tenant-slug': 'rabatexpress' },
+    data: { email: 'livreur@rabatexpress.ma', password: motDePasse('livreur@rabatexpress.ma') },
+  })).json()).token;
+  const remonter = (lat: number, lng: number) => page.request.post(`${API}/v1/tracking/position`, {
+    headers: { 'content-type': 'application/json', 'x-tenant-slug': 'rabatexpress', authorization: `Bearer ${jeton}` },
+    data: { lat, lng },
+  });
+  await remonter(34.0215, -6.8420);
   await page.goto('/fleet');
   await page.waitForTimeout(2500);
   await expect(page.getByText(/est sorti de zone/)).toHaveCount(0);
   await shotVp(page, 'TC-J03', '01-dans-la-zone');
 
   // Une position à 60 km : le livreur est manifestement hors zone.
-  sql(`INSERT INTO tenant_rabatexpress.driver_positions (driver, lat, lng) VALUES ('Hamid Ouali', 33.5731, -7.5898)`);
+  await remonter(33.5731, -7.5898);
   await page.reload();
   await page.waitForTimeout(2500);
   await expect(page.getByText(/est sorti de zone/)).toBeVisible({ timeout: 20_000 });

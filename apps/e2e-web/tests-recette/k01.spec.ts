@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, motDePasse, shotVp, sql } from './helpers';
+import { loginTenant, motDePasse, shotVp, sql, echouerCommeLivreur } from './helpers';
 
 // TC-K01 — Un échec de livraison crée un retour.
 // PRÉ : TC-G10 (échec déclaré depuis l'app livreur).
@@ -8,16 +8,17 @@ import { loginTenant, motDePasse, shotVp, sql } from './helpers';
 test('TC-K01 — l’échec du terrain ouvre un retour à traiter', async ({ page }) => {
   test.setTimeout(180_000);
 
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
+  expect(err).toBeNull();
+
+  // Décor : un échec déclaré depuis le terrain, par le chemin de l'app livreur.
+  const echec = await echouerCommeLivreur(page, { cod: 340 });
   const ligne = sql(`SELECT ref, status, attempts, reason FROM tenant_rabatexpress.returns
-                     ORDER BY created_at DESC LIMIT 1`).split('|').map((x) => x.trim());
-  expect(ligne[0], 'TC-G10 doit avoir laissé un retour').toBeTruthy();
+                     WHERE ref = '${echec.ref}'`).split('|').map((x) => x.trim());
   const [ref, statut, tentatives, motif] = ligne;
   console.log(`  retour en base → ${ref} · ${statut} · ${tentatives} tentative(s) · « ${motif} »`);
   expect(statut).toBe('A_TRAITER');
   expect(tentatives).toBe('1');
-
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
-  expect(err).toBeNull();
   await page.goto('/returns');
   await page.waitForTimeout(1500);
   await shotVp(page, 'TC-K01', '01-retours-actifs');

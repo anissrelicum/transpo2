@@ -1,22 +1,20 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, motDePasse, shotVp, sql } from './helpers';
+import { loginTenant, motDePasse, shotVp, sql, creerCommandes } from './helpers';
 
 // TC-H03 — Flux de tri.
 // ATT : Arrivés → Scannés — à trier → Sur quai, regroupé par ville de destination.
 test('TC-H03 — un colis traverse les trois colonnes du tri', async ({ page }) => {
   test.setTimeout(180_000);
 
-  // Décor : un colis entré au hub, à destination connue.
-  sql(`UPDATE tenant_rabatexpress.orders SET hub_phase = NULL`);
-  const ligne = sql(`
-    UPDATE tenant_rabatexpress.orders SET status = 'RECUPEREE', hub_phase = 'arrive', to_city = 'Casablanca'
-    WHERE ref = (SELECT ref FROM tenant_rabatexpress.orders
-                 WHERE status NOT IN ('ANNULEE','RETOUR','LIVREE') ORDER BY created_at DESC LIMIT 1)
-    RETURNING code`).trim();
-  expect(ligne, 'un colis doit être entré au hub').toBeTruthy();
-
   const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
+
+  // Décor : un colis entré au hub, à destination connue.
+  sql(`UPDATE tenant_rabatexpress.orders SET hub_phase = NULL`);
+  const [ref] = await creerCommandes(page, [{ cod: 90, toCity: 'Casablanca' }]);
+  sql(`UPDATE tenant_rabatexpress.orders SET status = 'RECUPEREE', hub_phase = 'arrive' WHERE ref = '${ref}'`);
+  const ligne = sql(`SELECT code FROM tenant_rabatexpress.orders WHERE ref = '${ref}'`).trim();
+
   await page.goto('/hub');
 
   const colonne = (titre: string) => page.locator('div').filter({ hasText: new RegExp(`^${titre}`) }).first();

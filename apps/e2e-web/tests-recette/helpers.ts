@@ -302,6 +302,100 @@ export async function creerCommandes(page: Page, fixtures: Fixture[]): Promise<s
   }, fixtures);
 }
 
+/**
+ * Joue une livraison COMPLÈTE dans la peau du livreur (API terrain) et rend la référence.
+ *
+ * Les sections caisse, fraude et pilotage ont besoin de livraisons réelles — encaissement
+ * compris — sans dépendre de l'émulateur Android : le parcours mobile lui-même est tenu
+ * par la section G. On emprunte donc le MÊME chemin que l'app (assigner, avancer, preuve),
+ * jamais un `UPDATE` qui fabriquerait un état que le produit ne sait pas produire.
+ */
+export async function livrerCommeLivreur(
+  page: Page,
+  options: { cod?: number; driver?: string; codCollected?: number } = {},
+): Promise<{ ref: string; code: string; cod: number }> {
+  const cod = options.cod ?? 300;
+  const driver = options.driver ?? 'Hamid Ouali';
+  const [ref] = await creerCommandes(page, [{ cod, proofLevel: 'aucune', toCity: 'Casablanca' }]);
+  await page.evaluate(async ([r, d]) => {
+    await fetch(`/api/proxy/v1/orders/${r}/assign`, {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ driver: d }),
+    });
+  }, [ref, driver] as const);
+
+  const API = process.env.API_URL || 'http://localhost:3000';
+  const mdp = motDePasse('livreur@rabatexpress.ma');
+  const jeton = await page.evaluate(async ([api, motdepasse]) => {
+    const r = await fetch(`${api}/v1/auth/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-tenant-slug': 'rabatexpress' },
+      body: JSON.stringify({ email: 'livreur@rabatexpress.ma', password: motdepasse }),
+    });
+    return (await r.json()).token as string;
+  }, [API, mdp] as const);
+
+  await page.evaluate(async ([api, t, r, montant]) => {
+    const entetes = { 'content-type': 'application/json', 'x-tenant-slug': 'rabatexpress', authorization: `Bearer ${t}` };
+    // Retrait → Récupérée → En livraison, puis preuve : le cycle que l'app fait faire.
+    for (const _ of [1, 2, 3]) {
+      await fetch(`${api}/v1/driver/orders/${r}/advance`, {
+        method: 'POST', headers: { ...entetes, 'idempotency-key': `${r}:advance:${Date.now()}:${Math.random()}` },
+        body: '{}',
+      });
+    }
+    await fetch(`${api}/v1/driver/orders/${r}/proof`, {
+      method: 'POST',
+      headers: { ...entetes, 'idempotency-key': `${r}:proof:${Date.now()}` },
+      body: JSON.stringify({ codCollected: montant }),
+    });
+  }, [API, jeton, ref, options.codCollected ?? cod] as const);
+
+  const code = sql(`SELECT code FROM tenant_rabatexpress.orders WHERE ref = '${ref}'`).trim();
+  return { ref, code, cod };
+}
+
+/**
+ * Déclare un ÉCHEC de livraison depuis le terrain, comme le ferait l'app (TC-G10), et
+ * rend la référence. Sert de décor aux sections retours et pilotage.
+ */
+export async function echouerCommeLivreur(
+  page: Page,
+  options: { cod?: number; reason?: string; driver?: string } = {},
+): Promise<{ ref: string; reason: string }> {
+  const cod = options.cod ?? 300;
+  const driver = options.driver ?? 'Hamid Ouali';
+  const reason = options.reason ?? 'Destinataire absent — deux passages sans réponse';
+  const [ref] = await creerCommandes(page, [{ cod, proofLevel: 'aucune', toCity: 'Salé' }]);
+  await page.evaluate(async ([r, d]) => {
+    await fetch(`/api/proxy/v1/orders/${r}/assign`, {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ driver: d }),
+    });
+  }, [ref, driver] as const);
+
+  const API = process.env.API_URL || 'http://localhost:3000';
+  const mdp = motDePasse('livreur@rabatexpress.ma');
+  await page.evaluate(async ([api, motdepasse, r, motif]) => {
+    const login = await fetch(`${api}/v1/auth/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-tenant-slug': 'rabatexpress' },
+      body: JSON.stringify({ email: 'livreur@rabatexpress.ma', password: motdepasse }),
+    });
+    const t = (await login.json()).token;
+    const entetes = { 'content-type': 'application/json', 'x-tenant-slug': 'rabatexpress', authorization: `Bearer ${t}` };
+    for (const _ of [1, 2, 3]) {
+      await fetch(`${api}/v1/driver/orders/${r}/advance`, {
+        method: 'POST', headers: { ...entetes, 'idempotency-key': `${r}:advance:${Date.now()}:${Math.random()}` },
+        body: '{}',
+      });
+    }
+    await fetch(`${api}/v1/driver/orders/${r}/fail`, {
+      method: 'POST', headers: { ...entetes, 'idempotency-key': `${r}:fail:${Date.now()}` },
+      body: JSON.stringify({ reason: motif }),
+    });
+  }, [API, mdp, ref, reason] as const);
+  return { ref, reason };
+}
+
 /** Vide le carnet de commandes du tenant (hors périmètre UI, pour rejouer un cas). */
 export async function viderCommandes(page: Page): Promise<void> {
   sql('DELETE FROM tenant_rabatexpress.orders');
