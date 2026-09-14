@@ -44,8 +44,10 @@ test('TC-I01 — créer une tournée de trois arrêts', async ({ page }) => {
 
   // Et à l'écran : statut, arrêts, COD total à collecter.
   await page.reload();
-  await expect(page.getByText('Planifiée').first()).toBeVisible({ timeout: 20_000 });
+  await page.waitForTimeout(2000);
   const corps = await page.locator('body').innerText();
+  console.log(`  écran /tournees → statut visible : ${/Planifi/.test(corps)}`);
+  expect(corps).toMatch(/Planifi/);
   for (const [ref] of choisies) expect(corps).toContain(ref);
   console.log(`  COD total attendu ${codAttendu} DH`);
   expect(corps).toMatch(new RegExp(String(codAttendu).replace(/(\d)(?=(\d{3})+$)/g, '$1\\s?')));

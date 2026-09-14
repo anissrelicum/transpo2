@@ -41,7 +41,7 @@ test('TC-L03 — écart de caisse déclaré par le livreur, résolu par la compt
   expect(annonce).toMatch(/Écart/);
   await shotVp(page, 'TC-L03', '01-ecart-annonce');
 
-  await page.getByText('Hamid Ouali').first().click();
+  await page.locator('tr', { hasText: 'Hamid Ouali' }).last().click();
   await expect(page.getByText('COD théorique')).toBeVisible({ timeout: 20_000 });
   await page.waitForTimeout(800);
   await expect(page.getByRole('button', { name: /Résoudre l’écart de/ })).toBeVisible();
@@ -64,7 +64,7 @@ test('TC-L03 — écart de caisse déclaré par le livreur, résolu par la compt
   expect(motif).toBe('Client a payé partiellement');
   expect(note).toContain('100 DH');
   await page.reload();
-  await page.getByText('Hamid Ouali').first().click();
+  await page.locator('tr', { hasText: 'Hamid Ouali' }).last().click();
   await expect(page.getByText('COD théorique')).toBeVisible({ timeout: 20_000 });
   await page.waitForTimeout(800);
   await expect(page.getByText(/Écart résolu/)).toBeVisible({ timeout: 20_000 });

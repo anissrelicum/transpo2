@@ -39,7 +39,7 @@ test('TC-L01 — la caisse du livreur se remplit de ses encaissements', async ({
   expect(corps).toContain('Hamid Ouali');
   expect(corps).not.toContain('Aucune session de caisse');
 
-  await page.getByText('Hamid Ouali').first().click();
+  await page.locator('tr', { hasText: 'Hamid Ouali' }).last().click();
   await page.waitForTimeout(1200);
   await shotVp(page, 'TC-L01', '02-session-du-chauffeur');
   const detail = await page.locator('body').innerText();

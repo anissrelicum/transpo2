@@ -24,11 +24,13 @@ test('TC-I03 — réordonnancement manuel persistant', async ({ page }) => {
   await shotVp(page, 'TC-I03', '01-ordre-initial');
 
   // Descendre le premier arrêt : l'ordre doit s'inverser sur les deux premiers.
-  const descendre = page.getByRole('button').filter({ has: page.locator('svg') });
-  await page.locator('button:below(:text("Arrêts"))').nth(1).click().catch(async () => {
-    await descendre.nth(1).click();
-  });
-  await page.waitForTimeout(2000);
+  // Chaque arrêt porte deux chevrons (monter / descendre) : le second bouton de la page
+  // est le « descendre » du premier arrêt.
+  const chevrons = page.locator('button').filter({ has: page.locator('svg') });
+  const avantClic = await chevrons.count();
+  console.log(`  ${avantClic} boutons à icône sur l'écran`);
+  await page.getByRole('button', { name: '' }).nth(1).click().catch(() => {});
+  await page.waitForTimeout(2500);
   const apres = ordre();
   console.log(`  avant ${avant.join(' → ')}\n  après ${apres.join(' → ')}`);
   expect(apres).not.toEqual(avant);

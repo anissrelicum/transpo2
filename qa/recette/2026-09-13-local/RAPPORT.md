@@ -236,6 +236,24 @@ apps/e2e-web/lancer-recette-locale.sh h01 k02  # quelques cas
 | TC-T03 | OK | 1024 px et 768 px sur `/orders`, `/dispatch`, `/cash` : aucun débordement horizontal | 14/09 |
 | TC-T04 | OK | 21 pages d'un tenant neuf : aucun écran blanc, aucune erreur JavaScript | 14/09 |
 | TC-T05 | OK | Même libellé de statut sur la liste, la fiche et le suivi client | 14/09 |
+| TC-I02 | OK | Optimisation annoncée et **persistée** ; bouton fermé sous 2 arrêts | 14/09 |
+| TC-I04 | OK | Planifiée → En cours → Clôturée ; réordonnancement et relance d'une tournée close refusés **400**. **AN-42 corrigée** | 14/09 |
+| TC-K01 | OK | L'échec du terrain ouvre un retour « À traiter » 1/3 avec son motif et ses notes | 14/09 |
+| TC-K02 | OK | Reprogrammation → 2/3, et la commande **redevient livrable** (statut LIVRAISON, livreur conservé) | 14/09 |
+| TC-K03 | OK | Au plafond : message explicite, bouton absent, API refusée 400 | 14/09 |
+| TC-K04 | OK | Rendu au marchand, ligne basculée en « Clôturés », **reprogrammation et re-restitution refusées 400**. **AN-41 corrigée** | 14/09 |
+| TC-L01 | OK | Deux encaissements du terrain → une session au nom du chauffeur, théorique = somme, mouvements traçables à la course. **AN-43 corrigée** | 14/09 |
+| TC-L02 | OK | Dépôt en agence = montant déclaré ; second dépôt refusé 400 | 14/09 |
+| TC-L04 | OK | `reconciliation-cash.csv` téléchargé, sessions affichées dedans | 14/09 |
+| TC-L07 | OK | Dispatcher : 5 écritures sur la caisse et les reversements refusées 403 | 14/09 |
+| TC-N02 | OK | Commandes et portefeuille bornés au marchand, COD encaissé conforme | 14/09 |
+| TC-O04 | OK | L'avis remonte avec sa note, sa commande, son chauffeur et son marchand | 14/09 |
+| TC-P06 | OK | Création et mise en livraison notifient le client, code de suivi substitué. **AN-44 corrigée** | 14/09 |
+| TC-R03 | OK | Commandes, caisse et réconciliation comptent le même argent | 14/09 |
+| TC-S01 | OK | 15 pages parcourues : aucune donnée du tenant voisin | 14/09 |
+| TC-S03 | OK | Jeton livreur borné à son chauffeur ; 4 routes d'exploitation en 403 | 14/09 |
+| TC-S06 | OK | Export complet (courses comprises) puis effacement : données personnelles disparues, commandes conservées. **AN-45 corrigée** | 14/09 |
+| TC-T01 | OK | Bascule FR → AR, RTL, langue conservée d'une page à l'autre | 14/09 |
 
 ## Constats produit — sections H à T
 
@@ -262,6 +280,40 @@ Même défaut que celui corrigé sur l'éditeur de zones en section E : « Suppl
 annonçait quatre champs anonymes, et cliquer le libellé ne faisait rien. Chaque libellé
 enveloppe maintenant son contrôle. *(Trouvé, là encore, parce que la recette ne pouvait pas
 viser le champ par son nom — le même signal qu'en sections E et G.)*
+
+**AN-43 — Encaisser un COD n'ouvrait aucune caisse. _Corrigée._**
+`cash_sessions` n'était alimentée que par le jeu de démonstration : sur un tenant réel,
+`/cash` affichait « Aucune session de caisse aujourd'hui » pendant que des milliers de dirhams
+circulaient en tournée. Le théorique existait (calculé à la volée par la réconciliation), mais
+**ni le déclaré, ni le dépôt, ni l'écart n'avaient de support** — toute la section L était sans
+objet. La preuve de livraison alimente maintenant la caisse du jour du livreur, mouvement par
+mouvement (une course = une ligne traçable), et le livreur **déclare** ce qu'il a réellement en
+main depuis son récap (`POST /v1/driver/cash/declare`). Sans cette déclaration, la comptabilité
+ne rapprochait que deux chiffres qu'elle avait elle-même produits. **Tenue par TC-L01 à TC-L03.**
+
+**AN-44 — Aucun événement de course ne notifiait le client. _Corrigée._**
+Le catalogue de modèles bilingues, le journal, les consentements 09-08 : tout existait, et
+**rien ne s'y déversait** — seuls les envois manuels d'un opérateur peuplaient le journal. Un
+client n'était donc prévenu ni de l'enregistrement de son colis, ni de sa mise en livraison, ni
+de sa livraison, ni de son échec. Les quatre événements notifient désormais le destinataire, en
+respectant la règle de consentement (transactionnel exempté). Envois **après** l'écriture et
+jamais bloquants : une notification qui échoue ne fait pas échouer une course. **Tenue par TC-P06.**
+
+**AN-45 — L'effacement Loi 09-08 laissait les données de la personne sur ses courses. _Corrigée._**
+`POST /v1/privacy/erase` ne touchait que les consentements et les notifications. Or c'est la
+**course** qui détient l'essentiel : contact, téléphone, adresse, instructions d'accès. Après un
+effacement, la fiche commande affichait toujours le numéro du destinataire, et le suivi client
+continuait de servir ces champs. Les courses sont maintenant **anonymisées sans être supprimées**
+— la commande reste due, facturée et comptée ; c'est la personne qui disparaît, pas l'écriture
+comptable. L'export de portabilité rend lui aussi les courses. **Tenue par TC-S06.**
+
+**AN-41 — Un retour rendu au marchand pouvait être reprogrammé. _Corrigée._**
+La console masquait bien l'action, mais l'API acceptait `reschedule` et `return-to-merchant` sur
+un retour déjà **RENDU** : le colis serait repassé « en cours de livraison » alors qu'il est
+physiquement reparti chez le marchand. Refus **400** des deux côtés. **Tenue par TC-K04.**
+
+**AN-42 — Une tournée clôturée restait modifiable par l'API. _Corrigée._** Réordonner une
+tournée close réécrit la journée d'hier ; l'écran l'interdisait, pas le serveur. **Tenue par TC-I04.**
 
 **AN-40 — La tournée planifiée par le dispatch n'atteignait jamais le livreur. _Corrigée._**
 L'exploitation crée une tournée, l'optimise (TC-I02), la réordonne à la main (TC-I03) — et

@@ -18,7 +18,7 @@ test('TC-L02 — dépôt en agence d’une caisse à déposer', async ({ page })
   const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/cash');
-  await page.getByText('Hamid Ouali').first().click();
+  await page.locator('tr', { hasText: 'Hamid Ouali' }).last().click();
   await page.waitForTimeout(1200);
   await shotVp(page, 'TC-L02', '01-a-deposer');
 
@@ -32,7 +32,7 @@ test('TC-L02 — dépôt en agence d’une caisse à déposer', async ({ page })
   console.log(`  déposé ${depose} DH pour un déclaré de ${theorique} DH`);
   expect(depose).toBe(theorique);
   await page.reload();
-  await page.getByText('Hamid Ouali').first().click();
+  await page.locator('tr', { hasText: 'Hamid Ouali' }).last().click();
   await page.waitForTimeout(1200);
   await expect(page.getByText(/Session clôturée/)).toBeVisible({ timeout: 20_000 });
   await shotVp(page, 'TC-L02', '02-depose');
