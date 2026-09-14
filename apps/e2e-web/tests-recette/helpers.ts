@@ -326,35 +326,38 @@ export async function livrerCommeLivreur(
     });
   }, [ref, driver] as const);
 
+  // Les appels au terrain partent du CONTEXTE NODE, pas de la page : l'API est sur un autre
+  // port que la console, et un `fetch` depuis le navigateur y est refusé par la politique
+  // d'origine (« Failed to fetch »). Le proxy de la console, lui, ne porte pas le jeton du
+  // livreur — d'où l'appel direct, authentifié ici.
+  const jeton = await jetonLivreur(page);
   const API = process.env.API_URL || 'http://localhost:3000';
-  const mdp = motDePasse('livreur@rabatexpress.ma');
-  const jeton = await page.evaluate(async ([api, motdepasse]) => {
-    const r = await fetch(`${api}/v1/auth/login`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-tenant-slug': 'rabatexpress' },
-      body: JSON.stringify({ email: 'livreur@rabatexpress.ma', password: motdepasse }),
+  const entetes = { 'content-type': 'application/json', 'x-tenant-slug': 'rabatexpress',
+                    authorization: `Bearer ${jeton}` };
+  for (const _ of [1, 2, 3]) {
+    await page.request.post(`${API}/v1/driver/orders/${ref}/advance`, {
+      headers: { ...entetes, 'idempotency-key': `${ref}:advance:${Date.now()}:${Math.random()}` },
+      data: {},
     });
-    return (await r.json()).token as string;
-  }, [API, mdp] as const);
-
-  await page.evaluate(async ([api, t, r, montant]) => {
-    const entetes = { 'content-type': 'application/json', 'x-tenant-slug': 'rabatexpress', authorization: `Bearer ${t}` };
-    // Retrait → Récupérée → En livraison, puis preuve : le cycle que l'app fait faire.
-    for (const _ of [1, 2, 3]) {
-      await fetch(`${api}/v1/driver/orders/${r}/advance`, {
-        method: 'POST', headers: { ...entetes, 'idempotency-key': `${r}:advance:${Date.now()}:${Math.random()}` },
-        body: '{}',
-      });
-    }
-    await fetch(`${api}/v1/driver/orders/${r}/proof`, {
-      method: 'POST',
-      headers: { ...entetes, 'idempotency-key': `${r}:proof:${Date.now()}` },
-      body: JSON.stringify({ codCollected: montant }),
-    });
-  }, [API, jeton, ref, options.codCollected ?? cod] as const);
+  }
+  await page.request.post(`${API}/v1/driver/orders/${ref}/proof`, {
+    headers: { ...entetes, 'idempotency-key': `${ref}:proof:${Date.now()}` },
+    data: { codCollected: options.codCollected ?? cod },
+  });
 
   const code = sql(`SELECT code FROM tenant_rabatexpress.orders WHERE ref = '${ref}'`).trim();
   return { ref, code, cod };
+}
+
+/** Jeton du compte livreur — obtenu côté Node, jamais depuis la page. */
+export async function jetonLivreur(page: Page): Promise<string> {
+  const API = process.env.API_URL || 'http://localhost:3000';
+  const r = await page.request.post(`${API}/v1/auth/login`, {
+    headers: { 'content-type': 'application/json', 'x-tenant-slug': 'rabatexpress' },
+    data: { email: 'livreur@rabatexpress.ma', password: motDePasse('livreur@rabatexpress.ma') },
+  });
+  if (!r.ok()) throw new Error(`connexion livreur impossible (${r.status()})`);
+  return (await r.json()).token as string;
 }
 
 /**
@@ -375,27 +378,20 @@ export async function echouerCommeLivreur(
     });
   }, [ref, driver] as const);
 
+  const jeton = await jetonLivreur(page);
   const API = process.env.API_URL || 'http://localhost:3000';
-  const mdp = motDePasse('livreur@rabatexpress.ma');
-  await page.evaluate(async ([api, motdepasse, r, motif]) => {
-    const login = await fetch(`${api}/v1/auth/login`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-tenant-slug': 'rabatexpress' },
-      body: JSON.stringify({ email: 'livreur@rabatexpress.ma', password: motdepasse }),
+  const entetes = { 'content-type': 'application/json', 'x-tenant-slug': 'rabatexpress',
+                    authorization: `Bearer ${jeton}` };
+  for (const _ of [1, 2, 3]) {
+    await page.request.post(`${API}/v1/driver/orders/${ref}/advance`, {
+      headers: { ...entetes, 'idempotency-key': `${ref}:advance:${Date.now()}:${Math.random()}` },
+      data: {},
     });
-    const t = (await login.json()).token;
-    const entetes = { 'content-type': 'application/json', 'x-tenant-slug': 'rabatexpress', authorization: `Bearer ${t}` };
-    for (const _ of [1, 2, 3]) {
-      await fetch(`${api}/v1/driver/orders/${r}/advance`, {
-        method: 'POST', headers: { ...entetes, 'idempotency-key': `${r}:advance:${Date.now()}:${Math.random()}` },
-        body: '{}',
-      });
-    }
-    await fetch(`${api}/v1/driver/orders/${r}/fail`, {
-      method: 'POST', headers: { ...entetes, 'idempotency-key': `${r}:fail:${Date.now()}` },
-      body: JSON.stringify({ reason: motif }),
-    });
-  }, [API, mdp, ref, reason] as const);
+  }
+  await page.request.post(`${API}/v1/driver/orders/${ref}/fail`, {
+    headers: { ...entetes, 'idempotency-key': `${ref}:fail:${Date.now()}` },
+    data: { reason },
+  });
   return { ref, reason };
 }
 

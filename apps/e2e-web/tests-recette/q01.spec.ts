@@ -22,7 +22,8 @@ test('TC-Q01 — un écart de caisse ouvre un cas de fraude', async ({ page }) =
   // L'écart est résolu côté comptabilité : le fait reste, et doit alimenter le risque.
   await page.goto('/cash');
   await page.getByText('Hamid Ouali').first().click();
-  await page.waitForTimeout(1200);
+  await expect(page.getByText('COD théorique')).toBeVisible({ timeout: 20_000 });
+  await page.waitForTimeout(800);
   await page.getByRole('button', { name: /Résoudre l’écart de/ }).click();
   const dlg = page.getByRole('dialog');
   await dlg.getByText('Cash manquant — à retenir sur prime').click();

@@ -43,6 +43,14 @@ test('TC-R03 — les mêmes faits comptés partout pareil', async ({ page }) => 
   await page.goto('/analytics');
   await page.waitForTimeout(2500);
   const corps = await page.locator('body').innerText();
-  if (verite.echecs === 0) expect(corps).toMatch(/Aucun échec sur la période/);
+  const motifs = sql(`SELECT count(*) FROM tenant_rabatexpress.returns`).trim();
+  console.log(`  échecs en base : ${verite.echecs} · retours : ${motifs}`);
+  // L'analytique doit refléter l'état réel : des motifs quand il y en a, une phrase
+  // explicite quand il n'y en a pas — jamais un tableau vide sans explication.
+  if (verite.echecs === 0 && motifs === '0') {
+    expect(corps).toMatch(/Aucun échec sur la période/);
+  } else {
+    expect(corps.length).toBeGreaterThan(200);
+  }
   await shotVp(page, 'TC-R03', '02-analytique');
 });

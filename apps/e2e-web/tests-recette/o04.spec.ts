@@ -30,7 +30,9 @@ test('TC-O04 — un avis client remonte à l’exploitation', async ({ page }) =
                        WHERE rating IS NOT NULL GROUP BY rating ORDER BY rating`)
     .split('\n').map((l) => l.split('|').map((x) => x.trim())).filter((c) => c[0]);
   console.log(`  distribution en base → ${parNote.map(([n, c]) => `${n}★:${c}`).join(' ')}`);
-  const api = await page.evaluate(async () => (await (await fetch('/api/proxy/v1/reviews')).json()));
-  console.log(`  /v1/reviews → ${api.length} avis`);
-  expect(api.length).toBe(parNote.reduce((s, [, c]) => s + Number(c), 0));
+  const rendu = await page.evaluate(async () => (await (await fetch('/api/proxy/v1/reviews')).json()));
+  const avis = Array.isArray(rendu) ? rendu : rendu.items ?? rendu.reviews ?? [];
+  const total = parNote.reduce((s, [, c]) => s + Number(c), 0);
+  console.log(`  /v1/reviews → ${avis.length} avis pour ${total} en base`);
+  expect(avis.length).toBe(total);
 });

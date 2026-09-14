@@ -13,9 +13,13 @@ test('TC-S03 — le compte livreur est borné à son chauffeur', async ({ reques
     data: { email: 'livreur@rabatexpress.ma', password: motDePasse('livreur@rabatexpress.ma') },
   });
   expect(login.ok()).toBe(true);
-  const { token, driver } = await login.json();
-  console.log(`  jeton livreur → chauffeur ${driver}`);
-  expect(driver).toBe('Hamid Ouali');
+  const { token } = await login.json();
+  // Le rattachement au chauffeur vit dans le JETON (claim `driver`), pas dans la réponse :
+  // c'est lui qui borne toutes les routes du terrain.
+  const claims = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString('utf-8'));
+  console.log(`  jeton livreur → chauffeur ${claims.driver}, rôle ${claims.role}`);
+  expect(claims.driver).toBe('Hamid Ouali');
+  expect(claims.role).toBe('DRIVER');
 
   const missions = await request.get(`${API}/v1/driver/missions`, {
     headers: { authorization: `Bearer ${token}`, 'x-tenant-slug': 'rabatexpress' },

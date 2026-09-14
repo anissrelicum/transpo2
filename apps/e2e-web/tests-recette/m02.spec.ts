@@ -17,10 +17,10 @@ test('TC-M02 — le devis simulé suit la grille enregistrée', async ({ page })
   // Le prix attendu, calculé depuis la grille du serveur — jamais depuis l'écran.
   const palier = cfg.tiers.find((t: any) => distance >= t.from && (t.to == null || distance < t.to)) ?? cfg.tiers.at(-1);
   const base = palier.base != null ? palier.base : Math.round(palier.perKm * distance * 100) / 100;
-  const remise = Math.round(base * (1 - cfg.discountRate) * 100) / 100;
-  const tva = Math.round(remise * cfg.vatRate * 100) / 100;
-  const ttcAttendu = Math.round((remise + tva) * 100) / 100;
-  console.log(`  ${distance} km → base ${base}, remisé ${remise}, TVA ${tva}, TTC attendu ${ttcAttendu}`);
+  const apresRemise = Math.round(base * (1 - cfg.discountRate) * 100) / 100;
+  const tva = Math.round(apresRemise * cfg.vatRate * 100) / 100;
+  const ttcAttendu = Math.round((apresRemise + tva) * 100) / 100;
+  console.log(`  ${distance} km → base ${base}, remisé ${apresRemise}, TVA ${tva}, TTC attendu ${ttcAttendu}`);
 
   const corps = await page.locator('body').innerText();
   const affiche = /Total TTC[\s\S]{0,40}?([\d   ]+,\d{2})\s*DH/.exec(corps)?.[1]?.replace(/[\s ]/g, '').replace(',', '.');

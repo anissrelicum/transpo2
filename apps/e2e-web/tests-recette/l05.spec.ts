@@ -10,6 +10,11 @@ test('TC-L05 — générer puis payer un reversement marchand', async ({ page })
 
   const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
+
+  // La génération saute les marchands DÉJÀ reversés sur la période : sans remise à plat,
+  // le cas ne crée rien au second passage et conclut à tort que la génération est muette.
+  sql(`DELETE FROM tenant_rabatexpress.payouts WHERE period = '${periode}'`);
+
   await page.goto('/payout');
   await page.waitForTimeout(2000);
   await shotVp(page, 'TC-L05', '01-avant-generation');

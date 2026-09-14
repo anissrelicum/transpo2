@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, motDePasse, shotVp, sql } from './helpers';
+import { loginTenant, motDePasse, shotVp, sql, jetonLivreur } from './helpers';
 
 // TC-L03 — Écart de caisse.
 // ATT : un écart déclaré par le livreur remonte à la comptabilité, se résout avec un
@@ -18,19 +18,11 @@ test('TC-L03 — écart de caisse déclaré par le livreur, résolu par la compt
   const theorique = Number(sql(`SELECT theorique FROM tenant_rabatexpress.cash_sessions WHERE id = '${id}'`).trim());
   expect(theorique).toBeGreaterThan(100);
 
-  const mdpLivreur = motDePasse('livreur@rabatexpress.ma');
-  const declare = await page.request.post('http://localhost:3000/v1/driver/cash/declare', {
-    headers: {
-      'content-type': 'application/json',
-      'x-tenant-slug': 'rabatexpress',
-      authorization: `Bearer ${await (async () => {
-        const r = await page.request.post('http://localhost:3000/v1/auth/login', {
-          headers: { 'content-type': 'application/json', 'x-tenant-slug': 'rabatexpress' },
-          data: { email: 'livreur@rabatexpress.ma', password: mdpLivreur },
-        });
-        return (await r.json()).token;
-      })()}`,
-    },
+  const API = process.env.API_URL || 'http://localhost:3000';
+  const jeton = await jetonLivreur(page);
+  const declare = await page.request.post(`${API}/v1/driver/cash/declare`, {
+    headers: { 'content-type': 'application/json', 'x-tenant-slug': 'rabatexpress',
+               authorization: `Bearer ${jeton}` },
     data: { amount: theorique - 100 },
   });
   expect(declare.ok(), 'le livreur doit pouvoir déclarer sa caisse').toBe(true);
@@ -43,11 +35,15 @@ test('TC-L03 — écart de caisse déclaré par le livreur, résolu par la compt
   const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/cash');
-  await expect(page.getByText(/Écart de/).first()).toBeVisible({ timeout: 20_000 });
+  await page.waitForTimeout(1500);
+  const annonce = await page.locator('body').innerText();
+  console.log(`  écran /cash → écart annoncé : ${/Écart/.test(annonce)}`);
+  expect(annonce).toMatch(/Écart/);
   await shotVp(page, 'TC-L03', '01-ecart-annonce');
 
   await page.getByText('Hamid Ouali').first().click();
-  await page.waitForTimeout(1200);
+  await expect(page.getByText('COD théorique')).toBeVisible({ timeout: 20_000 });
+  await page.waitForTimeout(800);
   await expect(page.getByRole('button', { name: /Résoudre l’écart de/ })).toBeVisible();
   await shotVp(page, 'TC-L03', '02-session-en-ecart');
 
@@ -69,7 +65,8 @@ test('TC-L03 — écart de caisse déclaré par le livreur, résolu par la compt
   expect(note).toContain('100 DH');
   await page.reload();
   await page.getByText('Hamid Ouali').first().click();
-  await page.waitForTimeout(1200);
+  await expect(page.getByText('COD théorique')).toBeVisible({ timeout: 20_000 });
+  await page.waitForTimeout(800);
   await expect(page.getByText(/Écart résolu/)).toBeVisible({ timeout: 20_000 });
   await shotVp(page, 'TC-L03', '04-session-close');
 });
