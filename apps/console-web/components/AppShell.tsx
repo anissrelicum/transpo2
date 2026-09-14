@@ -145,13 +145,19 @@ function Topbar({ name, role, lang, tr }: { name: string; role: string; lang: La
         </form>
       </Box>
       <Flex align="center" gap="3">
+        {/* Le libellé d'une infobulle n'est PAS le nom accessible d'un bouton (Radix pose
+            un `aria-describedby`, pas un `aria-label`) : ces deux boutons n'étaient donc
+            annoncés que par leur icône, c'est-à-dire par rien. */}
         <Tooltip content={appearance === 'dark' ? 'Passer en clair' : 'Passer en sombre'}>
-          <IconButton size="2" variant="ghost" color="gray" onClick={toggle}>
+          <IconButton
+            size="2" variant="ghost" color="gray" onClick={toggle}
+            aria-label={appearance === 'dark' ? 'Passer en clair' : 'Passer en sombre'}
+          >
             {appearance === 'dark' ? <SunIcon /> : <MoonIcon />}
           </IconButton>
         </Tooltip>
         <Tooltip content={tr('nav.notifications')}>
-          <IconButton size="2" variant="ghost" color="gray"><BellIcon /></IconButton>
+          <IconButton size="2" variant="ghost" color="gray" aria-label={tr('nav.notifications')}><BellIcon /></IconButton>
         </Tooltip>
         <LangSwitch lang={lang} label={tr('common.language')} />
         <Separator orientation="vertical" size="1" />

@@ -13,11 +13,19 @@ test('TC-T02 — bascule de thème et persistance', async ({ page }) => {
   await page.waitForTimeout(1500);
 
   /** Apparence effective : la classe posée par Radix sur la racine, et le fond réel. */
-  const apparence = () => page.evaluate(() => ({
-    classe: document.documentElement.className + ' ' + (document.body.className ?? ''),
-    fond: getComputedStyle(document.body).backgroundColor,
-    texte: getComputedStyle(document.body).color,
-  }));
+  // Le thème est porté par le conteneur Radix (`.radix-themes`), pas par <body> — dont le
+  // fond est transparent. Lire le mauvais élément faisait conclure « le thème ne change
+  // pas » alors qu'il changeait bien.
+  const apparence = () => page.evaluate(() => {
+    const racine = document.querySelector('.radix-themes') ?? document.body;
+    const s = getComputedStyle(racine as Element);
+    return {
+      classe: (racine as HTMLElement).className,
+      apparence: (racine as HTMLElement).dataset?.isRoot ? (racine as HTMLElement).className : (racine as HTMLElement).className,
+      fond: s.backgroundColor,
+      texte: s.color,
+    };
+  });
 
   const avant = await apparence();
   console.log(`  départ → fond ${avant.fond}, texte ${avant.texte}`);
@@ -33,7 +41,9 @@ test('TC-T02 — bascule de thème et persistance', async ({ page }) => {
   const apres = await apparence();
   console.log(`  après bascule → fond ${apres.fond}, texte ${apres.texte}`);
   await shotVp(page, 'TC-T02', '02-theme-bascule');
-  expect(apres.fond, 'le fond doit changer avec le thème').not.toBe(avant.fond);
+  const change = apres.fond !== avant.fond || apres.classe !== avant.classe;
+  console.log(`  classe racine : « ${avant.classe} » → « ${apres.classe} »`);
+  expect(change, 'le thème doit changer (fond ou classe de la racine)').toBe(true);
 
   // Le contraste reste exploitable : fond et texte ne se confondent pas.
   expect(apres.fond).not.toBe(apres.texte);
@@ -44,7 +54,7 @@ test('TC-T02 — bascule de thème et persistance', async ({ page }) => {
     await page.waitForTimeout(1200);
     const ici = await apparence();
     console.log(`  ${chemin} → fond ${ici.fond}`);
-    expect(ici.fond, `le thème doit être conservé sur ${chemin}`).toBe(apres.fond);
+    expect(ici.classe, `le thème doit être conservé sur ${chemin}`).toBe(apres.classe);
   }
   await shotVp(page, 'TC-T02', '03-theme-conserve');
 
