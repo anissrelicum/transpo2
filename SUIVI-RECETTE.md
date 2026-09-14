@@ -39,6 +39,30 @@ Détail, verdicts et constats : [qa/recette/2026-09-13-local/RAPPORT.md](qa/rece
 **À refaire après rallumage du homelab :** redéployer et rejouer la section G telle quelle —
 ce run valide le produit, pas le déploiement.
 
+## Run du 14/09/2026 — sections H à T (consoles web)
+
+Même environnement local. Harnais Playwright rendu jouable hors cluster (`PG_EXEC`), lanceur
+`apps/e2e-web/lancer-recette-locale.sh`. Détail : le même
+[RAPPORT.md](qa/recette/2026-09-13-local/RAPPORT.md).
+
+| Cas | Rôle testeur | Env. | Statut | Constat / réf | Date |
+|---|---|---|---|---|---|
+| TC-H01 → TC-H05 | Admin / comptable | Local | **OK** | Tri en hub de bout en bout. **AN-36 corrigée** : le scan d'entrée sautait la colonne « Arrivés — à scanner », qui ne pouvait donc jamais se remplir. Ouvert : **AN-37** (sceller un bordereau ne laisse aucune trace). | 14/09 |
+| TC-J01, TC-J03, TC-J04 | Admin | Local | **OK** | Positions réelles du terrain au PC flotte, alerte de sortie de géofence, raccourcis. | 14/09 |
+| TC-M01 → TC-M03 | Admin | Local | **OK** | Grille persistée, devis conforme à la cascade, export CSV. **AN-39 corrigée** (libellés reliés aux champs). **OBS-15** : le simulateur affiche un prix remisé par défaut. | 14/09 |
+| TC-N01, TC-N04 | Marchand | Local | **OK** | Portail borné au marchand, console transport et API d'exploitation fermées (403). | 14/09 |
+| TC-O01, TC-O03 | Anonyme | Local | **OK** | Suivi public sans fuite (ni téléphone, ni adresse, ni livreur), notation unique. | 14/09 |
+| TC-P01, TC-P04, TC-P05 | Admin | Local | **OK** | Journal, consentement 09-08 opposable, modèles et substitution des variables. | 14/09 |
+| TC-R01, TC-R02 | Admin | Local | **OK** | Tableau de bord et analytique conformes à la base. | 14/09 |
+| TC-S02, TC-S05, TC-S07 | Admin / super-admin | Local | **OK** | En-tête de tenant sans effet sur le jeton, journal d'audit complet, session perdue → login. | 14/09 |
+| TC-T03, TC-T04, TC-T05 | Admin | Local | **OK** | Aucun débordement à 1024/768 px, 21 pages d'un tenant neuf sans écran blanc ni erreur JS, statuts cohérents. | 14/09 |
+
+**Corrigé côté produit pendant ces sections :** caisse alimentée par les encaissements du
+terrain et déclaration du livreur (la chaîne du COD s'arrêtait au théorique), moteur de fraude
+branché sur deux signaux réels (aucun cas n'était jamais créé), notifications déclenchées par
+les événements de course (le journal ne contenait que les envois manuels), tournée du dispatch
+enfin visible par le livreur, garde-fous sur les retours clos et les tournées clôturées.
+
 
 ## Constats produit
 
