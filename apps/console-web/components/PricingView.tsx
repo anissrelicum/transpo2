@@ -151,30 +151,41 @@ export function PricingView({ config, canEdit }: { config: PriceConfig; canEdit:
             </Table.Root>
 
             <Separator size="4" my="3" />
+            {/* Chaque libellé ENVELOPPE son champ : un libellé posé à côté n'est relié à
+                rien, n'est pas cliquable, et un lecteur d'écran annonce un champ anonyme
+                — le même défaut que celui corrigé sur l'éditeur de zones. */}
             <Grid columns="4" gap="3">
               <Box>
-                <Text as="div" size="1" color="gray" mb="1">Supplément fragile</Text>
-                <TextField.Root size="2" type="number" value={String(fragile)} disabled={!canEdit} onChange={(e) => setFragile(Number(e.target.value) || 0)}>
-                  <TextField.Slot side="right"><Text size="1" color="gray">DH</Text></TextField.Slot>
-                </TextField.Root>
+                <Text as="label" size="1" color="gray" style={{ display: 'block', marginBottom: 4 }}>
+                  Supplément fragile
+                  <TextField.Root size="2" type="number" value={String(fragile)} disabled={!canEdit} onChange={(e) => setFragile(Number(e.target.value) || 0)}>
+                    <TextField.Slot side="right"><Text size="1" color="gray">DH</Text></TextField.Slot>
+                  </TextField.Root>
+                </Text>
               </Box>
               <Box>
-                <Text as="div" size="1" color="gray" mb="1">Supplément programmé</Text>
-                <TextField.Root size="2" type="number" value={String(scheduled)} disabled={!canEdit} onChange={(e) => setScheduled(Number(e.target.value) || 0)}>
-                  <TextField.Slot side="right"><Text size="1" color="gray">DH</Text></TextField.Slot>
-                </TextField.Root>
+                <Text as="label" size="1" color="gray" style={{ display: 'block', marginBottom: 4 }}>
+                  Supplément programmé
+                  <TextField.Root size="2" type="number" value={String(scheduled)} disabled={!canEdit} onChange={(e) => setScheduled(Number(e.target.value) || 0)}>
+                    <TextField.Slot side="right"><Text size="1" color="gray">DH</Text></TextField.Slot>
+                  </TextField.Root>
+                </Text>
               </Box>
               <Box>
-                <Text as="div" size="1" color="gray" mb="1">Remise standard</Text>
-                <TextField.Root size="2" type="number" value={String(Math.round(discountRate * 100))} disabled={!canEdit} onChange={(e) => setDiscountRate((Number(e.target.value) || 0) / 100)}>
-                  <TextField.Slot side="right"><Text size="1" color="gray">%</Text></TextField.Slot>
-                </TextField.Root>
+                <Text as="label" size="1" color="gray" style={{ display: 'block', marginBottom: 4 }}>
+                  Remise standard
+                  <TextField.Root size="2" type="number" value={String(Math.round(discountRate * 100))} disabled={!canEdit} onChange={(e) => setDiscountRate((Number(e.target.value) || 0) / 100)}>
+                    <TextField.Slot side="right"><Text size="1" color="gray">%</Text></TextField.Slot>
+                  </TextField.Root>
+                </Text>
               </Box>
               <Box>
-                <Text as="div" size="1" color="gray" mb="1">TVA</Text>
-                <TextField.Root size="2" type="number" value={String(Math.round(vatRate * 100))} disabled={!canEdit} onChange={(e) => setVatRate((Number(e.target.value) || 0) / 100)}>
-                  <TextField.Slot side="right"><Text size="1" color="gray">%</Text></TextField.Slot>
-                </TextField.Root>
+                <Text as="label" size="1" color="gray" style={{ display: 'block', marginBottom: 4 }}>
+                  TVA
+                  <TextField.Root size="2" type="number" value={String(Math.round(vatRate * 100))} disabled={!canEdit} onChange={(e) => setVatRate((Number(e.target.value) || 0) / 100)}>
+                    <TextField.Slot side="right"><Text size="1" color="gray">%</Text></TextField.Slot>
+                  </TextField.Root>
+                </Text>
               </Box>
             </Grid>
           </Card>

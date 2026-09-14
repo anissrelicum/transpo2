@@ -126,7 +126,26 @@ export default async function amorcer() {
   consigner(LIVREUR.email, 'DRIVER', motDePasseLivreur);
   console.log(`  compte livreur ${LIVREUR.email} prêt (mot de passe consigné dans ${RUN}/COMPTES.md)`);
 
-  // 5. Un SECOND tenant, vierge : il sert de témoin au cloisonnement (TC-S02) et aux
+  // 5. Un compte MARCHAND : le portail (section N) et le cloisonnement marchand n'ont
+  //    aucun sujet sans lui, et rien d'autre ne le crée sur un tenant neuf.
+  const MARCHAND = { email: `marchand@${TENANT}.ma`, name: 'Boutique Test' };
+  const marchandExistant = (await tapi('/v1/users')).donnees?.find((u) => u.email === MARCHAND.email);
+  let motDePasseMarchand;
+  if (!marchandExistant) {
+    const r = await tapi('/v1/users', { method: 'POST', body: {
+      email: MARCHAND.email, name: MARCHAND.name, role: 'MERCHANT', merchant: 'Boutique Test',
+    } });
+    if (!r.ok) throw new Error(`invitation marchand refusée (${r.status}) : ${JSON.stringify(r.donnees)}`);
+    motDePasseMarchand = r.donnees.tempPassword;
+  } else {
+    const r = await tapi(`/v1/users/${marchandExistant.id}/reset-password`, { method: 'POST' });
+    if (!r.ok) throw new Error(`réinitialisation marchand refusée (${r.status})`);
+    motDePasseMarchand = r.donnees.tempPassword;
+  }
+  consigner(MARCHAND.email, 'MERCHANT', motDePasseMarchand);
+  console.log(`  compte marchand ${MARCHAND.email} prêt`);
+
+  // 6. Un SECOND tenant, vierge : il sert de témoin au cloisonnement (TC-S02) et aux
   //    états vides (TC-T04). Sans lui, « aucune donnée d'un autre tenant n'est visible »
   //    ne serait vérifié contre rien.
   const temoin = process.env.TENANT_TEMOIN || 'tangerlog';
@@ -154,6 +173,7 @@ export default async function amorcer() {
 
   return { tenant: TENANT, admin: { ...ADMIN, motDePasse: motDePasseAdmin },
            livreur: { ...LIVREUR, motDePasse: motDePasseLivreur },
+           marchand: { ...MARCHAND, motDePasse: motDePasseMarchand },
            temoin: { slug: temoin, email: adminTemoin, motDePasse: motDePasseTemoin } };
 }
 

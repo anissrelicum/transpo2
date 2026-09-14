@@ -6,3 +6,7 @@
 - 2026-09-14T02:24:55.516Z — admin@rabatexpress.ma — ADMIN — tempPassword=wrQ5idYQXcHH
 - 2026-09-14T02:24:55.851Z — livreur@rabatexpress.ma — DRIVER — tempPassword=0YlzIG-goffZ
 - 2026-09-14T02:24:56.724Z — admin@tangerlog.ma — ADMIN — tempPassword=p9pYSu75S9X3
+- 2026-09-14T02:41:58.443Z — admin@rabatexpress.ma — ADMIN — tempPassword=mIEqLy3vMxFI
+- 2026-09-14T02:41:58.698Z — livreur@rabatexpress.ma — DRIVER — tempPassword=bmLiJG_cFjn-
+- 2026-09-14T02:41:58.854Z — marchand@rabatexpress.ma — MERCHANT — tempPassword=yBGaG8m3_ogJ
+- 2026-09-14T02:41:58.975Z — admin@tangerlog.ma — ADMIN — tempPassword=bkvudWhIxxTk

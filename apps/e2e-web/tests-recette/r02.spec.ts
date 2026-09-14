@@ -34,7 +34,12 @@ test('TC-R02 — l’analytique compte ce que la base contient', async ({ page }
   const chauffeurs = sql(`SELECT DISTINCT driver FROM tenant_rabatexpress.orders
                           WHERE driver IS NOT NULL AND status = 'LIVREE'`)
     .split('\n').map((l) => l.trim()).filter(Boolean);
-  for (const c of chauffeurs) expect(corps, `${c} doit figurer à l’analytique`).toContain(c);
+  // Le tableau par livreur est derrière son onglet : le lire sans l'ouvrir revenait à
+  // reprocher à l'écran de cacher ce qu'on n'avait pas demandé.
+  await page.getByRole('tab', { name: /Par livreur/ }).click();
+  await page.waitForTimeout(1200);
+  const ongletLivreurs = await page.locator('body').innerText();
+  for (const c of chauffeurs) expect(ongletLivreurs, `${c} doit figurer à l’analytique`).toContain(c);
   console.log(`  ${chauffeurs.length} chauffeur(s) livrant : tous présents`);
   await shotVp(page, 'TC-R02', '02-tableaux');
 });

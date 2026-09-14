@@ -49,7 +49,7 @@ test('TC-O03 — notation d’une livraison, une seule fois', async ({ request }
 
   const note = await request.post(`${API}/v1/public/track/rabatexpress/${code}/rate`, {
     headers: { 'content-type': 'application/json' },
-    data: { rating: 4, comment: 'Livraison rapide et soignee.' },
+    data: { score: 4, comment: 'Livraison rapide et soignee.' },
   });
   console.log(`  notation → ${note.status()} ${(await note.text()).slice(0, 80)}`);
   expect(note.ok()).toBe(true);
@@ -57,7 +57,7 @@ test('TC-O03 — notation d’une livraison, une seule fois', async ({ request }
 
   // Une seconde note sur le même code est refusée : un avis, un client, une fois.
   const seconde = await request.post(`${API}/v1/public/track/rabatexpress/${code}/rate`, {
-    headers: { 'content-type': 'application/json' }, data: { rating: 1 },
+    headers: { 'content-type': 'application/json' }, data: { score: 1 },
   });
   console.log(`  seconde notation → ${seconde.status()}`);
   expect(seconde.status()).toBe(400);
@@ -68,7 +68,7 @@ test('TC-O03 — notation d’une livraison, une seule fois', async ({ request }
                        WHERE status NOT IN ('LIVREE','ANNULEE') ORDER BY created_at DESC LIMIT 1`).trim();
   if (enCours) {
     const r = await request.post(`${API}/v1/public/track/rabatexpress/${enCours}/rate`, {
-      headers: { 'content-type': 'application/json' }, data: { rating: 5 },
+      headers: { 'content-type': 'application/json' }, data: { score: 5 },
     });
     console.log(`  notation d’une commande non livrée → ${r.status()}`);
     expect(r.status()).toBe(400);
