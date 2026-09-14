@@ -49,7 +49,14 @@ mkdir -p "qa/recette/$RUN_ID"
 : > "$JOURNAL"
 
 etape() { echo -e "\n===== $* =====" | tee -a "$JOURNAL"; }
-web()   { (cd apps/e2e-web && pnpm exec playwright test --config playwright.recette-video.config.ts "$@") 2>&1 | tee -a "$JOURNAL"; }
+# Playwright VIDE son `outputDir` au démarrage, et les quatre appels ci-dessous le
+# partagent : sans le rangement immédiat, chaque section effaçait les preuves de la
+# précédente et le run ne gardait que les vidéos de la dernière. Un rejeu « tout vert »
+# sans preuve pour les trois quarts des cas n'atteste de rien.
+web()   {
+  (cd apps/e2e-web && pnpm exec playwright test --config playwright.recette-video.config.ts "$@") 2>&1 | tee -a "$JOURNAL"
+  (cd apps/e2e-web && node scripts/sort-videos.mjs) 2>&1 | tail -1 | tee -a "$JOURNAL"
+}
 mobile(){ (cd apps/driver-app && node recette/run.mjs "$@") 2>&1 | tee -a "$JOURNAL"; }
 
 if [ "$SANS_RESET" = non ]; then
