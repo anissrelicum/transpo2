@@ -188,7 +188,7 @@ Le récap du jour porte la caisse. Deux chiffres, et un seul vient du livreur :
 
 Sans cette déclaration, la comptabilité ne rapprocherait que deux chiffres qu'elle a
 elle-même produits. Un écart est annoncé au livreur (« l'exploitation va vous contacter »)
-et ouvre le traitement décrit dans [la console](10-console-exploitation.md#réconciliation-cash--cash).
+et ouvre le traitement décrit dans [la console](10-console-exploitation.md#reconciliation-cash-cash).
 
 « Courses livrées », « Échecs » et « COD collecté » sont dérivés du cache de missions et de
 la file hors ligne. « Gains estimés » applique le tarif réel (12 DH par livraison) au

@@ -43,7 +43,8 @@ const FR = {
     returns: 'Retours', vehicles: 'Véhicules', drivers: 'Chauffeurs', pricing: 'Tarification',
     invoices: 'Factures', cash: 'Caisse', payout: 'Reversement COD', users: 'Utilisateurs',
     notifications: 'Notifications', reviews: 'Avis clients', templates: 'Modèles de notif.',
-    settings: 'Paramètres', searchPlaceholder: 'Rechercher une commande, un marchand, un code…',
+    settings: 'Paramètres', docs: 'Documentation',
+    searchPlaceholder: 'Rechercher une commande, un marchand, un code…',
   },
   roles: {
     ADMIN: 'Administrateur', DISPATCHER: 'Dispatcher', COMPTABLE: 'Comptable',
@@ -95,7 +96,8 @@ const AR: Dict = {
     returns: 'المرتجعات', vehicles: 'المركبات', drivers: 'السائقون', pricing: 'التسعير',
     invoices: 'الفواتير', cash: 'الصندوق', payout: 'تحويل المبالغ', users: 'المستخدمون',
     notifications: 'الإشعارات', reviews: 'آراء العملاء', templates: 'نماذج الإشعارات',
-    settings: 'الإعدادات', searchPlaceholder: 'ابحث عن طلب أو تاجر أو رمز…',
+    settings: 'الإعدادات', docs: 'التوثيق',
+    searchPlaceholder: 'ابحث عن طلب أو تاجر أو رمز…',
   },
   roles: {
     ADMIN: 'مدير', DISPATCHER: 'موزّع', COMPTABLE: 'محاسب',

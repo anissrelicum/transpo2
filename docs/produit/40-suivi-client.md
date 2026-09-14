@@ -58,7 +58,7 @@ Trois règles, tenues par l'API :
 Un commentaire libre peut accompagner la note. L'avis remonte ensuite à la console
 d'exploitation (`/reviews`) avec sa note, sa commande, son chauffeur et son marchand.
 
-> Voir la [réserve sur la modération](10-console-exploitation.md#avis-clients--reviews) :
+> Voir la [réserve sur la modération](10-console-exploitation.md#avis-clients-reviews) :
 > les avis sont consultés et agrégés, mais il n'existe pas de geste de modération.
 
 ## Les notifications au client

@@ -10,7 +10,7 @@ import {
   DashboardIcon, ArchiveIcon, BarChartIcon, LockClosedIcon, SewingPinFilledIcon,
   TargetIcon, StackIcon, GlobeIcon, LayersIcon, ResetIcon, CubeIcon, IdCardIcon,
   TokensIcon, FileTextIcon, CardStackIcon, ArrowRightIcon, PersonIcon, BellIcon,
-  PaperPlaneIcon, GearIcon, StarIcon, RocketIcon, MagnifyingGlassIcon, SunIcon,
+  PaperPlaneIcon, GearIcon, StarIcon, RocketIcon, MagnifyingGlassIcon, SunIcon, ReaderIcon,
   MoonIcon, ChevronDownIcon, ExitIcon, Cross2Icon,
 } from '@radix-ui/react-icons';
 import { useAppTheme } from './theme-provider';
@@ -51,6 +51,7 @@ const NAV: Group[] = [
     { id: 'reviews', key: 'nav.reviews', icon: StarIcon, href: '/reviews' },
     { id: 'templates', key: 'nav.templates', icon: PaperPlaneIcon, href: '/templates' },
     { id: 'settings', key: 'nav.settings', icon: GearIcon, href: '/settings' },
+    { id: 'docs', key: 'nav.docs', icon: ReaderIcon, href: '/docs' },
   ]},
 ];
 
