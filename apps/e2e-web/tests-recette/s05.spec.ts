@@ -18,7 +18,7 @@ test('TC-S05 — les actions sensibles laissent une trace', async ({ page }) => 
 
   // Chaque entrée porte un acteur et un horodatage — sans quoi elle ne prouve rien.
   const incompletes = sql(`SELECT count(*) FROM platform.audit_log
-                           WHERE actor IS NULL OR actor = '' OR created_at IS NULL`).trim();
+                           WHERE actor IS NULL OR actor = '' OR at IS NULL`).trim();
   console.log(`  entrées sans acteur ou sans date → ${incompletes}`);
   expect(incompletes).toBe('0');
 
@@ -27,7 +27,7 @@ test('TC-S05 — les actions sensibles laissent une trace', async ({ page }) => 
   await page.waitForTimeout(2000);
   const corps = await page.locator('body').innerText();
   await shotVp(page, 'TC-S05', '01-journal-audit');
-  const derniere = sql(`SELECT action, actor FROM platform.audit_log ORDER BY created_at DESC LIMIT 1`)
+  const derniere = sql(`SELECT action, actor FROM platform.audit_log ORDER BY at DESC LIMIT 1`)
     .split('|').map((x) => x.trim());
   console.log(`  dernière entrée → ${derniere.join(' par ')}`);
   expect(corps).toContain(derniere[0].split('.')[0]);

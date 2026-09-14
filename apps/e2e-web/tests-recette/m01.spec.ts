@@ -18,9 +18,13 @@ test('TC-M01 — modifier et enregistrer la grille tarifaire', async ({ page }) 
 
   // Un supplément fragile modifié : la valeur doit survivre au rechargement.
   const nouveauFragile = (Number(avant.fragileSurcharge) || 0) + 7;
-  const champ = page.locator('input[type="number"]').first();
-  const fragile = page.getByLabel(/Fragile/i).first();
-  const cible = (await fragile.count()) ? fragile : champ;
+  // Le champ est repéré par sa VALEUR courante dans le bloc des suppléments : viser
+  // « le premier champ numérique de la page » tombait sur un palier de distance, et le
+  // cas concluait à tort que l'enregistrement ne persistait pas.
+  const fragile = page.locator(`input[type="number"][value="${avant.fragileSurcharge}"]`).first();
+  const cible = (await fragile.count())
+    ? fragile
+    : page.locator('input[type="number"]').nth(await page.locator('input[type="number"]').count() - 3);
   await cible.fill(String(nouveauFragile));
   await shotVp(page, 'TC-M01', '02-supplement-modifie');
   await page.getByRole('button', { name: 'Enregistrer' }).click();

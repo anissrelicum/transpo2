@@ -1,6 +1,8 @@
 # Comptes du run 2026-09-13-local
-
 Émis par `recette/amorcer.mjs`.
-
 - 2026-09-13T18:26:37.456Z — admin@rabatexpress.ma — ADMIN — tempPassword=bl90WeLMq57I
 - 2026-09-13T18:26:37.585Z — livreur@rabatexpress.ma — DRIVER — tempPassword=JlIHst-V04Jk
+- 2026-09-14T02:23:00.000Z — admin@rabatexpress.ma — ADMIN — tempPassword=2v6Ic78PCp_Y
+- 2026-09-14T02:24:55.516Z — admin@rabatexpress.ma — ADMIN — tempPassword=wrQ5idYQXcHH
+- 2026-09-14T02:24:55.851Z — livreur@rabatexpress.ma — DRIVER — tempPassword=0YlzIG-goffZ
+- 2026-09-14T02:24:56.724Z — admin@tangerlog.ma — ADMIN — tempPassword=p9pYSu75S9X3

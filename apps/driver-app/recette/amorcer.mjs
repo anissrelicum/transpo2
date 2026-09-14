@@ -68,7 +68,10 @@ export default async function amorcer() {
       method: 'POST', jeton: jetonSuper, body: { email: ADMIN.email, name: ADMIN.name },
     });
     if (!r.ok) throw new Error(`réamorçage admin refusé (${r.status})`);
-    motDePasseAdmin = r.donnees.tempPassword;
+    // La réponse porte le compte sous `admin` — le lire à plat inscrivait « undefined »
+    // dans COMPTES.md, et TOUS les cas suivants échouaient sur une connexion refusée.
+    motDePasseAdmin = r.donnees.admin?.tempPassword ?? r.donnees.tempPassword;
+    if (!motDePasseAdmin) throw new Error('réamorçage admin : aucun mot de passe rendu');
     console.log(`  organisation ${TENANT} déjà là — administrateur réamorcé`);
   }
   consigner(ADMIN.email, 'ADMIN', motDePasseAdmin);
@@ -114,6 +117,7 @@ export default async function amorcer() {
     } });
     if (!r.ok) throw new Error(`invitation livreur refusée (${r.status}) : ${JSON.stringify(r.donnees)}`);
     motDePasseLivreur = r.donnees.tempPassword;
+    if (!motDePasseLivreur) throw new Error('invitation livreur : aucun mot de passe rendu');
   } else {
     const r = await tapi(`/v1/users/${existant.id}/reset-password`, { method: 'POST' });
     if (!r.ok) throw new Error(`réinitialisation livreur refusée (${r.status})`);
@@ -142,7 +146,8 @@ export default async function amorcer() {
       method: 'POST', jeton: jetonSuper, body: { email: adminTemoin, name: 'Omar Tazi' },
     });
     if (!r.ok) throw new Error(`réamorçage admin témoin refusé (${r.status})`);
-    motDePasseTemoin = r.donnees.tempPassword;
+    motDePasseTemoin = r.donnees.admin?.tempPassword ?? r.donnees.tempPassword;
+    if (!motDePasseTemoin) throw new Error('réamorçage admin témoin : aucun mot de passe rendu');
     console.log(`  organisation témoin ${temoin} déjà là — administrateur réamorcé`);
   }
   consigner(adminTemoin, 'ADMIN', motDePasseTemoin);

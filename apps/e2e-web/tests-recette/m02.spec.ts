@@ -28,10 +28,14 @@ test('TC-M02 — le devis simulé suit la grille enregistrée', async ({ page })
   expect(Number(affiche)).toBeCloseTo(ttcAttendu, 2);
   await shotVp(page, 'TC-M02', '01-devis-conforme-a-la-grille');
 
-  // Et le devis de l'API — celui qui facturera réellement — donne le même résultat.
+  // Et le devis de l'API — celui qui facturera réellement — doit donner le MÊME prix.
+  // Il rendait le tarif plein : la remise contractuelle du tenant, appliquée à l'écran,
+  // n'était pas transmise au moteur. Un dispatcher annonçait 51,84 DH et la facture
+  // en portait 57,60.
   const devis = await page.evaluate(async (d) => (await (await fetch('/api/proxy/v1/pricing/quote', {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ distanceKm: d }),
   })).json()), distance);
   console.log(`  /pricing/quote → ${JSON.stringify(devis)}`);
-  expect(devis).toBeTruthy();
+  expect(devis.ttc, 'le devis de l’API doit valoir celui du simulateur').toBeCloseTo(ttcAttendu, 2);
+  expect(devis.applied).toBe('remise');
 });

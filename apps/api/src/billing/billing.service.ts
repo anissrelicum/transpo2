@@ -56,6 +56,12 @@ export class BillingService {
       tiers: input.tiers ?? cfg.tiers,
       fragileSurcharge: input.fragileSurcharge ?? cfg.fragileSurcharge,
       scheduledSurcharge: input.scheduledSurcharge ?? cfg.scheduledSurcharge,
+      // La REMISE CONTRACTUELLE du tenant était la seule valeur de la grille à ne pas
+      // être transmise : le simulateur de `/pricing` l'appliquait (51,84 DH pour 9 km) et
+      // ce devis rendait le tarif plein (57,60 DH). Deux prix pour la même course, selon
+      // qu'on regarde l'écran ou qu'on facture. Un appelant qui veut le tarif plein passe
+      // explicitement `discountRate: 0`.
+      discountRate: input.discountRate ?? cfg.discountRate,
       vatRate: input.vatRate ?? cfg.vatRate,
     });
   }
