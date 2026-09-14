@@ -173,12 +173,16 @@ export async function saisir(cible, valeur) {
     adb('shell', 'input', 'keyevent', ...Array(90).fill('KEYCODE_DEL'));
     adb('shell', 'input', 'keyevent', ...Array(90).fill('KEYCODE_FORWARD_DEL'));
     await sleep(300);
-    // Par tranches : le champ a le temps de se re-rendre entre deux morceaux.
-    for (const morceau of String(valeur).match(/.{1,4}/gs) ?? []) {
+    // Par tranches : le champ a le temps de se re-rendre entre deux morceaux. Le premier
+    // essai va vite (8 caractères), les suivants ralentissent — la relecture ci-dessous
+    // rattrape une frappe trop rapide, et sur 18 cas la connexion pesait un quart du run.
+    const taille = essai === 1 ? 8 : 4;
+    const pause = essai === 1 ? 150 : 260;
+    for (const morceau of String(valeur).match(new RegExp(`.{1,${taille}}`, 'gs')) ?? []) {
       adb('shell', 'input', 'text', pourInput(morceau));
-      await sleep(220);
+      await sleep(pause);
     }
-    await sleep(500);
+    await sleep(450);
 
     const etat = lu(chercher(await ecran(), cible));
     const conforme = etat.masque ? etat.taille === [...String(valeur)].length : etat.valeur === String(valeur);
