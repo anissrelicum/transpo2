@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginSaas, shot, sql, saveCredential, supprimerTenant, nbTenants } from './helpers';
+import { loginSaas, shot, sql, saveCredential, supprimerTenant, nbTenants, lireMotDePasseRevele } from './helpers';
 
 // TC-A03 — Provisionner une organisation (nom, ville, plan, 1er admin).
 // ATT : la ligne apparaît au statut Essai, le schéma est créé côté base, et le mot de passe
@@ -37,9 +37,8 @@ test('TC-A03 — Provisionner une organisation', async ({ page }) => {
   const reveal = page.getByRole('dialog');
   await expect(reveal.getByText('Compte administrateur créé')).toBeVisible({ timeout: 20_000 });
   await shot(page, 'TC-A03', '02-mot-de-passe-admin-revele');
-  const pwd = (await reveal.locator('code, [style*="code-font"]').first().textContent()) ?? '';
-  const m = /([A-Za-z0-9!?@#-]{6,})/.exec(pwd);
-  if (m) saveCredential(`TC-A03 ${SLUG} ADMIN admin@${SLUG}.ma tempPassword=${m[1]}`);
+  const pwd = await lireMotDePasseRevele(reveal);
+  saveCredential(`TC-A03 ${SLUG} ADMIN admin@${SLUG}.ma tempPassword=${pwd}`);
   await reveal.getByRole('button', { name: 'Fermer' }).click();
 
   // La ligne apparaît, abonnement Essai, plan Transporteur.

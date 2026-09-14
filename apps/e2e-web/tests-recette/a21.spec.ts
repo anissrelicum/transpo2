@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginSaas, shotVp, saveCredential, supprimerTenant } from './helpers';
+import { loginSaas, shotVp, saveCredential, supprimerTenant, lireMotDePasseRevele } from './helpers';
 
 // TC-A21 — Tout tenant naît en essai daté : provisionner une organisation en choisissant
 // le plan Transporteur → abonnement « Essai — 14 j restants » (le plan choisi est la cible
@@ -26,9 +26,8 @@ test('TC-A21 — Tout tenant naît en essai daté', async ({ page }) => {
 
   const reveal = page.getByRole('dialog');
   await expect(reveal.getByText('Compte administrateur créé')).toBeVisible({ timeout: 20_000 });
-  const pwd = (await reveal.locator('[style*="code-font"]').first().textContent()) ?? '';
-  const m = /([A-Za-z0-9!?@#-]{6,})/.exec(pwd);
-  if (m) saveCredential(`TC-A21 atlasfret ADMIN admin@atlasfret.ma tempPassword=${m[1]}`);
+  const pwd = await lireMotDePasseRevele(reveal);
+  saveCredential(`TC-A21 atlasfret ADMIN admin@atlasfret.ma tempPassword=${pwd}`);
   await shotVp(page, 'TC-A21', '02-admin-atlasfret-cree');
   await reveal.getByRole('button', { name: 'Fermer' }).click();
 

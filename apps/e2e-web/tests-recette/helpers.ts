@@ -3,7 +3,7 @@
 import { execSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
 export const RUN = process.env.RUN_ID || '2026-09-12-homelab';
 export const QA_DIR = path.resolve(__dirname, `../../../qa/recette/${RUN}`);
@@ -183,6 +183,22 @@ export async function inviteUser(page: Page, name: string, email: string, roleLa
   return ((await reveal.locator('[style*="code-font"]').first().textContent()) ?? '').trim();
 }
 
+/**
+ * Lit le mot de passe temporaire révélé par un dialogue de provisioning / d'invitation.
+ *
+ * Il est tiré de `randomBytes(9).toString('base64url')` : douze caractères de l'alphabet
+ * base64url, tiret et SOULIGNÉ compris. Les cas le récupéraient avec un motif qui oubliait
+ * le souligné — un mot de passe sur quatre était donc consigné tronqué dans COMPTES.md, et
+ * le cas qui s'y connectait plus tard échouait sur « Identifiants invalides » (TC-A23 et
+ * TC-A24 le 14/09, pour un secret coupé à « ojn2baZ »).
+ */
+export async function lireMotDePasseRevele(reveal: Locator): Promise<string> {
+  const texte = ((await reveal.locator('code, [style*="code-font"]').first().textContent()) ?? '').trim();
+  const m = /^[A-Za-z0-9_-]{12}$/.exec(texte);
+  if (!m) throw new Error(`mot de passe temporaire illisible : « ${texte} »`);
+  return texte;
+}
+
 /** Ouvre le menu « … » de la ligne d'un tenant sur /saas. */
 export async function openTenantMenu(page: Page, slug: string) {
   const row = page.getByRole('row', { name: new RegExp(slug) });
@@ -227,6 +243,23 @@ export function motDePasse(email: string): string {
   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
   return mdp;
+}
+
+/**
+ * Pose un compte par le CLI `account` de @transpo/db (contournement documenté §0.3).
+ *
+ * L'accès au CLI dépend de l'environnement, comme pour `sql()` : en local il tourne sur le
+ * poste, sur le homelab il faut entrer dans le pod API. Le coder en dur pour le homelab
+ * rendait TC-B02 injouable en local — et inversement.
+ */
+export function compteCli(tenant: string, email: string, nom: string, role: string, motDePasse: string): string {
+  const args = `${tenant} ${email} '${nom}' ${role} ${motDePasse}`;
+  // Le jeton %ARGS% est obligatoire dès que la commande enveloppe le CLI (`sh -c "…"` dans
+  // le pod du homelab) : collés en queue, les arguments sortaient des guillemets et le CLI
+  // était appelé à vide.
+  const base = process.env.ACCOUNT_EXEC || 'pnpm --filter @transpo/db account';
+  const cmd = base.includes('%ARGS%') ? base.replace('%ARGS%', args) : `${base} ${args}`;
+  return execSync(cmd, { encoding: 'utf-8' }).trim();
 }
 
 /** Consigne un identifiant temporaire capturé (utile aux sections suivantes). */

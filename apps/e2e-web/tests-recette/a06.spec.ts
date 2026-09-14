@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginSaas, shot, sql, saveCredential, supprimerTenant, nbTenants } from './helpers';
+import { loginSaas, shot, sql, saveCredential, supprimerTenant, nbTenants, lireMotDePasseRevele } from './helpers';
 
 // TC-A06 — Provisionner une seconde organisation (isolation).
 // ATT : les deux organisations sont listées, chacune avec son plan et son schéma.
@@ -44,9 +44,8 @@ test('TC-A06 — Provisionner une seconde organisation', async ({ page }) => {
   const reveal = page.getByRole('dialog');
   await expect(reveal.getByText('Compte administrateur créé')).toBeVisible({ timeout: 20_000 });
   await shot(page, 'TC-A06', '02-mot-de-passe-admin-tangerlog');
-  const pwd = (await reveal.locator('code, [style*="code-font"]').first().textContent()) ?? '';
-  const m = /([A-Za-z0-9!?@#-]{6,})/.exec(pwd);
-  if (m) saveCredential(`TC-A06 ${SLUG} ADMIN admin@${SLUG}.ma tempPassword=${m[1]}`);
+  const pwd = await lireMotDePasseRevele(reveal);
+  saveCredential(`TC-A06 ${SLUG} ADMIN admin@${SLUG}.ma tempPassword=${pwd}`);
   await reveal.getByRole('button', { name: 'Fermer' }).click();
 
   // Les deux organisations de recette sont listées, chacune avec son plan.

@@ -12,6 +12,13 @@
 #
 #   qa/rejouer-tout.sh              # tout, depuis une base vierge
 #   qa/rejouer-tout.sh --sans-reset # sans remise à zéro (reprise)
+#
+# Sur le homelab, exporter le profil avant de lancer :
+#   export DATABASE_URL=postgres://…@localhost:5433/…   # port-forward svc/postgres
+#   export API_URL=http://transpo-api.wedowonders.com WEB_URL=http://transpo.wedowonders.com
+#   export PG_EXEC='kubectl exec -n transpo deploy/postgres --'
+#   export ACCOUNT_EXEC='kubectl exec -n transpo deploy/transpo-api -- sh -c "cd /repo && pnpm --filter @transpo/db account %ARGS%"'
+# La section G (émulateur) ne se joue PAS contre le homelab : l'app livreur vise l'API locale.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
@@ -21,6 +28,7 @@ export DATABASE_URL="${DATABASE_URL:-postgres://transpo:transpo_dev@localhost:54
 export API_URL="${API_URL:-http://localhost:3002}"
 export WEB_URL="${WEB_URL:-http://localhost:3001}"
 export PG_EXEC="${PG_EXEC:-docker exec transpo2-postgres-1}"
+export ACCOUNT_EXEC="${ACCOUNT_EXEC:-pnpm --filter @transpo/db account}"
 JOURNAL="qa/recette/$RUN_ID/journal.txt"
 mkdir -p "qa/recette/$RUN_ID"
 
@@ -36,16 +44,26 @@ if [ "${1:-}" != "--sans-reset" ]; then
   pnpm --filter @transpo/db migrate 2>&1 | tail -1 | tee -a "$JOURNAL"
   pnpm --filter @transpo/db migrate-plans 2>&1 | tail -1 | tee -a "$JOURNAL"
   [ -f "qa/recette/$RUN_ID/COMPTES.md" ] && mv "qa/recette/$RUN_ID/COMPTES.md" "qa/recette/$RUN_ID/COMPTES.precedent.md"
+
+  # `reset-test` supprime AUSSI rabatexpress et tangerlog — le jeu de données §0.4 que
+  # toutes les sections supposent acquis et qu'aucun cas ne recrée. Sans cette étape, le
+  # rejeu « depuis une base vierge » n'a jamais été jouable : il ne tenait que sur un
+  # rabatexpress laissé par une session antérieure (constaté sur le homelab le 14/09).
+  etape "Jeu de données §0.4 (rabatexpress abonné Entreprise, tangerlog témoin)"
+  node qa/amorcer-jeu-0-4.mjs 2>&1 | tee -a "$JOURNAL"
 fi
 
 etape "Section A — plateforme & provisionnement (29 cas)"
 web a01 a02 a03 a04 a05 a06 a07 a08 a09 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20 a21 a22 a23 a24 a25 a26 a27 a28 a29
 
 etape "Section B — amorçage des comptes & authentification (16 cas)"
-web b01 b02 b03 b04 b05 b06 b07 b08 b09 b10 b11 b12 b13 b14 b15 b16
+web b01 b02 b03 b04 b05 b06 b07 b07b b08 b09 b10 b11 b12 b13 b14 b15 b15b b16
 # Les cas à connexion refusée consomment le budget anti-bruteforce par source : on le
 # repart à zéro, sinon la suite du run ne peut plus se connecter du tout.
-$PG_EXEC psql -U transpo -d transpo -c "DELETE FROM platform.login_attempts" >/dev/null 2>&1
+# La base et l'utilisateur diffèrent d'un environnement à l'autre : on relit les variables
+# du conteneur, comme `sql()`. La forme codée en dur échouait en silence sur le homelab.
+$PG_EXEC sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "DELETE FROM platform.login_attempts"' \
+  2>&1 | tail -1 | tee -a "$JOURNAL"
 
 etape "Sections C à F — paramètres, flotte, zones, commandes (46 cas)"
 web c01 c02 c03 c04 d01 d02 d03 d04 d05 d06 d07 d08 d09 d10 d11 d12 d13 d14 d15 d16 d17 d18 d19 d20 d21 \
