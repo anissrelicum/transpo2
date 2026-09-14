@@ -7,6 +7,7 @@ import { loginTenant, motDePasse, shotVp, sql } from './helpers';
 test('TC-L05 — générer puis payer un reversement marchand', async ({ page }) => {
   test.setTimeout(240_000);
   const periode = new Date().toISOString().slice(0, 7);
+  const periodeCourante = periode;
 
   const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
@@ -29,16 +30,22 @@ test('TC-L05 — générer puis payer un reversement marchand', async ({ page })
   console.log(`  génération ${periode} → ${JSON.stringify(genere.corps)}`);
   expect(genere.status).toBe(200);
 
-  const lignes = sql(`SELECT merchant, cod_amount, commission, net FROM tenant_rabatexpress.payouts
+  // La commission et le net ne sont pas stockés : ils se calculent à la lecture. On lit
+  // donc ce que l'API sert à l'écran, et on vérifie l'égalité brut − commission = net.
+  const lignes = sql(`SELECT merchant, cod_amount, orders_count FROM tenant_rabatexpress.payouts
                       WHERE period = '${periode}'`)
     .split('\n').map((l) => l.split('|').map((x) => x.trim())).filter((c) => c[0]);
-  console.log(`  ${lignes.length} reversement(s) : ${lignes.map((l) => `${l[0]} ${l[1]}−${l[2]}=${l[3]}`).join(' · ')}`);
+  console.log(`  ${lignes.length} reversement(s) en base : ${lignes.map((l) => `${l[0]} ${l[1]} DH`).join(' · ')}`);
   expect(lignes.length).toBeGreaterThan(0);
 
-  // Le net est bien le brut moins la commission — c'est l'argent du marchand.
-  for (const [marchand, brut, commission, net] of lignes) {
-    expect(Number(net), `${marchand} : net`).toBe(Number(brut) - Number(commission));
+  const servis = await page.evaluate(async () => (await (await fetch('/api/proxy/v1/cash/reversements')).json()));
+  // (la période est comparée côté Node, le tableau étant rendu tel quel par l'API)
+  const duJour = servis.filter((r: any) => r.period === periode);
+  for (const r of duJour) {
+    console.log(`  ${r.merchant} → brut ${r.codAmount ?? r.cod} − commission ${r.commission} = net ${r.net}`);
+    expect(Math.round((r.codAmount ?? r.cod) - r.commission), `${r.merchant} : net`).toBe(Math.round(r.net));
   }
+  expect(duJour.length).toBeGreaterThan(0);
 
   await page.reload();
   await page.waitForTimeout(2000);

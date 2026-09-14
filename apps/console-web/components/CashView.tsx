@@ -259,9 +259,14 @@ function ResolveDialog({ session, ecart, refresh }: {
         <Text as="div" size="2" weight="medium" mb="2">Motif de l’écart</Text>
         <RadioGroup.Root value={reason} onValueChange={setReason}>
           <Flex direction="column" gap="2">
+            {/* Le libellé ENVELOPPE son bouton radio : posé à côté, il ne le nommait pas
+                (un lecteur d'écran annonçait cinq choix anonymes) et ne le cochait pas au
+                clic. Même défaut que sur l'éditeur de zones et la grille tarifaire. */}
             {RESOLVE_REASONS.map((r) => (
               <Card key={r} size="1" style={{ border: '1px solid var(--gray-a3)' }}>
-                <Flex align="center" gap="3" py="1"><RadioGroup.Item value={r} /><Text size="2">{r}</Text></Flex>
+                <Text as="label" size="2">
+                  <Flex align="center" gap="3" py="1"><RadioGroup.Item value={r} />{r}</Flex>
+                </Text>
               </Card>
             ))}
           </Flex>

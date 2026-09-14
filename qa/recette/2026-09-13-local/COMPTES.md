@@ -12,3 +12,4 @@
 - 2026-09-14T02:41:58.975Z — admin@tangerlog.ma — ADMIN — tempPassword=bkvudWhIxxTk
 - 2026-09-14T02:52:31.276Z — compta.hub@rabatexpress.ma — COMPTABLE — tempPassword=s7XwBaK2AABi
 - 2026-09-14T04:19:24.130Z — dispatch.finance@rabatexpress.ma — DISPATCHER — tempPassword=9VMrOwuTypst
+- 2026-09-14T04:43:40.258Z — dispatch.fraude@rabatexpress.ma — DISPATCHER — tempPassword=it8BaHNKMXSe

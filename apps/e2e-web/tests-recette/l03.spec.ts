@@ -42,14 +42,15 @@ test('TC-L03 — écart de caisse déclaré par le livreur, résolu par la compt
   await shotVp(page, 'TC-L03', '01-ecart-annonce');
 
   await page.locator('tr', { hasText: 'Hamid Ouali' }).last().click();
-  await expect(page.getByText('COD théorique')).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByText('COD théorique').first()).toBeVisible({ timeout: 20_000 });
   await page.waitForTimeout(800);
   await expect(page.getByRole('button', { name: /Résoudre l’écart de/ })).toBeVisible();
   await shotVp(page, 'TC-L03', '02-session-en-ecart');
 
   await page.getByRole('button', { name: /Résoudre l’écart de/ }).click();
   const dlg = page.getByRole('dialog');
-  await dlg.getByText('Client a payé partiellement').click();
+  // Cliquer le LIBELLÉ ne coche pas le bouton radio : on vise le contrôle lui-même.
+  await dlg.getByRole('radio', { name: 'Client a payé partiellement' }).click();
   await dlg.getByRole('textbox').fill('Client a réglé 100 DH de moins, complément promis à la prochaine livraison.');
   await shotVp(page, 'TC-L03', '03-resolution');
   await dlg.getByRole('button', { name: 'Valider la résolution' }).click();
@@ -65,7 +66,7 @@ test('TC-L03 — écart de caisse déclaré par le livreur, résolu par la compt
   expect(note).toContain('100 DH');
   await page.reload();
   await page.locator('tr', { hasText: 'Hamid Ouali' }).last().click();
-  await expect(page.getByText('COD théorique')).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByText('COD théorique').first()).toBeVisible({ timeout: 20_000 });
   await page.waitForTimeout(800);
   await expect(page.getByText(/Écart résolu/)).toBeVisible({ timeout: 20_000 });
   await shotVp(page, 'TC-L03', '04-session-close');

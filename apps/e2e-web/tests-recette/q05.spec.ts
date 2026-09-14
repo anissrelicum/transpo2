@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, motDePasse, shotVp, sql } from './helpers';
+import { loginTenant, motDePasse, shotVp, sql, inviteUser, logout, saveCredential } from './helpers';
 
 // TC-Q05 — La fraude est réservée à l'administrateur.
 // ATT : un dispatcher n'y accède pas, ni par l'écran ni par l'API.
@@ -11,7 +11,6 @@ test('TC-Q05 — le dossier de fraude est fermé au dispatch', async ({ page }) 
     const admin = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
     expect(admin).toBeNull();
     await page.goto('/users');
-    const { inviteUser, logout, saveCredential } = await import('./helpers');
     const mdp = await inviteUser(page, 'Dispatch Fraude', email, 'Dispatcher');
     saveCredential(`- ${new Date().toISOString()} — ${email} — DISPATCHER — tempPassword=${mdp}`);
     await logout(page);
