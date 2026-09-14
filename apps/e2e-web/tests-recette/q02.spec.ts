@@ -14,8 +14,10 @@ test('TC-Q02 — enquête, confirmation et blanchiment d’un cas', async ({ pag
   expect(err).toBeNull();
   await page.goto('/fraud');
   await page.waitForTimeout(2000);
-  await page.getByText('Hamid Ouali').first().click();
-  await page.waitForTimeout(1200);
+  // Ouvrir le DOSSIER par sa ligne : le nom apparaît aussi au classement des livreurs à
+  // risque, et cliquer celui-là n'ouvre rien.
+  await page.locator('tr', { hasText: 'Hamid Ouali' }).last().click();
+  await expect(page.getByRole('button', { name: /Ouvrir une enquête/ })).toBeVisible({ timeout: 20_000 });
   await shotVp(page, 'TC-Q02', '01-cas-ouvert');
 
   await page.getByRole('button', { name: /Ouvrir une enquête|Enquêter/ }).first().click();
@@ -42,8 +44,8 @@ test('TC-Q02 — enquête, confirmation et blanchiment d’un cas', async ({ pag
        VALUES ('Sara Bennis', 0, ARRAY['absent_eleve'], 18, 'OUVERT', 'Taux d''absence à vérifier')`);
   await page.reload();
   await page.waitForTimeout(2000);
-  await page.getByText('Sara Bennis').first().click();
-  await page.waitForTimeout(1200);
+  await page.locator('tr', { hasText: 'Sara Bennis' }).last().click();
+  await expect(page.getByRole('button', { name: 'Blanchir' })).toBeVisible({ timeout: 20_000 });
   await page.getByRole('button', { name: 'Blanchir' }).first().click();
   await expect.poll(
     () => sql(`SELECT status FROM tenant_rabatexpress.fraud_cases WHERE driver = 'Sara Bennis'`).trim(),

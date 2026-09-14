@@ -45,7 +45,15 @@ test('TC-Q01 — un écart de caisse ouvre un cas de fraude', async ({ page }) =
   console.log(`  cas de fraude → ${cas.join(' · ')}`);
   expect(cas[0]).toBe('Hamid Ouali');
   expect(cas[1]).toContain('ecart_cash');
-  expect(Number(cas[2])).toBe(30);          // barème FRAUD_SIGNALS.ecart_cash
+  // Le score SOMME les signaux du dossier : si le livreur a aussi livré hors de sa zone
+  // (TC-J03 laisse une géofence), le cas en porte deux et vaut 58. On vérifie le barème,
+  // pas un chiffre figé — c'est le cumul qui fait le risque.
+  const bareme: Record<string, number> = { ecart_cash: 30, hors_geo: 28, non_declare: 35,
+    echec_sans_preuve: 22, absent_eleve: 18, depot_tardif: 15 };
+  const signaux = cas[1].replace(/[{}"]/g, '').split(',').filter(Boolean);
+  const attendu = Math.min(100, signaux.reduce((t, sig) => t + (bareme[sig] ?? 0), 0));
+  console.log(`  signaux ${signaux.join(' + ')} → score attendu ${attendu}, obtenu ${cas[2]}`);
+  expect(Number(cas[2])).toBe(attendu);
   expect(cas[3]).toBe('OUVERT');
   expect(cas[4]).toContain('Écart de caisse');
 

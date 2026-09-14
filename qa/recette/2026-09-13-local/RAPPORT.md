@@ -383,10 +383,19 @@ déjà suspendu, compteur d'anti-bruteforce, commande déjà notée) — même f
 ## Passe complète des sections H à T
 
 Les 51 cas écrits ont été rejoués **d'une traite**, dans l'ordre : **49 verts**. Les deux
-derniers (TC-Q01, TC-Q02) passent isolément mais dépendaient de la caisse laissée par la
-section L — ils posent désormais leur propre décor (une livraison encaissée, mise en écart),
-comme tous les autres. C'est la même leçon que celle de la nuit : *un cas qui emprunte l'état
-d'un autre ne se rejoue pas*.
+derniers dépendaient de la caisse laissée par la section L — la même leçon que celle de la
+nuit : *un cas qui emprunte l'état d'un autre ne se rejoue pas*.
+
+- **TC-Q01** pose désormais son propre décor (une livraison réellement encaissée, mise en
+  écart) : **vert**. Il a d'ailleurs corrigé mon attente — le dossier de risque **cumule** les
+  signaux, et le cas en portait deux (`hors_geo` laissé par la géofence de TC-J03 + `ecart_cash`)
+  pour un score de 58. Le cas vérifie maintenant le **barème**, pas un chiffre figé.
+- **TC-Q02** (enquête → confirmation → blanchiment) **reste à conclure** : il est passé le 14/09
+  à 05:41 sur un dossier propre, mais l'ouverture du dossier depuis l'écran `/fraud` n'est pas
+  encore ciblée de façon fiable par le harnais (le nom du livreur apparaît aussi au classement
+  des livreurs à risque). Le fond est couvert : TC-Q01 vérifie la création du cas et son score,
+  et le passage par le journal d'audit a été observé. **C'est un reste d'outillage, pas un doute
+  sur le produit** — à reprendre au prochain passage.
 
 ## Ce qui reste à faire
 
@@ -395,3 +404,6 @@ d'un autre ne se rejoue pas*.
 2. **AN-37** (manifeste de transfert sans trace) et **OBS-15** (prix remisé par défaut au
    simulateur) : deux décisions produit, délibérément non tranchées ici.
 3. Les 9 cas d'API non rejouables sur base servie, à remettre au modèle des deux qui l'ont été.
+4. **TC-Q02** : fiabiliser l'ouverture d'un dossier de fraude depuis l'écran (cf. ci-dessus).
+5. **TC-L03m** (déclaration de caisse depuis l'écran du livreur) est écrit mais n'a pas pu être
+   joué faute de temps machine — l'API de déclaration, elle, est vérifiée par TC-L03.
