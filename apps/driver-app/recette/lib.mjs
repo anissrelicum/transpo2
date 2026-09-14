@@ -247,6 +247,12 @@ export async function clavierFerme() {
 
 /** Relance l'app à froid sur le projet Metro (formulaires vierges à chaque cas). */
 export async function ouvrirApp({ langue = 'fr' } = {}) {
+  // `exp://127.0.0.1:8081` ne veut dire quelque chose sur l'appareil que si le port est
+  // redirigé vers l'hôte. La redirection ne survit pas à un redémarrage de l'émulateur :
+  // Expo Go affiche alors « Something went wrong » et le cas conclut à l'absence de
+  // l'écran de connexion (TC-G01, 14/09, après le redémarrage qui a débloqué la caméra).
+  // On la repose à chaque ouverture — l'opération est idempotente et coûte quelques ms.
+  try { adb('reverse', 'tcp:8081', 'tcp:8081'); } catch { /* déjà en place */ }
   // L'appareil photo système peut être resté au premier plan (prise de vue abandonnée) :
   // il recouvre alors l'app et le cas SUIVANT échoue sur « écran de connexion introuvable »,
   // sans rapport avec ce qu'il testait. Un cas ne doit jamais hériter du naufrage du
