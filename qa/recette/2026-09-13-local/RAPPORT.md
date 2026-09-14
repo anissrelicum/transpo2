@@ -380,6 +380,14 @@ cas de blocage repart d'un refus explicite. **82 cas sur 91** passent sur une ba
 les 9 restants butent sur des données laissées par les passages précédents (plans purgés, tenant
 déjà suspendu, compteur d'anti-bruteforce, commande déjà notée) — même famille, à reprendre.
 
+## Passe complète des sections H à T
+
+Les 51 cas écrits ont été rejoués **d'une traite**, dans l'ordre : **49 verts**. Les deux
+derniers (TC-Q01, TC-Q02) passent isolément mais dépendaient de la caisse laissée par la
+section L — ils posent désormais leur propre décor (une livraison encaissée, mise en écart),
+comme tous les autres. C'est la même leçon que celle de la nuit : *un cas qui emprunte l'état
+d'un autre ne se rejoue pas*.
+
 ## Ce qui reste à faire
 
 1. **Redéployer sur le homelab** et rejouer les sections G à T : ce run valide le produit, pas le

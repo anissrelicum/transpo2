@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, motDePasse, shotVp, sql } from './helpers';
+import { loginTenant, motDePasse, shotVp, sql, livrerCommeLivreur } from './helpers';
 
 // TC-Q01 — Génération d'un cas de fraude.
 // ATT : un signal réel (écart de caisse, livraison hors zone) crée un cas avec son score
@@ -8,16 +8,24 @@ test('TC-Q01 — un écart de caisse ouvre un cas de fraude', async ({ page }) =
   test.setTimeout(180_000);
   const jour = new Date().toISOString().slice(0, 10);
 
-  sql(`DELETE FROM tenant_rabatexpress.fraud_cases WHERE driver = 'Hamid Ouali'`);
-  const id = sql(`SELECT id FROM tenant_rabatexpress.cash_sessions
-                  WHERE driver = 'Hamid Ouali' AND session_date = '${jour}'`).trim();
-  expect(id, 'une caisse du jour doit exister').toBeTruthy();
-  sql(`UPDATE tenant_rabatexpress.cash_sessions
-       SET declared = GREATEST(theorique - 150, 0), status = 'ECART', deposited = 0,
-           reason = NULL, note = NULL WHERE id = '${id}'`);
-
   const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
+
+  // Décor posé par le cas : une caisse du jour NEUVE, alimentée par une livraison réelle,
+  // puis mise en écart. Reprendre la session laissée par la section L rendait ce cas
+  // dépendant de l'ordre d'exécution — il passait seul et tombait dans une passe complète.
+  sql(`DELETE FROM tenant_rabatexpress.fraud_cases WHERE driver = 'Hamid Ouali'`);
+  sql(`DELETE FROM tenant_rabatexpress.cash_movements WHERE session_id IN
+       (SELECT id FROM tenant_rabatexpress.cash_sessions WHERE session_date = '${jour}')`);
+  sql(`DELETE FROM tenant_rabatexpress.cash_sessions WHERE session_date = '${jour}'`);
+  const livree = await livrerCommeLivreur(page, { cod: 400 });
+  console.log(`  décor → livraison ${livree.ref} encaissée 400 DH`);
+  const id = sql(`SELECT id FROM tenant_rabatexpress.cash_sessions
+                  WHERE driver = 'Hamid Ouali' AND session_date = '${jour}'`).trim();
+  expect(id, 'l’encaissement doit ouvrir une caisse').toBeTruthy();
+  sql(`UPDATE tenant_rabatexpress.cash_sessions
+       SET declared = theorique - 150, status = 'ECART', deposited = 0,
+           reason = NULL, note = NULL WHERE id = '${id}'`);
 
   // L'écart est résolu côté comptabilité : le fait reste, et doit alimenter le risque.
   await page.goto('/cash');
