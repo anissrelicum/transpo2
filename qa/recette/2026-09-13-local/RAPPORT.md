@@ -266,3 +266,34 @@ transfert interurbain sans document opposable est un trou d'exploitation. Sévé
 *Piste :* un manifeste numéroté, horodaté et scellé (table dédiée), les colis passant « en
 transfert » ; réception à destination par le même numéro. **À arbitrer** : c'est une brique
 produit, pas une correction — d'où le choix de la consigner plutôt que de l'inventer.
+
+
+## Suite E2E d'API — ce qu'elle a tranché
+
+Les sections consoles ont été confrontées à la suite `apps/e2e` (91 cas, API réelle) pour ne
+pas laisser un correctif de recette casser un contrat établi ailleurs. Elle a **corrigé une de
+mes conclusions** :
+
+- **Le devis n'avait pas de bug.** TC-M02 avait relevé 51,84 DH à l'écran contre 57,60 DH par
+  l'API, et j'en avais conclu que la remise du tenant n'était pas transmise. La suite dit
+  l'inverse : `40_cash_billing.test.mjs` fixe une **cascade** — prix fixe marchand > grille
+  remisée > grille standard — où la remise est **contractuelle, par marchand**, passée à chaque
+  devis. L'appliquer par défaut aurait remisé les courses de tous les marchands, y compris ceux
+  sans accord. Correctif annulé. Ce qui reste vrai, c'est que le **simulateur affiche un prix
+  remisé par défaut** (case cochée) : le grand « Total TTC » n'est pas le tarif standard, et rien
+  ne le dit à qui lit vite. → **OBS-15**, à arbitrer (décocher par défaut, ou nommer le prix).
+
+Deux cas de cette suite ne passaient que sur une base **neuve** — et verdissaient à tort ensuite :
+clés d'idempotence fixes (`ADV1`) donc globales au tenant, et consentement marketing accordé par
+le cas suivant sans jamais être repris. Corrigés : la clé est désormais propre à la course, et le
+cas de blocage repart d'un refus explicite. **82 cas sur 91** passent sur une base déjà servie ;
+les 9 restants butent sur des données laissées par les passages précédents (plans purgés, tenant
+déjà suspendu, compteur d'anti-bruteforce, commande déjà notée) — même famille, à reprendre.
+
+## Ce qui reste à faire
+
+1. **Redéployer sur le homelab** et rejouer les sections G à T : ce run valide le produit, pas le
+   déploiement.
+2. **AN-37** (manifeste de transfert sans trace) et **OBS-15** (prix remisé par défaut au
+   simulateur) : deux décisions produit, délibérément non tranchées ici.
+3. Les 9 cas d'API non rejouables sur base servie, à remettre au modèle des deux qui l'ont été.
