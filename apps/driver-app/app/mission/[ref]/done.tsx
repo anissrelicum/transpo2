@@ -23,14 +23,14 @@ const T = {
     collected: (m: string) => `${m} encaissés`,
     proof: 'Preuve', photoAndSig: 'Photo + signature', photoOnly: 'Photo', sigOnly: 'Signature', noProof: 'Aucune',
     nextMission: 'Prochaine mission', none: 'Aucune autre mission en attente',
-    next: 'Mission suivante',
+    next: 'Mission suivante', backToMissions: 'Retour aux missions',
   },
   ar: {
     title: 'تم التسليم بنجاح',
     collected: (m: string) => `تم تحصيل ${m}`,
     proof: 'الإثبات', photoAndSig: 'صورة + توقيع', photoOnly: 'صورة', sigOnly: 'توقيع', noProof: 'لا شيء',
     nextMission: 'المهمة التالية', none: 'لا توجد مهمة أخرى بالانتظار',
-    next: 'المهمة التالية',
+    next: 'المهمة التالية', backToMissions: 'العودة إلى المهام',
   },
 } as const;
 
@@ -79,7 +79,13 @@ export default function Done() {
         </View>
       </View>
       <View style={s.footer}>
-        <PrimaryBtn onPress={() => router.replace('/(tabs)/missions')}>{t.next}</PrimaryBtn>
+        {/* Le bouton faisait la bonne chose — revenir aux missions — mais promettait une
+            « mission suivante » que la carte juste au-dessus venait de démentir. Le
+            livreur qui achève sa dernière course de la journée lisait une promesse fausse
+            sur la seule action de l'écran (constaté TC-L03m). */}
+        <PrimaryBtn onPress={() => router.replace('/(tabs)/missions')}>
+          {nextRef ? t.next : t.backToMissions}
+        </PrimaryBtn>
       </View>
     </View>
   );

@@ -121,6 +121,18 @@ export default function RecapScreen() {
     } catch {
       setFeePerDelivery(null); // hors ligne : pas d'estimation plutôt qu'un chiffre inventé
     }
+    // La caisse du jour vient du SERVEUR, et elle n'était chargée nulle part : `caisse`
+    // n'était renseignée qu'À L'INTÉRIEUR de la déclaration. Le bloc « Ma caisse du jour »
+    // annonçait donc « aucun encaissement enregistré » même quand le serveur en comptait
+    // 2 700 DH sur six courses, et le livreur ne pouvait découvrir le vrai montant qu'en
+    // déclarant d'abord une somme à l'aveugle (constaté TC-L03m).
+    try {
+      const c = await authedClient().getMyCash();
+      setCaisse(c);
+      if (c?.declared != null) setDeclare(String(c.declared));
+    } catch {
+      setCaisse(null); // hors ligne : le bloc se tait plutôt que d'afficher un zéro trompeur
+    }
     setLoading(false);
   }, []);
 
