@@ -35,17 +35,20 @@ export async function ecran() {
   // Le fichier est EFFACÉ avant chaque tentative : le message d'erreur part sur la sortie
   // d'erreur du shell distant, pas dans ce que l'on relit, et un dump raté laissait en
   // place l'arbre du dump PRÉCÉDENT. On aurait alors lu, sans le savoir, l'écran d'avant.
+  // Douze tentatives, avec une attente qui s'allonge : juste après `am start`, l'arbre peut
+  // rester indisponible plusieurs secondes le temps que l'activité s'installe. Cinq essais
+  // à 700 ms n'y suffisaient pas (TC-G04, 14/09).
   let xml = '';
-  for (let essai = 1; essai <= 5; essai += 1) {
+  for (let essai = 1; essai <= 12; essai += 1) {
     adb('shell', 'rm', '-f', '/sdcard/ui.xml');
     adb('shell', 'uiautomator', 'dump', '/sdcard/ui.xml');
     // Le dump a pu ne rien écrire : `cat` sort alors en erreur, ce n'est pas un incident.
     try { xml = adb('shell', 'cat', '/sdcard/ui.xml'); } catch { xml = ''; }
     if (xml.includes('<node ')) break;
     xml = '';
-    if (essai < 5) await sleep(700);
+    if (essai < 12) await sleep(Math.min(300 + essai * 300, 2000));
   }
-  if (!xml) throw new Error("l'arbre d'accessibilité reste indisponible après 5 essais (uiautomator)");
+  if (!xml) throw new Error("l'arbre d'accessibilité reste indisponible après 12 essais (uiautomator)");
   const noeuds = [];
   for (const balise of xml.split('<node ').slice(1)) {
     // Le dump est du XML : « Historique & gains » y arrive en « Historique &amp; gains ».
@@ -188,14 +191,16 @@ export async function saisir(cible, valeur) {
     // Le focus est REPRIS à chaque essai : après un rechargement de bundle, le premier
     // appui tombe sur un écran encore en cours de montage et la frappe part dans le vide.
     await prendreLeFocus();
-    // Vider dans LES DEUX SENS depuis le curseur. Sur un champ multiligne, `MOVE_END`
-    // ne va qu'en fin de ligne courante : effacer seulement en arrière laissait la fin
-    // du texte en place, et l'essai suivant empilait le sien par-dessus. (Descendre
-    // d'abord au clavier n'est pas une option : sur un champ d'une seule ligne, la
-    // flèche bas fait SORTIR du champ — le mot de passe partait alors dans le vide.)
-    adb('shell', 'input', 'keyevent', 'KEYCODE_MOVE_END');
-    adb('shell', 'input', 'keyevent', ...Array(90).fill('KEYCODE_DEL'));
-    adb('shell', 'input', 'keyevent', ...Array(90).fill('KEYCODE_FORWARD_DEL'));
+    // Vider par SÉLECTION TOTALE, pas par une salve de suppressions.
+    //
+    // `MOVE_END` ne va qu'en fin de LIGNE : sur le champ multiligne des notes d'échec, la
+    // salve arrière-puis-avant ne vidait rien du tout et chaque nouvel essai empilait son
+    // texte sur le précédent — « Deuels sans suite,13h05 et 13h20els sans suite… » après
+    // trois essais (TC-G10). Ctrl+A puis Suppr. vide le champ quelle que soit sa forme ;
+    // vérifié sur l'émulateur, champ d'une ligne comme champ multiligne.
+    adb('shell', 'input', 'keycombination', 'KEYCODE_CTRL_LEFT', 'KEYCODE_A');
+    await sleep(250);
+    adb('shell', 'input', 'keyevent', 'KEYCODE_DEL');
     await sleep(300);
     // Par tranches : le champ a le temps de se re-rendre entre deux morceaux. Le premier
     // essai va vite (8 caractères), les suivants ralentissent — la relecture ci-dessous
