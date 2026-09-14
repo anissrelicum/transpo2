@@ -133,8 +133,11 @@
 /* =============================================================================
  * Mode sombre — palette.dark de design-tokens (jeu de valeurs distinct).
  * ========================================================================== */
+/* Le lecteur peut imposer un thème : la préférence système ne suffit pas.
+ * `:root:not([data-theme="light"])` — un choix clair explicite l'emporte sur un OS sombre ;
+ * `:root[data-theme="dark"]` — un choix sombre l'emporte sur un OS clair. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --slate-1: #111113;
     --slate-2: #18191b;
     --slate-3: #212225;
@@ -178,6 +181,51 @@
 
     color-scheme: dark;
   }
+}
+
+:root[data-theme="dark"] {
+    --slate-1: #111113;
+    --slate-2: #18191b;
+    --slate-3: #212225;
+    --slate-4: #272a2d;
+    --slate-5: #2e3135;
+    --slate-6: #363a3f;
+    --slate-7: #43484e;
+    --slate-8: #5a6169;
+    --slate-9: #696e77;
+    --slate-10: #777b84;
+    --slate-11: #b0b4ba;
+    --slate-12: #edeef0;
+
+    --indigo-1: #11131f;
+    --indigo-2: #141726;
+    --indigo-3: #182449;
+    --indigo-4: #1d2e62;
+    --indigo-5: #253974;
+    --indigo-6: #304384;
+    --indigo-7: #3a4f97;
+    --indigo-8: #435db1;
+    --indigo-9: #3e63dd;
+    --indigo-10: #5472e4;
+    --indigo-11: #9eb1ff;
+    --indigo-12: #d6e1ff;
+
+    --green-3: #132d21;  --green-9: #30a46c;  --green-11: #3dd68c;
+    --amber-3: #302008;  --amber-9: #ffc53d;  --amber-11: #ffca16;
+    --red-3: #3b1219;    --red-9: #e5484d;    --red-11: #ff9592;
+    --blue-3: #0d2847;   --blue-9: #0090ff;   --blue-11: #70b8ff;
+    --cyan-3: #082c36;   --cyan-9: #00a2c7;   --cyan-11: #4ccce6;
+    --violet-3: #291f43; --violet-9: #6e56cf; --violet-11: #baa7ff;
+    --orange-3: #331e0b; --orange-9: #f76b15; --orange-11: #ffa057;
+
+    --fond-page: var(--slate-1);
+    --fond-doux: var(--slate-2);
+    --fond-panneau: var(--slate-2);
+    --bordure: var(--slate-6);
+    --bordure-forte: var(--slate-7);
+    --ombre-panneau: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+
+    color-scheme: dark;
 }
 
 /* =============================================================================
