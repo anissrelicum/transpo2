@@ -34,7 +34,7 @@ test('TC-Q01 — un écart de caisse ouvre un cas de fraude', async ({ page }) =
   await page.waitForTimeout(800);
   await page.getByRole('button', { name: /Résoudre l’écart de/ }).click();
   const dlg = page.getByRole('dialog');
-  await dlg.getByText('Cash manquant — à retenir sur prime').click();
+  await dlg.getByRole('radio', { name: 'Cash manquant — à retenir sur prime' }).click();
   await dlg.getByRole('button', { name: 'Valider la résolution' }).click();
   await page.waitForTimeout(2500);
   await shotVp(page, 'TC-Q01', '01-ecart-resolu');
