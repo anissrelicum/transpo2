@@ -24,7 +24,7 @@ test('TC-P05 — cycle de vie d’un modèle de notification', async ({ page }) 
   const texte = 'Votre colis {code} est arrive. Merci de votre confiance.';
   const maj = await page.evaluate(async ([ev, fr]) => {
     const r = await fetch(`/api/proxy/v1/notifications/templates/${ev}`, {
-      method: 'POST', headers: { 'content-type': 'application/json' },
+      method: 'PUT', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ fr, ar: 'وصل طردكم {code}.', active: true }),
     });
     return r.status;

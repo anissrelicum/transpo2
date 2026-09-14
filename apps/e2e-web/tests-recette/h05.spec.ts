@@ -18,7 +18,9 @@ test('TC-H05 — le hub est fermé à la comptabilité', async ({ page }) => {
     const mdp = await inviteUser(page, 'Comptable Hub', email, 'Comptable');
     saveCredential(`- ${new Date().toISOString()} — ${email} — COMPTABLE — tempPassword=${mdp}`);
   }
-  await logout(page);
+  // On quitte la session administrateur en effaçant les cookies : le menu avatar n'est pas
+  // toujours monté après une invitation, et ce cas ne teste pas la déconnexion.
+  await page.context().clearCookies();
 
   const err2 = await loginTenant(page, 'rabatexpress', email, motDePasse(email));
   expect(err2).toBeNull();

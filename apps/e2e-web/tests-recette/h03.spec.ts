@@ -31,7 +31,7 @@ test('TC-H03 — un colis traverse les trois colonnes du tri', async ({ page }) 
   await page.getByRole('button', { name: 'Placer sur quai' }).first().click();
   const quai = colonne('Sur quai — par destination');
   await expect(quai.getByText(ligne)).toBeVisible({ timeout: 20_000 });
-  await expect(quai.getByText('Casablanca')).toBeVisible();
+  await expect(quai.getByText('Casablanca').first()).toBeVisible();
   expect(sql(`SELECT hub_phase FROM tenant_rabatexpress.orders WHERE code = '${ligne}'`).trim()).toBe('quai');
   await shotVp(page, 'TC-H03', '03-colis-sur-quai');
 

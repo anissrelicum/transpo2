@@ -101,8 +101,11 @@ export async function loginTenant(page: Page, slug: string, email: string, passw
   // a un echec des l'affichage du formulaire.
   const alertBox = page.locator('[role="alert"]');
   const alerteRemplie = alertBox.filter({ hasText: /\S/ }).first();
+  // Un compte MARCHAND n'atterrit pas sur /dashboard mais sur son portail : n'attendre
+  // que le tableau de bord d'exploitation faisait passer une connexion réussie pour un
+  // refus, au bout de 30 s d'attente et sans le moindre message d'erreur à montrer.
   const ok = await Promise.race([
-    page.waitForURL('**/dashboard**', { timeout: 30_000 }).then(() => true),
+    page.waitForURL(/\/(dashboard|portail)/, { timeout: 30_000 }).then(() => true),
     alerteRemplie.waitFor({ state: 'visible', timeout: 30_000 }).then(() => false),
   ]).catch(() => false);
   if (ok) return null;

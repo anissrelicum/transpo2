@@ -34,7 +34,7 @@ test('TC-H01 — enregistrer l’entrée d’un colis au hub', async ({ page }) 
   // Le badge « Prêt » n'apparaît qu'à 8 caractères : c'est le signal que le code est complet.
   const champ = page.getByPlaceholder(/Scanner ou saisir un code colis/);
   await champ.fill(codes[0]);
-  await expect(page.getByText('Prêt')).toBeVisible();
+  await expect(page.getByText('Prêt', { exact: true })).toBeVisible();
   await shotVp(page, 'TC-H01', '02-code-pret');
 
   await page.getByRole('button', { name: 'Enregistrer l’entrée' }).click();

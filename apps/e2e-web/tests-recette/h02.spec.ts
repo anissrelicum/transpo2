@@ -17,7 +17,7 @@ test('TC-H02 — code colis invalide ou inconnu', async ({ page }) => {
   // Sept caractères : ni badge « Prêt », ni action possible.
   await champ.fill('ABC1234');
   await expect(bouton).toBeDisabled();
-  await expect(page.getByText('Prêt')).toHaveCount(0);
+  await expect(page.getByText('Prêt', { exact: true })).toHaveCount(0);
   await shotVp(page, 'TC-H02', '01-sept-caracteres');
 
   // Huit caractères inconnus : l'action s'ouvre — c'est le serveur qui tranche, et il doit

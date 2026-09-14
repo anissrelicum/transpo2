@@ -15,7 +15,7 @@ test('TC-P01 — journal des notifications et envoi manuel', async ({ page }) =>
   const avant = Number(sql(`SELECT count(*) FROM tenant_rabatexpress.notifications`).trim());
   console.log(`  journal → ${avant} notification(s) en base`);
 
-  await page.getByRole('button', { name: /Envoyer une notification/ }).click();
+  await page.getByRole('button', { name: 'Envoyer', exact: true }).click();
   const dlg = page.getByRole('dialog');
   const destinataire = '+212600112233';
   await dlg.getByRole('textbox').first().fill(destinataire);
