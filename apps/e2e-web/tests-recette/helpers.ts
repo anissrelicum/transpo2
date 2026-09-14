@@ -144,6 +144,17 @@ export async function leverGelAN12(page: Page): Promise<boolean> {
  * on le prend s'il est là, sinon on passe par le menu avatar de la console transport.
  */
 export async function logout(page: Page, name?: string) {
+  // `inviteUser` rend le mot de passe révélé SANS refermer son dialogue (TC-B07 et TC-B08
+  // en inspectent le contenu). Un cas qui invite puis se déconnecte laissait donc un modal
+  // ouvert : le clic sur l'avatar était intercepté et la déconnexion expirait au bout de
+  // 20 s, sans rapport avec la règle testée (TC-L07 et TC-Q05, homelab 14/09).
+  const modal = page.getByRole('dialog');
+  if (await modal.count()) {
+    const fermer = modal.getByRole('button', { name: 'Fermer' });
+    if (await fermer.count()) await fermer.first().click();
+    else await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
+  }
   await leverGelAN12(page);
   const quitter = page.getByRole('button', { name: 'Quitter' });
   if (await quitter.count()) {

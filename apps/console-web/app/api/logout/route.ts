@@ -6,5 +6,6 @@ export async function POST() {
   out.cookies.delete('tenant');
   out.cookies.delete('name');
   out.cookies.delete('role');
+  out.cookies.delete('merchant');
   return out;
 }

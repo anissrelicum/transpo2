@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import { Box, Flex, Heading, Badge } from '@radix-ui/themes';
+import { Box, Flex, Heading, Badge, Text } from '@radix-ui/themes';
 import { MerchantNav } from '../../components/MerchantNav';
 
 export const dynamic = 'force-dynamic';
@@ -16,6 +16,7 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
   if (!jar.get('token')?.value) redirect('/login');
   if (jar.get('role')?.value !== 'MERCHANT') redirect('/dashboard');
   const name = jar.get('name')?.value || 'Marchand';
+  const boutique = jar.get('merchant')?.value || '';
 
   return (
     <Box style={{ minHeight: '100vh', background: 'var(--gray-2)' }}>
@@ -24,6 +25,7 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
           <Flex align="center" gap="3">
             <Heading size="4">Transpo</Heading>
             <Badge color="indigo" variant="soft">Espace marchand</Badge>
+            {boutique ? <Text size="2" color="gray">· {boutique}</Text> : null}
           </Flex>
           <MerchantNav name={name} />
         </Flex>

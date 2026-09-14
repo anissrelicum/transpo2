@@ -41,5 +41,9 @@ export async function POST(req: NextRequest) {
   out.cookies.set('tenant', tenant, opts);
   out.cookies.set('name', data.name ?? '', opts);
   out.cookies.set('role', role ?? '', opts);
+  // Le marchand agit POUR une boutique, qui ne porte pas forcément son nom : sans elle,
+  // l'espace marchand n'affichait que la personne connectée et rien ne disait au nom de
+  // quelle enseigne les commandes étaient passées (constat TC-N01, 14/09).
+  out.cookies.set('merchant', data.merchant ?? '', opts);
   return out;
 }

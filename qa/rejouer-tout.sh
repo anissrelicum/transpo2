@@ -12,6 +12,7 @@
 #
 #   qa/rejouer-tout.sh              # tout, depuis une base vierge
 #   qa/rejouer-tout.sh --sans-reset # sans remise à zéro (reprise)
+#   qa/rejouer-tout.sh --sans-mobile # sections web seulement (pas d'émulateur)
 #
 # Sur le homelab, exporter le profil avant de lancer :
 #   export DATABASE_URL=postgres://…@localhost:5433/…   # port-forward svc/postgres
@@ -21,6 +22,16 @@
 # La section G (émulateur) ne se joue PAS contre le homelab : l'app livreur vise l'API locale.
 set -uo pipefail
 cd "$(dirname "$0")/.."
+
+# Les deux options se combinent ; l'ordre d'écriture sur la ligne de commande est libre.
+SANS_RESET=non; SANS_MOBILE=non
+for opt in "$@"; do
+  case "$opt" in
+    --sans-reset) SANS_RESET=oui ;;
+    --sans-mobile) SANS_MOBILE=oui ;;
+    *) echo "Option inconnue : $opt" >&2; exit 2 ;;
+  esac
+done
 
 RUN_ID="${RUN_ID:-$(date +%Y-%m-%d)-local}"
 export RUN_ID
@@ -36,7 +47,7 @@ etape() { echo -e "\n===== $* =====" | tee -a "$JOURNAL"; }
 web()   { (cd apps/e2e-web && pnpm exec playwright test --config playwright.recette-video.config.ts "$@") 2>&1 | tee -a "$JOURNAL"; }
 mobile(){ (cd apps/driver-app && node recette/run.mjs "$@") 2>&1 | tee -a "$JOURNAL"; }
 
-if [ "${1:-}" != "--sans-reset" ]; then
+if [ "$SANS_RESET" = non ]; then
   etape "Base remise à zéro (tenants, plans, journal d'audit)"
   # Pas de `seed` : il ajoute trois organisations de démonstration que les décomptes de la
   # section A n'attendent pas.
@@ -72,9 +83,13 @@ web c01 c02 c03 c04 d01 d02 d03 d04 d05 d06 d07 d08 d09 d10 d11 d12 d13 d14 d15 
 etape "Décor du terrain (comptes livreur, marchand, console ; organisation témoin)"
 node apps/driver-app/recette/amorcer.mjs 2>&1 | tee -a "$JOURNAL"
 
-etape "Section G — app livreur, sur émulateur (18 cas) + TC-I05, TC-L03m, TC-T06"
-mobile
-mobile i05 l03m t06
+if [ "$SANS_MOBILE" = non ]; then
+  etape "Section G — app livreur, sur émulateur (18 cas) + TC-I05, TC-L03m, TC-T06"
+  mobile
+  mobile i05 l03m t06
+else
+  etape "Section G ignorée (--sans-mobile)"
+fi
 
 etape "Sections H à T — consoles (57 cas)"
 web h01 h02 h03 h04 h05 i01 i02 i03 i04 j01 j02 j03 j04 k01 k02 k03 k04 \

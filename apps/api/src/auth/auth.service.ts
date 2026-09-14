@@ -66,7 +66,7 @@ export class AuthService {
    * l'ancien « Tenant inconnu : <slug> » permettait d'énumérer les clients de la plateforme
    * en comparant les messages (constat OBS-01). Le détail reste côté serveur.
    */
-  async loginTenant(slug: string | undefined, email: string, password: string, ip?: string): Promise<{ token: string; role: Role; name: string }> {
+  async loginTenant(slug: string | undefined, email: string, password: string, ip?: string): Promise<{ token: string; role: Role; name: string; merchant?: string }> {
     if (!slug) throw new BadRequestException('Tenant manquant.');
     const cleCompte = `u:${slug}:${email}`;
     const cles = [
@@ -104,6 +104,10 @@ export class AuthService {
       }),
       role: user.role as Role,
       name: user.name,
+      // La boutique du marchand ne sortait que dans le JWT : la console ne pouvait donc pas
+      // afficher l'enseigne au nom de laquelle il agit. C'est son propre périmètre, pas une
+      // donnée d'un tiers.
+      ...(user.merchant ? { merchant: user.merchant as string } : {}),
     };
   }
 
