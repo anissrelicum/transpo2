@@ -219,7 +219,7 @@ apps/e2e-web/lancer-recette-locale.sh h01 k02  # quelques cas
 | TC-J03 | OK | Géofence à 3 km : position dans la zone silencieuse, position à 60 km → bandeau « sorti de zone » + `/tracking/alerts` | 14/09 |
 | TC-J04 | OK | Plein écran et retour, « Gérer les zones » mène à `/zones` | 14/09 |
 | TC-M01 | OK | Supplément modifié, « Enregistré ✓ », valeur persistée après rechargement. **AN-39 corrigée** (libellés reliés aux champs) | 14/09 |
-| TC-M02 | OK | Le devis de l'API vaut désormais celui du simulateur. **AN-38 corrigée** | 14/09 |
+| TC-M02 | OK | Cascade de tarification confrontée dans ses deux branches (remisée / standard). **→ OBS-15** : le simulateur affiche un prix remisé par défaut | 14/09 |
 | TC-M03 | OK | `grille-tarifaire.csv` téléchargé, une ligne par palier | 14/09 |
 | TC-N01 | OK | Portail borné au marchand du compte, aucune commande d'un autre marchand, API alignée | 14/09 |
 | TC-N04 | OK | `/dashboard`, `/orders`, `/cash` fermés au marchand ; 4 endpoints d'exploitation en 403 | 14/09 |
@@ -254,6 +254,12 @@ apps/e2e-web/lancer-recette-locale.sh h01 k02  # quelques cas
 | TC-S03 | OK | Jeton livreur borné à son chauffeur ; 4 routes d'exploitation en 403 | 14/09 |
 | TC-S06 | OK | Export complet (courses comprises) puis effacement : données personnelles disparues, commandes conservées. **AN-45 corrigée** | 14/09 |
 | TC-T01 | OK | Bascule FR → AR, RTL, langue conservée d'une page à l'autre | 14/09 |
+| TC-I03 | OK | Arrêt descendu à la main, ordre **persistant** après rechargement | 14/09 |
+| TC-L03 | OK | Écart **déclaré par le livreur** (700 attendus, 600 en main), annoncé à la comptabilité, résolu avec motif et note, session clôturée. **AN-46 corrigée** | 14/09 |
+| TC-L05 | OK | Reversements générés (brut − commission = net), paiement avec méthode et référence, second paiement refusé 400 | 14/09 |
+| TC-Q01 | OK | L'écart de caisse résolu **ouvre un cas de fraude** (signal `ecart_cash`, score 30) et alimente le classement. **AN-47 corrigée** | 14/09 |
+| TC-Q02 | OK | Ouvert → Enquête → Confirmé (confirmation explicite), et Blanchi sur un second cas ; décisions tracées au journal d'audit | 14/09 |
+| TC-Q05 | OK | Dispatcher : `/fraud` fermé, `cases` et `leaderboard` en 403 | 14/09 |
 
 ## Constats produit — sections H à T
 
@@ -266,13 +272,15 @@ scanné. Le scan déclare l'arrivée ; le tri reste un second geste. *Au passage
 livrée, annulée ou déjà en retour n'entre plus au hub — elle serait apparue au manifeste de
 transfert, COD compris. **Tenue par TC-H01 et TC-H03.**
 
-**AN-38 — Le devis annoncé au client n'était pas celui qui serait facturé. _Corrigée._**
-Le simulateur de `/pricing` affichait 51,84 DH pour 9 km ; `POST /v1/pricing/quote` — le moteur
-qui facture — répondait 57,60 DH pour la même course. `BillingService.quote` transmettait les
-paliers, les suppléments et la TVA du tenant, mais **pas sa remise contractuelle** : la seule
-valeur de la grille à rester sur le carreau. Un dispatcher annonçait un prix, la facture en
-portait un autre, 10 % plus haut. **Tenue par TC-M02**, qui confronte désormais l'écran et le
-moteur sur la même course.
+**OBS-15 — Le simulateur de devis affiche un prix REMISÉ par défaut. _Ouverte._**
+TC-M02 a d'abord semblé révéler un bug : 51,84 DH à l'écran contre 57,60 DH par l'API pour
+9 km. La suite E2E d'API a tranché l'inverse — la remise est **contractuelle par marchand**
+(cascade prix fixe > grille remisée > grille standard), et l'appliquer par défaut aurait remisé
+les courses de marchands sans accord. Mon correctif a donc été **annulé**. Ce qui reste vrai :
+la case « Remise contractuelle » du simulateur est **cochée par défaut**, si bien que le grand
+« Total TTC » affiché n'est pas le tarif standard. Un dispatcher qui lit vite annonce un prix
+remisé à un client qui n'y a pas droit. Sévérité **faible à moyenne**. *Piste :* décocher par
+défaut, ou nommer le prix affiché (« TTC remisé −10 % »). **À arbitrer.**
 
 **AN-39 — Les libellés de la grille tarifaire n'étaient reliés à aucun champ. _Corrigée._**
 Même défaut que celui corrigé sur l'éditeur de zones en section E : « Supplément fragile »,
@@ -280,6 +288,21 @@ Même défaut que celui corrigé sur l'éditeur de zones en section E : « Suppl
 annonçait quatre champs anonymes, et cliquer le libellé ne faisait rien. Chaque libellé
 enveloppe maintenant son contrôle. *(Trouvé, là encore, parce que la recette ne pouvait pas
 viser le champ par son nom — le même signal qu'en sections E et G.)*
+
+**AN-47 — Aucun cas de fraude n'était jamais créé. _Corrigée._**
+Le barème `FRAUD_SIGNALS` (six signaux pondérés) existait dans le domaine et **rien ne
+l'appelait** : `fraud_cases` n'était remplie que par le jeu de démonstration, si bien que
+`/fraud` restait vide quoi qu'il arrive sur le terrain — écart de caisse, livraison hors zone,
+dépôt tardif. Deux signaux réels l'alimentent désormais : l'écart constaté à la résolution d'une
+caisse, et la preuve de livraison déposée hors de la géofence du livreur. Un seul cas ouvert par
+livreur, les signaux s'y accumulent, le score suit le barème, et l'arbitrage humain reste entier
+(rien n'est automatique). **Tenue par TC-Q01 et TC-Q02.**
+
+**AN-46 — Les motifs d'écart de caisse n'étaient pas nommés. _Corrigée._**
+Troisième occurrence du même défaut dans la soirée (après l'éditeur de zones en section E et la
+grille tarifaire en TC-M01) : les cinq motifs de résolution étaient des boutons radio posés à
+côté de leur texte. Un lecteur d'écran annonçait cinq choix anonymes, et cliquer le libellé ne
+cochait rien — il fallait viser le cercle. **Tenue par TC-L03.**
 
 **AN-43 — Encaisser un COD n'ouvrait aucune caisse. _Corrigée._**
 `cash_sessions` n'était alimentée que par le jeu de démonstration : sur un tenant réel,
