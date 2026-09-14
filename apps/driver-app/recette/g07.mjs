@@ -95,7 +95,11 @@ export default cas('TC-G07', 'Encaissement du COD', async () => {
   // théorique d'une réconciliation mais n'avait ni session, ni dépôt, ni écart possibles
   // — c'est ce que ce cas avait révélé, et que la section L tient désormais.
   const sessions = await api('/v1/cash/sessions');
-  const session = sessions.find((x) => x.driver === 'Hamid Ouali');
+  // La caisse du jour peut être la SECONDE du livreur : un dépôt clôt la précédente et
+  // l'encaissement suivant en rouvre une, à la même date. Prendre la première venue
+  // rendait le verdict dépendant de l'ordre des lignes en base.
+  const ouvertes = sessions.filter((x) => x.driver === 'Hamid Ouali' && x.status !== 'DEPOSE');
+  const session = ouvertes[0] ?? sessions.find((x) => x.driver === 'Hamid Ouali');
   console.log(`  caisse du jour → ${session ? `${session.theorique} DH sur ${session.deliveries} encaissement(s), statut ${session.status}` : 'AUCUNE'}`);
   assert.ok(session, 'encaisser doit ouvrir une session de caisse pour le livreur');
   assert.ok(session.theorique >= MONTANT, 'le montant encaissé doit être porté à la caisse du jour');

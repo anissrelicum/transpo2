@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
 import { withTenantDb, orders as ordersTable, cashSessions, cashMovements, payouts as payoutsTable } from '@transpo/db';
 import { merchantPayoutNet } from '@transpo/domain';
-import { eq, asc } from 'drizzle-orm';
+import { eq, asc, desc } from 'drizzle-orm';
 import { BillingService } from '../billing/billing.service.js';
 import { FraudService } from '../fraud/fraud.service.js';
 
@@ -71,7 +71,12 @@ export class CashService {
   /** Sessions de caisse (réconciliation COD) avec leurs mouvements. */
   sessions(schema: string) {
     return withTenantDb(schema, async (db) => {
-      const rows = await db.select().from(cashSessions).orderBy(asc(cashSessions.driver));
+      // Un livreur peut avoir PLUSIEURS sessions le même jour : un dépôt clôt la caisse et
+      // l'encaissement suivant en rouvre une, à la même date. Sans ordre entre elles, la
+      // console affichait la caisse déjà déposée au-dessus de la caisse courante une fois
+      // sur deux — et un lecteur qui prend « la » session du livreur tombait au hasard.
+      const rows = await db.select().from(cashSessions)
+        .orderBy(asc(cashSessions.driver), desc(cashSessions.sessionDate), desc(cashSessions.createdAt));
       const moves = await db.select().from(cashMovements);
       return rows.map((s) => {
         const declared = s.status === 'EN_COURS' ? null : s.declared;
