@@ -58,6 +58,12 @@ comptes et les cas relisent `COMPTES.md` (leçon d'OBS-05 du run précédent).
 | TC-G16 | OK | 3 livraisons, 36 DH de gains à 12 DH/course, COD encaissé présenté **hors gains** et dit comme tel | [TC-G16/](TC-G16/) | 14/09 |
 | TC-G17 | OK | Non-lues remises à zéro ; disponibilité déclarée par le livreur **vue par le dispatch**, dans les deux sens. **AN-33, AN-34 corrigées** | [TC-G17/](TC-G17/) | 14/09 |
 | TC-G18 | OK | FR → AR : textes en arabe, redémarrage annoncé, **mise en page inversée** (barre d'onglets miroir), montants isolés donc lisibles, retour au français effectif | [TC-G18/](TC-G18/) | 14/09 |
+| TC-I05 | OK | *(cas ajouté, mobile)* La tournée du jour planifiée et réordonnée par le dispatch s'affiche **dans son ordre** côté livreur, annoncée comme telle. **AN-40 corrigée** | [TC-I05/](TC-I05/) | 14/09 |
+
+**Rejeu intégral de la section G le 14/09 : 18/18.** Deux cas (TC-G10, TC-G12) sont tombés au
+premier passage pour cause d'interférence d'environnement — une suite web tournait en parallèle
+sur la même machine et la même base — et passent au rejeu isolé. C'est une leçon d'outillage :
+sur un poste unique, la recette mobile et la recette web ne partagent ni la machine ni la base.
 
 ## Constats produit — section G
 
@@ -256,6 +262,15 @@ Même défaut que celui corrigé sur l'éditeur de zones en section E : « Suppl
 annonçait quatre champs anonymes, et cliquer le libellé ne faisait rien. Chaque libellé
 enveloppe maintenant son contrôle. *(Trouvé, là encore, parce que la recette ne pouvait pas
 viser le champ par son nom — le même signal qu'en sections E et G.)*
+
+**AN-40 — La tournée planifiée par le dispatch n'atteignait jamais le livreur. _Corrigée._**
+L'exploitation crée une tournée, l'optimise (TC-I02), la réordonne à la main (TC-I03) — et
+l'écran « Ma tournée » du livreur retriait ses missions par une **heuristique locale** sur des
+positions fictives. Deux plans de journée coexistaient, dont un seul était décidé par
+l'exploitation, et ce n'était pas celui que le livreur suivait. `GET /v1/driver/tour` rend les
+arrêts dans l'ordre de la tournée du jour, l'écran les affiche ainsi et l'annonce
+(« Ordre défini par le dispatch »). À défaut de tournée planifiée, le livreur garde la main sur
+son ordre. **Tenue par TC-I05.**
 
 **AN-37 — Sceller un bordereau de transfert ne laisse aucune trace. _Ouverte._**
 « Sceller le bordereau » ferme le dialogue et **ne fait rien d'autre** : aucun manifeste n'est
