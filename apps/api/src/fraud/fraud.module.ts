@@ -10,5 +10,7 @@ import { RolesGuard } from '../auth/roles.guard.js';
   imports: [AuditModule],
   controllers: [FraudController],
   providers: [FraudService, JwtAuthGuard, TenantGuard, RolesGuard],
+  // La caisse et le terrain consignent des signaux : le service sort du module.
+  exports: [FraudService],
 })
 export class FraudModule {}

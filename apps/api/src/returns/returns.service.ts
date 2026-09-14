@@ -33,6 +33,13 @@ export class ReturnsService {
     return withTenantDb(schema, async (db) => {
       const [r] = await db.select().from(returnsTable).where(eq(returnsTable.ref, ref));
       if (!r) throw new NotFoundException(`Retour introuvable : ${ref}`);
+      // Un colis rendu au marchand n'est plus chez le transporteur : le reprogrammer le
+      // remettrait « en cours de livraison » alors qu'il est physiquement reparti. La
+      // console masque bien le bouton, mais l'API l'acceptait — la même porte de service
+      // que celle refermée en section F sur la clôture sans preuve.
+      if (r.status === 'RENDU') {
+        throw new BadRequestException('Retour déjà rendu au marchand — plus aucune tentative possible.');
+      }
       if (r.attempts >= MAX_RETURN_ATTEMPTS) {
         throw new BadRequestException(`Plafond de ${MAX_RETURN_ATTEMPTS} tentatives atteint.`);
       }
@@ -43,11 +50,14 @@ export class ReturnsService {
     });
   }
 
-  /** Retour au marchand → commande RETOUR, retour RENDU. */
+  /** Retour au marchand → commande RETOUR, retour RENDU. Une seule fois. */
   returnToMerchant(schema: string, ref: string) {
     return withTenantDb(schema, async (db) => {
       const [r] = await db.select().from(returnsTable).where(eq(returnsTable.ref, ref));
       if (!r) throw new NotFoundException(`Retour introuvable : ${ref}`);
+      if (r.status === 'RENDU') {
+        throw new BadRequestException('Retour déjà rendu au marchand.');
+      }
       await db.update(ordersTable).set({ status: 'RETOUR' }).where(eq(ordersTable.ref, ref));
       const [updated] = await db.update(returnsTable).set({ status: 'RENDU' }).where(eq(returnsTable.ref, ref)).returning();
       return updated;

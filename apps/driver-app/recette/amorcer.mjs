@@ -122,8 +122,34 @@ export default async function amorcer() {
   consigner(LIVREUR.email, 'DRIVER', motDePasseLivreur);
   console.log(`  compte livreur ${LIVREUR.email} prêt (mot de passe consigné dans ${RUN}/COMPTES.md)`);
 
+  // 5. Un SECOND tenant, vierge : il sert de témoin au cloisonnement (TC-S02) et aux
+  //    états vides (TC-T04). Sans lui, « aucune donnée d'un autre tenant n'est visible »
+  //    ne serait vérifié contre rien.
+  const temoin = process.env.TENANT_TEMOIN || 'tangerlog';
+  const adminTemoin = `admin@${temoin}.ma`;
+  let motDePasseTemoin;
+  if (!tenants.some((t) => t.slug === temoin)) {
+    const p = await appel('/v1/saas/tenants', {
+      method: 'POST', jeton: jetonSuper,
+      body: { slug: temoin, name: 'Tanger Logistique', city: 'Tanger', planCode: 'tpe-coursier',
+              adminEmail: adminTemoin, adminName: 'Omar Tazi' },
+    });
+    if (!p.ok) throw new Error(`provisioning témoin refusé (${p.status})`);
+    motDePasseTemoin = p.donnees.admin.tempPassword;
+    console.log(`  organisation témoin ${temoin} provisionnée`);
+  } else {
+    const r = await appel(`/v1/saas/tenants/${temoin}/admin`, {
+      method: 'POST', jeton: jetonSuper, body: { email: adminTemoin, name: 'Omar Tazi' },
+    });
+    if (!r.ok) throw new Error(`réamorçage admin témoin refusé (${r.status})`);
+    motDePasseTemoin = r.donnees.tempPassword;
+    console.log(`  organisation témoin ${temoin} déjà là — administrateur réamorcé`);
+  }
+  consigner(adminTemoin, 'ADMIN', motDePasseTemoin);
+
   return { tenant: TENANT, admin: { ...ADMIN, motDePasse: motDePasseAdmin },
-           livreur: { ...LIVREUR, motDePasse: motDePasseLivreur } };
+           livreur: { ...LIVREUR, motDePasse: motDePasseLivreur },
+           temoin: { slug: temoin, email: adminTemoin, motDePasse: motDePasseTemoin } };
 }
 
 if (import.meta.filename === process.argv[1]) {

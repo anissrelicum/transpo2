@@ -1,8 +1,9 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Inject } from '@nestjs/common';
 import type { Order, OrderStatus, ParcelSize, ProofLevel } from '@transpo/domain';
 import { LIFECYCLE, canTransition, PARCEL_SIZES, PROOF_LEVELS } from '@transpo/domain';
 import { withTenantDb, orders as ordersTable, orderEvents as orderEventsTable, deliveryProofs } from '@transpo/db';
 import { desc, eq } from 'drizzle-orm';
+import { NotificationsService } from '../notifications/notifications.service.js';
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 function rndCode(): string {
@@ -47,6 +48,9 @@ function rowToOrder(r: any): Order {
 
 @Injectable()
 export class OrdersService {
+  // @Inject explicite : requis sous tsx/esbuild (pas de métadonnée de type émise).
+  constructor(@Inject(NotificationsService) private readonly notifs: NotificationsService) {}
+
   /** Liste (filtre statut optionnel). */
   list(schema: string, status?: OrderStatus): Promise<Order[]> {
     return withTenantDb(schema, async (db) => {
@@ -102,6 +106,14 @@ export class OrdersService {
       const [r] = await db.insert(ordersTable).values(row).returning();
       await journaliser(db, r.ref, r.status, actor, 'Commande créée');
       return rowToOrder(r);
+    }).then(async (creee) => {
+      // Le client reçoit son code de suivi dès l'enregistrement : c'est ce code qui lui
+      // ouvre le suivi public, et rien ne le lui communiquait jusqu'ici. L'envoi se fait
+      // APRÈS l'écriture, hors de la connexion de la transaction.
+      await this.notifs.notifierEvenement(schema, 'order.created', {
+        recipient: creee.dropPhone, vars: { code: creee.code },
+      });
+      return creee;
     });
   }
 
@@ -123,6 +135,15 @@ export class OrdersService {
       const [r] = await db.update(ordersTable).set({ status: next }).where(eq(ordersTable.ref, ref)).returning();
       await journaliser(db, ref, next, actor);
       return rowToOrder(r);
+    }).then(async (avancee) => {
+      // Mise en livraison : le client peut s'organiser pour être là. C'est le seul
+      // événement de la course où une minute d'avance lui sert à quelque chose.
+      if (avancee.status === 'LIVRAISON') {
+        await this.notifs.notifierEvenement(schema, 'order.out', {
+          recipient: avancee.dropPhone, vars: { code: avancee.code },
+        });
+      }
+      return avancee;
     });
   }
 

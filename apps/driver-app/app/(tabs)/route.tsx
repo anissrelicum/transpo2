@@ -1,13 +1,16 @@
 // Ma tournée — onglet « Tournée ». Cf. maquette `lot3-app-livreur.jsx`
 // (fonctions RouteScreen, SummaryCell) et design/PLAN-REFONTE-MOBILE.md §2 Lot C.
 //
-// Alimenté par un vrai endpoint (`getMissions()`), MAIS : `Order` n'expose
-// aucune coordonnée GPS (cf. plan §1, ligne 11 : « pas de lat/lng dans Order »
-// → pas de vraie carte). L'ordre des arrêts, la distance et le temps estimé
-// sont donc calculés sur des positions FICTIVES déterministes (`pseudoLatLng`),
-// uniquement pour que l'algorithme plus-proche-voisin de la maquette ait
-// quelque chose à trier. C'est signalé explicitement à l'écran (bandeau) —
-// jamais présenté comme une vraie carte ou une vraie optimisation.
+// Deux sources, dans cet ordre :
+//  1. la TOURNÉE planifiée par l'exploitation pour aujourd'hui (`getMyTour()`), dont
+//     l'ordre des arrêts fait foi — c'est lui que le dispatch a optimisé et réordonné ;
+//  2. à défaut, les missions actives du livreur, dans l'ordre qu'il choisit lui-même.
+// Jusqu'ici seule la seconde existait : le dispatch pouvait optimiser une tournée sans
+// que le livreur n'en voie jamais l'ordre — deux plans de journée concurrents.
+//
+// `Order` n'expose toujours aucune coordonnée GPS (cf. plan §1) : distance et temps
+// estimé restent calculés sur des positions FICTIVES déterministes (`pseudoLatLng`), ce
+// que le bandeau dit à l'écran. Jamais présenté comme une vraie carte.
 import * as React from 'react';
 import { View, Text, StyleSheet, Pressable, FlatList, RefreshControl, ActivityIndicator } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
@@ -94,6 +97,8 @@ const STR = {
     stops: (n: number) => `${n} arrêt(s)`,
     demoNotice:
       'Ordre à titre indicatif : positions et distances simulées, aucune coordonnée GPS n’est encore associée aux commandes.',
+    fromDispatch: 'Ordre défini par le dispatch',
+    fromDispatchHint: 'Tournée du jour planifiée par l’exploitation — suivez cet ordre.',
     optimize: 'Optimiser',
     optimized: 'Optimisée ✓',
     reset: 'Réinitialiser',
@@ -111,6 +116,8 @@ const STR = {
     title: 'الجولة',
     stops: (n: number) => `${n} توقف`,
     demoNotice: 'الترتيب إرشادي فقط: المواقع والمسافات محاكاة، لا توجد بعد إحداثيات GPS مرتبطة بالطلبات.',
+    fromDispatch: 'ترتيب محدَّد من طرف التوزيع',
+    fromDispatchHint: 'جولة اليوم كما خطّطتها العمليات — اتبع هذا الترتيب.',
     optimize: 'تحسين الترتيب',
     optimized: 'تم التحسين ✓',
     reset: 'إعادة التعيين',
@@ -135,12 +142,16 @@ export default function RouteScreen() {
   const [loading, setLoading] = React.useState(true);
   const [refsOrder, setRefsOrder] = React.useState<string[]>([]);
   const [optimized, setOptimized] = React.useState(false);
+  /** Ordre imposé par la tournée du jour, s'il en existe une. */
+  const [ordreDispatch, setOrdreDispatch] = React.useState<string[] | null>(null);
 
   const load = React.useCallback(async () => {
     try {
       const fresh = await authedClient().getMissions();
       setOrders(fresh);
       await writeJson(CACHE_KEY, fresh);
+      const tour = await authedClient().getMyTour().catch(() => null);
+      setOrdreDispatch(tour ? tour.stops.map((o) => o.ref) : null);
     } catch {
       const cached = await readJson<Order[]>(CACHE_KEY, []);
       setOrders(cached);
@@ -160,13 +171,19 @@ export default function RouteScreen() {
   // plat seulement si la composition des arrêts change).
   React.useEffect(() => {
     setRefsOrder((prev) => {
+      // Une tournée planifiée fait autorité : ses arrêts d'abord, dans SON ordre, puis
+      // les éventuelles courses assignées hors tournée.
+      const base = ordreDispatch
+        ? [...ordreDispatch.filter((ref) => pending.some((o) => o.ref === ref)),
+           ...pending.map((o) => o.ref).filter((ref) => !ordreDispatch.includes(ref))]
+        : null;
       const kept = prev.filter((ref) => pending.some((o) => o.ref === ref));
       const added = pending.map((o) => o.ref).filter((ref) => !kept.includes(ref));
-      const next = [...kept, ...added];
+      const next = base ?? [...kept, ...added];
       const same = next.length === prev.length && next.every((r, i) => r === prev[i]);
       return same ? prev : next;
     });
-  }, [pending]);
+  }, [pending, ordreDispatch]);
 
   const stops = React.useMemo(
     () => refsOrder.map((ref) => pending.find((o) => o.ref === ref)).filter((o): o is Order => Boolean(o)),
@@ -216,6 +233,18 @@ export default function RouteScreen() {
         contentContainerStyle={s.list}
         ListHeaderComponent={
           <View>
+            {/* Quand le dispatch a planifié la journée, le dire : l'ordre affiché n'est
+                plus une suggestion locale mais une consigne d'exploitation. */}
+            {ordreDispatch && (
+              <View style={[s.notice, { borderColor: colors.indigo9, backgroundColor: colors.panel }]}>
+                <Text style={[s.noticeTxt, { color: colors.text, fontWeight: '700', textAlign: rtl ? 'right' : 'left' }]}>
+                  {t.fromDispatch}
+                </Text>
+                <Text style={[s.noticeTxt, { color: colors.muted, textAlign: rtl ? 'right' : 'left' }]}>
+                  {t.fromDispatchHint}
+                </Text>
+              </View>
+            )}
             <View style={[s.notice, { borderColor: colors.border, backgroundColor: colors.panel }]}>
               <Text style={[s.noticeTxt, { color: colors.muted, textAlign: rtl ? 'right' : 'left' }]}>
                 {t.demoNotice}

@@ -8,5 +8,7 @@ import { RolesGuard } from '../auth/roles.guard.js';
 @Module({
   controllers: [TrackingController],
   providers: [TrackingService, JwtAuthGuard, TenantGuard, RolesGuard],
+  // La livraison contrôle la géofence au moment de la preuve : le service sort du module.
+  exports: [TrackingService],
 })
 export class TrackingModule {}

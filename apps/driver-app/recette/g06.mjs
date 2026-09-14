@@ -2,7 +2,7 @@
 // ATT : le bouton de validation reste DÉSACTIVÉ tant que la preuve exigée est incomplète.
 import assert from 'node:assert/strict';
 import { cas, ecran, chercher, toucher, toucherPoint, attendre, capture, sleep, glisser,
-  missionsPour, viderMissions, visible } from './lib.mjs';
+  missionsPour, viderMissions, visible, fermerAppareilPhoto } from './lib.mjs';
 import { seConnecter } from './g01.mjs';
 import { passerAutorisations } from './g02.mjs';
 import { allerAuxMissions } from './g03.mjs';
@@ -73,13 +73,16 @@ export async function prendreLaPhoto() {
   // Le déclencheur apparaît AVANT que l'appareil ne soit prêt à déclencher : le premier
   // appui tombe alors dans le vide et l'écran reste sur la visée. On réappuie tant que
   // l'écran de validation du cliché n'apparaît pas.
+  // Sous charge (émulateur + serveurs de développement sur la même machine), la prise de
+  // vue peut mettre plus de dix secondes : l'attente est large plutôt que serrée, un
+  // faux « cliché non pris » coûtant un cas entier.
   let valider = null;
-  for (let essai = 1; essai <= 4 && !valider; essai++) {
+  for (let essai = 1; essai <= 5 && !valider; essai++) {
     const declencheur = await attendreHorsApp(/^(Shutter|Take photo|shutter_button)$/i, 30_000);
     if (!declencheur) throw new Error('déclencheur de l’appareil photo introuvable');
     await toucherPoint(declencheur.centre);
-    valider = await attendreHorsApp(/^(Done|OK|Accept|Confirmer|done_button)$/i, 9_000);
-    if (!valider) console.log(`  appareil photo : cliché non pris (essai ${essai}/4), on réappuie`);
+    valider = await attendreHorsApp(/^(Done|OK|Accept|Confirmer|done_button)$/i, 18_000);
+    if (!valider) console.log(`  appareil photo : cliché non pris (essai ${essai}/5), on réappuie`);
   }
   // Certains appareils rendent la photo sans écran de validation : l'absence n'est pas
   // fatale, c'est le retour à l'app qui tranche.
@@ -91,6 +94,9 @@ export async function prendreLaPhoto() {
     if ((await ecran()).some((x) => x.paquet === 'host.exp.exponent' && x.centre)) return;
     await sleep(900);
   } while (Date.now() < fin);
+  // Échec : on referme l'appareil photo pour ne pas le laisser recouvrir l'écran du
+  // cas suivant.
+  fermerAppareilPhoto();
   throw new Error('l’app livreur ne revient pas après la prise de photo');
 }
 

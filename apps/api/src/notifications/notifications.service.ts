@@ -174,6 +174,31 @@ export class NotificationsService {
     });
   }
 
+  /**
+   * Notifie le client d'un événement de course (création, mise en livraison, livraison,
+   * échec). Tolérant : une notification qui échoue ne doit jamais faire échouer la course.
+   *
+   * Le catalogue de modèles existait depuis le début, et AUCUN événement métier ne
+   * l'appelait : le journal ne contenait que ce qu'un opérateur y envoyait à la main. Un
+   * client n'était donc jamais prévenu de rien, alors que le produit affiche un centre de
+   * notifications et des modèles bilingues.
+   */
+  async notifierEvenement(
+    schema: string,
+    event: string,
+    input: { recipient?: string | null; lang?: 'fr' | 'ar'; vars?: Record<string, string> },
+  ) {
+    if (!input.recipient) return null;   // pas de destinataire connu : rien à envoyer
+    try {
+      return await this.send(schema, {
+        event, channel: 'SMS', recipient: input.recipient,
+        lang: input.lang ?? 'fr', vars: input.vars,
+      } as SendInput);
+    } catch {
+      return null;
+    }
+  }
+
   /** Centre de notifications (admin) — filtres statut/canal/événement. */
   list(schema: string, filters: { status?: string; channel?: string; event?: string } = {}) {
     return withTenantDb(schema, async (db) => {

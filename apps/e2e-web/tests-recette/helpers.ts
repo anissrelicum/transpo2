@@ -202,8 +202,12 @@ export function nextAlert(page: Page): Promise<string> {
 /** SQL arbitraire sur la base du homelab (préparation/vérification hors périmètre UI). */
 export function sql(query: string): string {
   const b64 = Buffer.from(query).toString('base64');
+  // L'accès à la base dépend de l'environnement de recette : `kubectl exec` sur le homelab,
+  // `docker exec` sur un poste local. Le coder en dur rendait TOUTE la suite injouable dès
+  // que le cluster était éteint — ce qui est arrivé le 13/09.
+  const exec = process.env.PG_EXEC || 'kubectl exec -n transpo deploy/postgres --';
   return execSync(
-    `kubectl exec -n transpo deploy/postgres -- sh -c 'echo ${b64} | base64 -d | psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -A -F" | "'`,
+    `${exec} sh -c 'echo ${b64} | base64 -d | psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -A -F" | "'`,
     { encoding: 'utf-8' },
   ).trim();
 }

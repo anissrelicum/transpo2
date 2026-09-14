@@ -1,7 +1,8 @@
 import { Injectable, BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { withTenantDb, incidents, supportMessages, orders as ordersTable,
-  drivers as driversTable, vehicles as vehiclesTable, zones as zonesTable } from '@transpo/db';
-import { and, asc, desc, eq } from 'drizzle-orm';
+  drivers as driversTable, vehicles as vehiclesTable, zones as zonesTable,
+  tournees as tourneesTable, cashSessions, cashMovements } from '@transpo/db';
+import { and, asc, desc, eq, inArray } from 'drizzle-orm';
 import { DRIVER_DELIVERY_FEE, INCIDENT_TYPES, type IncidentType } from '@transpo/domain';
 
 @Injectable()
@@ -62,6 +63,82 @@ export class FieldService {
         .where(eq(driversTable.name, d)).returning();
       if (!maj) throw new NotFoundException('Fiche chauffeur introuvable.');
       return { name: maj.name, available: maj.available };
+    });
+  }
+
+  /**
+   * Tournée du jour du livreur, arrêts DANS L'ORDRE défini par l'exploitation.
+   *
+   * Le dispatch planifie une tournée, l'optimise, la réordonne (section I) — et rien de
+   * tout cela n'atteignait le livreur : son écran « Ma tournée » retriait ses missions
+   * par une heuristique locale sur des positions fictives. Deux ordres coexistaient, dont
+   * un seul est décidé par l'exploitation, et ce n'était pas celui que le livreur suivait.
+   */
+  async myTour(schema: string, driver: string | undefined, day?: string) {
+    const d = this.ensure(driver);
+    const jour = day ?? new Date().toISOString().slice(0, 10);
+    return withTenantDb(schema, async (db) => {
+      const toutes = await db.select().from(tourneesTable).where(eq(tourneesTable.driver, d));
+      // La tournée du jour, la plus récente si l'exploitation en a planifié plusieurs.
+      const sienne = toutes
+        .filter((t) => t.day === jour && t.status !== 'CLOTUREE')
+        .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))[0];
+      if (!sienne) return null;
+      const orders = sienne.stops.length
+        ? await db.select().from(ordersTable).where(inArray(ordersTable.ref, sienne.stops))
+        : [];
+      const parRef = new Map(orders.map((o) => [o.ref, o]));
+      return {
+        id: sienne.id, day: sienne.day, status: sienne.status, zone: sienne.zone,
+        stops: sienne.stops.map((ref) => parRef.get(ref)).filter(Boolean),
+      };
+    });
+  }
+
+  /* ---- Caisse du livreur ---- */
+
+  /** Session de caisse du jour, vue par le livreur : ce qu'il doit avoir en poche. */
+  async myCash(schema: string, driver?: string) {
+    const d = this.ensure(driver);
+    const jour = new Date().toISOString().slice(0, 10);
+    return withTenantDb(schema, async (db) => {
+      const [s] = await db.select().from(cashSessions)
+        .where(and(eq(cashSessions.driver, d), eq(cashSessions.sessionDate, jour)));
+      if (!s) return null;
+      const moves = await db.select().from(cashMovements).where(eq(cashMovements.sessionId, s.id));
+      return {
+        id: s.id, date: s.sessionDate, theorique: s.theorique, deliveries: s.deliveries,
+        declared: s.declared, status: s.status, cap: s.cap,
+        ecart: s.declared == null ? null : s.theorique - s.declared,
+        moves: moves.map((m) => ({ ref: m.ref, recipient: m.recipient, amount: m.amount })),
+      };
+    });
+  }
+
+  /**
+   * Le livreur déclare le cash qu'il a réellement en main, en fin de journée.
+   *
+   * C'est le chaînon qui manquait à la chaîne du COD : l'argent était encaissé sur le
+   * terrain et l'exploitation n'en voyait que le THÉORIQUE, calculé pour lui. Sans
+   * déclaration, ni dépôt ni écart n'avaient de sens — la console de caisse ne pouvait
+   * rapprocher que deux chiffres qu'elle avait elle-même produits.
+   */
+  async declareCash(schema: string, driver: string | undefined, amount: number) {
+    const d = this.ensure(driver);
+    if (!Number.isFinite(amount) || amount < 0) throw new BadRequestException('Montant déclaré invalide.');
+    const jour = new Date().toISOString().slice(0, 10);
+    return withTenantDb(schema, async (db) => {
+      const [s] = await db.select().from(cashSessions)
+        .where(and(eq(cashSessions.driver, d), eq(cashSessions.sessionDate, jour)));
+      if (!s) throw new NotFoundException('Aucune caisse ouverte aujourd’hui.');
+      if (s.status === 'DEPOSE') throw new BadRequestException('Caisse déjà déposée — déclaration close.');
+      const montant = Math.round(amount);
+      const statut = montant === s.theorique ? 'A_DEPOSER' : 'ECART';
+      const [r] = await db.update(cashSessions)
+        .set({ declared: montant, status: statut })
+        .where(eq(cashSessions.id, s.id)).returning();
+      return { id: r.id, theorique: r.theorique, declared: r.declared, status: r.status,
+               ecart: r.theorique - (r.declared ?? 0) };
     });
   }
 

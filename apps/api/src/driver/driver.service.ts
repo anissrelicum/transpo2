@@ -1,6 +1,10 @@
 import { Injectable, BadRequestException, ForbiddenException, NotFoundException, Inject } from '@nestjs/common';
 import { ReturnsService } from '../returns/returns.service.js';
-import { withTenantDb, orders as ordersTable, orderEvents as orderEventsTable, idempotencyKeys, deliveryProofs } from '@transpo/db';
+import { FraudService } from '../fraud/fraud.service.js';
+import { TrackingService } from '../tracking/tracking.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
+import { withTenantDb, orders as ordersTable, orderEvents as orderEventsTable, idempotencyKeys,
+  deliveryProofs, cashSessions, cashMovements } from '@transpo/db';
 import { and, desc, eq, inArray } from 'drizzle-orm';
 import { LIFECYCLE, missingProof, type Order, type OrderStatus, type ProofLevel } from '@transpo/domain';
 
@@ -31,7 +35,12 @@ function assertArtifact(value: string | null | undefined, name: string, mimes: s
 @Injectable()
 export class DriverService {
   // @Inject explicite : requis sous tsx/esbuild (pas de métadonnée de type émise).
-  constructor(@Inject(ReturnsService) private readonly returns: ReturnsService) {}
+  constructor(
+    @Inject(ReturnsService) private readonly returns: ReturnsService,
+    @Inject(FraudService) private readonly fraud: FraudService,
+    @Inject(TrackingService) private readonly tracking: TrackingService,
+    @Inject(NotificationsService) private readonly notifs: NotificationsService,
+  ) {}
 
   private ensure(driver?: string): string {
     if (!driver) throw new ForbiddenException('Compte non rattaché à un livreur.');
@@ -113,8 +122,60 @@ export class DriverService {
       if (cur.status !== 'LIVRAISON') {
         throw new BadRequestException('Échec déclarable en cours de livraison uniquement.');
       }
-      return this.returns.fail(schema, ref, reason.trim());
+      const retour = await this.returns.fail(schema, ref, reason.trim());
+      await this.notifs.notifierEvenement(schema, 'order.failed', {
+        recipient: cur.dropPhone, vars: { code: cur.code },
+      });
+      return retour;
     });
+  }
+
+  /** Consigne un signal si la preuve est déposée hors de la géofence du livreur. */
+  private async signalerSiHorsZone(schema: string, driver: string, ref: string) {
+    try {
+      const live = await this.tracking.live(schema);
+      const sien = live.find((p) => p.driver === driver);
+      if (!sien?.outOfZone) return;
+      const km = Math.round((sien.distanceM ?? 0) / 100) / 10;
+      await this.fraud.signaler(schema, driver, 'hors_geo', {
+        summary: `Livraison ${ref} validée à ${km} km hors de la zone ${sien.zone ?? ''}`.trim(),
+      });
+    } catch {
+      // Le contrôle de zone ne doit jamais empêcher une livraison d'aboutir : le livreur
+      // est devant le client, et l'absence de position n'est pas une faute.
+    }
+  }
+
+  /**
+   * Porte un encaissement dans la caisse du jour du livreur.
+   *
+   * Une session par (livreur, jour) : ouverte au premier encaissement, alimentée ensuite.
+   * Le mouvement garde la trace course par course — c'est lui qui permet de dire d'où
+   * vient l'argent quand le déclaré ne tombe pas juste.
+   */
+  private async porterEnCaisse(db: any, driver: string, ref: string, recipient: string, amount: number) {
+    const jour = new Date().toISOString().slice(0, 10);
+    const [existante] = await db.select().from(cashSessions)
+      .where(and(eq(cashSessions.driver, driver), eq(cashSessions.sessionDate, jour)));
+    // Une session déposée est close : l'encaissement suivant ouvre la caisse du jour d'après.
+    const ouverte = existante && existante.status !== 'DEPOSE' ? existante : null;
+    let session = ouverte;
+    if (!session) {
+      const initiales = driver.split(/\s+/).filter(Boolean).slice(0, 2).map((m) => m[0]!.toUpperCase()).join('');
+      [session] = await db.insert(cashSessions).values({
+        driver, ini: initiales || driver.slice(0, 2).toUpperCase(), sessionDate: jour,
+        theorique: 0, deliveries: 0, status: 'EN_COURS',
+      }).returning();
+    }
+    // Une même course ne doit compter qu'une fois, même si la preuve est rejouée.
+    const dejaPorte = await db.select().from(cashMovements)
+      .where(and(eq(cashMovements.sessionId, session.id), eq(cashMovements.ref, ref)));
+    if (dejaPorte.length) return;
+    await db.insert(cashMovements).values({ sessionId: session.id, ref, recipient, amount, matched: true });
+    await db.update(cashSessions).set({
+      theorique: session.theorique + amount,
+      deliveries: session.deliveries + 1,
+    }).where(eq(cashSessions.id, session.id));
   }
 
   /**
@@ -135,6 +196,10 @@ export class DriverService {
       if (missing) throw new BadRequestException(missing);
 
       const codPaid = cur.cod > 0 ? (body?.codCollected ?? 0) >= cur.cod : false;
+      // Une livraison validée alors que le livreur est hors de sa géofence est un signal
+      // de risque documenté au barème (`hors_geo`, 28 pts) : il n'était consigné nulle
+      // part, faute de quoi que ce soit qui crée un cas de fraude.
+      await this.signalerSiHorsZone(schema, d, ref);
       return withTenantDb(schema, async (db) => {
         if (photo || signature) {
           await db.insert(deliveryProofs)
@@ -151,7 +216,21 @@ export class DriverService {
           ref, status: 'LIVREE', actor: d,
           note: codPaid ? 'Livrée avec preuve · COD encaissé' : 'Livrée avec preuve',
         });
+        // L'argent encaissé sur le terrain ouvre (ou alimente) la caisse du jour du
+        // livreur. Sans cela, `cash_sessions` ne se remplissait QUE par le jeu de
+        // démonstration : sur un tenant réel, la comptabilité voyait « Aucune session de
+        // caisse aujourd'hui » alors que des milliers de dirhams circulaient en tournée,
+        // et ni le dépôt ni l'écart n'avaient de support.
+        const encaisse = Math.max(0, body?.codCollected ?? 0);
+        if (encaisse > 0) await this.porterEnCaisse(db, d, ref, cur.dropContact ?? cur.merchant ?? ref, encaisse);
         return rowToOrder(r);
+      }).then(async (livree) => {
+        // Le client est prévenu de la livraison de son colis — l'événement le plus attendu
+        // de toute la course.
+        await this.notifs.notifierEvenement(schema, 'order.delivered', {
+          recipient: cur.dropPhone, vars: { code: cur.code },
+        });
+        return livree;
       });
     });
   }

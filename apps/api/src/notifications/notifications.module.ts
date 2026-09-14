@@ -8,5 +8,7 @@ import { RolesGuard } from '../auth/roles.guard.js';
 @Module({
   controllers: [NotificationsController],
   providers: [NotificationsService, JwtAuthGuard, TenantGuard, RolesGuard],
+  // Les événements de course notifient le client : le service sort du module.
+  exports: [NotificationsService],
 })
 export class NotificationsModule {}

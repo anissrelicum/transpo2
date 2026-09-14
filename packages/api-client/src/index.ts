@@ -80,6 +80,16 @@ export interface DriverProfile {
   licenseNo: string | null; licenseDue: string | null; medicalDue: string | null;
   zone: string | null;
 }
+/** Tournée du jour du livreur : les arrêts sont rendus DANS l'ordre décidé au dispatch. */
+export interface DriverTour {
+  id: string; day: string; status: string; zone: string | null; stops: Order[];
+}
+/** Caisse du jour du livreur : théorique calculé par le serveur, déclaré saisi par lui. */
+export interface DriverCash {
+  id: string; date?: string; theorique: number; deliveries?: number;
+  declared: number | null; status: string; cap?: number; ecart: number | null;
+  moves?: { ref: string; recipient: string; amount: number }[];
+}
 export interface DeliveryProof {
   ref: string; proofLevel: string; captured: boolean;
   photo: string | null; signature: string | null;
@@ -481,6 +491,12 @@ export class TranspoClient {
   }
   getDriverHistory(): Promise<DriverHistory> { return this.req('/v1/driver/history'); }
   getDriverProfile(): Promise<DriverProfile> { return this.req('/v1/driver/me'); }
+  /** Tournée du jour ordonnée par l'exploitation, ou `null` si aucune n'est planifiée. */
+  getMyTour(): Promise<DriverTour | null> { return this.req('/v1/driver/tour'); }
+  getMyCash(): Promise<DriverCash | null> { return this.req('/v1/driver/cash'); }
+  declareMyCash(amount: number): Promise<DriverCash> {
+    return this.req('/v1/driver/cash/declare', { method: 'POST', body: { amount } });
+  }
   /** Le livreur pour lui-même — à ne pas confondre avec `setDriverAvailability(id, …)`,
    *  qui est le geste du dispatch sur la fiche d'un tiers. */
   setMyAvailability(available: boolean): Promise<{ name: string; available: boolean }> {

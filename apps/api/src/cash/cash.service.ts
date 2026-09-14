@@ -3,10 +3,14 @@ import { withTenantDb, orders as ordersTable, cashSessions, cashMovements, payou
 import { merchantPayoutNet } from '@transpo/domain';
 import { eq, asc } from 'drizzle-orm';
 import { BillingService } from '../billing/billing.service.js';
+import { FraudService } from '../fraud/fraud.service.js';
 
 @Injectable()
 export class CashService {
-  constructor(@Inject(BillingService) private readonly billing: BillingService) {}
+  constructor(
+    @Inject(BillingService) private readonly billing: BillingService,
+    @Inject(FraudService) private readonly fraud: FraudService,
+  ) {}
 
   /** Reversements COD par marchand (cash encaissé à reverser). */
   reversements(schema: string) {
@@ -109,8 +113,8 @@ export class CashService {
   }
 
   /** Résout l'écart d'une session (motif + note), puis la clôture. */
-  resolve(schema: string, id: string, reason: string, note?: string) {
-    return withTenantDb(schema, async (db) => {
+  async resolve(schema: string, id: string, reason: string, note?: string) {
+    const resultat = await withTenantDb(schema, async (db) => {
       if (!reason) throw new BadRequestException('Motif requis.');
       const [cur] = await db.select().from(cashSessions).where(eq(cashSessions.id, id));
       if (!cur) throw new NotFoundException('Session introuvable.');
@@ -118,8 +122,17 @@ export class CashService {
       const [r] = await db.update(cashSessions)
         .set({ status: 'DEPOSE', deposited: amount, reason, note: note ?? null })
         .where(eq(cashSessions.id, id)).returning();
-      return { id: r.id, status: r.status, reason: r.reason };
+      return { id: r.id, status: r.status, reason: r.reason, driver: r.driver, ecart: r.theorique - amount };
     });
+    // Un écart de caisse, même résolu, reste un fait à suivre : il alimente le dossier de
+    // risque du livreur. Résoudre l'écart comptable n'efface pas le signal.
+    if (resultat.ecart !== 0) {
+      await this.fraud.signaler(schema, resultat.driver, 'ecart_cash', {
+        amount: Math.abs(resultat.ecart),
+        summary: `Écart de caisse de ${Math.abs(resultat.ecart)} DH — ${reason}`,
+      });
+    }
+    return { id: resultat.id, status: resultat.status, reason: resultat.reason };
   }
   /** Encaissement du COD d'une commande (codPaid=true). */
   collect(schema: string, ref: string) {

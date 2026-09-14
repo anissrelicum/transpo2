@@ -64,6 +64,11 @@ export class TourneesService {
     return withTenantDb(schema, async (db) => {
       const [t] = await db.select().from(tourTable).where(eq(tourTable.id, id));
       if (!t) throw new NotFoundException('Tournée introuvable.');
+      // Une tournée clôturée est un fait passé : la réordonner réécrirait la journée
+      // d'hier. La console masque l'action, l'API l'acceptait encore.
+      if (t.status === 'CLOTUREE') {
+        throw new BadRequestException('Tournée clôturée — plus aucune modification possible.');
+      }
       const same = stops.length === t.stops.length && [...stops].sort().join() === [...t.stops].sort().join();
       if (!same) throw new BadRequestException('Réordonnancement : le même ensemble d’arrêts est requis.');
       const [r] = await db.update(tourTable).set({ stops }).where(eq(tourTable.id, id)).returning();

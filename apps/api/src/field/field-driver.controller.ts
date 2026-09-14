@@ -22,6 +22,21 @@ export class FieldDriverController {
     return this.svc.setAvailability(req.tenantSchema, req.user?.driver, body?.available as boolean);
   }
 
+  /** Tournée du jour, telle que l'exploitation l'a ordonnée. */
+  @Get('tour')
+  tour(@Req() req: any) { return this.svc.myTour(req.tenantSchema, req.user?.driver); }
+
+  /** Caisse du jour du livreur : ce qu'il doit avoir en poche. */
+  @Get('cash')
+  cash(@Req() req: any) { return this.svc.myCash(req.tenantSchema, req.user?.driver); }
+
+  /** Déclaration du cash réellement détenu — ouvre le rapprochement côté comptabilité. */
+  @Post('cash/declare')
+  @HttpCode(200)
+  declareCash(@Req() req: any, @Body() body: { amount?: number }) {
+    return this.svc.declareCash(req.tenantSchema, req.user?.driver, Number(body?.amount));
+  }
+
   @Post('incidents')
   @HttpCode(200)
   report(@Req() req: any, @Body() body: { ref?: string; type: string; note?: string }) {

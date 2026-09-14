@@ -8,9 +8,10 @@
 // conduite ne sont suivis nulle part dans l'app : données de démonstration,
 // signalées comme telles (cf. design/PLAN-REFONTE-MOBILE.md §5).
 import * as React from 'react';
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator, TextInput, Alert } from 'react-native';
 import { router, useFocusEffect, Stack } from 'expo-router';
 import type { Order } from '@transpo/domain';
+import type { DriverCash } from '@transpo/api-client';
 import { money } from '@transpo/domain';
 import { space } from '@transpo/design-tokens';
 import { ScreenHead, PrimaryBtn, BottomAction } from '../components/shell';
@@ -30,6 +31,12 @@ const STR = {
     delivered: 'Courses livrées', failed: 'Échecs', distance: 'Distance', driveTime: 'Temps de conduite',
     demo: 'démo',
     codTitle: 'Encaissement COD', codCollected: 'Collecté (session)',
+    cashTitle: 'Ma caisse du jour', cashTheorique: 'Attendu (encaissements enregistrés)',
+    cashDeclared: 'Ce que j’ai en main', cashDeclare: 'Déclarer ma caisse',
+    cashNone: 'Aucun encaissement enregistré aujourd’hui.',
+    cashSent: 'Caisse déclarée', cashGap: (m: string) => `Écart de ${m} — l’exploitation va vous contacter.`,
+    cashMatch: 'Compte juste : à déposer en agence.',
+    cashFail: 'Déclaration impossible — vérifiez votre connexion.',
     estimated: 'Gains estimés', estimatedNote: (n: number, fee: string) => `estimation : ${n} × ${fee}`,
     estimatedUnavailable: 'Indisponible hors ligne',
     source: "Calculé à partir des missions synchronisées sur cet appareil. Distance et temps de conduite : fonctionnalité à venir, aucune donnée n'est collectée.",
@@ -42,6 +49,12 @@ const STR = {
     title: 'ملخص اليوم',
     delivered: 'توصيلات منجزة', failed: 'حالات فشل', distance: 'المسافة', driveTime: 'مدة القيادة',
     demo: 'تجريبي',
+    cashTitle: 'صندوقي اليوم', cashTheorique: 'المتوقَّع (تحصيلات مسجَّلة)',
+    cashDeclared: 'ما بحوزتي فعلاً', cashDeclare: 'التصريح بالصندوق',
+    cashNone: 'لا يوجد تحصيل مسجَّل اليوم.',
+    cashSent: 'تم التصريح بالصندوق', cashGap: (m: string) => `فارق ${m} — ستتصل بك العمليات.`,
+    cashMatch: 'المبلغ مطابق: يُودع في الوكالة.',
+    cashFail: 'تعذّر التصريح — تحقق من اتصالك.',
     codTitle: 'تحصيل الدفع عند الاستلام', codCollected: 'محصَّل (الجلسة)',
     estimated: 'أرباح مقدَّرة', estimatedNote: (n: number, fee: string) => `تقدير: ${n} × ${fee}`,
     estimatedUnavailable: 'غير متاح دون اتصال',
@@ -66,6 +79,33 @@ export default function RecapScreen() {
   const [codToday, setCodToday] = React.useState(0);
   const [feePerDelivery, setFeePerDelivery] = React.useState<number | null>(null);
   const [closed, setClosed] = React.useState(false);
+
+  const [caisse, setCaisse] = React.useState<DriverCash | null>(null);
+  const [declare, setDeclare] = React.useState('');
+  const [envoi, setEnvoi] = React.useState(false);
+
+  /**
+   * Déclare le cash réellement détenu. Le THÉORIQUE vient du serveur (somme des
+   * encaissements enregistrés) ; le DÉCLARÉ est le seul chiffre que le livreur apporte —
+   * c'est leur écart qui déclenche le rapprochement côté comptabilité.
+   */
+  async function declarerLaCaisse() {
+    const montant = Number(declare);
+    if (!Number.isFinite(montant) || montant < 0) return;
+    setEnvoi(true);
+    authedClient().getMyCash()
+      .then((c) => { setCaisse(c); if (c?.declared != null) setDeclare(String(c.declared)); })
+      .catch(() => setCaisse(null));
+    try {
+      const r = await authedClient().declareMyCash(montant);
+      setCaisse((c) => (c ? { ...c, declared: r.declared, status: r.status, ecart: r.ecart } : c));
+      Alert.alert(t.cashSent, r.ecart ? t.cashGap(money(Math.abs(r.ecart))) : t.cashMatch);
+    } catch {
+      Alert.alert(t.cashTitle, t.cashFail);
+    } finally {
+      setEnvoi(false);
+    }
+  }
 
   const load = React.useCallback(async () => {
     setLoading(true);
@@ -150,6 +190,42 @@ export default function RecapScreen() {
           </View>
         </View>
 
+        {/* La caisse du jour : le seul endroit où le livreur peut dire ce qu'il a
+            réellement en main. Sans cette déclaration, la comptabilité ne rapproche que
+            des chiffres qu'elle a elle-même calculés. */}
+        <View style={[s.card, { backgroundColor: colors.panel, borderColor: colors.border }]}>
+          <Text style={[s.cardTitle, { color: colors.text, textAlign: align }]}>{t.cashTitle}</Text>
+          {caisse ? (
+            <>
+              <View style={[s.cardRow, { flexDirection: row }]}>
+                <Text style={{ color: colors.muted, fontSize: 13 }}>{t.cashTheorique}</Text>
+                <Text style={{ color: colors.text, fontWeight: '700', fontSize: 13 }}>{money(caisse.theorique)}</Text>
+              </View>
+              <Text style={{ color: colors.muted, fontSize: 12, marginTop: 8, textAlign: align }}>{t.cashDeclared}</Text>
+              <TextInput
+                value={declare}
+                onChangeText={(v) => setDeclare(v.replace(/[^0-9]/g, ''))}
+                keyboardType="numeric"
+                style={[s.cashInput, { borderColor: colors.border, color: colors.text, textAlign: align }]}
+                testID="caisse-montant-declare"
+                accessibilityLabel={t.cashDeclared}
+              />
+              {caisse.declared != null && (
+                <Text style={{ color: caisse.ecart ? resolveColor('red', 11, mode) : resolveColor('green', 11, mode), fontSize: 12, marginTop: 6, textAlign: align }}>
+                  {caisse.ecart ? t.cashGap(money(Math.abs(caisse.ecart))) : t.cashMatch}
+                </Text>
+              )}
+              <View style={{ marginTop: 10 }}>
+                <PrimaryBtn onPress={declarerLaCaisse} disabled={envoi || declare === ''} testID="caisse-declarer">
+                  {t.cashDeclare}
+                </PrimaryBtn>
+              </View>
+            </>
+          ) : (
+            <Text style={{ color: colors.muted, fontSize: 13, textAlign: align }}>{t.cashNone}</Text>
+          )}
+        </View>
+
         <View style={[s.earnedCard, { backgroundColor: resolveColor('green', 3, mode) }]}>
           <View style={[s.cardRow, { flexDirection: row }]}>
             <Text style={{ color: resolveColor('green', 11, mode), fontSize: 13 }}>{t.estimated}</Text>
@@ -182,6 +258,7 @@ const s = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   content: { padding: space[4], gap: space[3], paddingBottom: 100 },
   grid: { flexWrap: 'wrap', gap: space[3] },
+  cashInput: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, height: 48, fontSize: 18, fontWeight: '700', marginTop: 4 },
   statCard: { flexBasis: '47%', flexGrow: 1, borderWidth: 1, borderRadius: 14, padding: space[3], gap: 4 },
   statHead: { alignItems: 'center', justifyContent: 'space-between' },
   statLabel: { fontSize: 12 },

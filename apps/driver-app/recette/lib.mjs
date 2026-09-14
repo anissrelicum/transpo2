@@ -214,6 +214,11 @@ export async function clavierFerme() {
 
 /** Relance l'app à froid sur le projet Metro (formulaires vierges à chaque cas). */
 export async function ouvrirApp({ langue = 'fr' } = {}) {
+  // L'appareil photo système peut être resté au premier plan (prise de vue abandonnée) :
+  // il recouvre alors l'app et le cas SUIVANT échoue sur « écran de connexion introuvable »,
+  // sans rapport avec ce qu'il testait. Un cas ne doit jamais hériter du naufrage du
+  // précédent.
+  adb('shell', 'am', 'force-stop', 'com.android.camera2');
   adb('shell', 'am', 'force-stop', 'host.exp.exponent');
   await sleep(1500);
   adb('shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', PROJET, 'host.exp.exponent');
@@ -321,6 +326,11 @@ export async function deconnecter() {
   }
   await attendre('login-organisation', { timeout: 30_000, message: 'la déconnexion n’a pas ramené au login' });
   return true;
+}
+
+/** Referme l'appareil photo système, qu'aucun cas ne doit laisser ouvert. */
+export function fermerAppareilPhoto() {
+  adb('shell', 'am', 'force-stop', 'com.android.camera2');
 }
 
 /* --------------------------------------------------------------- réseau */

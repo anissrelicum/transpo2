@@ -5,9 +5,12 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { TenantGuard } from '../tenant/tenant.guard.js';
 import { RolesGuard } from '../auth/roles.guard.js';
 import { ReturnsModule } from '../returns/returns.module.js';
+import { FraudModule } from '../fraud/fraud.module.js';
+import { TrackingModule } from '../tracking/tracking.module.js';
+import { NotificationsModule } from '../notifications/notifications.module.js';
 
 @Module({
-  imports: [ReturnsModule],
+  imports: [ReturnsModule, FraudModule, TrackingModule, NotificationsModule],
   controllers: [DriverController],
   providers: [DriverService, JwtAuthGuard, TenantGuard, RolesGuard],
 })
