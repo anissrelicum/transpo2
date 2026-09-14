@@ -200,4 +200,69 @@ apps/e2e-web/lancer-recette-locale.sh          # toutes les sections
 apps/e2e-web/lancer-recette-locale.sh h01 k02  # quelques cas
 ```
 
-*(Section en cours de déroulé — verdicts et constats ajoutés au fil de l'exécution.)*
+## Verdicts — sections H à T
+
+| Cas | Statut | Constat / anomalie | Date |
+|---|---|---|---|
+| TC-H01 | OK | Le colis scanné entre dans **Arrivés — à scanner**, les indicateurs suivent, le champ se vide pour le suivant. **AN-36 corrigée** | 14/09 |
+| TC-H02 | OK | Bouton fermé à 7 caractères ; code inconnu refusé avec un message explicite, rien n'entre au hub | 14/09 |
+| TC-H03 | OK | Arrivés → Scannés — à trier → Sur quai, regroupé par ville, phase persistée à chaque geste | 14/09 |
+| TC-H04 | OK | Manifeste complet, total COD embarqué exact. **→ AN-37** : sceller ne laisse aucune trace | 14/09 |
+| TC-H05 | OK | Comptable : aucun geste d'exploitation proposé, et `POST /v1/hub/scan` refusé 403 | 14/09 |
+| TC-J01 | OK | La dernière position remontée par le terrain est celle qu'affiche le PC flotte | 14/09 |
+| TC-J03 | OK | Géofence à 3 km : position dans la zone silencieuse, position à 60 km → bandeau « sorti de zone » + `/tracking/alerts` | 14/09 |
+| TC-J04 | OK | Plein écran et retour, « Gérer les zones » mène à `/zones` | 14/09 |
+| TC-M01 | OK | Supplément modifié, « Enregistré ✓ », valeur persistée après rechargement. **AN-39 corrigée** (libellés reliés aux champs) | 14/09 |
+| TC-M02 | OK | Le devis de l'API vaut désormais celui du simulateur. **AN-38 corrigée** | 14/09 |
+| TC-M03 | OK | `grille-tarifaire.csv` téléchargé, une ligne par palier | 14/09 |
+| TC-N01 | OK | Portail borné au marchand du compte, aucune commande d'un autre marchand, API alignée | 14/09 |
+| TC-N04 | OK | `/dashboard`, `/orders`, `/cash` fermés au marchand ; 4 endpoints d'exploitation en 403 | 14/09 |
+| TC-O01 | OK | Suivi public par code : statut et étapes, **aucun téléphone, aucune adresse, aucun nom de livreur** ; code inconnu → 404 | 14/09 |
+| TC-O03 | OK | Note enregistrée une fois ; seconde note refusée ; notation d'une commande non livrée refusée | 14/09 |
+| TC-P01 | OK | Journal alimenté par l'envoi manuel, destinataire et statut visibles | 14/09 |
+| TC-P04 | OK | Marketing sans consentement bloqué (09-08), transactionnel passé, consentement retiré de nouveau opposable | 14/09 |
+| TC-P05 | OK | Modèle modifié, variables réellement substituées, rétablissement effectif | 14/09 |
+| TC-R01 | OK | Les compteurs du tableau de bord valent ceux de la base ; alertes de conformité conformes | 14/09 |
+| TC-R02 | OK | Motifs d'échec repris du terrain, chauffeurs livrant tous présents à l'onglet « Par livreur » | 14/09 |
+| TC-S02 | OK | En-tête `x-tenant-slug` d'un autre tenant → 403 ; aucune écriture ne franchit la cloison | 14/09 |
+| TC-S05 | OK | Provisioning, invitations, réinitialisations tracés ; aucune entrée sans acteur ni date | 14/09 |
+| TC-S07 | OK | Cookie supprimé → renvoi au formulaire de connexion, aucun contenu servi | 14/09 |
+| TC-T03 | OK | 1024 px et 768 px sur `/orders`, `/dispatch`, `/cash` : aucun débordement horizontal | 14/09 |
+| TC-T04 | OK | 21 pages d'un tenant neuf : aucun écran blanc, aucune erreur JavaScript | 14/09 |
+| TC-T05 | OK | Même libellé de statut sur la liste, la fiche et le suivi client | 14/09 |
+
+## Constats produit — sections H à T
+
+**AN-36 — La première colonne du tri en hub ne pouvait jamais se remplir. _Corrigée._**
+« Enregistrer l'entrée » posait directement la phase `trier` : le colis sautait la colonne
+**Arrivés — à scanner**, et l'indicateur « À scanner » restait structurellement à zéro sur un
+tenant réel (seul le jeu de démonstration en posait). Le hub affichait donc trois colonnes dont
+une morte, et l'agent n'avait aucun moyen de distinguer ce qui vient d'arriver de ce qui est déjà
+scanné. Le scan déclare l'arrivée ; le tri reste un second geste. *Au passage :* une course
+livrée, annulée ou déjà en retour n'entre plus au hub — elle serait apparue au manifeste de
+transfert, COD compris. **Tenue par TC-H01 et TC-H03.**
+
+**AN-38 — Le devis annoncé au client n'était pas celui qui serait facturé. _Corrigée._**
+Le simulateur de `/pricing` affichait 51,84 DH pour 9 km ; `POST /v1/pricing/quote` — le moteur
+qui facture — répondait 57,60 DH pour la même course. `BillingService.quote` transmettait les
+paliers, les suppléments et la TVA du tenant, mais **pas sa remise contractuelle** : la seule
+valeur de la grille à rester sur le carreau. Un dispatcher annonçait un prix, la facture en
+portait un autre, 10 % plus haut. **Tenue par TC-M02**, qui confronte désormais l'écran et le
+moteur sur la même course.
+
+**AN-39 — Les libellés de la grille tarifaire n'étaient reliés à aucun champ. _Corrigée._**
+Même défaut que celui corrigé sur l'éditeur de zones en section E : « Supplément fragile »,
+« Remise standard », « TVA » étaient posés **à côté** de leur champ. Un lecteur d'écran
+annonçait quatre champs anonymes, et cliquer le libellé ne faisait rien. Chaque libellé
+enveloppe maintenant son contrôle. *(Trouvé, là encore, parce que la recette ne pouvait pas
+viser le champ par son nom — le même signal qu'en sections E et G.)*
+
+**AN-37 — Sceller un bordereau de transfert ne laisse aucune trace. _Ouverte._**
+« Sceller le bordereau » ferme le dialogue et **ne fait rien d'autre** : aucun manifeste n'est
+enregistré, les colis restent « sur quai », et le même bordereau peut être scellé indéfiniment.
+Le hub n'a donc aucune trace de ce qui est parti, ni le destinataire de quoi contrôler ce qui
+arrive. Le plan de test n'attendait que la fermeture du dialogue — le cas passe — mais un
+transfert interurbain sans document opposable est un trou d'exploitation. Sévérité **moyenne**.
+*Piste :* un manifeste numéroté, horodaté et scellé (table dédiée), les colis passant « en
+transfert » ; réception à destination par le même numéro. **À arbitrer** : c'est une brique
+produit, pas une correction — d'où le choix de la consigner plutôt que de l'inventer.
