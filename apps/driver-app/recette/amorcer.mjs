@@ -23,10 +23,12 @@ const RUN = process.env.RUN_ID || '2026-09-13-local';
 // Cité en clair par TC-A28, TC-A29 et TC-B02 : ce mot de passe fait partie du jeu de
 // données §0.4, ce n'est pas un secret d'exploitation.
 const MDP_ADMIN = 'Test1234';
+// Frappé caractère par caractère sur l'émulateur : ASCII simple, sans tiret de tête.
+const MDP_LIVREUR = 'Livreur1234';
 
 /** Pose un compte par le CLI `account`, quel que soit l'environnement (cf. §0.4). */
-function compteCli(tenant, email, nom, role, motDePasse) {
-  const args = `${tenant} ${email} '${nom}' ${role} ${motDePasse}`;
+function compteCli(tenant, email, nom, role, motDePasse, scope) {
+  const args = `${tenant} ${email} '${nom}' ${role} ${motDePasse}${scope ? ` '${scope}'` : ''}`;
   const base = process.env.ACCOUNT_EXEC || 'pnpm --filter @transpo/db account';
   const cmd = base.includes('%ARGS%') ? base.replace('%ARGS%', args) : `${base} ${args}`;
   return execSync(cmd, { encoding: 'utf-8' }).trim().split('\n').pop();
@@ -132,6 +134,15 @@ export default async function amorcer() {
     if (!r.ok) throw new Error(`réinitialisation livreur refusée (${r.status})`);
     motDePasseLivreur = r.donnees.tempPassword;
   }
+  // Le mot de passe du livreur est ensuite FIXÉ, et pas laissé au tirage au sort.
+  //
+  // Il est le seul du décor à être frappé par `adb input text` sur l'émulateur, et
+  // `randomBytes(9).toString('base64url')` produit une fois sur douze un secret commençant
+  // par « - » : `input` le prend pour une option et la frappe part en morceaux. TC-G01 est
+  // tombé là-dessus le 14/09, sur « -wPCCz04TsKW ». Une fixture n'a pas à être aléatoire —
+  // ce qui est testé, c'est l'app, pas le générateur de mots de passe (lui, c'est TC-B07).
+  motDePasseLivreur = MDP_LIVREUR;
+  console.log(`  ${compteCli(TENANT, LIVREUR.email, LIVREUR.name, 'DRIVER', MDP_LIVREUR, CHAUFFEUR)}`);
   consigner(LIVREUR.email, 'DRIVER', motDePasseLivreur);
   console.log(`  compte livreur ${LIVREUR.email} prêt (mot de passe consigné dans ${RUN}/COMPTES.md)`);
 

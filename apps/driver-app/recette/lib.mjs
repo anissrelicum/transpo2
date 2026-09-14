@@ -26,8 +26,26 @@ export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /** Arbre d'accessibilité courant, aplati en liste de nœuds exploitables. */
 export async function ecran() {
-  adb('shell', 'uiautomator', 'dump', '/sdcard/ui.xml');
-  const xml = adb('shell', 'cat', '/sdcard/ui.xml');
+  // `uiautomator dump` rend par intermittence « null root node returned by
+  // UiTestAutomationBridge » — l'arbre d'accessibilité est momentanément indisponible
+  // (animation en cours, clavier qui s'ouvre). Sans réessai, la liste revenait vide et le
+  // cas concluait à un écran absent alors qu'il était bien affiché : TC-G01 a échoué là-
+  // dessus le 14/09, capture d'écran à l'appui. Le harnais réessaie plutôt que de mentir.
+  //
+  // Le fichier est EFFACÉ avant chaque tentative : le message d'erreur part sur la sortie
+  // d'erreur du shell distant, pas dans ce que l'on relit, et un dump raté laissait en
+  // place l'arbre du dump PRÉCÉDENT. On aurait alors lu, sans le savoir, l'écran d'avant.
+  let xml = '';
+  for (let essai = 1; essai <= 5; essai += 1) {
+    adb('shell', 'rm', '-f', '/sdcard/ui.xml');
+    adb('shell', 'uiautomator', 'dump', '/sdcard/ui.xml');
+    // Le dump a pu ne rien écrire : `cat` sort alors en erreur, ce n'est pas un incident.
+    try { xml = adb('shell', 'cat', '/sdcard/ui.xml'); } catch { xml = ''; }
+    if (xml.includes('<node ')) break;
+    xml = '';
+    if (essai < 5) await sleep(700);
+  }
+  if (!xml) throw new Error("l'arbre d'accessibilité reste indisponible après 5 essais (uiautomator)");
   const noeuds = [];
   for (const balise of xml.split('<node ').slice(1)) {
     // Le dump est du XML : « Historique & gains » y arrive en « Historique &amp; gains ».
@@ -116,6 +134,12 @@ export async function toucher(cible) {
 const pourInput = (v) => {
   if (/[^\x20-\x7E]/.test(v)) {
     throw new Error(`« ${v} » n'est pas saisissable par adb (caractères hors ASCII)`);
+  }
+  // `input text -abc` : la commande Android prend le tiret de tête pour une option et la
+  // frappe part en morceaux, sans lever d'erreur. Le harnais doit le dire plutôt que de le
+  // subir — TC-G01 est tombé le 14/09 sur un mot de passe « -wPCCz04TsKW ».
+  if (v.startsWith('-')) {
+    throw new Error(`« ${v} » commence par un tiret : « input text » le prendrait pour une option`);
   }
   // Le texte traverse le shell DU TÉLÉPHONE : tout caractère de motif y est développé.
   // `?` notamment — « que faire ? » arrivait en « que faire d », le point d'interrogation
