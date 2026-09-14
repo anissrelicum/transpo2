@@ -20,15 +20,15 @@ Jeu §0.4 en place.
 Running 29 tests using 1 worker
 
 organisations au parc → 2
-  ✓  1 [chromium] › a01.spec.ts:8:5 › TC-A01 — Connexion super-admin (5.1s)
-  ✓  2 [chromium] › a02.spec.ts:7:5 › TC-A02 — Bascule de realm (4.0s)
-  ✓  3 [chromium] › a03.spec.ts:14:5 › TC-A03 — Provisionner une organisation (10.8s)
+  ✓  1 [chromium] › a01.spec.ts:8:5 › TC-A01 — Connexion super-admin (5.8s)
+  ✓  2 [chromium] › a02.spec.ts:7:5 › TC-A02 — Bascule de realm (4.8s)
+  ✓  3 [chromium] › a03.spec.ts:14:5 › TC-A03 — Provisionner une organisation (12.0s)
 slug api → Slug réservé à l’infrastructure : api
 slug www → Slug réservé à l’infrastructure : www
 slug admin → Slug réservé à l’infrastructure : admin
-  ✓  4 [chromium] › a04.spec.ts:6:5 › TC-A04 — Slugs réservés refusés (10.1s)
+  ✓  4 [chromium] › a04.spec.ts:6:5 › TC-A04 — Slugs réservés refusés (10.8s)
 doublon recetteprov → Tenant déjà existant : recetteprov
-  ✓  5 [chromium] › a05.spec.ts:9:5 › TC-A05 — Slug en doublon refusé (8.0s)
+  ✓  5 [chromium] › a05.spec.ts:9:5 › TC-A05 — Slug en doublon refusé (9.1s)
 NOTICE:  drop cascades to 25 other objects
 DETAIL:  drop cascades to table tenant_recetteiso.orders
 drop cascades to table tenant_recetteiso.users
@@ -81,14 +81,14 @@ drop cascades to table tenant_recetteprov.company_settings
 drop cascades to table tenant_recetteprov.notif_templates
 drop cascades to table tenant_recetteprov.delivery_proofs
 drop cascades to table tenant_recetteprov.order_events
-  ✓  6 [chromium] › a06.spec.ts:11:5 › TC-A06 — Provisionner une seconde organisation (15.0s)
+  ✓  6 [chromium] › a06.spec.ts:11:5 › TC-A06 — Provisionner une seconde organisation (15.8s)
 parc → 2 organisation(s) · repère → rabatexpress
 filtre Essai → 1 attendue(s)
 filtre Actif → 1 attendue(s)
 filtre Impayé → 0 attendue(s)
 filtre Suspendu → 0 attendue(s)
 filtre Résilié → 0 attendue(s)
-  ✓  7 [chromium] › a07.spec.ts:9:5 › TC-A07 — Recherche et filtre (15.1s)
+  ✓  7 [chromium] › a07.spec.ts:9:5 › TC-A07 — Recherche et filtre (15.5s)
 tarif Entreprise courant → 2 499 DH/mois
 racine aria-hidden après fermeture → 0
 NOTICE:  drop cascades to 25 other objects
@@ -117,13 +117,13 @@ drop cascades to table tenant_recetteconv.company_settings
 drop cascades to table tenant_recetteconv.notif_templates
 drop cascades to table tenant_recetteconv.delivery_proofs
 drop cascades to table tenant_recetteconv.order_events
-  ✓  8 [chromium] › a08.spec.ts:12:5 › TC-A08 — Convertir l’essai en abonnement Entreprise (10.2s)
-  ✓  9 [chromium] › a09.spec.ts:10:5 › TC-A09 — Changement de plan à l’échéance (12.7s)
+  ✓  8 [chromium] › a08.spec.ts:12:5 › TC-A08 — Convertir l’essai en abonnement Entreprise (12.2s)
+  ✓  9 [chromium] › a09.spec.ts:10:5 › TC-A09 — Changement de plan à l’échéance (14.7s)
 abonnements en base :
 rabatexpress | ACTIF | ACTIF | Entreprise | 249900
 tangerlog | ESSAI | ESSAI | TPE Coursier | 29900
 rabatexpress · Entreprise · ACTIF → attendu 2 499 DH
-  ✓  10 [chromium] › a10.spec.ts:10:5 › TC-A10 — Facturation plateforme (4.5s)
+  ✓  10 [chromium] › a10.spec.ts:10:5 › TC-A10 — Facturation plateforme (5.0s)
 plans au catalogue → 4
 catalogue courant :
 Entreprise | FORFAIT | 249900 | illimite
@@ -135,38 +135,38 @@ Entreprise | 1
 Essai | 0
 TPE Coursier | 1
 Transporteur | 0
-  ✓  11 [chromium] › a11.spec.ts:10:5 › TC-A11 — Catalogue des plans (5.9s)
-  ✓  12 [chromium] › a12.spec.ts:6:5 › TC-A12 — Cloisonnement du realm plateforme (6.4s)
-  ✓  13 [chromium] › a13.spec.ts:9:5 › TC-A13 — Plan à l’usage avec paliers (9.6s)
+  ✓  11 [chromium] › a11.spec.ts:10:5 › TC-A11 — Catalogue des plans (6.6s)
+  ✓  12 [chromium] › a12.spec.ts:6:5 › TC-A12 — Cloisonnement du realm plateforme (10.2s)
+  ✓  13 [chromium] › a13.spec.ts:9:5 › TC-A13 — Plan à l’usage avec paliers (14.6s)
 UI : recalage automatique du palier 2 à 51 — trou impossible dans l’éditeur.
 API grille trouée → 400 {"error":"Paliers 1 et 2 non contigus : le suivant doit commencer à 51."}
-  ✓  14 [chromium] › a14.spec.ts:7:5 › TC-A14 — Grille non contiguë refusée (5.9s)
-  ✓  15 [chromium] › a15.spec.ts:7:5 › TC-A15 — Simulateur VOLUME / GRADUÉ (5.3s)
+  ✓  14 [chromium] › a14.spec.ts:7:5 › TC-A14 — Grille non contiguë refusée (7.0s)
+  ✓  15 [chromium] › a15.spec.ts:7:5 › TC-A15 — Simulateur VOLUME / GRADUÉ (5.9s)
 v1 (2026-09-14, 1 abonné(s)) → v2 au 2026-09-15 à 2799 DH
-  ✓  16 [chromium] › a16.spec.ts:12:5 › TC-A16 — Prix gelé pour les abonnés (8.0s)
-  ✓  17 [chromium] › a17.spec.ts:7:5 › TC-A17 — Date d’effet antérieure refusée (5.1s)
+  ✓  16 [chromium] › a16.spec.ts:12:5 › TC-A16 — Prix gelé pour les abonnés (8.4s)
+  ✓  17 [chromium] › a17.spec.ts:7:5 › TC-A17 — Date d’effet antérieure refusée (6.7s)
 abonnés au plan Entreprise → 1
 archivage entreprise → 1 organisation(s) sont abonnées à ce plan. Archivage refusé.
-  ✓  18 [chromium] › a18.spec.ts:7:5 › TC-A18 — Archivage protégé (13.2s)
+  ✓  18 [chromium] › a18.spec.ts:7:5 › TC-A18 — Archivage protégé (15.1s)
 doublon essai → Plan déjà existant : essai
-  ✓  19 [chromium] › a19.spec.ts:6:5 › TC-A19 — Code de plan en doublon (5.3s)
-  ✓  20 [chromium] › a20.spec.ts:6:5 › TC-A20 — Traçabilité audit (5.5s)
-  ✓  21 [chromium] › a21.spec.ts:7:5 › TC-A21 — Tout tenant naît en essai daté (6.7s)
+  ✓  19 [chromium] › a19.spec.ts:6:5 › TC-A19 — Code de plan en doublon (6.7s)
+  ✓  20 [chromium] › a20.spec.ts:6:5 › TC-A20 — Traçabilité audit (6.9s)
+  ✓  21 [chromium] › a21.spec.ts:7:5 › TC-A21 — Tout tenant naît en essai daté (7.2s)
 cycle 1 → Cycle du 2026-09-14 |  | 0 essai(s) expiré(s) | 0 suspension(s) | 0 reconduction(s) | 0 statut(s) tenant réaligné(s)
 cycle 2 → Cycle du 2026-09-14 |  | 0 essai(s) expiré(s) | 0 suspension(s) | 0 reconduction(s) | 0 statut(s) tenant réaligné(s)
-  ✓  22 [chromium] › a22.spec.ts:6:5 › TC-A22 — Cycle neutre ×2 (5.2s)
+  ✓  22 [chromium] › a22.spec.ts:6:5 › TC-A22 — Cycle neutre ×2 (5.6s)
 cycle → Cycle du 2026-09-14 |  | 1 essai(s) expiré(s) | 0 suspension(s) | 0 reconduction(s) | 1 statut(s) tenant réaligné(s)
-  ✓  23 [chromium] › a23.spec.ts:10:5 › TC-A23 — Expiration de l’essai (6.1s)
+  ✓  23 [chromium] › a23.spec.ts:10:5 › TC-A23 — Expiration de l’essai (7.1s)
 cycle → Cycle du 2026-09-14 |  | 0 essai(s) expiré(s) | 0 suspension(s) | 0 reconduction(s) | 0 statut(s) tenant réaligné(s)
 cycle → Cycle du 2026-09-14 |  | 0 essai(s) expiré(s) | 1 suspension(s) | 0 reconduction(s) | 1 statut(s) tenant réaligné(s)
 connexion suspendue → Espace suspendu — contactez la plateforme.
-  ✓  24 [chromium] › a24.spec.ts:12:5 › TC-A24 — Suspension après le délai de grâce (12.1s)
+  ✓  24 [chromium] › a24.spec.ts:12:5 › TC-A24 — Suspension après le délai de grâce (12.7s)
 avant → ACTIF|2026-09|2026-10-01
 cycle → Cycle du 2026-09-14 |  | 0 essai(s) expiré(s) | 0 suspension(s) | 3 reconduction(s) | 0 statut(s) tenant réaligné(s)
-  ✓  25 [chromium] › a25.spec.ts:11:5 › TC-A25 — Rattrapage d’un cron manqué (4.7s)
-  ✓  26 [chromium] › a26.spec.ts:6:5 › TC-A26 — Régularisation (6.9s)
+  ✓  25 [chromium] › a25.spec.ts:11:5 › TC-A25 — Rattrapage d’un cron manqué (6.3s)
+  ✓  26 [chromium] › a26.spec.ts:6:5 › TC-A26 — Régularisation (8.4s)
 connexion résiliée → Espace suspendu — contactez la plateforme.
-  ✓  27 [chromium] › a27.spec.ts:8:5 › TC-A27 — Résiliation (9.7s)
+  ✓  27 [chromium] › a27.spec.ts:8:5 › TC-A27 — Résiliation (10.1s)
 cycle → Cycle du 2026-09-14 |  | 2 essai(s) expiré(s) | 0 suspension(s) | 0 reconduction(s) | 2 statut(s) tenant réaligné(s)
 cycle → Cycle du 2026-09-14 |  | 0 essai(s) expiré(s) | 1 suspension(s) | 0 reconduction(s) | 1 statut(s) tenant réaligné(s)
 ESSAI tangerlog → connexion OK
@@ -174,66 +174,68 @@ ACTIF rabatexpress → connexion OK
 IMPAYE demoimpaye → connexion OK
 SUSPENDU demosuspendu → refusée (Espace suspendu — contactez la plateforme.)
 RÉSILIE atlasfret → refusée (Espace suspendu — contactez la plateforme.)
-  ✓  28 [chromium] › a28.spec.ts:59:5 › TC-A28 — Cohérence statut / accès (5 statuts) (22.3s)
+  ✓  28 [chromium] › a28.spec.ts:59:5 › TC-A28 — Cohérence statut / accès (5 statuts) (26.4s)
 état de /saas après l'action → {"pointerEvents":"auto","scrollLocked":false,"ariaHiddenRacine":false,"menusOuverts":0}
-admin créé → secours-mu11y4xd@tangerlog.ma
+admin créé → secours-mu1n08ka@tangerlog.ma
 état de /saas après l'action → {"pointerEvents":"auto","scrollLocked":false,"ariaHiddenRacine":false,"menusOuverts":0}
-admin réinitialisé → secours-mu11y4xd@tangerlog.ma
+admin réinitialisé → secours-mu1n08ka@tangerlog.ma
 journal d'audit → tenant.admin.reset | tenant.admin.create
-  ✓  29 [chromium] › a29.spec.ts:14:5 › TC-A29 — administrateur d’une organisation existante créé puis réinitialisé (21.3s)
+  ✓  29 [chromium] › a29.spec.ts:14:5 › TC-A29 — administrateur d’une organisation existante créé puis réinitialisé (26.7s)
 
-  Slow test file: [chromium] › a28.spec.ts (22.3s)
-  Slow test file: [chromium] › a29.spec.ts (21.3s)
-  Slow test file: [chromium] › a07.spec.ts (15.1s)
-  Slow test file: [chromium] › a06.spec.ts (15.0s)
+  Slow test file: [chromium] › a29.spec.ts (26.7s)
+  Slow test file: [chromium] › a28.spec.ts (26.4s)
+  Slow test file: [chromium] › a06.spec.ts (15.8s)
+  Slow test file: [chromium] › a07.spec.ts (15.5s)
+  Slow test file: [chromium] › a18.spec.ts (15.1s)
   Consider splitting slow test files to speed up parallel execution
-  29 passed (4.4m)
+  29 passed (5.1m)
+29 vidéo(s) rangée(s) dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab
 
 ===== Section B — amorçage des comptes & authentification (16 cas) =====
 
 Running 18 tests using 1 worker
 
 TC-B01 erreur affichée → Identifiants invalides.
-  ✓  1 [chromium] › b01.spec.ts:10:5 › TC-B01 — identifiants invalides sur compte non amorcé (3.7s)
+  ✓  1 [chromium] › b01.spec.ts:10:5 › TC-B01 — identifiants invalides sur compte non amorcé (3.9s)
 TC-B02 account CLI → > @transpo/db@0.0.0 account /repo/packages/db
 > tsx src/create-account.ts "rabatexpress" "admin@rabatexpress.ma" "Nadia Alaoui" "ADMIN" "Test1234"
 
 Compte OK — admin@rabatexpress.ma (ADMIN) sur le tenant rabatexpress.
-  ✓  2 [chromium] › b02.spec.ts:7:5 › TC-B02 — amorçage admin en CLI puis connexion (4.9s)
+  ✓  2 [chromium] › b02.spec.ts:7:5 › TC-B02 — amorçage admin en CLI puis connexion (6.1s)
 organisation inconnue → Identifiants invalides.
 organisation réelle, mdp faux → Identifiants invalides.
 codes HTTP → {"inconnue":401,"reelle":401}
-  ✓  3 [chromium] › b03.spec.ts:10:5 › TC-B03 — organisation inconnue : réponse indistinguable d’un mot de passe faux (5.0s)
+  ✓  3 [chromium] › b03.spec.ts:10:5 › TC-B03 — organisation inconnue : réponse indistinguable d’un mot de passe faux (6.0s)
 tentative 1 → Identifiants invalides.
 tentative 2 → Identifiants invalides.
 tentative 3 → Identifiants invalides.
 tentative 4 → Identifiants invalides.
 tentative 5 → Identifiants invalides.
 tentative 6 → Trop de tentatives. Réessayez plus tard.
-  ✓  4 [chromium] › b04.spec.ts:12:5 › TC-B04 — anti-bruteforce (6 tentatives) (5.6s)
+  ✓  4 [chromium] › b04.spec.ts:12:5 › TC-B04 — anti-bruteforce (6 tentatives) (7.0s)
 connexion suspendue → Espace suspendu — contactez la plateforme.
-  ✓  5 [chromium] › b05.spec.ts:23:5 › TC-B05 — suspension puis réactivation de rabatexpress (11.8s)
-  ✓  6 [chromium] › b06.spec.ts:7:5 › TC-B06 — déconnexion (5.6s)
-TC-B07 mdp temporaire dispatcher = 1H7z-mJEqvOH
+  ✓  5 [chromium] › b05.spec.ts:23:5 › TC-B05 — suspension puis réactivation de rabatexpress (19.7s)
+  ✓  6 [chromium] › b06.spec.ts:7:5 › TC-B06 — déconnexion (9.1s)
+TC-B07 mdp temporaire dispatcher = lNlk59Vky_mk
 TC-B07 copie → retour visuel vert confirme (presse-papiers non lisible en HTTP)
-  ✓  7 [chromium] › b07.spec.ts:7:5 › TC-B07 — invitation dispatcher (6.4s)
-  ✓  8 [chromium] › b07b.spec.ts:8:5 › TC-B07 suite — dispatcher listé et actif (3.2s)
-TC-B08 mdp temporaire comptable = f2S0ds8nILwQ
-  ✓  9 [chromium] › b08.spec.ts:7:5 › TC-B08 — invitation comptable (6.3s)
+  ✓  7 [chromium] › b07.spec.ts:7:5 › TC-B07 — invitation dispatcher (12.4s)
+  ✓  8 [chromium] › b07b.spec.ts:8:5 › TC-B07 suite — dispatcher listé et actif (6.1s)
+TC-B08 mdp temporaire comptable = 5kFwSY0SKHnC
+  ✓  9 [chromium] › b08.spec.ts:7:5 › TC-B08 — invitation comptable (8.0s)
 API invite email invalide → 400 {"error":"Email invalide."}
 doublon → Cet email est déjà utilisé.
-  ✓  10 [chromium] › b09.spec.ts:7:5 › TC-B09 — email invalide puis doublon (5.5s)
-  ✓  11 [chromium] › b10.spec.ts:16:5 › TC-B10 — connexion dispatcher puis comptable (6.2s)
-TC-B11 nouveau mdp dispatcher = eNBjUh9rPi7F
+  ✓  10 [chromium] › b09.spec.ts:7:5 › TC-B09 — email invalide puis doublon (7.1s)
+  ✓  11 [chromium] › b10.spec.ts:16:5 › TC-B10 — connexion dispatcher puis comptable (11.5s)
+TC-B11 nouveau mdp dispatcher = FvDaF0V1W3aZ
 TC-B11 Copier → clipboardApi=false pageError=null presse-papiers=null icone=rt-reset rt-BaseButton rt-r-size-1 rt-variant-soft rt-IconButton|green
 ancien mdp → Identifiants invalides.
-  ✓  12 [chromium] › b11.spec.ts:18:5 › TC-B11 — réinitialisation du mot de passe dispatcher (9.9s)
-  ✓  13 [chromium] › b12.spec.ts:29:5 › TC-B12 — changement de rôle comptable → dispatcher → comptable (11.8s)
+  ✓  12 [chromium] › b11.spec.ts:18:5 › TC-B11 — réinitialisation du mot de passe dispatcher (14.0s)
+  ✓  13 [chromium] › b12.spec.ts:29:5 › TC-B12 — changement de rôle comptable → dispatcher → comptable (16.5s)
 connexion compte désactivé → Identifiants invalides.
-  ✓  14 [chromium] › b13.spec.ts:18:5 › TC-B13 — désactivation puis réactivation du dispatcher (12.6s)
+  ✓  14 [chromium] › b13.spec.ts:18:5 › TC-B13 — désactivation puis réactivation du dispatcher (19.7s)
 désactivation dernier admin → Impossible : dernier administrateur du tenant.
 rétrogradation dernier admin → Impossible : dernier administrateur du tenant.
-  ✓  15 [chromium] › b14.spec.ts:10:5 › TC-B14 — protection du dernier administrateur (6.3s)
+  ✓  15 [chromium] › b14.spec.ts:10:5 › TC-B14 — protection du dernier administrateur (8.4s)
 == ADMIN ==
   API GET users → 200 (attendu 200) OK
   API GET cash/sessions → 200 (attendu 200) OK
@@ -271,7 +273,7 @@ rétrogradation dernier admin → Impossible : dernier administrateur du tenant.
   API GET invoices → 200 (attendu 200) OK
   API GET analytics/summary → 200 (attendu 200) OK
   API GET reviews → 200 (attendu 200) OK
-  ✓  16 [chromium] › b15.spec.ts:33:5 › TC-B15 — matrice RBAC console (31.6s)
+  ✓  16 [chromium] › b15.spec.ts:33:5 › TC-B15 — matrice RBAC console (50.4s)
 == COMPTABLE ==
   UI /orders/new comptable → http://transpo.wedowonders.com/orders
   UI pricing Enregistrer (comptable) : actif=false
@@ -290,168 +292,203 @@ rétrogradation dernier admin → Impossible : dernier administrateur du tenant.
   API GET invoices → 200 (attendu 200) OK
   API GET analytics/summary → 200 (attendu 200) OK
   API GET reviews → 200 (attendu 200) OK
-  ✓  17 [chromium] › b15b.spec.ts:29:5 › TC-B15 suite — matrice RBAC comptable (15.1s)
-compteur en base pour brute-b16-mu121yc8@rabatexpress.ma → 5
+  ✓  17 [chromium] › b15b.spec.ts:29:5 › TC-B15 suite — matrice RBAC comptable (21.3s)
+compteur en base pour brute-b16-mu1n5ss2@rabatexpress.ma → 5
 Warning: would violate PodSecurity "restricted:latest": allowPrivilegeEscalation != false (container "api" must set securityContext.allowPrivilegeEscalation=false), unrestricted capabilities (container "api" must set securityContext.capabilities.drop=["ALL"]), runAsNonRoot != true (pod or container "api" must set securityContext.runAsNonRoot=true), seccompProfile (pod or container "api" must set securityContext.seccompProfile.type to "RuntimeDefault" or "Localhost")
 API redémarrée
 (API pas encore stable : « Échec de connexion »)
 après redémarrage → Trop de tentatives. Réessayez plus tard.
-balayage freiné à la tentative n°25 (0 = jamais freiné)
-clés « ip: » en base → 1
-compteurs par source purgés → reste 0
-  ✓  18 [chromium] › b16.spec.ts:9:5 › TC-B16 — compteur d’échecs durable et comptage par source (1.1m)
+balayage freiné à la tentative n°0 (0 = jamais freiné)
+  ✘  18 [chromium] › b16.spec.ts:9:5 › TC-B16 — compteur d’échecs durable et comptage par source (1.0m)
 
-  Slow test file: [chromium] › b16.spec.ts (1.1m)
-  Slow test file: [chromium] › b15.spec.ts (31.6s)
-  Slow test file: [chromium] › b15b.spec.ts (15.1s)
+
+  1) [chromium] › b16.spec.ts:9:5 › TC-B16 — compteur d’échecs durable et comptage par source ──────
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m0[39m
+    Received:   [31m0[39m
+
+      53 |   }
+      54 |   console.log(`balayage freiné à la tentative n°${freine} (0 = jamais freiné)`);
+    > 55 |   expect(freine).toBeGreaterThan(0);
+         |                  ^
+      56 |   await shotVp(page, 'TC-B16', '03-balayage-freine');
+      57 |
+      58 |   // Le compteur par source existe bien, distinct de celui par compte.
+
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b16.spec.ts:55:18
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b16-TC-B16-—-compteur-d’éc-6bf67-able-et-comptage-par-source-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b16-TC-B16-—-compteur-d’éc-6bf67-able-et-comptage-par-source-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/b16-TC-B16-—-compteur-d’éc-6bf67-able-et-comptage-par-source-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  Slow test file: [chromium] › b16.spec.ts (1.0m)
+  Slow test file: [chromium] › b15.spec.ts (50.4s)
+  Slow test file: [chromium] › b15b.spec.ts (21.3s)
+  Slow test file: [chromium] › b05.spec.ts (19.7s)
+  Slow test file: [chromium] › b13.spec.ts (19.7s)
   Consider splitting slow test files to speed up parallel execution
-  18 passed (3.6m)
-DELETE 6
+  1 failed
+    [chromium] › b16.spec.ts:9:5 › TC-B16 — compteur d’échecs durable et comptage par source ───────
+  17 passed (4.9m)
+18 vidéo(s) rangée(s) dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab
+DELETE 41
 
 ===== Sections C à F — paramètres, flotte, zones, commandes (46 cas) =====
 
 Running 46 tests using 1 worker
 
 base → Rabat Express SARL | 002345678000012 | RC456789 | 45 Av. Mohammed V, 10000 Rabat
-  ✓  1 [chromium] › c01.spec.ts:7:5 › TC-C01 — identité légale : enregistrement et persistance (7.0s)
+  ✓  1 [chromium] › c01.spec.ts:7:5 › TC-C01 — identité légale : enregistrement et persistance (9.7s)
 base → 0.18 | 0.2
 base après restauration → 0.15 | 0.2
-  ✓  2 [chromium] › c02.spec.ts:8:5 › TC-C02 — commission & TVA : enregistrement, persistance, restauration (8.1s)
+  ✓  2 [chromium] › c02.spec.ts:8:5 › TC-C02 — commission & TVA : enregistrement, persistance, restauration (10.6s)
 base → MAD | Africa/Casablanca | ar
-  ✓  3 [chromium] › c03.spec.ts:10:5 › TC-C03 — régional : langue par défaut persistée (12.1s)
+  ✓  3 [chromium] › c03.spec.ts:10:5 › TC-C03 — régional : langue par défaut persistée (11.2s)
 POST /v1/settings/company (dispatcher) → 403 {"error":"Rôle insuffisant pour cette action."}
-  ✓  4 [chromium] › c04.spec.ts:7:5 › TC-C04 — /settings en lecture seule pour le dispatcher (5.1s)
-  ✓  5 [chromium] › d01.spec.ts:8:5 › TC-D01 — ajout du véhicule conforme 1111-A-11 (8.4s)
-  ✓  6 [chromium] › d02.spec.ts:8:5 › TC-D02 — véhicule 2222-B-22 à assurance expirée + alerte dashboard (7.5s)
-  ✓  7 [chromium] › d03.spec.ts:7:5 › TC-D03 — cycle Actif → Maintenance → Hors service → Actif (7.6s)
-  ✓  8 [chromium] › d04.spec.ts:7:5 › TC-D04 — renouvellement assurance 2222-B-22, alertes résorbées (6.2s)
+  ✓  4 [chromium] › c04.spec.ts:7:5 › TC-C04 — /settings en lecture seule pour le dispatcher (7.6s)
+  ✓  5 [chromium] › d01.spec.ts:8:5 › TC-D01 — ajout du véhicule conforme 1111-A-11 (9.9s)
+  ✓  6 [chromium] › d02.spec.ts:8:5 › TC-D02 — véhicule 2222-B-22 à assurance expirée + alerte dashboard (14.7s)
+  ✓  7 [chromium] › d03.spec.ts:7:5 › TC-D03 — cycle Actif → Maintenance → Hors service → Actif (11.9s)
+  ✓  8 [chromium] › d04.spec.ts:7:5 › TC-D04 — renouvellement assurance 2222-B-22, alertes résorbées (9.0s)
 DELETE /v1/vehicles/<1111-A-11 rattaché> → 400 · « Impossible : véhicule rattaché à Porteur Jetable. Détachez-le d’abord depuis la fiche chauffeur. »
-  ✓  9 [chromium] › d05.spec.ts:10:5 › TC-D05 — retrait d’un véhicule jetable, puis d’un véhicule rattaché (12.2s)
-  ✓  10 [chromium] › d06.spec.ts:8:5 › TC-D06 — ajout de Hamid Ouali et Sara Bennis (visite échue) (9.3s)
+  ✓  9 [chromium] › d05.spec.ts:10:5 › TC-D05 — retrait d’un véhicule jetable, puis d’un véhicule rattaché (17.7s)
+  ✓  10 [chromium] › d06.spec.ts:8:5 › TC-D06 — ajout de Hamid Ouali et Sara Bennis (visite échue) (12.5s)
 POST /v1/drivers phone=abc → 400 {"error":"Téléphone invalide."}
-  ✓  11 [chromium] › d07.spec.ts:7:5 › TC-D07 — téléphone invalide refusé (UI + API) (5.4s)
+  ✓  11 [chromium] › d07.spec.ts:7:5 › TC-D07 — téléphone invalide refusé (UI + API) (8.1s)
 PATCH .../vehicle → 200
 APRÈS ENREGISTREMENT → {"pointerEvents":"auto","scrollLocked":false,"ariaHiddenRacine":false,"dialogueOuvert":false,"plaqueAffichee":true}
-  ✓  12 [chromium] › d08.spec.ts:14:5 › TC-D08 — rattachement du véhicule 1111-A-11 à Hamid Ouali (11.8s)
+  ✓  12 [chromium] › d08.spec.ts:14:5 › TC-D08 — rattachement du véhicule 1111-A-11 à Hamid Ouali (16.4s)
 POST .../renew → 200
 APRÈS ENREGISTREMENT → {"pointerEvents":"auto","ariaHiddenRacine":false}
-  ✓  13 [chromium] › d09.spec.ts:7:5 › TC-D09 — visite médicale renouvelée, Sara Bennis redevient affectable (9.5s)
-  ✓  14 [chromium] › d10.spec.ts:9:5 › TC-D10 — bascule de disponibilité, admin puis dispatcher (12.2s)
+  ✓  13 [chromium] › d09.spec.ts:7:5 › TC-D09 — visite médicale renouvelée, Sara Bennis redevient affectable (11.1s)
+  ✓  14 [chromium] › d10.spec.ts:9:5 › TC-D10 — bascule de disponibilité, admin puis dispatcher (14.7s)
 effectif de départ → 2
 DELETE /v1/drivers/<Karim Jetable> → 200
 courses transférées à Hamid Ouali → 2
 course livrée → toujours au nom de « Younes Partant »
 retrait sans repreneur → 400 {"error":"Impossible : 1 commande(s) en cours sur ce chauffeur. Transférez-les à un autre chauffeur."}
-  ✓  15 [chromium] › d11.spec.ts:10:5 › TC-D11 — retrait d’un chauffeur, avec transfert de ses courses (20.4s)
+  ✓  15 [chromium] › d11.spec.ts:10:5 › TC-D11 — retrait d’un chauffeur, avec transfert de ses courses (27.8s)
 POST /v1/vehicles (plaque en doublon) → 409
-  ✓  16 [chromium] › d12.spec.ts:7:5 › TC-D12 — immatriculation en doublon refusée (5.7s)
+  ✓  16 [chromium] › d12.spec.ts:7:5 › TC-D12 — immatriculation en doublon refusée (7.3s)
 POST /v1/vehicles plate=ABCD → 400 {"error":"Immatriculation invalide (format marocain NNNN-L-NN)."}
-  ✓  17 [chromium] › d13.spec.ts:7:5 › TC-D13 — immatriculation au format invalide refusée (UI + API) (4.6s)
+  ✓  17 [chromium] › d13.spec.ts:7:5 › TC-D13 — immatriculation au format invalide refusée (UI + API) (9.0s)
 POST /v1/drivers (homonyme) → 409
-  ✓  18 [chromium] › d14.spec.ts:8:5 › TC-D14 — chauffeur homonyme refusé (4.7s)
+  ✓  18 [chromium] › d14.spec.ts:8:5 › TC-D14 — chauffeur homonyme refusé (7.7s)
 PATCH .../vehicle sur véhicule en maintenance → 400 {"error":"Véhicule non actif : rattachement impossible."}
-  ✓  19 [chromium] › d15.spec.ts:7:5 › TC-D15 — véhicule en maintenance non rattachable (UI + API) (9.8s)
-  ✓  20 [chromium] › d16.spec.ts:8:5 › TC-D16 — un véhicule déjà rattaché est annoncé avant validation (7.4s)
+  ✓  19 [chromium] › d15.spec.ts:7:5 › TC-D15 — véhicule en maintenance non rattachable (UI + API) (16.6s)
+  ✓  20 [chromium] › d16.spec.ts:8:5 › TC-D16 — un véhicule déjà rattaché est annoncé avant validation (10.4s)
 DELETE /v1/vehicles (rattaché) → 400 · message « Impossible : véhicule rattaché à Hamid Ouali. Détachez-le d’abord depuis la fiche chauffeur. »
-  ✓  21 [chromium] › d17.spec.ts:7:5 › TC-D17 — retrait d’un véhicule rattaché refusé, chauffeur nommé (7.3s)
+  ✓  21 [chromium] › d17.spec.ts:7:5 › TC-D17 — retrait d’un véhicule rattaché refusé, chauffeur nommé (10.9s)
 POST /v1/drivers/<id>/renew due=2026-09-13 → 400 {"error":"La nouvelle échéance doit être postérieure à aujourd’hui."}
 POST /v1/vehicles/<id>/renew due=2026-09-13 → 400 {"error":"La nouvelle échéance doit être postérieure à aujourd’hui."}
-  ✓  22 [chromium] › d18.spec.ts:7:5 › TC-D18 — une échéance ne se renouvelle pas dans le passé (8.7s)
+  ✓  22 [chromium] › d18.spec.ts:7:5 › TC-D18 — une échéance ne se renouvelle pas dans le passé (14.7s)
 type déclaré avant rattachement → 1111-A-11 Fourgon
 type déclaré après détachement → Fourgon (non rattaché)
-  ✓  23 [chromium] › d19.spec.ts:8:5 › TC-D19 — fiche chauffeur modifiable, type déclaré conservé au détachement (16.3s)
+  ✓  23 [chromium] › d19.spec.ts:8:5 › TC-D19 — fiche chauffeur modifiable, type déclaré conservé au détachement (18.8s)
 ÉCRITURES DISPATCHER → {"POST /v1/vehicles":403,"DELETE /v1/vehicles/:id":403,"POST /v1/vehicles/:id/renew":403,"POST /v1/drivers":403,"PATCH /v1/drivers/:id":403,"PATCH /v1/drivers/:id/vehicle":403,"DELETE /v1/drivers/:id":403}
-  ✓  24 [chromium] › d20.spec.ts:9:5 › TC-D20 — flotte en lecture seule pour le dispatcher (UI + API) (7.5s)
+  ✓  24 [chromium] › d20.spec.ts:9:5 › TC-D20 — flotte en lecture seule pour le dispatcher (UI + API) (10.3s)
 RELEVÉS → {"rattacher un véhicule":{"pointerEvents":"auto","scrollLocked":false,"ariaHiddenRacine":false},"renouveler une échéance":{"pointerEvents":"auto","scrollLocked":false,"ariaHiddenRacine":false},"modifier la fiche":{"pointerEvents":"auto","scrollLocked":false,"ariaHiddenRacine":false},"changer l’état d’un véhicule":{"pointerEvents":"auto","scrollLocked":false,"ariaHiddenRacine":false},"réactiver un véhicule":{"pointerEvents":"auto","scrollLocked":false,"ariaHiddenRacine":false}}
-  ✓  25 [chromium] › d21.spec.ts:14:5 › TC-D21 — la console reste vivante après chaque action de la flotte (23.4s)
+  ✓  25 [chromium] › d21.spec.ts:14:5 › TC-D21 — la console reste vivante après chaque action de la flotte (26.2s)
 base → Rabat Centre | الرباط الوسط | indigo | 4
-  ✓  26 [chromium] › e01.spec.ts:8:5 › TC-E01 — création de la zone Rabat Centre avec polygone (11.2s)
+  ✓  26 [chromium] › e01.spec.ts:8:5 › TC-E01 — création de la zone Rabat Centre avec polygone (17.0s)
 sommets enregistrés avant → 4
 sommets enregistrés après → 4
-  ✓  27 [chromium] › e02.spec.ts:7:5 › TC-E02 — « Effacer » ne retire que le tracé en cours (9.2s)
+  ✓  27 [chromium] › e02.spec.ts:7:5 › TC-E02 — « Effacer » ne retire que le tracé en cours (12.9s)
 livreurs en base → {"Hamid Ouali"}
-  ✓  28 [chromium] › e03.spec.ts:8:5 › TC-E03 — affectation des livreurs à la zone (9.8s)
+  ✓  28 [chromium] › e03.spec.ts:8:5 › TC-E03 — affectation des livreurs à la zone (10.9s)
 livreurs restants → {"Hamid Ouali"}
-  ✓  29 [chromium] › e04.spec.ts:7:5 › TC-E04 — retrait d’un livreur et suppression d’une zone (10.7s)
+  ✓  29 [chromium] › e04.spec.ts:7:5 › TC-E04 — retrait d’un livreur et suppression d’une zone (15.0s)
 dispatch → 1 forme(s) tracée(s)
 PC flotte → 1 forme(s) tracée(s)
-  ✓  30 [chromium] › e05.spec.ts:7:5 › TC-E05 — la zone est tracée sur les cartes dispatch et PC flotte (4.8s)
+  ✓  30 [chromium] › e05.spec.ts:7:5 › TC-E05 — la zone est tracée sur les cartes dispatch et PC flotte (8.3s)
 PATCH zone nameFr="" → 400
 PATCH zone drivers=[fantôme] → 400 {"error":"Livreur inconnu : Fantôme Inexistant."}
 livreurs en base → {"Hamid Ouali"}
-  ✓  31 [chromium] › e06.spec.ts:9:5 › TC-E06 — nom vide et livreur inexistant refusés (6.8s)
+  ✓  31 [chromium] › e06.spec.ts:9:5 › TC-E06 — nom vide et livreur inexistant refusés (9.3s)
 PATCH polygone à 2 sommets → 400
 sommets enregistrés : avant 4 → après 4
-  ✓  32 [chromium] › e07.spec.ts:8:5 › TC-E07 — polygone à moins de trois sommets refusé (7.3s)
+  ✓  32 [chromium] › e07.spec.ts:8:5 › TC-E07 — polygone à moins de trois sommets refusé (10.5s)
 PATCH zone (dispatcher) → 200
 écritures comptable → {"creation":403,"maj":403,"suppression":403}
-  ✓  33 [chromium] › e08.spec.ts:7:5 › TC-E08 — zones : dispatcher écrit, comptable consulte (6.9s)
-commande créée → CMD-20260914-MU12A3B33 | 2YMZMVP8 | NOUVELLE | Rabat | Casablanca | 450 | photo | Boutique Test
+  ✓  33 [chromium] › e08.spec.ts:7:5 › TC-E08 — zones : dispatcher écrit, comptable consulte (13.2s)
+commande créée → CMD-20260914-MU1NGK7A3 | N79P7UJU | NOUVELLE | Rabat | Casablanca | 450 | photo | Boutique Test
 coordonnées enregistrées → Atelier Rabat | 12 rue des Consuls, Médina | Yasmine Cherkaoui | 45 bd Anfa, 3ᵉ étage
-  ✓  34 [chromium] › f01.spec.ts:8:5 › TC-F01 — création d’une commande par l’assistant (10.8s)
+  ✓  34 [chromium] › f01.spec.ts:8:5 › TC-F01 — création d’une commande par l’assistant (16.4s)
 avec COD | prépayées | niveaux de preuve | villes de départ → 3 | 3 | 4 | 5
-  ✓  35 [chromium] › f02.spec.ts:18:5 › TC-F02 — jeu de six commandes créé par l’assistant (27.3s)
+  ✓  35 [chromium] › f02.spec.ts:18:5 › TC-F02 — jeu de six commandes créé par l’assistant (41.0s)
 effectif → Hamid Ouali | t | Sara Bennis | f
 commandes assignées : 0 → 1
-  ✓  36 [chromium] › f03.spec.ts:9:5 › TC-F03 — assignation par score depuis le dispatch (12.0s)
-commande visée → CMD-20260914-MU12ABEU4
-  ✓  37 [chromium] › f04.spec.ts:7:5 › TC-F04 — assignation depuis la liste des commandes (9.4s)
-commande visée → CMD-20260914-MU12ABEU4
-  ✓  38 [chromium] › f05.spec.ts:9:5 › TC-F05 — progression pas à pas jusqu’à la livraison en cours (13.4s)
-nouvelle → CMD-20260914-MU12ADNZ5 · en livraison → CMD-20260914-MU12ABEU4
+  ✓  36 [chromium] › f03.spec.ts:9:5 › TC-F03 — assignation par score depuis le dispatch (13.6s)
+commande visée → CMD-20260914-MU1NGV524
+  ✓  37 [chromium] › f04.spec.ts:7:5 › TC-F04 — assignation depuis la liste des commandes (12.6s)
+commande visée → CMD-20260914-MU1NGV524
+  ✓  38 [chromium] › f05.spec.ts:9:5 › TC-F05 — progression pas à pas jusqu’à la livraison en cours (14.8s)
+nouvelle → CMD-20260914-MU1NGYM75 · en livraison → CMD-20260914-MU1NGV524
 Nouvelle + advance → 200
 LIVRAISON + advance → 400 {"error":"La livraison se clôture par la preuve, depuis l’app livreur."}
 commandes livrées → 0
-  ✓  39 [chromium] › f06.spec.ts:9:5 › TC-F06 — transitions invalides refusées par l’API (6.8s)
-décor → CMD-20260914-MU12BPD6A, CMD-20260914-MU12BPGUB, CMD-20260914-MU12BPJWC
+  ✓  39 [chromium] › f06.spec.ts:9:5 › TC-F06 — transitions invalides refusées par l’API (8.5s)
+décor → CMD-20260914-MU1NIPNKA, CMD-20260914-MU1NIPR9B, CMD-20260914-MU1NIPUPC
 assignées par l'action de masse → 3
 avancées par l'action de masse → 2
-  ✓  40 [chromium] › f07.spec.ts:7:5 › TC-F07 — actions de masse sur une sélection (9.9s)
+  ✓  40 [chromium] › f07.spec.ts:7:5 › TC-F07 — actions de masse sur une sélection (13.4s)
 total → 9 commande(s)
 filtre Statut=Nouvelle → 3
 + Ville=Salé → 0, état vide annoncé
-  ✓  41 [chromium] › f08.spec.ts:7:5 › TC-F08 — filtres et recherche de la liste des commandes (9.6s)
-référence cherchée → CMD-20260914-MU12BPJWC
-URL d'arrivée → /orders?q=CMD-20260914-MU12BPJWC
-  ✓  42 [chromium] › f09.spec.ts:7:5 › TC-F09 — recherche globale depuis la barre supérieure (4.5s)
+  ✓  41 [chromium] › f08.spec.ts:7:5 › TC-F08 — filtres et recherche de la liste des commandes (13.2s)
+référence cherchée → CMD-20260914-MU1NIPUPC
+URL d'arrivée → /orders?q=CMD-20260914-MU1NIPUPC
+  ✓  42 [chromium] › f09.spec.ts:7:5 › TC-F09 — recherche globale depuis la barre supérieure (8.6s)
 20 commande(s) → 3 page(s)
-  ✓  43 [chromium] › f10.spec.ts:7:5 › TC-F10 — pagination de la liste des commandes (10.1s)
-fiche ouverte → CMD-20260914-MU12CFE4O
+  ✓  43 [chromium] › f10.spec.ts:7:5 › TC-F10 — pagination de la liste des commandes (16.1s)
+fiche ouverte → CMD-20260914-MU1NJWRVO
 historique → 5 entrée(s) :
 Statut → Nouvelle · Commande créée
-14/09/2026 · 10:51 · admin@rabatexpress.ma
+14/09/2026 · 20:45 · admin@rabatexpress.ma
 Statut → Assignée · Affectée à Hamid Ouali
-14/09/2026 · 10:51 · admin@rabatexpress.ma
+14/09/2026 · 20:45 · admin@rabatexpress.ma
 Statut → En route (retrait)
-14/09/2026 · 10:51 · admin@rabatexpress.ma
+14/09/2026 · 20:45 · admin@rabatexpress.ma
 Statut → Récupérée
-14/09/2026 · 10:51 · admin@rabatexpress.ma
+14/09/2026 · 20:45 · admin@rabatexpress.ma
 Statut → En route (livraison)
-14/09/2026 · 10:51 · admin@rabatexpress.ma
-code LJJNF5UD · presse-papiers « undefined » · évènement true
-  ✓  44 [chromium] › f11.spec.ts:9:5 › TC-F11 — fiche commande : onglets, historique, copie du code (9.6s)
-commande à annuler → CMD-20260914-MU12CMQDP
+14/09/2026 · 20:45 · admin@rabatexpress.ma
+code NYVP5VRJ · presse-papiers « undefined » · évènement true
+  ✓  44 [chromium] › f11.spec.ts:9:5 › TC-F11 — fiche commande : onglets, historique, copie du code (17.1s)
+commande à annuler → CMD-20260914-MU1NK52CP
 seconde annulation → 400 {"error":"Annulation impossible."}
-  ✓  45 [chromium] › f12.spec.ts:7:5 › TC-F12 — annulation d’une commande (8.4s)
+  ✓  45 [chromium] › f12.spec.ts:7:5 › TC-F12 — annulation d’une commande (10.1s)
 connexion marchand → OK
-commande du marchand → CMD-20260914-MU12D095Q | Boutique Test | 220 | Client du marchand
+commande du marchand → CMD-20260914-MU1NKL5OQ | Boutique Test | 220 | Client du marchand
 actions d'exploitation tentées par le marchand → {"assign":403,"advance":403,"cancel":403,"console":403}
 tentative au nom d'Atlas Store → 200
 marchand réellement attribué → Boutique Test
-  ✓  46 [chromium] › f13.spec.ts:13:5 › TC-F13 — le marchand crée sa commande, sans pouvoir l’exploiter (15.9s)
+  ✓  46 [chromium] › f13.spec.ts:13:5 › TC-F13 — le marchand crée sa commande, sans pouvoir l’exploiter (18.2s)
 
-  Slow test file: [chromium] › f02.spec.ts (27.3s)
-  Slow test file: [chromium] › d21.spec.ts (23.4s)
-  Slow test file: [chromium] › d11.spec.ts (20.4s)
-  Slow test file: [chromium] › d19.spec.ts (16.3s)
-  Slow test file: [chromium] › f13.spec.ts (15.9s)
+  Slow test file: [chromium] › f02.spec.ts (41.0s)
+  Slow test file: [chromium] › d11.spec.ts (27.8s)
+  Slow test file: [chromium] › d21.spec.ts (26.2s)
+  Slow test file: [chromium] › d19.spec.ts (18.8s)
+  Slow test file: [chromium] › f13.spec.ts (18.2s)
   Consider splitting slow test files to speed up parallel execution
-  46 passed (7.6m)
+  46 passed (10.5m)
+46 vidéo(s) rangée(s) dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab
 
 ===== Décor du terrain (comptes livreur, marchand, console ; organisation témoin) =====
   organisation rabatexpress déjà là
   Compte OK — admin@rabatexpress.ma (ADMIN) sur le tenant rabatexpress.
   flotte : Hamid Ouali, Sara Bennis, véhicule 1111-A-11
+  Compte OK — livreur@rabatexpress.ma (DRIVER) sur le tenant rabatexpress.
   compte livreur livreur@rabatexpress.ma prêt (mot de passe consigné dans 2026-09-14-homelab/COMPTES.md)
   compte marchand marchand@rabatexpress.ma prêt
   comptes console : dispatcher et comptable prêts
@@ -464,191 +501,191 @@ Décor de la section G en place.
 
 Running 58 tests using 1 worker
 
-  décor → YMFY8GC4, 6MGM7LEW, EDL49NXT
-  ✓  1 [chromium] › h01.spec.ts:7:5 › TC-H01 — enregistrer l’entrée d’un colis au hub (10.9s)
+  décor → K848BHGH, VLKDH7M2, K5G6REE5
+  ✓  1 [chromium] › h01.spec.ts:7:5 › TC-H01 — enregistrer l’entrée d’un colis au hub (14.1s)
   code inconnu → « Code inconnu sur ce hub. »
-  ✓  2 [chromium] › h02.spec.ts:6:5 › TC-H02 — code colis invalide ou inconnu (4.8s)
-  ✓  3 [chromium] › h03.spec.ts:6:5 › TC-H03 — un colis traverse les trois colonnes du tri (8.7s)
+  ✓  2 [chromium] › h02.spec.ts:6:5 › TC-H02 — code colis invalide ou inconnu (6.0s)
+  ✓  3 [chromium] › h03.spec.ts:6:5 › TC-H03 — un colis traverse les trois colonnes du tri (11.2s)
   manifeste → 2 colis, total affiché 500 DH (attendu 500)
   après scellement → 2 colis toujours sur quai (aucune trace de transfert)
-  ✓  4 [chromium] › h04.spec.ts:8:5 › TC-H04 — manifeste de transfert d’une destination (7.6s)
+  ✓  4 [chromium] › h04.spec.ts:8:5 › TC-H04 — manifeste de transfert d’une destination (8.4s)
   /hub vu par un comptable → Transpo Console transport Se connecter Organisation transpo E-mail Mot de passe Se connecter L’organisation est détermin
   POST /v1/hub/scan en comptable → 403
-  ✓  5 [chromium] › h05.spec.ts:7:5 › TC-H05 — le hub est fermé à la comptabilité (6.6s)
-  décor → CMD-20260914-MU12E7N4Y, CMD-20260914-MU12E7PTZ, CMD-20260914-MU12E7S710
-  tournée créée → PLANIFIEE, arrêts {CMD-20260914-MU12E7N4Y,CMD-20260914-MU12E7PTZ,CMD-20260914-MU12E7S710}
+  ✓  5 [chromium] › h05.spec.ts:7:5 › TC-H05 — le hub est fermé à la comptabilité (8.2s)
+  décor → CMD-20260914-MU1NM7V8Y, CMD-20260914-MU1NM84DZ, CMD-20260914-MU1NM8DN10
+  tournée créée → PLANIFIEE, arrêts {CMD-20260914-MU1NM7V8Y,CMD-20260914-MU1NM84DZ,CMD-20260914-MU1NM8DN10}
   écran /tournees → statut visible : true
   COD total attendu 450 DH
-  ✓  6 [chromium] › i01.spec.ts:6:5 › TC-I01 — créer une tournée de trois arrêts (11.0s)
-  ordre avant {CMD-20260914-MU12E7N4Y,CMD-20260914-MU12E7PTZ,CMD-20260914-MU12E7S710}
-  ordre après {CMD-20260914-MU12E7N4Y,CMD-20260914-MU12E7PTZ,CMD-20260914-MU12E7S710}
-  ✓  7 [chromium] › i02.spec.ts:6:5 › TC-I02 — optimisation de l’ordre des arrêts (54.4s)
+  ✓  6 [chromium] › i01.spec.ts:6:5 › TC-I01 — créer une tournée de trois arrêts (16.0s)
+  ordre avant {CMD-20260914-MU1NM7V8Y,CMD-20260914-MU1NM84DZ,CMD-20260914-MU1NM8DN10}
+  ordre après {CMD-20260914-MU1NM7V8Y,CMD-20260914-MU1NM84DZ,CMD-20260914-MU1NM8DN10}
+  ✓  7 [chromium] › i02.spec.ts:6:5 › TC-I02 — optimisation de l’ordre des arrêts (56.2s)
   carte du premier arrêt → 2 bouton(s)
-  avant CMD-20260914-MU12E7N4Y → CMD-20260914-MU12E7PTZ → CMD-20260914-MU12E7S710
-  après CMD-20260914-MU12E7PTZ → CMD-20260914-MU12E7N4Y → CMD-20260914-MU12E7S710
-  ✓  8 [chromium] › i03.spec.ts:6:5 › TC-I03 — réordonnancement manuel persistant (55.7s)
+  avant CMD-20260914-MU1NM7V8Y → CMD-20260914-MU1NM84DZ → CMD-20260914-MU1NM8DN10
+  après CMD-20260914-MU1NM84DZ → CMD-20260914-MU1NM7V8Y → CMD-20260914-MU1NM8DN10
+  ✓  8 [chromium] › i03.spec.ts:6:5 › TC-I03 — réordonnancement manuel persistant (56.1s)
   Planifiée → En cours
   En cours → Clôturée
   API sur tournée close → reorder 400, advance 400
-  ✓  9 [chromium] › i04.spec.ts:7:5 › TC-I04 — cycle de vie et fermeture d’une tournée (53.9s)
-  dernière position en base → Hamid Ouali · 34.0209 · -6.8416 · 2026-09-14 09:55:42.06854+00
-  /tracking/live → {"driver":"Hamid Ouali","lat":34.0209,"lng":-6.8416,"at":"2026-09-14T09:55:42.068Z","zone":null,"distanceM":null,"outOfZone":false}
-  ✓  10 [chromium] › j01.spec.ts:7:5 › TC-J01 — le PC flotte montre la dernière position du livreur (7.5s)
+  ✓  9 [chromium] › i04.spec.ts:7:5 › TC-I04 — cycle de vie et fermeture d’une tournée (56.0s)
+  dernière position en base → Hamid Ouali · 34.0209 · -6.8416 · 2026-09-14 19:49:54.209265+00
+  /tracking/live → {"driver":"Hamid Ouali","lat":34.0209,"lng":-6.8416,"at":"2026-09-14T19:49:54.209Z","zone":null,"distanceM":null,"outOfZone":false}
+  ✓  10 [chromium] › j01.spec.ts:7:5 › TC-J01 — le PC flotte montre la dernière position du livreur (8.2s)
   suivre → recentrage ; plein écran → aller-retour effectif
-  ✓  11 [chromium] › j02.spec.ts:7:5 › TC-J02 — suivre un chauffeur et basculer en plein écran (10.1s)
+  ✓  11 [chromium] › j02.spec.ts:7:5 › TC-J02 — suivre un chauffeur et basculer en plein écran (11.2s)
   alertes → [{"d":"Hamid Ouali","m":85201,"z":"Rabat Centre"}]
-  ✓  12 [chromium] › j03.spec.ts:7:5 › TC-J03 — sortie de géofence signalée au PC flotte (13.5s)
-  ✓  13 [chromium] › j04.spec.ts:6:5 › TC-J04 — raccourcis du PC flotte (7.6s)
-  retour en base → CMD-20260914-MU12IRSI11 · A_TRAITER · 1 tentative(s) · « Destinataire absent — deux passages sans réponse »
+  ✓  12 [chromium] › j03.spec.ts:7:5 › TC-J03 — sortie de géofence signalée au PC flotte (17.2s)
+  ✓  13 [chromium] › j04.spec.ts:6:5 › TC-J04 — raccourcis du PC flotte (8.8s)
+  retour en base → CMD-20260914-MU1NR2V011 · A_TRAITER · 1 tentative(s) · « Destinataire absent — deux passages sans réponse »
   COD bloqué attendu → 340 DH
-  ✓  14 [chromium] › k01.spec.ts:8:5 › TC-K01 — l’échec du terrain ouvre un retour à traiter (8.3s)
+  ✓  14 [chromium] › k01.spec.ts:8:5 › TC-K01 — l’échec du terrain ouvre un retour à traiter (11.8s)
   retour → REPLANIFIE, 2 tentatives
   commande → LIVRAISON, livreur Hamid Ouali
-  ✓  15 [chromium] › k02.spec.ts:7:5 › TC-K02 — reprogrammer une tentative de livraison (6.9s)
+  ✓  15 [chromium] › k02.spec.ts:7:5 › TC-K02 — reprogrammer une tentative de livraison (7.6s)
   API reschedule au plafond → 400 {"error":"Plafond de 3 tentatives atteint."}
-  ✓  16 [chromium] › k03.spec.ts:7:5 › TC-K03 — plafond de trois tentatives (5.8s)
+  ✓  16 [chromium] › k03.spec.ts:7:5 › TC-K03 — plafond de trois tentatives (6.6s)
   retour RENDU, commande RETOUR
   API sur retour clos → reschedule 400, retour 400
-  ✓  17 [chromium] › k04.spec.ts:7:5 › TC-K04 — restitution au marchand et clôture du retour (11.6s)
-  décor → CMD-20260914-MU12JHS012 (450 DH), CMD-20260914-MU12JIVJ13 (250 DH)
+  ✓  17 [chromium] › k04.spec.ts:7:5 › TC-K04 — restitution au marchand et clôture du retour (20.7s)
+  décor → CMD-20260914-MU1NS53312 (450 DH), CMD-20260914-MU1NS73Y13 (250 DH)
   mouvements du jour → 2 encaissement(s), 700 DH
   session → théorique 700 DH, 2 livraison(s), statut EN_COURS
-  mouvements rattachés aux courses : CMD-20260914-MU12JHS012, CMD-20260914-MU12JIVJ13
-  ✓  18 [chromium] › l01.spec.ts:8:5 › TC-L01 — la caisse du livreur se remplit de ses encaissements (10.5s)
+  mouvements rattachés aux courses : CMD-20260914-MU1NS53312, CMD-20260914-MU1NS73Y13
+  ✓  18 [chromium] › l01.spec.ts:8:5 › TC-L01 — la caisse du livreur se remplit de ses encaissements (17.3s)
   déposé 700 DH pour un déclaré de 700 DH
   second dépôt → 400
-  ✓  19 [chromium] › l02.spec.ts:6:5 › TC-L02 — dépôt en agence d’une caisse à déposer (9.4s)
+  ✓  19 [chromium] › l02.spec.ts:6:5 › TC-L02 — dépôt en agence d’une caisse à déposer (10.3s)
   déclaration livreur → théorique 700, déclaré 600, écart 100, statut ECART
   écran /cash → écart annoncé : true
   écart résolu → motif « Client a payé partiellement », note « Client a réglé 100 DH de moins, compléme… »
-  ✓  20 [chromium] › l03.spec.ts:7:5 › TC-L03 — écart de caisse déclaré par le livreur, résolu par la comptabilité (12.5s)
+  ✓  20 [chromium] › l03.spec.ts:7:5 › TC-L03 — écart de caisse déclaré par le livreur, résolu par la comptabilité (14.1s)
   fichier téléchargé → reconciliation-cash.csv
   contenu → 1 ligne(s)
-  ✓  21 [chromium] › l04.spec.ts:6:5 › TC-L04 — export comptable des sessions de caisse (5.8s)
+  ✓  21 [chromium] › l04.spec.ts:6:5 › TC-L04 — export comptable des sessions de caisse (6.6s)
   génération 2026-09 → {"created":1,"merchants":["Boutique Test"]}
   1 reversement(s) en base : Boutique Test 700 DH
   Boutique Test → brut 700 − commission undefined = net undefined
-  paiement → {"id":"2d3c8292-8522-4775-bde6-585867769daf","status":"VERSE","method":"virement","reference":"VIR-RECETTE-001"}
+  paiement → {"id":"56640085-d1e0-4159-b8aa-110ae2e1cb58","status":"VERSE","method":"virement","reference":"VIR-RECETTE-001"}
   second paiement → 400
-  ✓  22 [chromium] › l05.spec.ts:7:5 › TC-L05 — générer puis payer un reversement marchand (11.3s)
+  ✓  22 [chromium] › l05.spec.ts:7:5 › TC-L05 — générer puis payer un reversement marchand (13.5s)
   accès finance en dispatcher → {"GET /cash/sessions":403,"POST /cash/deposit":403,"POST /cash/resolve":403,"POST /reversements/generate":403,"POST /reversements/pay":403}
   session inchangée → DEPOSE
-  ✓  23 [chromium] › l07.spec.ts:7:5 › TC-L07 — le dispatch n’écrit pas sur l’argent (9.7s)
+  ✓  23 [chromium] › l07.spec.ts:7:5 › TC-L07 — le dispatch n’écrit pas sur l’argent (13.2s)
   grille avant → 5 palier(s), fragile 15, remise 0.1
   grille après rechargement → fragile 22
-  ✓  24 [chromium] › m01.spec.ts:7:5 › TC-M01 — modifier et enregistrer la grille tarifaire (8.4s)
+  ✓  24 [chromium] › m01.spec.ts:7:5 › TC-M01 — modifier et enregistrer la grille tarifaire (10.7s)
   9 km → base 48, remisé 43.2, TVA 8.64, TTC attendu 51.84
   TTC affiché → 51.84
   /pricing/quote (remisé) → {"applied":"remise","base":43.2,"surcharges":0,"ht":43.2,"tva":8.64,"ttc":51.84}
   /pricing/quote (sans contrat) → {"applied":"grille","base":48,"surcharges":0,"ht":48,"tva":9.6,"ttc":57.6}
-  ✓  25 [chromium] › m02.spec.ts:7:5 › TC-M02 — le devis simulé suit la grille enregistrée (3.2s)
+  ✓  25 [chromium] › m02.spec.ts:7:5 › TC-M02 — le devis simulé suit la grille enregistrée (4.4s)
   CSV → 6 ligne(s) pour 5 palier(s)
-  ✓  26 [chromium] › m03.spec.ts:6:5 › TC-M03 — export CSV de la grille (3.2s)
-  décor → CMD-20260914-MU12L1MP14 livrée ; 3 course(s) facturable(s)
+  ✓  26 [chromium] › m03.spec.ts:6:5 › TC-M03 — export CSV de la grille (4.1s)
+  décor → CMD-20260914-MU1NU2VH14 livrée ; 3 course(s) facturable(s)
   génération 2026-09 → 200 {"created":1,"refs":["FCT-2026-09-0001"]}
   1 facture(s) générée(s)
   Boutique Test → livraisons 816, commission 122, net 694, TVA 139
   après envoi → ENVOYEE
   après paiement → PAYEE
-  ✓  27 [chromium] › m04.spec.ts:8:5 › TC-M04 — générer, envoyer, payer et contester une facture (5.4s)
+  ✓  27 [chromium] › m04.spec.ts:8:5 › TC-M04 — générer, envoyer, payer et contester une facture (7.2s)
   1 facture(s) en base
   CSV → 2 ligne(s)
-  ✓  28 [chromium] › m07.spec.ts:6:5 › TC-M07 — export CSV des factures (6.4s)
+  ✓  28 [chromium] › m07.spec.ts:6:5 › TC-M07 — export CSV des factures (7.7s)
   Boutique Test → 18 commande(s), 3 livrée(s), 3310 DH de COD à encaisser
   5 commande(s) d’un autre marchand : absentes de l’écran
   /v1/merchant/orders → 18 commande(s), toutes de Boutique Test
-  ✓  29 [chromium] › n01.spec.ts:6:5 › TC-N01 — le portail marchand ne montre que ses commandes (6.6s)
+  ✓  29 [chromium] › n01.spec.ts:6:5 › TC-N01 — le portail marchand ne montre que ses commandes (7.4s)
   18 commande(s) du marchand, 5 d’un autre
   portefeuille → {"codCollected":700,"commissionRate":0.15,"commission":105,"net":595}
   COD encaissé en base pour Boutique Test → 700 DH
-  ✓  30 [chromium] › n02.spec.ts:7:5 › TC-N02 — commandes et portefeuille du marchand (10.2s)
+  ✓  30 [chromium] › n02.spec.ts:7:5 › TC-N02 — commandes et portefeuille du marchand (10.9s)
   facture marchande → {"merchant":"Boutique Test","deliveries":3,"codCollected":700,"commission":105,"netHt":595,"tva":119,"ttc":714}
   taux du tenant → commission 0.15, TVA 0.2
   ⚠ la facture marchande ne rend pas le détail brut/commission/net — à consigner
-  ✓  31 [chromium] › n03.spec.ts:7:5 › TC-N03 — la facture du marchand suit les règles du tenant (7.7s)
+  ✓  31 [chromium] › n03.spec.ts:7:5 › TC-N03 — la facture du marchand suit les règles du tenant (8.4s)
   /dashboard en marchand → /portail
   /orders en marchand → /portail
   /cash en marchand → /portail
   API en marchand → {"/v1/orders":403,"/v1/drivers":403,"/v1/cash/sessions":403,"/v1/users":403}
-  ✓  32 [chromium] › n04.spec.ts:6:5 › TC-N04 — un marchand n’entre pas dans la console transport (6.7s)
-  suivi de YZBLUCN2 → Livrée, 7 étape(s)
+  ✓  32 [chromium] › n04.spec.ts:6:5 › TC-N04 — un marchand n’entre pas dans la console transport (11.8s)
+  suivi de JG6XAZWG → Livrée, 7 étape(s)
   aucune donnée sensible dans la réponse publique (téléphone, adresse, livreur)
   code inconnu → 404 {"message":"Suivi introuvable.","error":"Not Found","statusC
-  ✓  33 [chromium] › o01.spec.ts:7:5 › TC-O01 — suivi public d’une commande, sans fuite de données (689ms)
-  notation → 200 {"code":"YZBLUCN2","rating":4,"ratingComment":"Livraison rapide et soignee."}
+  ✓  33 [chromium] › o01.spec.ts:7:5 › TC-O01 — suivi public d’une commande, sans fuite de données (1.2s)
+  notation → 200 {"code":"JG6XAZWG","rating":4,"ratingComment":"Livraison rapide et soignee."}
   seconde notation → 400
   notation d’une commande non livrée → 400
-  ✓  34 [chromium] › o01.spec.ts:41:5 › TC-O03 — notation d’une livraison, une seule fois (2.6s)
-  avis en base → CMD-20260914-MU12L1MP14 · 4★ · Hamid Ouali · Boutique Test
+  ✓  34 [chromium] › o01.spec.ts:41:5 › TC-O03 — notation d’une livraison, une seule fois (3.4s)
+  avis en base → CMD-20260914-MU1NU2VH14 · 4★ · Hamid Ouali · Boutique Test
   distribution en base → 4★:1
   /v1/reviews → 1 avis pour 1 en base
-  ✓  35 [chromium] › o04.spec.ts:7:5 › TC-O04 — un avis client remonte à l’exploitation (6.1s)
+  ✓  35 [chromium] › o04.spec.ts:7:5 › TC-O04 — un avis client remonte à l’exploitation (7.2s)
   journal → 9 notification(s) en base
   après envoi → 10 notification(s)
   dernière → +212600112233 · SMS · SENT · order.created
-  ✓  36 [chromium] › p01.spec.ts:7:5 › TC-P01 — journal des notifications et envoi manuel (13.4s)
+  ✓  36 [chromium] › p01.spec.ts:7:5 › TC-P01 — journal des notifications et envoi manuel (13.8s)
   envoi initial → BLOCKED (Consentement marketing absent (loi 09-08).)
-  rejeu sans consentement → 200 {"id":"23e5b224-d89f-472d-8634-a881592058af","event":"promo","channel":"SMS","recipient":"
+  rejeu sans consentement → 200 {"id":"12ce7fe4-5172-4de6-9952-98794030d5f6","event":"promo","channel":"SMS","recipient":"
   journal : 1 → 2 tentative(s)
   rejeu après consentement → SENT
-  ✓  37 [chromium] › p03.spec.ts:8:5 › TC-P03 — rejouer une notification bloquée (2.5s)
+  ✓  37 [chromium] › p03.spec.ts:8:5 › TC-P03 — rejouer une notification bloquée (4.0s)
   promo sans consentement → BLOCKED (Consentement marketing absent (loi 09-08).)
   transactionnel sans consentement → SENT
   promo avec consentement → SENT
   promo après retrait → BLOCKED (Consentement marketing absent (loi 09-08).)
-  ✓  38 [chromium] › p04.spec.ts:7:5 › TC-P04 — le consentement marketing est opposable, le transactionnel passe (1.3s)
+  ✓  38 [chromium] › p04.spec.ts:7:5 › TC-P04 — le consentement marketing est opposable, le transactionnel passe (2.9s)
   modèle order.delivered → « Votre colis {code} a été livré. Merci ! »
   enregistrement → 200
   message rendu → « Votre colis TESTCODE est arrive. Merci de votre confiance. »
   rétablissement → 200
   modèle rétabli → « Votre colis {code} a été livré. Merci ! »
-  ✓  39 [chromium] › p05.spec.ts:7:5 › TC-P05 — cycle de vie d’un modèle de notification (7.3s)
-  commande CMD-20260914-MU12MOPR15 créée pour +212600445566
-  message envoyé → « Votre colis QX7XD5LQ est enregistré. »
+  ✓  39 [chromium] › p05.spec.ts:7:5 › TC-P05 — cycle de vie d’un modèle de notification (9.0s)
+  commande CMD-20260914-MU1NW3QZ15 créée pour +212600445566
+  message envoyé → « Votre colis V3YLNXUG est enregistré. »
   statut après deux progressions → RECUPEREE
-  ✓  40 [chromium] › p06.spec.ts:7:5 › TC-P06 — les événements de course notifient le client (2.2s)
-  décor → livraison CMD-20260914-MU12MSJ016 encaissée 400 DH
-  cas de fraude → Hamid Ouali · {hors_geo,ecart_cash} · 58 · OUVERT · Livraison CMD-20260914-MU12MSJ016 validée à 85.2 km hors de la zone Rabat Centre · Écart de caisse de 150 DH — Cash manquant — à retenir sur prime
+  ✓  40 [chromium] › p06.spec.ts:7:5 › TC-P06 — les événements de course notifient le client (3.4s)
+  décor → livraison CMD-20260914-MU1NW9JD16 encaissée 400 DH
+  cas de fraude → Hamid Ouali · {hors_geo,ecart_cash} · 58 · OUVERT · Livraison CMD-20260914-MU1NW9JD16 validée à 85.2 km hors de la zone Rabat Centre · Écart de caisse de 150 DH — Cash manquant — à retenir sur prime
   signaux hors_geo + ecart_cash → score attendu 58, obtenu 58
   classement → [{"driver":"Hamid Ouali","cases":1,"risk":58}]
-  ✓  41 [chromium] › q01.spec.ts:7:5 › TC-Q01 — un écart de caisse ouvre un cas de fraude (14.5s)
+  ✓  41 [chromium] › q01.spec.ts:7:5 › TC-Q01 — un écart de caisse ouvre un cas de fraude (18.6s)
   Ouvert → Enquête
   Enquête → Confirmé
   journal d’audit fraude : 1 → 2
   second cas → Blanchi
-  ✓  42 [chromium] › q02.spec.ts:6:5 › TC-Q02 — enquête, confirmation et blanchiment d’un cas (16.0s)
+  ✓  42 [chromium] › q02.spec.ts:6:5 › TC-Q02 — enquête, confirmation et blanchiment d’un cas (16.7s)
   /fraud en dispatcher → Transpo Console transport Se connecter Organisation transpo E-mail Mot de passe Se connecter L’organ
   API fraude en dispatcher → {"cases":403,"leaderboard":403}
-  ✓  43 [chromium] › q05.spec.ts:6:5 › TC-Q05 — le dossier de fraude est fermé au dispatch (8.9s)
+  ✓  43 [chromium] › q05.spec.ts:6:5 › TC-Q05 — le dossier de fraude est fermé au dispatch (11.0s)
   base → 39 commande(s), 4 livrée(s), 17 en cours, 1100 DH encaissés
   écran → livrées 4, en cours 3316
   véhicules non conformes en base → aucun
-  ✓  44 [chromium] › r01.spec.ts:7:5 › TC-R01 — le tableau de bord dit la vérité sur les données (7.2s)
+  ✓  44 [chromium] › r01.spec.ts:7:5 › TC-R01 — le tableau de bord dit la vérité sur les données (8.1s)
   statuts → ANNULEE:1 ASSIGNEE:6 LIVRAISON:2 LIVREE:4 NOUVELLE:16 RECUPEREE:7 RETOUR:1 RETRAIT:2
   1 motif(s) d’échec en base
   motif attendu à l’écran → « Destinataire absent »
   1 chauffeur(s) livrant : tous présents
-  ✓  45 [chromium] › r02.spec.ts:7:5 › TC-R02 — l’analytique compte ce que la base contient (9.1s)
+  ✓  45 [chromium] › r02.spec.ts:7:5 › TC-R02 — l’analytique compte ce que la base contient (12.6s)
   vérité de la base → {"livrees":4,"echecs":0,"codEncaisse":1100,"caisse":400}
   API → 4 livrée(s), 1100 DH encaissés, caisse 400, réconciliation 1100
   caisse 400 DH vs réconciliation 1100 DH vs COD encaissé 1100 DH
   échecs en base : 0 · retours : 1
-  ✓  46 [chromium] › r03.spec.ts:7:5 › TC-R03 — les mêmes faits comptés partout pareil (9.2s)
-  chez tangerlog → chauffeur TEMOIN-MU12O5OB
+  ✓  46 [chromium] › r03.spec.ts:7:5 › TC-R03 — les mêmes faits comptés partout pareil (13.7s)
+  chez tangerlog → chauffeur TEMOIN-MU1NXWHE
   15 pages parcourues : aucune donnée de tangerlog
-  ✓  47 [chromium] › s01.spec.ts:6:5 › TC-S01 — deux organisations ne se voient pas (19.8s)
+  ✓  47 [chromium] › s01.spec.ts:6:5 › TC-S01 — deux organisations ne se voient pas (24.3s)
   GET /v1/orders avec x-tenant-slug: tangerlog → 403
   commandes de tangerlog : 0 avant, 0 après tentative d’écriture
-  ✓  48 [chromium] › s02.spec.ts:7:5 › TC-S02 — l’en-tête de tenant ne contourne pas le jeton (2.4s)
+  ✓  48 [chromium] › s02.spec.ts:7:5 › TC-S02 — l’en-tête de tenant ne contourne pas le jeton (3.8s)
   jeton livreur → chauffeur Hamid Ouali, rôle DRIVER
   10 mission(s) rendues ; 0 commande(s) d’un autre chauffeur en base
   /v1/orders en livreur → 403
   /v1/drivers en livreur → 403
   /v1/cash/sessions en livreur → 403
   /v1/users en livreur → 403
-  ✓  49 [chromium] › s03.spec.ts:7:5 › TC-S03 — le compte livreur est borné à son chauffeur (1.0s)
-  témoin → CMD-TEMOIN-1789380056316
-INSERT 0 1 au nom de Concurrent MU12ONWC
+  ✓  49 [chromium] › s03.spec.ts:7:5 › TC-S03 — le compte livreur est borné à son chauffeur (2.1s)
+  témoin → CMD-TEMOIN-1789415789973
+INSERT 0 1 au nom de Concurrent MU1NYK5X
   /v1/merchant/orders → 20 commande(s)
   /v1/merchant/dashboard → 200
   /v1/merchant/wallet → 200
@@ -658,39 +695,39 @@ INSERT 0 1 au nom de Concurrent MU12ONWC
   /v1/cash/sessions en marchand → 403
   /v1/users en marchand → 403
   /v1/fraud/cases en marchand → 403
-  ✓  50 [chromium] › s04.spec.ts:7:5 › TC-S04 — le compte marchand est borné à son enseigne (2.5s)
+  ✓  50 [chromium] › s04.spec.ts:7:5 › TC-S04 — le compte marchand est borné à son enseigne (4.5s)
   actions tracées → fraud.clear, fraud.confirm, fraud.investigate, plan.archive, plan.create, plan.restore, plan.version, subscription.cancel, subscription.cycle, subscription.reactivate, subscription.subscribe, subscription.suspend, tenant.admin.create, tenant.admin.reset, tenant.provision, user.deactivate, user.invite, user.password_reset, user.reactivate, user.role_change
   entrées sans acteur ou sans date → 0
   dernière entrée → user.invite par admin@rabatexpress.ma
-  ✓  51 [chromium] › s05.spec.ts:6:5 › TC-S05 — les actions sensibles laissent une trace (6.8s)
+  ✓  51 [chromium] › s05.spec.ts:6:5 › TC-S05 — les actions sensibles laissent une trace (7.4s)
   sujet +212600445566 → 1 commande(s)
   export → 200
   effacement → 200 {"subject":"+212600445566","consentsDeleted":0,"notificationsAnonymised":1,"ordersAnonymised":1}
   après effacement → 0 commande(s) portant encore le téléphone
   commandes toujours en base → 40
-  ✓  52 [chromium] › s06.spec.ts:7:5 › TC-S06 — export et effacement des données d’une personne (2.5s)
+  ✓  52 [chromium] › s06.spec.ts:7:5 › TC-S06 — export et effacement des données d’une personne (3.0s)
   après suppression du cookie → /login
-  ✓  53 [chromium] › s07.spec.ts:7:5 › TC-S07 — la perte de session renvoie au login (4.1s)
+  ✓  53 [chromium] › s07.spec.ts:7:5 › TC-S07 — la perte de session renvoie au login (4.3s)
   français → dir=ltr
   arabe → dir=rtl, lang=ar
   caractères arabes à l’écran : true
   /orders → dir=rtl
   /cash → dir=rtl
   /settings → dir=rtl
-  ✓  54 [chromium] › t01.spec.ts:6:5 › TC-T01 — la console bascule en arabe, en RTL, et garde le thème choisi (13.1s)
+  ✓  54 [chromium] › t01.spec.ts:6:5 › TC-T01 — la console bascule en arabe, en RTL, et garde le thème choisi (14.0s)
   départ → fond rgb(255, 255, 255), texte rgb(28, 32, 36)
   après bascule → fond rgb(17, 17, 19), texte rgb(237, 238, 240)
   classe racine : « radix-themes light » → « radix-themes dark »
   /orders → fond rgb(17, 17, 19)
   /cash → fond rgb(17, 17, 19)
-  ✓  55 [chromium] › t02.spec.ts:8:5 › TC-T02 — bascule de thème et persistance (11.2s)
+  ✓  55 [chromium] › t02.spec.ts:8:5 › TC-T02 — bascule de thème et persistance (12.4s)
   1024px /orders → débordement page 0px, corps 0px
   1024px /dispatch → débordement page 0px, corps 0px
   1024px /cash → débordement page 0px, corps 0px
   768px /orders → débordement page 0px, corps 0px
   768px /dispatch → débordement page 0px, corps 0px
   768px /cash → débordement page 0px, corps 0px
-  ✓  56 [chromium] › t03.spec.ts:7:5 › TC-T03 — la console tient à 1024 et 768 px sans déborder (18.4s)
+  ✓  56 [chromium] › t03.spec.ts:7:5 › TC-T03 — la console tient à 1024 et 768 px sans déborder (18.8s)
   /dashboard       → 841 car.
   /orders          → 550 car.
   /dispatch        → 521 car.
@@ -713,18 +750,19 @@ INSERT 0 1 au nom de Concurrent MU12ONWC
   /users           → 908 car.
   /settings        → 876 car.
   erreurs JavaScript relevées : 0
-  ✓  57 [chromium] › t04.spec.ts:7:5 › TC-T04 — un tenant neuf ne rend aucun écran blanc (28.0s)
-  commande témoin → CMD-TEMOIN-1789380056316 (TEMOIN01) au statut NOUVELLE
+  ✓  57 [chromium] › t04.spec.ts:7:5 › TC-T04 — un tenant neuf ne rend aucun écran blanc (32.2s)
+  commande témoin → CMD-TEMOIN-1789415789973 (TEMOIN01) au statut NOUVELLE
   libellé de référence → « Nouvelle »
   même libellé sur la liste, la fiche et le suivi client
-  ✓  58 [chromium] › t05.spec.ts:6:5 › TC-T05 — un statut se dit pareil partout (8.8s)
+  ✓  58 [chromium] › t05.spec.ts:6:5 › TC-T05 — un statut se dit pareil partout (9.9s)
 
-  Slow test file: [chromium] › i03.spec.ts (55.7s)
-  Slow test file: [chromium] › i02.spec.ts (54.4s)
-  Slow test file: [chromium] › i04.spec.ts (53.9s)
-  Slow test file: [chromium] › t04.spec.ts (28.0s)
-  Slow test file: [chromium] › s01.spec.ts (19.8s)
+  Slow test file: [chromium] › i02.spec.ts (56.2s)
+  Slow test file: [chromium] › i03.spec.ts (56.1s)
+  Slow test file: [chromium] › i04.spec.ts (56.0s)
+  Slow test file: [chromium] › t04.spec.ts (32.2s)
+  Slow test file: [chromium] › s01.spec.ts (24.3s)
   Consider splitting slow test files to speed up parallel execution
-  58 passed (10.4m)
+  58 passed (12.3m)
+48 vidéo(s) rangée(s) dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab
 
 ===== Fin — verdicts dans qa/recette/2026-09-14-homelab/journal.txt =====

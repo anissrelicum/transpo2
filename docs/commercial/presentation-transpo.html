@@ -1052,7 +1052,7 @@ tbody td.num{ font-variant-numeric:tabular-nums; white-space:nowrap; }
       <div class="carte" style="border-left:3px solid var(--violet);">
         <h3 style="font-size:15px; margin-bottom:10px;">Vérifié, cas par cas</h3>
         <ul class="coche">
-          <li><strong>Application livreur</strong> — parcours complet : connexion, autorisations, missions, progression des statuts, preuve, encaissement, échec motivé, scan, tournée, shift, incidents, chat, gains, arabe avec mise en page inversée. 18 cas sur 18.</li>
+          <li><strong>Application livreur</strong> — parcours complet, joué sur téléphone Android : connexion, autorisations, missions, progression des statuts, preuve, encaissement, échec motivé, scan, tournée, shift, incidents, chat, gains, déclaration de caisse, arabe avec mise en page inversée. 21 cas sur 21, contre l'API déployée.</li>
           <li><strong>Hors-ligne</strong> — action mise en file, rejouée au retour du réseau, sans double effet.</li>
           <li><strong>Chaîne du COD</strong> — encaissement, caisse alimentée course par course, déclaration du livreur, dépôt, écart résolu avec motif, reversement marchand net de commission.</li>
           <li><strong>Cloisonnement</strong> — entre organisations, entre marchands, entre rôles ; vérifié à l'écran et sur l'API.</li>
@@ -1081,14 +1081,17 @@ tbody td.num{ font-variant-numeric:tabular-nums; white-space:nowrap; }
 
     <div class="bandeau">
       <strong>Deux points de méthode, pour être complet.</strong>
-      La campagne de recette citée ici a été jouée sur un environnement de validation dédié : elle atteste du
-      <strong>produit</strong>, et doit être rejouée après chaque mise en production pour attester du <strong>déploiement</strong>.
+      La recette est rejouée <strong>après chaque mise en production</strong>, sur la version déployée et depuis une base vierge :
+      elle atteste du produit ET du déploiement. Le dernier rejeu intégral date du 14 septembre 2026
+      — <strong>172 cas, aucun échec</strong> : 151 cas de console et de back-office en une seule passe continue,
+      et 21 cas joués sur téléphone Android contre la même API.
       Par ailleurs, la traduction française / arabe est complète et vérifiée sur l'application livreur et sur le suivi client ;
       côté console d'exploitation, la bascule de langue fonctionne et la conversion des écrans se poursuit page par page.
     </div>
 
     <p class="source">
-      Source : <code>qa/recette/2026-09-13-local/RAPPORT.md</code> et <code>SUIVI-RECETTE.md</code> (verdicts et constats produit, 13–14 septembre 2026) ;
+      Source : <code>qa/recette/2026-09-14-homelab/RAPPORT.md</code> (rejeu intégral sur la version déployée),
+      <code>qa/recette/2026-09-13-local/RAPPORT.md</code> et <code>SUIVI-RECETTE.md</code> (verdicts et constats produit, 13–14 septembre 2026) ;
       <code>ROADMAP.md</code> pour les tranches restant à compléter.
     </p>
   </div>

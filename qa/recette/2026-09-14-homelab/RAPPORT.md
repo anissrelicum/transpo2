@@ -15,12 +15,16 @@ matin même.
 | B — amorçage des comptes & authentification | 18 | 18/18 |
 | C→F — paramètres, flotte, zones, commandes | 46 | 46/46 |
 | H→T — consoles, terrain, finance, conformité | 58 | 58/58 |
-| **Total web** | **151** | **151/151, aucun échec** |
+| **Total web** | **151** | **151/151** |
+| G — app livreur, sur émulateur Android | 21 | 21/21 |
+| **Total** | **172** | **172/172, aucun échec** |
 
-Joué en une seule passe continue, depuis une base vierge, en 26 minutes.
+Les cas web sont joués en une seule passe continue depuis une base vierge (~30 minutes). La
+section G se joue à part, sur l'émulateur : elle ne peut pas partager la machine avec les
+cas web, et elle vise la même API déployée.
 
-La section G (app livreur, émulateur Android) se joue à part : elle ne peut pas partager la
-machine avec les cas web. Son verdict est consigné séparément.
+TC-B16 a été rejoué seul après le déploiement du correctif de sécurité qu'il met en cause
+(voir plus bas) : 18/18 sur la section B complète.
 
 ## Ce que ce run a coûté avant de passer
 
@@ -54,16 +58,34 @@ Deux défauts de restitution, sans effet sur les verdicts mais sur ce qu'on peut
 |---|---|---|
 | 1 | L'espace marchand n'affichait jamais l'enseigne au nom de laquelle le marchand agit — seulement la personne connectée. Le périmètre existait dans le jeton, la console ne savait pas le lire. | Corrigé et déployé (API, BFF, en-tête de `/portail`) |
 | 2 | `/v1/driver/missions` renvoyait la ligne de commande entière, `drop_phone` compris, alors que l'écran de mission annonce au livreur « l'API ne fournit pas de numéro client ». Le numéro voyageait en clair jusqu'à l'appareil. | Corrigé et déployé ; vérifié sur l'API en ligne |
+| 3 | **Trente mauvais mots de passe verrouillaient la plateforme entière.** Le comptage anti-bruteforce « par source » n'identifiait pas la source : derrière l'ingress, l'API retombait sur l'adresse d'un pod du cluster, la même pour tout le monde. Seuil de 30 sur 15 minutes, partagé par tous les utilisateurs. | Corrigé et déployé |
+| 4 | L'argent encaissé APRÈS le dépôt du jour devenait indéclarable : un dépôt clôt la caisse, l'encaissement suivant en rouvre une à la même date, et les trois lectures prenaient l'une des deux au hasard. | Corrigé et déployé |
+| 5 | `GET /v1/cash/sessions` ne triait que par livreur : la console de caisse montrait la caisse déjà déposée au-dessus de la caisse courante une fois sur deux. | Corrigé et déployé |
+| 6 | **Le récap de caisse du livreur n'a jamais chargé la caisse.** `load()` lisait le cache des missions et l'historique, jamais `getMyCash()` : le bloc annonçait « aucun encaissement enregistré » quand le serveur en comptait 2 700 DH sur six courses. | Corrigé |
+| 7 | L'écran de livraison réussie annonçait « Aucune autre mission en attente » et proposait pour seule action un bouton « Mission suivante ». | Corrigé |
 
-Le second est une question de confidentialité, pas de confort : le PRD prévoit un relais
-d'appel masquant ce numéro. Tant qu'il n'existe pas, la donnée ne sort plus — mais le
-livreur n'a toujours aucun moyen d'appeler son destinataire. À arbitrer.
+**Le constat n° 3 est le plus sérieux de la journée.** Deux sondes l'établissent : en direct
+sur l'API, un `x-forwarded-for` donne bien la clé `ip:198.51.100.7` ; à travers l'ingress, le
+même appel donne `ip:10.244.1.68`. Trente échecs de connexion, venus de n'importe qui,
+refusaient donc la connexion à TOUS les utilisateurs pour le reste de la fenêtre. Je l'ai
+moi-même subi le matin même en enchaînant des cas à connexion refusée, et j'ai vidé la table
+en prenant ça pour une nuisance d'outillage.
+
+Le produit ne compte plus par source quand la source n'est pas identifiable : mieux vaut ne
+pas compter que compter tout le monde ensemble. **Pour que le comptage par source fonctionne
+réellement, l'ingress doit propager `X-Real-IP` ou `X-Forwarded-For` jusqu'à l'API — c'est
+une configuration de cluster, laissée à arbitrage.**
+
+Le constat n° 2 reste une question ouverte : le PRD prévoit un relais d'appel masquant le
+numéro du client. Tant qu'il n'existe pas, la donnée ne sort plus — mais le livreur n'a
+aucun moyen d'appeler son destinataire.
 
 ## Preuves
 
-`qa/recette/2026-09-14-homelab/TC-XXX/` — une vidéo par cas doté d'un écran. Neuf cas de la
-section H→T n'en ont pas : ils interrogent l'API sans navigateur (TC-M04, TC-O01, TC-P03,
-TC-P04, TC-P06, TC-S02, TC-S03, TC-S04, TC-S06). Leur preuve est la trace du journal.
+`qa/recette/2026-09-14-homelab/TC-XXX/` — une vidéo par cas doté d'un écran, plus les captures
+de la section G. Neuf cas de la section H→T n'ont pas de vidéo : ils interrogent l'API sans
+navigateur (TC-M04, TC-O01, TC-P03, TC-P04, TC-P06, TC-S02, TC-S03, TC-S04, TC-S06). Leur
+preuve est la trace du journal.
 
 Les enregistrements ne sont pas versionnés (147 Mo) : `journal.txt` et ce rapport le sont.
 La page `/docs` de la console en dresse l'inventaire et dit, cas par cas, si la vidéo est
