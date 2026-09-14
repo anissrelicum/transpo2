@@ -4,7 +4,11 @@ import { api, login, waitForApi } from '../helpers.mjs';
 
 const DRIVER = 'Youssef Benali';
 let admin, driver, ref;
-const idem = (k) => ({ headers: { 'idempotency-key': k } });
+// La clé d'idempotence doit être propre à LA COURSE : des clés fixes (« ADV1 ») sont
+// globales au tenant, si bien qu'au second passage sur la même base l'API renvoyait la
+// réponse mémorisée du run précédent et la commande n'avançait plus. Une suite qui ne
+// passe que sur une base neuve ne protège de rien le lendemain.
+const idem = (k) => ({ headers: { 'idempotency-key': `${ref}:${k}` } });
 
 // Artefacts minimaux valides : 1 px GIF-like en JPEG et un PNG transparent.
 const PHOTO = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AKp//2Q==';

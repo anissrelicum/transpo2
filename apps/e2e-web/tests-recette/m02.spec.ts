@@ -28,14 +28,24 @@ test('TC-M02 — le devis simulé suit la grille enregistrée', async ({ page })
   expect(Number(affiche)).toBeCloseTo(ttcAttendu, 2);
   await shotVp(page, 'TC-M02', '01-devis-conforme-a-la-grille');
 
-  // Et le devis de l'API — celui qui facturera réellement — doit donner le MÊME prix.
-  // Il rendait le tarif plein : la remise contractuelle du tenant, appliquée à l'écran,
-  // n'était pas transmise au moteur. Un dispatcher annonçait 51,84 DH et la facture
-  // en portait 57,60.
-  const devis = await page.evaluate(async (d) => (await (await fetch('/api/proxy/v1/pricing/quote', {
+  // Le moteur qui facture doit rendre le même prix POUR LE MÊME CAS. La remise est
+  // contractuelle (cascade : prix fixe marchand > grille remisée > grille standard) :
+  // on la passe explicitement, comme le ferait une course d'un marchand sous contrat.
+  const remise = await page.evaluate(async ([d, taux]) => (await (await fetch('/api/proxy/v1/pricing/quote', {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ distanceKm: d, discountRate: taux }),
+  })).json()), [distance, cfg.discountRate] as const);
+  console.log(`  /pricing/quote (remisé) → ${JSON.stringify(remise)}`);
+  expect(remise.applied).toBe('remise');
+  expect(remise.ttc, 'le devis remisé doit valoir celui du simulateur').toBeCloseTo(ttcAttendu, 2);
+
+  // Sans contrat, c'est la grille standard — et l'écart avec l'affichage par défaut du
+  // simulateur est exactement la remise. C'est ce que l'exploitant doit avoir en tête :
+  // le grand « Total TTC » de l'écran est un prix REMISÉ tant que la case est cochée.
+  const plein = await page.evaluate(async (d) => (await (await fetch('/api/proxy/v1/pricing/quote', {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ distanceKm: d }),
   })).json()), distance);
-  console.log(`  /pricing/quote → ${JSON.stringify(devis)}`);
-  expect(devis.ttc, 'le devis de l’API doit valoir celui du simulateur').toBeCloseTo(ttcAttendu, 2);
-  expect(devis.applied).toBe('remise');
+  console.log(`  /pricing/quote (sans contrat) → ${JSON.stringify(plein)}`);
+  expect(plein.applied).toBe('grille');
+  expect(plein.ttc).toBeGreaterThan(remise.ttc);
 });

@@ -68,10 +68,16 @@ test('hub : liste des colis, scan et déplacement de phase', async () => {
   const r = await api('/v1/hub', { token: admin2 });
   assert.equal(r.status, 200);
   assert.ok(r.json.length >= 3, 'colis seedés dans le hub');
-  // Scan d'un colis "arrivé" (code HM4K7P2X) → phase trier
+  // Le scan d'ENTRÉE déclare le colis arrivé au hub ; le tri est un second geste.
+  // (Il posait directement « trier » : la colonne « Arrivés — à scanner » de l'écran et
+  // son indicateur ne pouvaient alors jamais se remplir sur un tenant réel.)
   const s = await api('/v1/hub/scan', { method: 'POST', token: admin2, body: { code: 'HM4K7P2X' } });
   assert.equal(s.status, 200);
-  assert.equal(s.json.hubPhase, 'trier');
+  assert.equal(s.json.hubPhase, 'arrive');
+  // Marquer scanné → à trier
+  const t = await api(`/v1/hub/${s.json.ref}/phase`, { method: 'POST', token: admin2, body: { phase: 'trier' } });
+  assert.equal(t.status, 200);
+  assert.equal(t.json.hubPhase, 'trier');
   // Placer sur quai
   const q = await api(`/v1/hub/${s.json.ref}/phase`, { method: 'POST', token: admin2, body: { phase: 'quai' } });
   assert.equal(q.status, 200);

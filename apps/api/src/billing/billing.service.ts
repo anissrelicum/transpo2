@@ -56,12 +56,12 @@ export class BillingService {
       tiers: input.tiers ?? cfg.tiers,
       fragileSurcharge: input.fragileSurcharge ?? cfg.fragileSurcharge,
       scheduledSurcharge: input.scheduledSurcharge ?? cfg.scheduledSurcharge,
-      // La REMISE CONTRACTUELLE du tenant était la seule valeur de la grille à ne pas
-      // être transmise : le simulateur de `/pricing` l'appliquait (51,84 DH pour 9 km) et
-      // ce devis rendait le tarif plein (57,60 DH). Deux prix pour la même course, selon
-      // qu'on regarde l'écran ou qu'on facture. Un appelant qui veut le tarif plein passe
-      // explicitement `discountRate: 0`.
-      discountRate: input.discountRate ?? cfg.discountRate,
+      // PAS de remise par défaut : la cascade de tarification (prix fixe marchand >
+      // grille remisée > grille standard) la fait dépendre du CONTRAT du marchand, pas du
+      // tenant. L'appliquer d'office remiserait toutes les courses, y compris celles de
+      // marchands sans accord — cf. apps/e2e/tests/40_cash_billing.test.mjs, qui fixe
+      // cette cascade. Le simulateur de `/pricing`, lui, a sa case « Remise contractuelle »
+      // cochée par défaut : c'est ce défaut d'écran qui trompe, pas le moteur.
       vatRate: input.vatRate ?? cfg.vatRate,
     });
   }

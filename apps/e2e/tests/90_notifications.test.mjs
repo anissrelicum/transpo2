@@ -18,6 +18,9 @@ test('transactionnel : envoyé sans consentement (exempté 09-08)', async () => 
 });
 
 test('marketing : bloqué sans consentement', async () => {
+  // Le consentement est PERSISTÉ : accordé par le cas suivant, il restait accordé au
+  // passage d'après et ce cas ne vérifiait plus rien. On repart d'un refus explicite.
+  await api('/v1/notifications/consent', { method: 'POST', token: admin, body: { subject: SUBJECT, channel: 'SMS', optedIn: false } });
   const r = await api('/v1/notifications/send', { method: 'POST', token: admin, body: { event: 'promo', recipient: SUBJECT, channel: 'SMS', vars: { x: 'CasaExpress' } } });
   assert.equal(r.status, 200);
   assert.equal(r.json.status, 'BLOCKED');
