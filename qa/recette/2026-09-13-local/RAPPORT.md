@@ -407,3 +407,23 @@ nuit : *un cas qui emprunte l'état d'un autre ne se rejoue pas*.
 4. **TC-Q02** : fiabiliser l'ouverture d'un dossier de fraude depuis l'écran (cf. ci-dessus).
 5. **TC-L03m** (déclaration de caisse depuis l'écran du livreur) est écrit mais n'a pas pu être
    joué faute de temps machine — l'API de déclaration, elle, est vérifiée par TC-L03.
+
+---
+
+## Écarts PRD ↔ produit, relevés hors recette (14/09)
+
+En rédigeant la présentation commerciale, cinq règles décrites au PRD se sont révélées **non
+implémentées**. Elles ne sont couvertes par aucun cas de test — le plan de recette ne les
+prévoyait pas — et elles auraient été promises à un prospect :
+
+| Règle annoncée | Où | Réalité |
+|---|---|---|
+| Relais d'appel masquant le numéro du client | PRD-00 §5.4 | Aucune implémentation ; le livreur voit le numéro en clair |
+| Remboursement d'un COD déjà encaissé | PRD-01 §19 | Aucun code côté API |
+| Modération des avis abusifs | PRD-01 | L'écran `/reviews` affiche et filtre, il ne modère pas |
+| Adresse de retrait pré-remplie pour le marchand | PRD-02 | `CreateWizard` ne préremplit rien |
+| Bordereau de transfert opposable | PRD-01 §11 | Cf. **AN-37** — sceller ne laisse aucune trace |
+
+Sévérité : **à arbitrer**, une par une. Ce ne sont pas des régressions mais des promesses de
+spécification jamais construites — le genre d'écart qui se découvre en clientèle, au pire
+moment. *Piste :* soit les livrer, soit les retirer du PRD, mais ne pas les laisser entre les deux.

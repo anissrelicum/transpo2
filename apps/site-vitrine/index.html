@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transpo — la plateforme de livraison des transporteurs marocains</title>
+<meta name="description" content="Transpo est la plateforme SaaS qui fait tourner une société de livraison au Maroc : dispatch, tournées, preuve de livraison, chaîne du paiement à la livraison, suivi client public, conformité 09-08 et EU 561.">
+<meta name="theme-color" content="#3e63dd" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111113" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<a class="saut-au-contenu" href="#contenu">Aller au contenu</a>
+
+<header class="entete">
+  <div class="conteneur entete__barre">
+    <a class="marque" href="#contenu">
+      <svg class="marque__logo" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+        <rect x="1" y="1" width="26" height="26" rx="6" fill="var(--indigo-9)"></rect>
+        <path d="M7 17.5h2.6a2.6 2.6 0 0 0 5.2 0h3.4a2.2 2.2 0 0 0 4.4 0H22" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round"></path>
+        <path d="M6.5 10.5h8.2v5.4H6.5z" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linejoin="round"></path>
+        <path d="M14.7 12.6h3.1l2.6 2.4v0.9h-5.7z" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linejoin="round"></path>
+      </svg>
+      <span>Transpo</span>
+    </a>
+
+    <nav class="nav" aria-label="Navigation principale">
+      <ul class="nav__liste">
+        <li><a class="nav__lien" href="#metiers">Par métier</a></li>
+        <li><a class="nav__lien" href="#fonctions">Fonctions</a></li>
+        <li><a class="nav__lien" href="#deroulement">Comment ça marche</a></li>
+        <li><a class="nav__lien" href="#conformite">Conformité</a></li>
+      </ul>
+    </nav>
+
+    <a class="bouton bouton--principal entete__appel" href="mailto:contact@transpo.ma?subject=Demande%20de%20d%C3%A9monstration%20Transpo&amp;body=Bonjour%2C%0A%0ANous%20souhaitons%20voir%20Transpo%20en%20d%C3%A9monstration.%0A%0ASoci%C3%A9t%C3%A9%20%3A%0AVilles%20couvertes%20%3A%0ANombre%20de%20livreurs%20%3A%0AVolume%20de%20courses%20par%20jour%20%3A%0APart%20de%20paiement%20%C3%A0%20la%20livraison%20%3A%0A%0AMerci.">
+      <span class="entete__appel--court">Démonstration</span>
+      <span class="entete__appel--long">Demander une démonstration</span>
+    </a>
+  </div>
+</header>
+
+<main id="contenu">
+
+  <!-- ===================== Bandeau d'accroche ===================== -->
+  <section class="accroche" aria-labelledby="accroche-titre">
+    <div class="conteneur accroche__grille">
+      <div>
+        <p class="etiquette"><span class="etiquette__point" aria-hidden="true"></span> Plateforme SaaS multi-transporteurs · Maroc</p>
+
+        <h1 class="accroche__titre" id="accroche-titre">Toute votre exploitation de livraison, d’un bout à l’autre de la course.</h1>
+
+        <p class="accroche__phrase">
+          Transpo est la plateforme de livraison du dernier kilomètre pour les transporteurs
+          et coursiers marocains : le marchand dépose sa commande, le dispatch l’affecte,
+          le livreur la boucle sur le terrain — preuve à l’appui, argent encaissé et tracé —
+          et le client final la suit sans avoir de compte à créer.
+        </p>
+
+        <div class="accroche__actions">
+          <a class="bouton bouton--principal bouton--grand" href="#appel-a-l-action">Demander une démonstration</a>
+          <a class="bouton bouton--secondaire bouton--grand" href="#fonctions">Voir ce que fait la plateforme</a>
+        </div>
+
+        <ul class="accroche__preuves">
+          <li>
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            Bilingue français / arabe, mise en page inversée comprise
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            App livreur qui fonctionne hors réseau
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            Chaque société cliente strictement cloisonnée
+          </li>
+        </ul>
+      </div>
+
+      <!-- Illustration : une fiche de course telle que la console la rend.
+           Purement décorative (le texte ci-dessus porte le sens) → masquée aux
+           technologies d'assistance. -->
+      <div class="apercu" aria-hidden="true">
+        <div class="apercu__entete">
+          <div>
+            <p class="apercu__ref">CMD-20260914-118</p>
+            <p class="apercu__meta">Casablanca → Rabat · Moyen · Atlas Cosmetics</p>
+          </div>
+          <span class="badge badge--livraison"><span>En route (livraison)</span></span>
+        </div>
+
+        <div class="apercu__puces">
+          <span class="badge badge--cod"><span>COD 640,00 DH</span></span>
+          <span class="badge badge--preuve"><span>Photo + signature</span></span>
+          <span class="badge badge--zone"><span>Zone Rabat-Agdal</span></span>
+          <span class="badge badge--urgent"><span>Urgent</span></span>
+        </div>
+
+        <div class="apercu__etapes">
+          <p class="etape-suivi etape-suivi--faite"><span class="etape-suivi__point"></span><span>Colis récupéré chez le marchand</span><span class="etape-suivi__heure">09:12</span></p>
+          <p class="etape-suivi etape-suivi--faite"><span class="etape-suivi__point"></span><span>Scanné au hub · trié sur quai Rabat</span><span class="etape-suivi__heure">10:48</span></p>
+          <p class="etape-suivi etape-suivi--en-cours"><span class="etape-suivi__point"></span><span>Arrêt 3 sur 7 de la tournée du jour</span><span class="etape-suivi__heure">13:05</span></p>
+          <p class="etape-suivi"><span class="etape-suivi__point"></span><span>Preuve de livraison et encaissement</span><span class="etape-suivi__heure">—</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Bénéfices par métier ===================== -->
+  <section class="section section--douce" id="metiers" aria-labelledby="metiers-titre">
+    <div class="conteneur">
+      <div class="section__entete">
+        <span class="section__sur-titre">Quatre métiers, un seul dossier de course</span>
+        <h2 class="section__titre" id="metiers-titre">Chacun voit ce qui le concerne, et rien d’autre</h2>
+        <p class="section__chapo">
+          Le transporteur, le marchand, le livreur et le client final travaillent sur la même
+          commande, chacun depuis son interface — avec ses droits, sa langue et son niveau
+          d’information.
+        </p>
+      </div>
+
+      <div class="grille grille--quatre">
+
+        <article class="carte">
+          <span class="carte__icone" aria-hidden="true">
+            <svg aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 18 18"><path d="M2 15V6l7-4 7 4v9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path><path d="M6.5 15V9.5h5V15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path></svg>
+          </span>
+          <p class="carte__role">Transporteur</p>
+          <h3 class="carte__titre">Piloter l’exploitation sans tableur parallèle</h3>
+          <p class="carte__texte">
+            Le dispatch, les tournées, la flotte, la caisse et la facturation vivent au même
+            endroit : ce que le terrain déclare alimente directement la comptabilité.
+          </p>
+          <ul class="carte__liste">
+            <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Affectation assistée par un score de livreur</span></li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Caisse rapprochée course par course</span></li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Rôles séparés : dispatcher, comptable, administrateur</span></li>
+          </ul>
+        </article>
+
+        <article class="carte">
+          <span class="carte__icone" aria-hidden="true">
+            <svg aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 18 18"><path d="M3 6h12l-1 9H4L3 6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path><path d="M6.5 6a2.5 2.5 0 0 1 5 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
+          </span>
+          <p class="carte__role">Marchand</p>
+          <h3 class="carte__titre">Déposer une course et savoir où passe son argent</h3>
+          <p class="carte__texte">
+            Le marchand crée ses commandes depuis son portail ou son API, suit les siennes —
+            uniquement les siennes — et voit ce qui lui sera reversé, net de commission.
+          </p>
+          <ul class="carte__liste">
+            <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Portail en libre-service, sans appeler l’exploitation</span></li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Portefeuille prépayé ou facturation post-payée</span></li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Tarif contractuel appliqué automatiquement</span></li>
+          </ul>
+        </article>
+
+        <article class="carte">
+          <span class="carte__icone" aria-hidden="true">
+            <svg aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 18 18"><rect x="5" y="1.5" width="8" height="15" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.6"></rect><path d="M7.8 4.2h2.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path><circle cx="9" cy="13.4" r="0.9" fill="currentColor"></circle></svg>
+          </span>
+          <p class="carte__role">Livreur</p>
+          <h3 class="carte__titre">Une journée qui tient dans le téléphone</h3>
+          <p class="carte__texte">
+            Missions du jour, tournée dans l’ordre décidé par le dispatch, scan des colis,
+            preuve, encaissement. Les gestes du terrain passent même sans réseau et se
+            rejouent une seule fois au retour de la connexion.
+          </p>
+          <ul class="carte__liste">
+            <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Validation fermée tant que la preuve manque</span></li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Numéro du client jamais exposé</span></li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Temps de conduite suivi et alerté avant la limite</span></li>
+          </ul>
+        </article>
+
+        <article class="carte">
+          <span class="carte__icone" aria-hidden="true">
+            <svg aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="7.4" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"></circle><path d="M9 1.8c3 0 5.2 2.4 5.2 5.5 0 3.6-3.9 7.7-5.2 8.9-1.3-1.2-5.2-5.3-5.2-8.9C3.8 4.2 6 1.8 9 1.8z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path></svg>
+          </span>
+          <p class="carte__role">Client final</p>
+          <h3 class="carte__titre">Suivre son colis sans créer de compte</h3>
+          <p class="carte__texte">
+            Un code de suivi à huit caractères suffit : le client voit le statut et les étapes
+            de sa livraison, en français ou en arabe, et note le service une fois livré.
+          </p>
+          <ul class="carte__liste">
+            <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Aucune donnée personnelle affichée sur la page publique</span></li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Prévenu à l’enregistrement, à la mise en livraison, à l’arrivée</span></li>
+            <li><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Une seule note par livraison, après livraison</span></li>
+          </ul>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Fonctions réelles ===================== -->
+  <section class="section" id="fonctions" aria-labelledby="fonctions-titre">
+    <div class="conteneur">
+      <div class="section__entete">
+        <span class="section__sur-titre">Ce que la plateforme fait déjà</span>
+        <h2 class="section__titre" id="fonctions-titre">Les fonctions qui tiennent l’exploitation</h2>
+        <p class="section__chapo">
+          Chacune de ces fonctions est en service et vérifiée cas par cas lors de nos recettes,
+          depuis le terrain jusqu’à l’écriture comptable.
+        </p>
+      </div>
+
+      <div class="grille grille--trois">
+
+        <article class="carte">
+          <h3 class="carte__titre">Preuve de livraison, réglée par commande</h3>
+          <p class="carte__texte">
+            Quatre niveaux — aucune, photo, signature, photo et signature — choisis commande par
+            commande, jamais figés pour toute la flotte. Tant que la preuve attendue manque, le
+            livreur ne peut pas clore : le bouton nomme ce qu’il reste à faire.
+          </p>
+        </article>
+
+        <article class="carte">
+          <h3 class="carte__titre">Chaîne du paiement à la livraison</h3>
+          <p class="carte__texte">
+            Le COD encaissé sur le pas de la porte ouvre la caisse du jour du livreur, mouvement
+            par mouvement. Le livreur déclare ce qu’il a réellement en main, l’agence enregistre
+            le dépôt, l’écart est motivé et résolu, puis le marchand est reversé brut moins
+            commission. Une course = une ligne traçable.
+          </p>
+        </article>
+
+        <article class="carte">
+          <h3 class="carte__titre">Dispatch et zones géographiques</h3>
+          <p class="carte__texte">
+            Zones dessinées en polygones, affectation assistée par un score de livreur, position
+            du terrain remontée au PC flotte. Une preuve déposée hors de la zone du livreur
+            déclenche une alerte de sortie de géofence.
+          </p>
+        </article>
+
+        <article class="carte">
+          <h3 class="carte__titre">Tournées multi-arrêts</h3>
+          <p class="carte__texte">
+            Regroupement des courses, optimisation de l’ordre, réordonnancement à la main —
+            et l’ordre décidé par le dispatch est celui que le livreur suit, annoncé comme tel
+            sur son téléphone. Une tournée clôturée n’est plus modifiable, ni à l’écran ni par
+            l’API.
+          </p>
+        </article>
+
+        <article class="carte">
+          <h3 class="carte__titre">Tri en hub et retours</h3>
+          <p class="carte__texte">
+            Le scan déclare l’arrivée, le tri regroupe par ville et pose sur quai. Côté retours :
+            motif normalisé repris du terrain, trois tentatives au plus, reprogrammation qui
+            remet la course en livraison, restitution au marchand définitive.
+          </p>
+        </article>
+
+        <article class="carte">
+          <h3 class="carte__titre">Suivi client public</h3>
+          <p class="carte__texte">
+            Une page de suivi accessible par le seul code de la course, sans compte : statut et
+            étapes, sans téléphone, sans adresse, sans nom de livreur. Un code inconnu ne révèle
+            rien.
+          </p>
+        </article>
+
+        <article class="carte">
+          <h3 class="carte__titre">Facturation et cascade tarifaire</h3>
+          <p class="carte__texte">
+            Trois niveaux de prix appliqués dans un ordre strict : prix fixe négocié avec le
+            marchand, puis remise contractuelle, puis grille standard à paliers de distance.
+            Le premier niveau applicable l’emporte, TVA comprise, grille exportable.
+          </p>
+        </article>
+
+        <article class="carte">
+          <h3 class="carte__titre">Risque et fraude au COD</h3>
+          <p class="carte__texte">
+            Les signaux réels du terrain — écart de caisse constaté, livraison hors géofence —
+            alimentent un dossier de risque par livreur, dont le score suit un barème public.
+            Rien n’est automatique : la décision reste humaine et passe au journal d’audit.
+          </p>
+        </article>
+
+        <article class="carte">
+          <h3 class="carte__titre">Travail hors réseau</h3>
+          <p class="carte__texte">
+            Changement de statut, preuve, encaissement : tout se fait sans connexion, se met en
+            file, et se rejoue au retour du réseau sans jamais produire deux fois la même
+            transition. Le livreur voit ce qui reste en attente, et pourquoi.
+          </p>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Comment ça marche ===================== -->
+  <section class="section section--douce" id="deroulement" aria-labelledby="deroulement-titre">
+    <div class="conteneur">
+      <div class="section__entete">
+        <span class="section__sur-titre">Comment ça marche</span>
+        <h2 class="section__titre" id="deroulement-titre">Une course, quatre étapes</h2>
+        <p class="section__chapo">
+          Du dépôt de la commande à l’argent rendu au marchand, le même dossier circule entre
+          les quatre interfaces.
+        </p>
+      </div>
+
+      <ol class="etapes">
+        <li class="etape">
+          <span class="etape__numero" aria-hidden="true">1</span>
+          <h3 class="etape__titre">La commande entre</h3>
+          <p class="etape__texte">
+            Le marchand saisit sa course depuis son portail ou l’envoie par API : destinataire,
+            ville, taille du colis, montant à encaisser, niveau de preuve attendu. Le prix est
+            calculé selon son contrat.
+          </p>
+          <span class="etape__acteur">Étape 1 · Marchand</span>
+        </li>
+
+        <li class="etape">
+          <span class="etape__numero" aria-hidden="true">2</span>
+          <h3 class="etape__titre">Le dispatch affecte et planifie</h3>
+          <p class="etape__texte">
+            Le dispatcher affecte un livreur — assisté d’un score qui tient compte de la zone,
+            de la disponibilité et de la charge — puis regroupe les arrêts en une tournée dont
+            il fixe l’ordre.
+          </p>
+          <span class="etape__acteur">Étape 2 · Dispatcher</span>
+        </li>
+
+        <li class="etape">
+          <span class="etape__numero" aria-hidden="true">3</span>
+          <h3 class="etape__titre">Le terrain exécute</h3>
+          <p class="etape__texte">
+            Le livreur scanne au retrait, suit sa tournée dans l’ordre reçu, dépose la preuve
+            attendue et encaisse. En cas d’échec, il choisit un motif normalisé qui ouvre
+            aussitôt un retour. Tout fonctionne hors réseau.
+          </p>
+          <span class="etape__acteur">Étape 3 · Livreur</span>
+        </li>
+
+        <li class="etape">
+          <span class="etape__numero" aria-hidden="true">4</span>
+          <h3 class="etape__titre">L’argent et la preuve reviennent</h3>
+          <p class="etape__texte">
+            La livraison alimente la caisse du jour, le livreur déclare, l’agence encaisse le
+            dépôt et l’écart éventuel est motivé. Le marchand est reversé net de commission et
+            facturé ; le client, lui, a suivi en direct.
+          </p>
+          <span class="etape__acteur">Étape 4 · Comptabilité et client</span>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ===================== Conformité ===================== -->
+  <section class="section" id="conformite" aria-labelledby="conformite-titre">
+    <div class="conteneur">
+      <div class="section__entete">
+        <span class="section__sur-titre">Conformité</span>
+        <h2 class="section__titre" id="conformite-titre">Les règles sont dans le produit, pas dans une note de service</h2>
+        <p class="section__chapo">
+          Les obligations réglementaires et les cloisons de données sont appliquées par la
+          plateforme elle-même, et vérifiées à chaque recette.
+        </p>
+      </div>
+
+      <div class="conformite">
+
+        <article class="regle">
+          <h3 class="regle__titre">Loi 09-08 — consentement et droits des personnes</h3>
+          <p class="regle__texte">
+            Aucun message marketing n’est envoyé sans consentement explicite du destinataire, et
+            un consentement retiré redevient opposable immédiatement ; seuls les messages
+            transactionnels liés à la course en sont exemptés. Sur demande, la plateforme exporte
+            les données d’une personne et les efface : la course est anonymisée, pas supprimée —
+            la personne disparaît, l’écriture comptable reste.
+          </p>
+        </article>
+
+        <article class="regle">
+          <h3 class="regle__titre">EU 561/2006 — temps de conduite</h3>
+          <p class="regle__texte">
+            Neuf heures de conduite par jour au maximum, pause obligatoire de 45 minutes après
+            4 h 30 cumulées, alerte 30 minutes avant la limite. La règle est écrite une seule
+            fois, au cœur du domaine métier : l’écran du chauffeur l’affiche, il ne la recalcule
+            pas — une règle réglementaire dupliquée finit par diverger.
+          </p>
+        </article>
+
+        <article class="regle">
+          <h3 class="regle__titre">Cloisonnement entre sociétés</h3>
+          <p class="regle__texte">
+            Chaque transporteur client dispose de son propre espace de données. Une requête
+            portant l’identifiant d’une autre société est refusée, et aucune écriture ne franchit
+            la cloison — y compris lorsque la demande vient d’un compte authentifié.
+          </p>
+        </article>
+
+        <article class="regle">
+          <h3 class="regle__titre">Droits par rôle</h3>
+          <p class="regle__texte">
+            Dispatcher, comptable, administrateur, marchand, livreur : chaque rôle est borné à
+            son périmètre, à l’écran comme dans l’API. Masquer un bouton ne suffit pas — le
+            serveur refuse aussi le geste. Les actions sensibles sont tracées avec leur acteur
+            et leur date.
+          </p>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Appel à l'action ===================== -->
+  <section class="section section--douce" id="appel-a-l-action" aria-labelledby="appel-titre">
+    <div class="conteneur">
+      <div class="appel">
+        <h2 class="appel__titre" id="appel-titre">Voir Transpo sur vos propres courses</h2>
+        <p class="appel__texte">
+          Nous ouvrons un espace de démonstration à votre nom, avec vos villes, vos marchands et
+          votre grille tarifaire. Écrivez-nous : nous revenons vers vous avec un créneau.
+        </p>
+        <div class="appel__actions">
+          <a class="bouton bouton--principal bouton--grand" href="mailto:contact@transpo.ma?subject=Demande%20de%20d%C3%A9monstration%20Transpo&amp;body=Bonjour%2C%0A%0ANous%20souhaitons%20voir%20Transpo%20en%20d%C3%A9monstration.%0A%0ASoci%C3%A9t%C3%A9%20%3A%0AVilles%20couvertes%20%3A%0ANombre%20de%20livreurs%20%3A%0AVolume%20de%20courses%20par%20jour%20%3A%0APart%20de%20paiement%20%C3%A0%20la%20livraison%20%3A%0A%0AMerci.">
+            Demander une démonstration
+          </a>
+          <a class="bouton bouton--secondaire bouton--grand" href="mailto:contact@transpo.ma?subject=Question%20sur%20Transpo">
+            Poser une question
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="pied">
+  <div class="conteneur">
+    <div class="pied__grille">
+
+      <div>
+        <a class="marque" href="#contenu">
+          <svg class="marque__logo" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+            <rect x="1" y="1" width="26" height="26" rx="6" fill="var(--indigo-9)"></rect>
+            <path d="M7 17.5h2.6a2.6 2.6 0 0 0 5.2 0h3.4a2.2 2.2 0 0 0 4.4 0H22" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round"></path>
+            <path d="M6.5 10.5h8.2v5.4H6.5z" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linejoin="round"></path>
+            <path d="M14.7 12.6h3.1l2.6 2.4v0.9h-5.7z" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linejoin="round"></path>
+          </svg>
+          <span>Transpo</span>
+        </a>
+        <p class="carte__texte" style="margin-top: var(--space-3); max-width: 34ch;">
+          La plateforme de livraison du dernier kilomètre, vendue aux transporteurs marocains et
+          exploitée sous leur propre marque.
+        </p>
+      </div>
+
+      <nav aria-labelledby="pied-produit">
+        <h2 class="pied__titre" id="pied-produit">Le produit</h2>
+        <ul class="pied__liste">
+          <li><a class="pied__lien" href="#metiers">Bénéfices par métier</a></li>
+          <li><a class="pied__lien" href="#fonctions">Fonctions</a></li>
+          <li><a class="pied__lien" href="#deroulement">Comment ça marche</a></li>
+        </ul>
+      </nav>
+
+      <nav aria-labelledby="pied-confiance">
+        <h2 class="pied__titre" id="pied-confiance">Confiance</h2>
+        <ul class="pied__liste">
+          <li><a class="pied__lien" href="#conformite">Loi 09-08</a></li>
+          <li><a class="pied__lien" href="#conformite">Temps de conduite EU 561</a></li>
+          <li><a class="pied__lien" href="#conformite">Cloisonnement et rôles</a></li>
+        </ul>
+      </nav>
+
+      <nav aria-labelledby="pied-contact">
+        <h2 class="pied__titre" id="pied-contact">Nous joindre</h2>
+        <ul class="pied__liste">
+          <li><a class="pied__lien" href="mailto:contact@transpo.ma?subject=Demande%20de%20d%C3%A9monstration%20Transpo">Demander une démonstration</a></li>
+          <li><a class="pied__lien" href="mailto:contact@transpo.ma?subject=Question%20sur%20Transpo">contact@transpo.ma</a></li>
+        </ul>
+      </nav>
+
+    </div>
+
+    <p class="pied__mention">
+      Transpo — plateforme SaaS de livraison du dernier kilomètre. Montants en dirhams
+      marocains. Interfaces disponibles en français et en arabe, mise en page inversée comprise.
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>

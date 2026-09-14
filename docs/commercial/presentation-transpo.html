@@ -1,0 +1,1177 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transpo — Plateforme de livraison · Présentation commerciale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   Transpo — présentation commerciale
+   Charte Intelcia. Police Inter. Format paysage A4, une section
+   par page. Aucune dépendance hors polices Google.
+   ============================================================ */
+
+:root{
+  /* Couleurs principales */
+  --rose:      #FF2D95;
+  --violet:    #6F259F;
+  --orange:    #FF5A00;
+  /* Couleurs secondaires */
+  --bleu:      #5FB3C1;
+  --lavande:   #EADCEA;
+  --jaune:     #FDCB63;
+  /* Teintes */
+  --violet-t:  #BEA2D1;
+  --orange-t:  #EDCCBB;
+  --bleu-t:    #B1DAE7;
+  --lavande-t: #F8E7F9;
+  /* Dégradés de marque */
+  --sunset:    linear-gradient(100deg, #FF5A00 0%, #FF2D95 52%, #6F259F 100%);
+  --tech:      linear-gradient(100deg, #5FB3C1 0%, #6F259F 100%);
+  --warmth:    linear-gradient(100deg, #FF2D95 0%, #6F259F 100%);
+  --soft:      linear-gradient(100deg, #EADCEA 0%, #BFE0E6 100%);
+  /* Encres */
+  --encre:     #2B1B35;
+  --encre-2:   #5C4B68;
+  --encre-3:   #8A7B95;
+  --trait:     #E7E0EC;
+  --fond:      #FFFFFF;
+  --fond-2:    #FBF9FC;
+}
+
+*{ box-sizing: border-box; }
+
+html{ background:#EFE9F2; }
+
+body{
+  margin:0;
+  font-family:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color:var(--encre);
+  font-size:12px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  font-feature-settings:'kern' 1, 'liga' 1;
+}
+
+/* ---------- Page paysage ---------- */
+@page{ size: A4 landscape; margin: 0; }
+
+.page{
+  position:relative;
+  width:297mm;
+  min-height:210mm;
+  margin:0 auto 10mm;
+  padding:14mm 16mm 13mm;
+  background:var(--fond);
+  box-shadow:0 2px 18px rgba(43,27,53,.13);
+  page-break-after:always;
+  break-after:page;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.page:last-of-type{ page-break-after:auto; break-after:auto; margin-bottom:0; }
+
+/* Filet de marque en tête de page */
+.page::before{
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:5px;
+  background:var(--sunset);
+}
+
+/* ---------- Titres ---------- */
+.kicker{
+  font-size:10px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--violet); margin:0 0 6px;
+}
+h1{
+  font-size:52px; font-weight:800; letter-spacing:-.028em; line-height:1.04;
+  margin:0 0 14px;
+}
+h2{
+  font-size:27px; font-weight:700; letter-spacing:-.021em; line-height:1.14;
+  margin:0 0 6px;
+}
+h3{
+  font-size:14px; font-weight:700; letter-spacing:-.008em;
+  margin:0 0 4px;
+}
+.chapo{
+  font-size:14px; font-weight:400; color:var(--encre-2); line-height:1.55;
+  max-width:210mm; margin:0 0 16px;
+}
+p{ margin:0 0 8px; }
+strong{ font-weight:600; color:var(--encre); }
+em{ font-style:normal; color:var(--violet); font-weight:600; }
+
+/* ---------- Grilles ---------- */
+.grille{ display:grid; gap:9mm; }
+.g2{ grid-template-columns:repeat(2,1fr); }
+.g3{ grid-template-columns:repeat(3,1fr); }
+.g4{ grid-template-columns:repeat(4,1fr); }
+.g5{ grid-template-columns:repeat(5,1fr); }
+.serre{ gap:6mm; }
+.corps{ flex:1; display:flex; flex-direction:column; justify-content:center; }
+
+/* ---------- Cartes ---------- */
+.carte{
+  background:var(--fond-2);
+  border:1px solid var(--trait);
+  border-radius:10px;
+  padding:14px 15px;
+}
+.carte h3{ color:var(--violet); }
+.carte p{ font-size:11.5px; color:var(--encre-2); line-height:1.52; margin:0; }
+.carte + .carte{ margin-top:6mm; }
+
+.carte-accent{ border-left:3px solid var(--rose); }
+.carte-violet{ border-left:3px solid var(--violet); }
+.carte-bleu{ border-left:3px solid var(--bleu); }
+.carte-orange{ border-left:3px solid var(--orange); }
+
+.carte-douleur{
+  background:#fff;
+  border:1px solid var(--trait);
+  border-top:3px solid var(--orange-t);
+  border-radius:10px;
+  padding:13px 14px;
+}
+.carte-douleur h3{ color:var(--encre); font-size:13px; }
+.carte-douleur p{ font-size:11px; color:var(--encre-2); line-height:1.5; margin:0; }
+
+/* ---------- Chiffres-clés ---------- */
+.chiffres{ display:grid; grid-template-columns:repeat(4,1fr); gap:6mm; }
+.chiffre{
+  border-radius:10px; padding:15px 16px; color:#fff;
+  background:var(--warmth);
+}
+.chiffre.tech{ background:var(--tech); }
+.chiffre.sunset{ background:var(--sunset); }
+.chiffre.clair{
+  background:var(--lavande-t); color:var(--encre);
+  border:1px solid var(--violet-t);
+}
+.chiffre .val{ font-size:30px; font-weight:800; letter-spacing:-.03em; line-height:1; display:block; }
+.chiffre .lib{ font-size:11px; font-weight:500; opacity:.95; margin-top:6px; display:block; line-height:1.4; }
+.chiffre.clair .lib{ color:var(--encre-2); opacity:1; }
+
+/* ---------- Bandeau ---------- */
+.bandeau{
+  background:var(--soft);
+  border-radius:10px;
+  padding:13px 16px;
+  font-size:11.5px;
+  color:var(--encre);
+  line-height:1.55;
+}
+.bandeau-fort{
+  background:var(--sunset);
+  color:#fff;
+  border-radius:10px;
+  padding:15px 18px;
+  font-size:12.5px;
+  line-height:1.55;
+}
+.bandeau-fort strong{ color:#fff; font-weight:700; }
+
+/* ---------- Chaîne / étapes ---------- */
+.chaine{ display:grid; grid-template-columns:repeat(5,1fr); gap:0; align-items:stretch; }
+.etape{
+  position:relative;
+  background:#fff;
+  border:1px solid var(--trait);
+  padding:14px 16px 14px 18px;
+}
+.etape:first-child{ border-radius:10px 0 0 10px; }
+.etape:last-child{ border-radius:0 10px 10px 0; }
+.etape + .etape{ border-left:none; }
+.etape .num{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:22px; height:22px; border-radius:50%;
+  background:var(--warmth); color:#fff;
+  font-size:11px; font-weight:700; margin-bottom:8px;
+}
+.etape h3{ font-size:12.5px; color:var(--encre); }
+.etape p{ font-size:10.5px; color:var(--encre-2); line-height:1.48; margin:0; }
+.etape::after{
+  content:''; position:absolute; right:-6px; top:50%;
+  width:11px; height:11px; margin-top:-5.5px;
+  border-top:2px solid var(--violet-t); border-right:2px solid var(--violet-t);
+  transform:rotate(45deg); background:#fff; z-index:2;
+}
+.etape:last-child::after{ display:none; }
+
+/* ---------- Listes ---------- */
+ul.liste{ margin:0; padding:0; list-style:none; }
+ul.liste li{
+  position:relative; padding-left:16px; margin-bottom:6px;
+  font-size:11.5px; color:var(--encre-2); line-height:1.5;
+}
+ul.liste li::before{
+  content:''; position:absolute; left:0; top:7px;
+  width:6px; height:6px; border-radius:2px; background:var(--rose);
+}
+ul.liste li strong{ color:var(--encre); }
+ul.liste.bleu li::before{ background:var(--bleu); }
+ul.liste.violet li::before{ background:var(--violet); }
+
+ul.coche{ margin:0; padding:0; list-style:none; }
+ul.coche li{
+  position:relative; padding-left:19px; margin-bottom:7px;
+  font-size:11.5px; color:var(--encre-2); line-height:1.5;
+}
+ul.coche li::before{
+  content:'✓'; position:absolute; left:0; top:0;
+  color:var(--violet); font-weight:700; font-size:12px;
+}
+ul.coche li strong{ color:var(--encre); }
+
+ul.reserve{ margin:0; padding:0; list-style:none; }
+ul.reserve li{
+  position:relative; padding-left:19px; margin-bottom:7px;
+  font-size:11.5px; color:var(--encre-2); line-height:1.5;
+}
+ul.reserve li::before{
+  content:'○'; position:absolute; left:0; top:0;
+  color:var(--orange); font-weight:700; font-size:11px;
+}
+ul.reserve li strong{ color:var(--encre); }
+
+/* ---------- Tableau ---------- */
+table{ width:100%; border-collapse:collapse; font-size:11.5px; }
+thead th{
+  text-align:left; font-weight:600; font-size:10px;
+  letter-spacing:.09em; text-transform:uppercase; color:var(--violet);
+  padding:0 10px 7px; border-bottom:2px solid var(--violet-t);
+}
+tbody td{
+  padding:9px 10px; border-bottom:1px solid var(--trait);
+  color:var(--encre-2); vertical-align:top;
+}
+tbody tr:last-child td{ border-bottom:none; }
+tbody td.fort{ color:var(--encre); font-weight:600; }
+tbody td.num{ font-variant-numeric:tabular-nums; white-space:nowrap; }
+
+/* ---------- Étiquettes ---------- */
+.etiq{
+  display:inline-block; padding:3px 9px; border-radius:99px;
+  font-size:10px; font-weight:600; letter-spacing:.02em;
+}
+.etiq-rose{ background:var(--lavande-t); color:var(--rose); border:1px solid #F7C9E4; }
+.etiq-violet{ background:var(--lavande); color:var(--violet); }
+.etiq-bleu{ background:var(--bleu-t); color:#256874; }
+.etiq-orange{ background:var(--orange-t); color:#A03600; }
+
+/* ---------- Source ---------- */
+.source{
+  font-size:9.5px; color:var(--encre-3); line-height:1.45;
+  margin-top:8px;
+}
+.source code{
+  font-family:'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size:9px; background:var(--fond-2); padding:1px 4px; border-radius:3px;
+  color:var(--encre-2); border:1px solid var(--trait);
+}
+
+.captures{
+  background:var(--fond-2); border:1px solid var(--trait);
+  border-radius:10px; padding:12px 14px;
+}
+.captures h3{ font-size:11px; color:var(--violet); letter-spacing:.05em; text-transform:uppercase; }
+.captures ul{ margin:0; padding:0; list-style:none; }
+.captures li{ margin-bottom:4px; font-size:10px; color:var(--encre-2); line-height:1.45; }
+.captures code{
+  font-family:'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size:9.5px; color:var(--violet); word-break:break-all;
+}
+
+/* ---------- Pied de page ---------- */
+.pied{
+  position:absolute; left:16mm; right:16mm; bottom:7mm;
+  display:flex; justify-content:space-between; align-items:center;
+  font-size:9.5px; color:var(--encre-3);
+  border-top:1px solid var(--trait); padding-top:6px;
+}
+.pied .marque{ font-weight:600; color:var(--violet); letter-spacing:.06em; }
+
+/* ---------- Couverture ---------- */
+.couv{
+  padding:0;
+  display:flex; flex-direction:column;
+}
+.couv::before{ display:none; }
+.couv-haut{
+  background:var(--sunset);
+  padding:20mm 18mm 16mm;
+  color:#fff;
+  flex:0 0 auto;
+}
+.couv-haut .kicker{ color:rgba(255,255,255,.88); }
+.couv-haut h1{ color:#fff; margin-bottom:10px; }
+.couv-haut .soustitre{
+  font-size:18px; font-weight:400; color:rgba(255,255,255,.94);
+  max-width:200mm; line-height:1.45; margin:0;
+}
+.couv-bas{
+  flex:1; padding:14mm 18mm 12mm;
+  display:flex; flex-direction:column; justify-content:space-between;
+}
+.couv-piliers{ display:grid; grid-template-columns:repeat(4,1fr); gap:8mm; }
+.pilier h3{ font-size:13px; color:var(--violet); margin-bottom:5px; }
+.pilier p{ font-size:11px; color:var(--encre-2); line-height:1.5; margin:0; }
+.pilier{ border-top:3px solid var(--lavande); padding-top:10px; }
+.pilier:nth-child(1){ border-top-color:var(--orange); }
+.pilier:nth-child(2){ border-top-color:var(--rose); }
+.pilier:nth-child(3){ border-top-color:var(--violet); }
+.pilier:nth-child(4){ border-top-color:var(--bleu); }
+.couv-pied{
+  display:flex; justify-content:space-between; align-items:flex-end;
+  border-top:1px solid var(--trait); padding-top:10px;
+  font-size:10.5px; color:var(--encre-3);
+}
+.couv-pied .marque{
+  font-size:13px; font-weight:700; letter-spacing:.14em;
+  color:var(--violet); text-transform:uppercase;
+}
+
+/* ---------- Sommaire ---------- */
+.sommaire{ display:grid; grid-template-columns:repeat(2,1fr); gap:5mm 10mm; }
+.som-item{
+  display:flex; gap:12px; align-items:baseline;
+  border-bottom:1px solid var(--trait); padding-bottom:8px;
+}
+.som-num{
+  font-size:13px; font-weight:700; color:var(--rose);
+  font-variant-numeric:tabular-nums; min-width:22px;
+}
+.som-txt h3{ font-size:12.5px; margin-bottom:2px; }
+.som-txt p{ font-size:10.5px; color:var(--encre-3); margin:0; line-height:1.45; }
+
+/* ---------- Écran ---------- */
+@media screen and (max-width: 1180px){
+  .page{ width:100%; min-height:auto; padding:20px 16px 56px; }
+  h1{ font-size:34px; }
+  h2{ font-size:22px; }
+  .grille{ gap:14px; }
+  .g2, .g3, .g4, .g5, .chiffres, .couv-piliers, .sommaire{ grid-template-columns:1fr; }
+  .chaine{ grid-template-columns:1fr; }
+  .etape, .etape:first-child, .etape:last-child{ border-radius:10px; border-left:1px solid var(--trait); }
+  .etape + .etape{ margin-top:10px; }
+  .etape::after{ display:none; }
+  .pied{ left:16px; right:16px; }
+  .couv-haut{ padding:28px 18px; }
+  .couv-bas{ padding:20px 18px; gap:20px; }
+  table{ font-size:11px; }
+  .tableau-large{ overflow-x:auto; }
+}
+
+@media print{
+  html, body{ background:#fff; }
+  .page{ box-shadow:none; margin:0; }
+  .chiffre, .chiffre.tech, .chiffre.sunset, .bandeau-fort, .couv-haut, .etape .num, .page::before{
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- =========================================================
+     1 — COUVERTURE
+     ========================================================= -->
+<section class="page couv">
+  <div class="couv-haut">
+    <p class="kicker">Plateforme SaaS de livraison · Maroc</p>
+    <h1>Transpo</h1>
+    <p class="soustitre">
+      Le logiciel qui tient la preuve, le cash et la promesse client —
+      de la commande du marchand au reversement en agence.
+    </p>
+  </div>
+  <div class="couv-bas">
+    <div class="couv-piliers">
+      <div class="pilier">
+        <h3>Console d'exploitation</h3>
+        <p>Commandes, dispatch, tournées, flotte, hub, retours, caisse, facturation, analytique. Pour l'admin, le dispatcher et le comptable.</p>
+      </div>
+      <div class="pilier">
+        <h3>Portail marchand</h3>
+        <p>Le e-commerçant crée ses commandes, suit ses colis, voit son portefeuille et sa facture. Sans appeler personne.</p>
+      </div>
+      <div class="pilier">
+        <h3>Application livreur</h3>
+        <p>Missions, preuve de livraison, encaissement COD, scan, tournée, temps de conduite. Fonctionne hors réseau.</p>
+      </div>
+      <div class="pilier">
+        <h3>Suivi client public</h3>
+        <p>Un code à 8 caractères, aucune inscription, en français ou en arabe. Et rien qui fuite.</p>
+      </div>
+    </div>
+    <div class="couv-pied">
+      <div>
+        <div class="marque">Intelcia</div>
+        <div style="margin-top:4px;">Document commercial — septembre 2026</div>
+      </div>
+      <div style="text-align:right; max-width:110mm;">
+        Multi-tenant · bilingue français / arabe avec mise en page inversée ·
+        règles de la Loi 09-08 appliquées · temps de conduite selon le règlement 561/2006
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     2 — SOMMAIRE
+     ========================================================= -->
+<section class="page">
+  <p class="kicker">Sommaire</p>
+  <h2>Ce que vous allez lire</h2>
+  <p class="chapo">
+    Onze pages, dans l'ordre de ce qui vous coûte de l'argent aujourd'hui : la preuve,
+    le cash, l'affectation, le client qui appelle. La dernière page dit ce qui n'est pas
+    encore prêt — c'est volontaire.
+  </p>
+  <div class="corps">
+    <div class="sommaire">
+      <div class="som-item"><div class="som-num">03</div><div class="som-txt"><h3>Le problème, tel qu'il se vit</h3><p>Six points de friction du transport last-mile au Maroc.</p></div></div>
+      <div class="som-item"><div class="som-num">04</div><div class="som-txt"><h3>Une commande, quatre interfaces</h3><p>Le cycle de vie partagé par tous les acteurs.</p></div></div>
+      <div class="som-item"><div class="som-num">05</div><div class="som-txt"><h3>La preuve de livraison</h3><p>Horodatée, attribuée, paramétrable par commande.</p></div></div>
+      <div class="som-item"><div class="som-num">06</div><div class="som-txt"><h3>La chaîne du COD</h3><p>De l'encaissement terrain au reversement marchand.</p></div></div>
+      <div class="som-item"><div class="som-num">07</div><div class="som-txt"><h3>Dispatch, tournée, terrain</h3><p>Score d'affectation, géofence, temps de conduite, hors-ligne.</p></div></div>
+      <div class="som-item"><div class="som-num">08</div><div class="som-txt"><h3>Marchand et client final</h3><p>Libre-service d'un côté, suivi sans fuite de l'autre.</p></div></div>
+      <div class="som-item"><div class="som-num">09</div><div class="som-txt"><h3>Conformité et confiance</h3><p>Loi 09-08, cloisonnement, audit, fraude COD.</p></div></div>
+      <div class="som-item"><div class="som-num">10</div><div class="som-txt"><h3>Les écrans</h3><p>Ce que voit chaque rôle, captures de recette à l'appui.</p></div></div>
+      <div class="som-item"><div class="som-num">11</div><div class="som-txt"><h3>Le modèle</h3><p>Multi-tenant, plans d'abonnement, commission, TVA.</p></div></div>
+      <div class="som-item"><div class="som-num">12</div><div class="som-txt"><h3>Prêt / pas prêt</h3><p>L'inventaire honnête, sans mauvaise surprise après signature.</p></div></div>
+      <div class="som-item"><div class="som-num">13</div><div class="som-txt"><h3>Démarrer</h3><p>De la signature à la première tournée.</p></div></div>
+    </div>
+  </div>
+  <div class="pied"><span class="marque">Intelcia · Transpo</span><span>Sommaire</span><span>2</span></div>
+</section>
+
+<!-- =========================================================
+     3 — LE PROBLÈME
+     ========================================================= -->
+<section class="page">
+  <p class="kicker">Le point de départ</p>
+  <h2>Ce qui coûte cher aujourd'hui</h2>
+  <p class="chapo">
+    Aucune de ces situations n'est un défaut d'organisation. Ce sont les conséquences
+    normales d'une exploitation tenue par le téléphone, le cahier et le tableur.
+  </p>
+  <div class="corps">
+    <div class="grille g3 serre">
+      <div class="carte-douleur">
+        <h3>Le cash circule sans trace</h3>
+        <p>Le livreur encaisse à la porte, l'agence attend le dépôt, le marchand réclame son reversement. Entre les trois, il n'y a qu'un carnet et de la confiance — et personne ne sait, à 18 h, combien de dirhams sont en tournée.</p>
+      </div>
+      <div class="carte-douleur">
+        <h3>Un litige sans preuve se règle au rapport de force</h3>
+        <p>« Livré » contre « jamais reçu ». Sans photo horodatée ni signature rattachée à un livreur identifié, c'est la parole de l'un contre celle de l'autre — et c'est presque toujours le transporteur qui paie.</p>
+      </div>
+      <div class="carte-douleur">
+        <h3>Le marchand appelle pour savoir</h3>
+        <p>Chaque colis dont le client final n'a pas de suivi partageable devient un appel au marchand, puis un appel au dispatch. Ce coût ne figure sur aucune ligne budgétaire : il se paie en temps d'exploitation détourné.</p>
+      </div>
+      <div class="carte-douleur">
+        <h3>L'affectation vit dans la tête du dispatcher</h3>
+        <p>Qui est disponible, dans la bonne zone, avec un véhicule adapté au colis, sous sa limite légale de conduite ? La réponse est juste — tant que c'est la bonne personne qui est au bureau ce jour-là.</p>
+      </div>
+      <div class="carte-douleur">
+        <h3>La conformité se découvre trop tard</h3>
+        <p>Assurance périmée, contrôle technique dépassé, permis à renouveler, neuvième heure de conduite franchie, SMS commercial envoyé sans consentement : on l'apprend au contrôle, ou au sinistre.</p>
+      </div>
+      <div class="carte-douleur">
+        <h3>Les retours se perdent</h3>
+        <p>Un colis échoué qu'on retente une quatrième fois, un autre oublié sur le quai du hub, un COD encaissé sur une commande finalement annulée. Le flux inverse n'a pas de règle, donc pas de fin.</p>
+      </div>
+    </div>
+  </div>
+  <div class="pied"><span class="marque">Intelcia · Transpo</span><span>Le problème</span><span>3</span></div>
+</section>
+
+<!-- =========================================================
+     4 — UNE COMMANDE, QUATRE INTERFACES
+     ========================================================= -->
+<section class="page">
+  <p class="kicker">Le principe</p>
+  <h2>Une commande, un seul statut, quatre interfaces</h2>
+  <p class="chapo">
+    Le cycle de vie d'une course est défini une fois et partagé par tout le monde : la console,
+    le portail marchand, le téléphone du livreur et la page de suivi du client affichent
+    exactement le même statut, avec le même libellé, en français comme en arabe.
+  </p>
+
+  <div class="corps">
+    <div class="chaine">
+      <div class="etape">
+        <span class="num">1</span>
+        <h3>Le marchand commande</h3>
+        <p>Depuis son portail ou son système. Il choisit la taille du colis, le montant à encaisser et le niveau de preuve exigé.</p>
+      </div>
+      <div class="etape">
+        <span class="num">2</span>
+        <h3>Le dispatch affecte</h3>
+        <p>Suggestion classée par score de compatibilité, avec le motif d'exclusion des livreurs écartés. Le dispatcher tranche.</p>
+      </div>
+      <div class="etape">
+        <span class="num">3</span>
+        <h3>Le livreur exécute</h3>
+        <p>Retrait, scan, livraison, preuve, encaissement. Chaque geste est horodaté — même hors réseau.</p>
+      </div>
+      <div class="etape">
+        <span class="num">4</span>
+        <h3>Le client suit</h3>
+        <p>Une page publique par code de suivi, et des notifications déclenchées par les événements réels de la course.</p>
+      </div>
+      <div class="etape">
+        <span class="num">5</span>
+        <h3>La compta rapproche</h3>
+        <p>Caisse du livreur, dépôt en agence, reversement marchand net de commission, facture.</p>
+      </div>
+    </div>
+
+    <div style="height:9mm"></div>
+
+    <div class="grille g4 serre">
+      <div class="carte carte-orange">
+        <h3>Dix statuts, une seule définition</h3>
+        <p>Programmée, Nouvelle, Assignée, En route (retrait), Récupérée, En route (livraison), Livrée — plus Échouée, Retour et Annulée. Le serveur est seul juge des transitions autorisées : un statut ne peut pas sauter une étape.</p>
+      </div>
+      <div class="carte carte-accent">
+        <h3>Bilingue, vraiment</h3>
+        <p>Français et arabe, avec inversion complète de la mise en page en arabe — pas seulement la traduction des textes. Les montants restent lisibles dans les deux sens de lecture.</p>
+      </div>
+      <div class="carte carte-violet">
+        <h3>Hors-ligne d'abord</h3>
+        <p>Sur le terrain, le réseau tombe. Les actions du livreur sont mises en file, annoncées, puis rejouées au retour du réseau — sans jamais produire deux fois le même effet.</p>
+      </div>
+      <div class="carte carte-bleu">
+        <h3>Rien d'automatique sur les personnes</h3>
+        <p>Un score de risque n'est jamais une sanction, un avis négatif n'impacte pas un livreur sans revue humaine, un écart de caisse se résout avec un motif nommé. La machine instruit, l'humain décide.</p>
+      </div>
+    </div>
+  </div>
+  <div class="pied"><span class="marque">Intelcia · Transpo</span><span>Vue d'ensemble</span><span>4</span></div>
+</section>
+
+<!-- =========================================================
+     5 — LA PREUVE
+     ========================================================= -->
+<section class="page">
+  <p class="kicker">Gain n° 1</p>
+  <h2>Un litige se tranche par une preuve, pas par une discussion</h2>
+  <p class="chapo">
+    Le niveau de preuve n'est pas un réglage global : il se choisit <strong>commande par commande</strong>,
+    à la création, et descend jusqu'à l'écran du livreur. Un colis de valeur exige photo et signature ;
+    une remise en boîte aux lettres n'exige rien. Le transporteur arbitre le coût de la preuve.
+  </p>
+
+  <div class="corps">
+    <div class="chiffres" style="margin-bottom:9mm;">
+      <div class="chiffre clair"><span class="val">Aucune</span><span class="lib">Clôture directe. L'application l'annonce au livreur au lieu de le laisser chercher.</span></div>
+      <div class="chiffre tech"><span class="val">Photo</span><span class="lib">Capture obligatoire avant de pouvoir valider la livraison.</span></div>
+      <div class="chiffre tech"><span class="val">Signature</span><span class="lib">Tracé du destinataire, rattaché à la course et au livreur.</span></div>
+      <div class="chiffre sunset"><span class="val">Photo + signature</span><span class="lib">Le niveau maximal, pour les colis à valeur ou à risque de contestation.</span></div>
+    </div>
+
+    <div class="grille g2">
+      <div>
+        <div class="carte carte-accent">
+          <h3>Le bouton nomme ce qui manque</h3>
+          <p>Tant que la preuve exigée n'est pas complète, la validation reste fermée — et le bouton dit <em>« Photo requise »</em>, puis <em>« Signature requise »</em>, puis <em>« Valider »</em>. Le livreur n'a jamais à deviner pourquoi l'application refuse.</p>
+        </div>
+        <div class="carte carte-violet">
+          <h3>La preuve est conservée et restituée</h3>
+          <p>Les artefacts sont stockés côté serveur, validés en type et en taille, et affichés dans l'onglet « Preuve de livraison » de la fiche commande — avec l'horodatage, l'auteur et la position. C'est ce dossier qu'on oppose à une réclamation.</p>
+        </div>
+      </div>
+      <div>
+        <div class="carte carte-bleu">
+          <h3>Une traçabilité continue, pas seulement un point final</h3>
+          <p>Chaque changement de statut porte son horodatage et son auteur (marchand par API, dispatcher, livreur). La fiche commande présente l'historique complet, du scan au retrait jusqu'à la remise.</p>
+        </div>
+        <div class="carte carte-orange">
+          <h3>Un échec est aussi une donnée</h3>
+          <p>Six motifs normalisés, des notes libres, et l'ouverture automatique d'un dossier de retour. Un échec sans motif n'existe pas — c'est ce qui permet, plus tard, de mesurer ce qui fait vraiment rater les livraisons.</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="source">
+      Règles : <code>packages/domain/src/index.ts</code> (niveaux de preuve, message d'artefact manquant).
+      Vérifications de recette : TC-G06 (validation fermée tant que la preuve manque), TC-G09 (niveau « aucune »),
+      TC-G10 (motifs d'échec normalisés) — <code>qa/recette/2026-09-13-local/RAPPORT.md</code>.
+    </p>
+  </div>
+  <div class="pied"><span class="marque">Intelcia · Transpo</span><span>La preuve</span><span>5</span></div>
+</section>
+
+<!-- =========================================================
+     6 — LA CHAÎNE DU COD
+     ========================================================= -->
+<section class="page">
+  <p class="kicker">Gain n° 2</p>
+  <h2>Le cash encaissé à la porte arrive au marchand, en passant par des écritures</h2>
+  <p class="chapo">
+    C'est le circuit le plus exposé d'un transporteur marocain, et celui qui tient le moins bien
+    dans un tableur. Transpo le découpe en cinq écritures, chacune datée et attribuée.
+  </p>
+
+  <div class="corps">
+    <div class="chaine">
+      <div class="etape">
+        <span class="num">1</span>
+        <h3>Encaissement</h3>
+        <p>Le livreur saisit le montant reçu. Un montant nul est refusé. La livraison ne se clôt qu'une fois l'encaissement enregistré.</p>
+      </div>
+      <div class="etape">
+        <span class="num">2</span>
+        <h3>Caisse du livreur</h3>
+        <p>Une session par livreur et par jour, alimentée <strong>course par course</strong> : chaque encaissement est une ligne traçable, pas un total.</p>
+      </div>
+      <div class="etape">
+        <span class="num">3</span>
+        <h3>Déclaration</h3>
+        <p>Le livreur déclare, depuis son récapitulatif, ce qu'il a réellement en main. Sans cette déclaration, la compta ne rapprocherait que ses propres chiffres.</p>
+      </div>
+      <div class="etape">
+        <span class="num">4</span>
+        <h3>Dépôt en agence</h3>
+        <p>Le montant remis est enregistré. Un second dépôt sur la même session est refusé. Théorique, déclaré et déposé se confrontent.</p>
+      </div>
+      <div class="etape">
+        <span class="num">5</span>
+        <h3>Reversement marchand</h3>
+        <p>Net à virer = brut collecté − commission. Référence de virement, méthode de paiement, et un seul paiement possible.</p>
+      </div>
+    </div>
+
+    <div style="height:8mm"></div>
+
+    <div class="grille g3 serre">
+      <div class="carte carte-accent">
+        <h3>Aucun écart ne se règle en silence</h3>
+        <p>Un écart entre le déclaré et le théorique se résout avec un motif nommé (monnaie rendue non enregistrée, paiement partiel, erreur de saisie, manquant à retenir, autre) et une note. La session ne se clôt pas autrement.</p>
+      </div>
+      <div class="carte carte-violet">
+        <h3>Un écart résolu ouvre un dossier de risque</h3>
+        <p>Il ne déclenche aucune sanction : il alimente un dossier au nom du livreur, où les signaux s'accumulent et se pondèrent. L'arbitrage reste entièrement humain, et il est tracé.</p>
+      </div>
+      <div class="carte carte-bleu">
+        <h3>Le flux inverse a une fin</h3>
+        <p>Un échec ouvre un dossier de retour avec son motif. Trois tentatives au maximum : au plafond, la reprogrammation disparaît de l'écran <strong>et l'API la refuse</strong>. Reste la restitution au marchand, qui clôt le dossier — un retour rendu ne se reprogramme plus.</p>
+      </div>
+    </div>
+
+    <div style="height:6mm"></div>
+    <div class="bandeau-fort">
+      <strong>Commission plateforme : 15 % par défaut, paramétrable par organisation et par marchand. TVA : 20 %.</strong>
+      Le reversement marchand est calculé comme <em>brut − commission</em>, et la facture marchand reprend la même décomposition.
+    </div>
+
+    <p class="source">
+      Taux et formule de reversement : <code>packages/domain/src/index.ts</code> (<code>COMMISSION_RATE</code>, <code>VAT_RATE</code>, <code>merchantPayoutNet</code>).
+      Vérifications : TC-L01 à TC-L05 (caisse, dépôt, écart, reversement), TC-G07 (encaissement terrain), TC-R03 (commandes, caisse et réconciliation comptent le même argent).
+    </p>
+  </div>
+  <div class="pied"><span class="marque">Intelcia · Transpo</span><span>La chaîne du COD</span><span>6</span></div>
+</section>
+
+<!-- =========================================================
+     7 — DISPATCH & TERRAIN
+     ========================================================= -->
+<section class="page">
+  <p class="kicker">Gain n° 3</p>
+  <h2>Affecter, tracer, et rester dans la loi</h2>
+  <p class="chapo">
+    Le dispatch propose, il ne décide pas à votre place — et il explique toujours pourquoi
+    il propose ce livreur-là, et pourquoi il en a écarté d'autres.
+  </p>
+
+  <div class="corps">
+    <div class="grille g2" style="margin-bottom:8mm;">
+      <div>
+        <div class="carte carte-accent" style="margin-bottom:6mm;">
+          <h3>Un score d'affectation lisible, sur 100</h3>
+          <p style="margin-bottom:8px;">Le classement des livreurs candidats se décompose visuellement :</p>
+          <ul class="liste">
+            <li><strong>Zone</strong> — jusqu'à 40 points pour le livreur affecté à la bonne zone</li>
+            <li><strong>Disponibilité</strong> — jusqu'à 30 points, déclarée par le livreur depuis son téléphone</li>
+            <li><strong>Shift actif</strong> — 20 points s'il est en service</li>
+            <li><strong>Faible charge</strong> — 10 points s'il a peu de missions en cours</li>
+          </ul>
+          <p style="margin-top:8px;">Et surtout : une section <em>« Exclus de la suggestion »</em> nomme les livreurs écartés avec le motif — congé, compte inactif, véhicule incompatible avec la taille du colis, permis ou visite médicale expirés. La transparence de l'algorithme n'est pas optionnelle.</p>
+        </div>
+        <div class="carte carte-violet">
+          <h3>La tournée du dispatch est celle que suit le livreur</h3>
+          <p>Le planificateur regroupe les arrêts, les réordonne, et l'ordre décidé au bureau est exactement celui qu'affiche l'écran « Ma tournée » du livreur, annoncé comme tel. Une tournée clôturée n'est plus modifiable — ni à l'écran, ni par l'API.</p>
+        </div>
+      </div>
+      <div>
+        <div class="carte carte-bleu" style="margin-bottom:6mm;">
+          <h3>PC flotte et géofence</h3>
+          <p>L'application livreur remonte sa position ; le poste de commandement affiche la dernière position de chaque livreur et compare avec le polygone de sa zone. Une sortie de zone lève une alerte datée, consultable et exportable. C'est aussi l'un des signaux du dossier de risque.</p>
+        </div>
+        <div class="carte carte-orange" style="margin-bottom:6mm;">
+          <h3>Temps de conduite — règlement 561/2006</h3>
+          <p>Neuf heures de conduite maximum par jour, pause obligatoire après quatre heures trente cumulées, alerte trente minutes avant la limite. La règle est écrite une seule fois, testée, et appliquée aussi bien sur l'écran du chauffeur que dans l'aptitude à conduire lue par le dispatch.</p>
+        </div>
+        <div class="carte carte-violet">
+          <h3>Conformité de la flotte</h3>
+          <p>Échéances d'assurance et de contrôle technique par véhicule, échéances de permis et de visite médicale par chauffeur, avec alerte anticipée. Un véhicule non assuré ne part pas ; un permis expiré exclut le chauffeur de la suggestion.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bandeau">
+      <strong>Sur le terrain, le réseau tombe.</strong> Les actions du livreur — changement de statut, preuve, encaissement —
+      sont enregistrées hors-ligne, mises en file et annoncées, puis rejouées automatiquement au retour du réseau.
+      Le rejeu est idempotent : une action qui part deux fois ne produit qu'une seule transition.
+      La file reste accessible tant qu'une action est en attente, y compris une fois le réseau revenu.
+    </div>
+
+    <p class="source">
+      Décomposition du score : <code>PRD-01-Console-Admin-Dispatcher.md</code> § 2.3.
+      Seuils réglementaires : <code>packages/domain/src/index.ts</code> (<code>eu561Status</code>, couvert par <code>eu561.test.ts</code>).
+      Vérifications : TC-G11 (hors-ligne et rejeu unique), TC-I02 à TC-I05 (tournée), TC-J01 et TC-J03 (position réelle, sortie de géofence).
+    </p>
+  </div>
+  <div class="pied"><span class="marque">Intelcia · Transpo</span><span>Dispatch &amp; terrain</span><span>7</span></div>
+</section>
+
+<!-- =========================================================
+     8 — MARCHAND & CLIENT
+     ========================================================= -->
+<section class="page">
+  <p class="kicker">Gain n° 4</p>
+  <h2>Le marchand se sert seul, le client sait où en est son colis</h2>
+  <p class="chapo">
+    Les deux personnes qui appellent le plus votre exploitation n'ont, la plupart du temps,
+    qu'une seule question. Chacune a désormais son écran pour y répondre.
+  </p>
+
+  <div class="corps">
+    <div class="grille g2" style="margin-bottom:8mm;">
+      <div class="carte carte-accent">
+        <h3 style="font-size:16px; margin-bottom:8px;">Portail marchand</h3>
+        <ul class="liste">
+          <li><strong>Ses commandes, et rien d'autre.</strong> Un marchand ne voit jamais les courses d'un autre marchand — c'est vérifié à l'écran comme au niveau de l'API.</li>
+          <li><strong>Création en libre-service</strong>, en trois étapes — point de retrait, point de livraison, colis — avec taille, montant à encaisser, niveau de preuve exigé et estimation de prix calculée en direct.</li>
+          <li><strong>Portefeuille</strong> : solde, mouvements, COD en attente de reversement, coût de chaque livraison.</li>
+          <li><strong>Facture</strong> avec sa décomposition : livraisons, commission retenue, TVA.</li>
+          <li><strong>Code de suivi copiable</strong> — c'est ce code, et lui seul, que le marchand transmet à son client.</li>
+          <li>La console d'exploitation et les routes d'exploitation lui sont <strong>fermées</strong>, pas seulement masquées.</li>
+        </ul>
+      </div>
+      <div class="carte carte-bleu">
+        <h3 style="font-size:16px; margin-bottom:8px;">Suivi client public</h3>
+        <ul class="liste bleu">
+          <li><strong>Sans compte, sans application.</strong> Un code à 8 caractères sur une page, en français ou en arabe, avec mise en page inversée en arabe.</li>
+          <li><strong>Statut courant et étapes franchies</strong>, dans le même vocabulaire que celui du dispatch et du livreur.</li>
+          <li><strong>Montant à régler</strong> à la livraison, s'il y en a un.</li>
+          <li><strong>Aucune fuite</strong> : ni téléphone, ni adresse exacte, ni nom du livreur. Un code inconnu renvoie une page « introuvable », pas un indice.</li>
+          <li><strong>Notation unique</strong> après livraison — une commande ne se note qu'une fois, et une commande non livrée ne se note pas.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="grille g3 serre">
+      <div class="carte carte-violet">
+        <h3>Le client est prévenu par la course, pas par un opérateur</h3>
+        <p>Quatre événements notifient le destinataire : colis enregistré, mise en livraison, livraison, échec. Les modèles sont bilingues, éditables par organisation, et les variables (code de suivi, ville) sont réellement substituées.</p>
+      </div>
+      <div class="carte carte-orange">
+        <h3>Un envoi qui échoue ne fait pas échouer une course</h3>
+        <p>Les notifications partent après l'écriture métier et ne sont jamais bloquantes. Un envoi bloqué reste visible au centre de notifications, avec son motif de blocage, et peut être rejoué.</p>
+      </div>
+      <div class="carte carte-bleu">
+        <h3>Les avis remontent, avec leur contexte</h3>
+        <p>La note laissée par le client alimente une page « Avis » : distribution des notes, moyenne, et croisement par livreur et par marchand — avec la commande à laquelle chaque avis se rattache. La modération humaine des avis signalés abusifs est spécifiée, pas encore livrée.</p>
+      </div>
+    </div>
+
+    <p class="source">
+      Vérifications : TC-N01, TC-N02, TC-N04 (portail borné au marchand, exploitation fermée),
+      TC-O01 (suivi public sans fuite), TC-O03 (notation unique), TC-O04, TC-P06 (notifications déclenchées par les événements de course).
+    </p>
+  </div>
+  <div class="pied"><span class="marque">Intelcia · Transpo</span><span>Marchand &amp; client</span><span>8</span></div>
+</section>
+
+<!-- =========================================================
+     9 — CONFORMITÉ & CONFIANCE
+     ========================================================= -->
+<section class="page">
+  <p class="kicker">Gain n° 5</p>
+  <h2>Conformité, cloisonnement, et la limite que la machine ne franchit pas</h2>
+  <p class="chapo">
+    Un logiciel de livraison manipule des données personnelles, de l'argent liquide et la réputation
+    de gens qui travaillent. Ces trois sujets sont traités comme des règles, pas comme des options.
+  </p>
+
+  <div class="corps">
+    <div class="grille g2" style="margin-bottom:8mm;">
+      <div>
+        <div class="carte carte-accent" style="margin-bottom:6mm;">
+          <h3>Loi 09-08 — protection des données personnelles</h3>
+          <p style="margin-bottom:8px;">Le consentement est <strong>opposable</strong>, pas décoratif :</p>
+          <ul class="liste">
+            <li>Un envoi <strong>commercial</strong> sans consentement du destinataire est bloqué, et le blocage est motivé au journal.</li>
+            <li>Un message <strong>transactionnel</strong> (colis enregistré, en livraison, livré, échoué) en est exempté.</li>
+            <li>Un consentement <strong>retiré</strong> redevient immédiatement opposable.</li>
+            <li><strong>Portabilité</strong> : export complet des données d'une personne, courses comprises.</li>
+            <li><strong>Effacement</strong> : la personne disparaît, l'écriture comptable reste. La course est anonymisée — le colis reste dû, facturé et compté ; le nom, le téléphone et l'adresse s'en vont, y compris de la page de suivi.</li>
+          </ul>
+        </div>
+        <div class="carte carte-violet">
+          <h3>Personne ne peut verrouiller l'organisation</h3>
+          <p>Un compte désactivé ne se connecte plus, et le <strong>dernier administrateur ne peut être ni désactivé, ni rétrogradé</strong> — la protection tient côté serveur, pas seulement dans l'écran.</p>
+        </div>
+      </div>
+      <div>
+        <div class="carte carte-bleu" style="margin-bottom:6mm;">
+          <h3>Cloisonnement multi-tenant strict</h3>
+          <p>Chaque organisation cliente dispose de son <strong>propre schéma PostgreSQL</strong>. L'organisation est résolue côté serveur, jamais depuis le navigateur : une requête qui tente de désigner une autre organisation est refusée, et aucune écriture ne franchit la cloison.</p>
+        </div>
+        <div class="carte carte-orange" style="margin-bottom:6mm;">
+          <h3>Six rôles, des droits réels</h3>
+          <p>Administrateur, Dispatcher, Comptable, Marchand, Livreur, Super-administrateur de la plateforme. Les droits ne se limitent pas à masquer des boutons : les routes correspondantes répondent « interdit » au rôle qui n'y a pas droit. Un jeton de livreur est borné à son propre chauffeur.</p>
+        </div>
+        <div class="carte carte-violet">
+          <h3>Journal d'audit lisible</h3>
+          <p>Provisionnement, invitations, réinitialisations de mot de passe, arbitrages de fraude : chaque action sensible porte son acteur et sa date. Aucune entrée anonyme.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bandeau-fort">
+      <strong>Fraude COD : un barème, pas un verdict.</strong>
+      Six signaux pondérés — COD encaissé non déclaré (35), écart de caisse récurrent (30), livraison hors géofence (28),
+      échec sans preuve GPS (22), taux de « client absent » anormal (18), dépôt tardif au-delà de 24 h (15) — cumulés et plafonnés à 100.
+      Le dossier s'instruit (ouvert → enquête → confirmé ou blanchi) et chaque décision passe au journal d'audit.
+      <em style="color:#fff; font-weight:700;">Aucune sanction n'est automatique, et le livreur peut se justifier.</em>
+    </div>
+
+    <p class="source">
+      Barème : <code>packages/domain/src/index.ts</code> (<code>FRAUD_SIGNALS</code>, <code>fraudScore</code>).
+      Isolation : <code>docs/adr/0001-schema-per-tenant.md</code>.
+      Vérifications : TC-P04 (consentement opposable), TC-S01 à TC-S06 (cloisonnement, audit, droits des personnes), TC-Q01 et TC-Q05 (dossier de risque et accès).
+    </p>
+  </div>
+  <div class="pied"><span class="marque">Intelcia · Transpo</span><span>Conformité &amp; confiance</span><span>9</span></div>
+</section>
+
+<!-- =========================================================
+     10 — LES ÉCRANS
+     ========================================================= -->
+<section class="page">
+  <p class="kicker">Concrètement</p>
+  <h2>Ce que chacun a sous les yeux</h2>
+  <p class="chapo">
+    Une console dense pour ceux qui pilotent, un portail simple pour ceux qui commandent,
+    une application tactile pour ceux qui roulent. Thème clair ou sombre partout.
+  </p>
+
+  <div class="corps">
+    <div class="grille g4 serre" style="margin-bottom:7mm;">
+      <div class="carte carte-violet">
+        <h3>Console d'exploitation</h3>
+        <p style="margin-bottom:6px;">Une vingtaine d'écrans, en barre latérale groupée :</p>
+        <ul class="liste violet" style="font-size:10.5px;">
+          <li>Tableau de bord et alertes de conformité</li>
+          <li>Commandes : liste filtrable, fiche à onglets, timeline</li>
+          <li>Dispatch et éditeur de zones</li>
+          <li>PC flotte temps réel et géofence</li>
+          <li>Tournées, véhicules, chauffeurs</li>
+          <li>Tri en hub, retours</li>
+          <li>Caisse, reversements, factures, tarification</li>
+          <li>Analytique, avis, fraude COD</li>
+          <li>Notifications, utilisateurs, paramètres</li>
+        </ul>
+      </div>
+      <div class="carte carte-accent">
+        <h3>Application livreur</h3>
+        <p style="margin-bottom:6px;">Conçue pour une main, en plein soleil :</p>
+        <ul class="liste" style="font-size:10.5px;">
+          <li>Missions du jour, cloisonnées au chauffeur</li>
+          <li>Fiche mission : contact, notes d'accès, montant à encaisser, niveau de preuve</li>
+          <li>Progression pas à pas, chaque étape confirmée</li>
+          <li>Preuve : photo, signature</li>
+          <li>Encaissement du COD</li>
+          <li>Scan des colis de la tournée</li>
+          <li>Ma tournée, dans l'ordre du dispatch</li>
+          <li>Shift et temps de conduite</li>
+          <li>Incidents, chat avec le dispatch, gains</li>
+          <li>File de synchronisation hors-ligne</li>
+        </ul>
+      </div>
+      <div class="carte carte-bleu">
+        <h3>Portail marchand</h3>
+        <ul class="liste bleu" style="font-size:10.5px;">
+          <li>Tableau de bord de ses volumes</li>
+          <li>Nouvelle commande, assistant en trois étapes</li>
+          <li>Mes commandes : recherche et filtres</li>
+          <li>Détail avec code de suivi copiable</li>
+          <li>Portefeuille et mouvements</li>
+          <li>Facture et sa décomposition</li>
+        </ul>
+        <h3 style="margin-top:12px;">Suivi client</h3>
+        <ul class="liste bleu" style="font-size:10.5px;">
+          <li>Saisie du code à 8 caractères</li>
+          <li>Statut, étapes, montant à régler</li>
+          <li>Bascule français / arabe</li>
+          <li>Notation après livraison</li>
+        </ul>
+      </div>
+      <div class="carte carte-orange">
+        <h3>Console plateforme</h3>
+        <p style="margin-bottom:6px;">Pour l'exploitant du logiciel, pas pour le transporteur :</p>
+        <ul class="liste" style="font-size:10.5px;">
+          <li>Organisations clientes et provisionnement</li>
+          <li>Catalogue de plans et abonnements</li>
+          <li>Facturation de la plateforme, consommation contre quota</li>
+          <li>Blocage d'accès en cas d'impayé, sans perte de données</li>
+        </ul>
+        <p style="margin-top:10px; font-size:10.5px;">C'est cette console qui rend Transpo vendable en marque blanche à plusieurs transporteurs à la fois.</p>
+      </div>
+    </div>
+
+    <div class="captures">
+      <h3>Captures issues de la recette (dépôt du projet)</h3>
+      <div class="grille g2 serre" style="gap:4mm 10mm;">
+        <ul>
+          <li>Encaissement du COD, montant exact — <code>qa/recette/2026-09-13-local/TC-G07/04-montant-exact.png</code></li>
+          <li>Preuve : photo puis signature — <code>qa/recette/2026-09-13-local/TC-G06/03-signature-tracee.png</code></li>
+          <li>Scan d'un colis de la tournée — <code>qa/recette/2026-09-13-local/TC-G12/02-colis-reconnu.png</code></li>
+          <li>File de synchronisation hors-ligne — <code>qa/recette/2026-09-13-local/TC-G11/05-file-de-synchronisation.png</code></li>
+        </ul>
+        <ul>
+          <li>Ma tournée, ordre du dispatch — <code>qa/recette/2026-09-13-local/TC-I05/02-ordre-du-dispatch.png</code></li>
+          <li>Application en arabe, mise en page inversée — <code>qa/recette/2026-09-13-local/TC-G18/04-missions-ar.png</code></li>
+          <li>Tarification en lecture seule pour le comptable — <code>qa/recette/2026-09-07-homelab/TC-B15/retest-comptable-pricing-lecture-seule.png</code></li>
+          <li>Organisations de la console plateforme — <code>qa/recette/2026-09-07-homelab/TC-A06/03-deux-organisations-listees.png</code></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="pied"><span class="marque">Intelcia · Transpo</span><span>Les écrans</span><span>10</span></div>
+</section>
+
+<!-- =========================================================
+     11 — LE MODÈLE
+     ========================================================= -->
+<section class="page">
+  <p class="kicker">Le modèle</p>
+  <h2>Un logiciel loué par organisation, une commission paramétrée par contrat</h2>
+  <p class="chapo">
+    Deux flux d'argent distincts, à ne pas confondre : l'abonnement que le transporteur paie
+    à la plateforme, et la commission que le transporteur retient à ses marchands.
+  </p>
+
+  <div class="corps">
+    <div class="grille g2" style="margin-bottom:7mm;">
+      <div>
+        <h3 style="font-size:15px; color:var(--violet); margin-bottom:8px;">① L'abonnement à la plateforme</h3>
+        <div class="tableau-large">
+          <table>
+            <thead>
+              <tr><th>Plan</th><th class="num">Par mois</th><th class="num">Commandes incluses</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="fort">Essai — 14 jours</td><td class="num">0 DH</td><td class="num">50</td></tr>
+              <tr><td class="fort">TPE Coursier</td><td class="num">299 DH</td><td class="num">500</td></tr>
+              <tr><td class="fort">Transporteur</td><td class="num">899 DH</td><td class="num">5 000</td></tr>
+              <tr><td class="fort">Entreprise</td><td class="num">2 499 DH</td><td class="num">illimité</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="source" style="margin-top:10px;">
+          Catalogue d'amorçage — <code>packages/domain/src/index.ts</code> (<code>SAAS_PLANS</code>).
+          Ces tarifs constituent le point de départ : le catalogue réel est <strong>versionné en base</strong> et éditable
+          depuis la console plateforme, avec forfait ou facturation à l'usage, paliers de volume (au palier atteint
+          ou par tranche successive), facture plancher et part fixe. La TVA est figée sur la facture à son émission.
+        </p>
+      </div>
+      <div>
+        <h3 style="font-size:15px; color:var(--violet); margin-bottom:8px;">② La commission sur les livraisons</h3>
+        <div class="carte carte-accent" style="margin-bottom:5mm;">
+          <p><strong>15 % par défaut</strong> sur le montant net des livraisons, <strong>paramétrable par organisation et négociable par marchand</strong>. C'est cette commission qui est retenue au reversement du COD et reprise sur la facture marchand. TVA 20 %.</p>
+        </div>
+        <div class="carte carte-violet">
+          <h3>La tarification client suit une cascade à priorité stricte</h3>
+          <ul class="liste violet" style="margin-top:6px;">
+            <li><strong>① Prix fixe négocié</strong> avec le marchand — s'il existe, il l'emporte</li>
+            <li><strong>② Remise contractuelle</strong> appliquée à la grille</li>
+            <li><strong>③ Grille standard</strong> à paliers de distance</li>
+          </ul>
+          <p style="margin-top:8px;">Grille d'amorçage, éditable : 22 DH jusqu'à 3 km · 32 DH de 3 à 7 km · 48 DH de 7 à 15 km · 75 DH de 15 à 30 km · 3,20 DH/km au-delà. Majorations : colis fragile +15 DH, livraison programmée +10 DH.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grille g3 serre">
+      <div class="carte carte-bleu">
+        <h3>Une organisation = un schéma</h3>
+        <p>Le provisionnement crée un schéma PostgreSQL dédié et son premier administrateur. L'organisation travaille sur son propre sous-domaine.</p>
+      </div>
+      <div class="carte carte-orange">
+        <h3>Essai, relance, suspension</h3>
+        <p>Essai de 14 jours, puis 7 jours de grâce avant suspension en cas d'impayé. Une organisation relancée continue de travailler ; une organisation suspendue ne se connecte plus — sans que ses données soient supprimées.</p>
+      </div>
+      <div class="carte carte-violet">
+        <h3>Marchand prépayé ou post-payé</h3>
+        <p>Portefeuille débité à la commande, ou facture mensuelle regroupée. Le mode est choisi par marchand, côté transporteur.</p>
+      </div>
+    </div>
+
+    <p class="source">
+      Durées et calculs : <code>packages/domain/src/index.ts</code> (<code>TRIAL_DAYS</code>, <code>GRACE_DAYS</code>, <code>computeBilling</code>, <code>quote</code>),
+      couverts par <code>billing.test.ts</code> et <code>cycle.test.ts</code>.
+    </p>
+  </div>
+  <div class="pied"><span class="marque">Intelcia · Transpo</span><span>Le modèle</span><span>11</span></div>
+</section>
+
+<!-- =========================================================
+     12 — PRÊT / PAS PRÊT
+     ========================================================= -->
+<section class="page">
+  <p class="kicker">Sans mauvaise surprise</p>
+  <h2>Ce qui est prêt, et ce qui ne l'est pas encore</h2>
+  <p class="chapo">
+    Un manque annoncé coûte moins cher qu'un manque découvert après signature. Voici les deux listes,
+    telles qu'elles ressortent de la dernière campagne de recette menée cas par cas.
+  </p>
+
+  <div class="corps">
+    <div class="grille g2" style="margin-bottom:7mm;">
+      <div class="carte" style="border-left:3px solid var(--violet);">
+        <h3 style="font-size:15px; margin-bottom:10px;">Vérifié, cas par cas</h3>
+        <ul class="coche">
+          <li><strong>Application livreur</strong> — parcours complet : connexion, autorisations, missions, progression des statuts, preuve, encaissement, échec motivé, scan, tournée, shift, incidents, chat, gains, arabe avec mise en page inversée. 18 cas sur 18.</li>
+          <li><strong>Hors-ligne</strong> — action mise en file, rejouée au retour du réseau, sans double effet.</li>
+          <li><strong>Chaîne du COD</strong> — encaissement, caisse alimentée course par course, déclaration du livreur, dépôt, écart résolu avec motif, reversement marchand net de commission.</li>
+          <li><strong>Cloisonnement</strong> — entre organisations, entre marchands, entre rôles ; vérifié à l'écran et sur l'API.</li>
+          <li><strong>Loi 09-08</strong> — consentement opposable, export et effacement avec anonymisation des courses.</li>
+          <li><strong>Retours</strong> — plafond de trois tentatives, restitution au marchand, actions refusées après clôture.</li>
+          <li><strong>Suivi public et notifications</strong> — aucune donnée sensible exposée, notation unique, événements de course qui notifient réellement le client.</li>
+          <li><strong>Tri en hub, tarification, analytique, dossiers de fraude</strong> — parcours joués et conformes à la base.</li>
+        </ul>
+      </div>
+      <div class="carte" style="border-left:3px solid var(--orange);">
+        <h3 style="font-size:15px; margin-bottom:10px;">Pas encore livré — annoncé comme tel</h3>
+        <ul class="reserve">
+          <li><strong>Le scanner caméra reste simulé.</strong> Les colis proposés au scan sont bien ceux de la tournée du livreur, mais la lecture optique du code-barres n'est pas branchée : c'est la <strong>saisie manuelle du code à 8 caractères</strong> qui agit. Une bibliothèque native reste à intégrer.</li>
+          <li><strong>Le manifeste de transfert au hub n'est pas tracé.</strong> On peut constituer un bordereau par ville de destination et en lire le contenu, mais « sceller le bordereau » n'enregistre aucun document opposable : le hub n'a pas de trace de ce qui est parti, ni le site d'arrivée de quoi contrôler ce qui arrive. C'est une brique à construire, pas un réglage.</li>
+          <li><strong>Le temps réel passe par des rafraîchissements périodiques</strong>, pas encore par une connexion permanente. Le PC flotte est à jour à quelques secondes près, pas à la seconde.</li>
+          <li><strong>Les passerelles d'envoi SMS et WhatsApp ne sont pas raccordées.</strong> Les modèles bilingues, le consentement, le journal et le rejeu existent et fonctionnent ; l'opérateur d'envoi reste à contracter et à brancher.</li>
+          <li><strong>L'optimisation d'ordre de tournée est une heuristique</strong> (du plus proche au plus proche), pas un moteur de calcul d'itinéraire réel tenant compte du trafic.</li>
+          <li><strong>Le paiement en ligne des abonnements</strong> n'est pas intégré ; la facturation plateforme est produite, l'encaissement se fait hors application.</li>
+          <li><strong>Côté client final</strong>, le choix de créneau, la messagerie et la carte de suivi en direct restent à livrer. Le suivi public par code, lui, est en service.</li>
+          <li><strong>API marchand et webhooks signés</strong> : spécifiés, non encore ouverts aux marchands techniques.</li>
+          <li><strong>Le remboursement d'un COD déjà encaissé</strong> sur une commande annulée après coup (rembourser le client, re-créditer le marchand, ou retenir en litige) est spécifié et maquetté, mais l'écran et l'écriture correspondante ne sont pas encore livrés.</li>
+          <li><strong>Le relais d'appel masquant le numéro du client au livreur</strong> est une règle du cahier des charges, pas encore une fonction livrée : prévoir, d'ici là, la consigne interne correspondante.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="bandeau">
+      <strong>Deux points de méthode, pour être complet.</strong>
+      La campagne de recette citée ici a été jouée sur un environnement de validation dédié : elle atteste du
+      <strong>produit</strong>, et doit être rejouée après chaque mise en production pour attester du <strong>déploiement</strong>.
+      Par ailleurs, la traduction française / arabe est complète et vérifiée sur l'application livreur et sur le suivi client ;
+      côté console d'exploitation, la bascule de langue fonctionne et la conversion des écrans se poursuit page par page.
+    </div>
+
+    <p class="source">
+      Source : <code>qa/recette/2026-09-13-local/RAPPORT.md</code> et <code>SUIVI-RECETTE.md</code> (verdicts et constats produit, 13–14 septembre 2026) ;
+      <code>ROADMAP.md</code> pour les tranches restant à compléter.
+    </p>
+  </div>
+  <div class="pied"><span class="marque">Intelcia · Transpo</span><span>Prêt / pas prêt</span><span>12</span></div>
+</section>
+
+<!-- =========================================================
+     13 — DÉMARRER
+     ========================================================= -->
+<section class="page">
+  <p class="kicker">La suite</p>
+  <h2>De la signature à la première tournée</h2>
+  <p class="chapo">
+    Transpo se déploie par organisation. Il n'y a pas d'installation sur vos postes :
+    votre équipe se connecte à son propre sous-domaine.
+  </p>
+
+  <div class="corps">
+    <div class="chaine" style="margin-bottom:8mm;">
+      <div class="etape">
+        <span class="num">1</span>
+        <h3>Ouvrir l'organisation</h3>
+        <p>Votre sous-domaine, votre base dédiée, votre premier administrateur. Immédiat.</p>
+      </div>
+      <div class="etape">
+        <span class="num">2</span>
+        <h3>Charger votre réalité</h3>
+        <p>Véhicules et échéances, chauffeurs et permis, zones de livraison, marchands et leurs conditions.</p>
+      </div>
+      <div class="etape">
+        <span class="num">3</span>
+        <h3>Régler vos règles</h3>
+        <p>Grille tarifaire, commission, TVA, niveaux de preuve par défaut, modèles de notification en français et en arabe.</p>
+      </div>
+      <div class="etape">
+        <span class="num">4</span>
+        <h3>Former deux profils</h3>
+        <p>Le dispatcher sur la console, le livreur sur son téléphone. Ce sont les deux seuls postes à former.</p>
+      </div>
+      <div class="etape">
+        <span class="num">5</span>
+        <h3>Ouvrir sur une zone</h3>
+        <p>Une ville, quelques livreurs, un marchand pilote. Puis on élargit sur des chiffres, pas sur des impressions.</p>
+      </div>
+    </div>
+
+    <div class="grille g3 serre" style="margin-bottom:8mm;">
+      <div class="carte carte-violet">
+        <h3>Ce que vous mesurerez dès le premier mois</h3>
+        <p>Taux de réussite par zone, par livreur et par marchand ; motifs d'échec réels ; écarts de caisse ; délai entre l'encaissement et le dépôt ; part des livraisons avec preuve complète.</p>
+      </div>
+      <div class="carte carte-bleu">
+        <h3>Ce que vous cesserez de faire</h3>
+        <p>Rappeler un livreur pour connaître un statut. Reconstituer une journée de cash de mémoire. Chercher une photo dans une conversation WhatsApp. Expliquer à un marchand où en est son colis.</p>
+      </div>
+      <div class="carte carte-orange">
+        <h3>Ce qui reste votre décision</h3>
+        <p>Le logiciel propose un livreur, signale un risque, bloque un envoi non consenti. Il ne sanctionne personne, ne remise personne et n'affecte rien à votre place.</p>
+      </div>
+    </div>
+
+    <div class="bandeau-fort">
+      <strong>Parlons-en sur vos propres données.</strong>
+      La démonstration la plus utile n'est pas la nôtre : donnez-nous une journée type — un nombre de courses,
+      deux ou trois zones, vos conditions marchands — et nous la rejouons dans une organisation d'essai.
+      Vous verrez vos chiffres, pas les nôtres.
+    </div>
+
+    <div style="margin-top:auto; padding-top:9mm;">
+      <div class="couv-pied" style="border-top:1px solid var(--trait);">
+        <div>
+          <div class="marque" style="font-size:13px; font-weight:700; letter-spacing:.14em; color:var(--violet); text-transform:uppercase;">Intelcia</div>
+          <div style="margin-top:4px; font-size:10.5px; color:var(--encre-3);">Transpo — plateforme de livraison · Document commercial, septembre 2026</div>
+        </div>
+        <div style="text-align:right; font-size:10.5px; color:var(--encre-3); max-width:120mm;">
+          Les tarifs, taux et seuils cités dans ce document sont les valeurs de paramétrage par défaut
+          de la plateforme ; ils sont ajustables par organisation et font partie de la négociation contractuelle.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pied"><span class="marque">Intelcia · Transpo</span><span>Démarrer</span><span>13</span></div>
+</section>
+
+</body>
+</html>

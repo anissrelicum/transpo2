@@ -1,0 +1,105 @@
+
+===== Base remise à zéro (tenants, plans, journal d'audit) =====
+
+Reset OK — 5 schéma(s) tenant supprimé(s), 5 plan(s) purgé(s) du catalogue (relancer `migrate-plans` pour ré-amorcer les 4 plans historiques). Super-admin conservé : ops@transpo.ma (mdp: "transpo").
+Migrations OK — platform + 0 tenant(s).
+Catalogue OK — 4 plan(s), 4 version(s) de tarif, 0 abonnement(s) créé(s) sur 0 tenant(s) sans abonnement.
+
+===== Section A — plateforme & provisionnement (29 cas) =====
+
+Running 29 tests using 1 worker
+
+organisations au parc → 0
+  ✓  1 [chromium] › a01.spec.ts:8:5 › TC-A01 — Connexion super-admin (6.8s)
+  ✓  2 [chromium] › a02.spec.ts:7:5 › TC-A02 — Bascule de realm (4.5s)
+  ✓  3 [chromium] › a03.spec.ts:14:5 › TC-A03 — Provisionner une organisation (13.1s)
+slug api → Slug réservé à l’infrastructure : api
+slug www → Slug réservé à l’infrastructure : www
+slug admin → Slug réservé à l’infrastructure : admin
+  ✓  4 [chromium] › a04.spec.ts:6:5 › TC-A04 — Slugs réservés refusés (14.1s)
+doublon recetteprov → Tenant déjà existant : recetteprov
+  ✓  5 [chromium] › a05.spec.ts:9:5 › TC-A05 — Slug en doublon refusé (11.4s)
+NOTICE:  drop cascades to 25 other objects
+DETAIL:  drop cascades to table tenant_recetteiso.orders
+drop cascades to table tenant_recetteiso.users
+drop cascades to table tenant_recetteiso.drivers
+drop cascades to table tenant_recetteiso.zones
+drop cascades to table tenant_recetteiso.vehicles
+drop cascades to table tenant_recetteiso.returns
+drop cascades to table tenant_recetteiso.fraud_cases
+drop cascades to table tenant_recetteiso.tournees
+drop cascades to table tenant_recetteiso.notif_consents
+drop cascades to table tenant_recetteiso.notifications
+drop cascades to table tenant_recetteiso.idempotency_keys
+drop cascades to table tenant_recetteiso.driver_positions
+drop cascades to table tenant_recetteiso.geofences
+drop cascades to table tenant_recetteiso.incidents
+drop cascades to table tenant_recetteiso.support_messages
+drop cascades to table tenant_recetteiso.cash_sessions
+drop cascades to table tenant_recetteiso.cash_movements
+drop cascades to table tenant_recetteiso.invoices
+drop cascades to table tenant_recetteiso.merchant_billing
+drop cascades to table tenant_recetteiso.payouts
+drop cascades to table tenant_recetteiso.pricing_config
+drop cascades to table tenant_recetteiso.company_settings
+drop cascades to table tenant_recetteiso.notif_templates
+drop cascades to table tenant_recetteiso.delivery_proofs
+drop cascades to table tenant_recetteiso.order_events
+NOTICE:  drop cascades to 25 other objects
+DETAIL:  drop cascades to table tenant_recetteprov.orders
+drop cascades to table tenant_recetteprov.users
+drop cascades to table tenant_recetteprov.drivers
+drop cascades to table tenant_recetteprov.zones
+drop cascades to table tenant_recetteprov.vehicles
+drop cascades to table tenant_recetteprov.returns
+drop cascades to table tenant_recetteprov.fraud_cases
+drop cascades to table tenant_recetteprov.tournees
+drop cascades to table tenant_recetteprov.notif_consents
+drop cascades to table tenant_recetteprov.notifications
+drop cascades to table tenant_recetteprov.idempotency_keys
+drop cascades to table tenant_recetteprov.driver_positions
+drop cascades to table tenant_recetteprov.geofences
+drop cascades to table tenant_recetteprov.incidents
+drop cascades to table tenant_recetteprov.support_messages
+drop cascades to table tenant_recetteprov.cash_sessions
+drop cascades to table tenant_recetteprov.cash_movements
+drop cascades to table tenant_recetteprov.invoices
+drop cascades to table tenant_recetteprov.merchant_billing
+drop cascades to table tenant_recetteprov.payouts
+drop cascades to table tenant_recetteprov.pricing_config
+drop cascades to table tenant_recetteprov.company_settings
+drop cascades to table tenant_recetteprov.notif_templates
+drop cascades to table tenant_recetteprov.delivery_proofs
+drop cascades to table tenant_recetteprov.order_events
+  ✓  6 [chromium] › a06.spec.ts:11:5 › TC-A06 — Provisionner une seconde organisation (23.2s)
+parc → 0 organisation(s) · repère → 
+  ✘  7 [chromium] › a07.spec.ts:9:5 › TC-A07 — Recherche et filtre (19.0s)
+tarif Entreprise courant → 2 499 DH/mois
+racine aria-hidden après fermeture → 0
+NOTICE:  drop cascades to 25 other objects
+DETAIL:  drop cascades to table tenant_recetteconv.orders
+drop cascades to table tenant_recetteconv.users
+drop cascades to table tenant_recetteconv.drivers
+drop cascades to table tenant_recetteconv.zones
+drop cascades to table tenant_recetteconv.vehicles
+drop cascades to table tenant_recetteconv.returns
+drop cascades to table tenant_recetteconv.fraud_cases
+drop cascades to table tenant_recetteconv.tournees
+drop cascades to table tenant_recetteconv.notif_consents
+drop cascades to table tenant_recetteconv.notifications
+drop cascades to table tenant_recetteconv.idempotency_keys
+drop cascades to table tenant_recetteconv.driver_positions
+drop cascades to table tenant_recetteconv.geofences
+drop cascades to table tenant_recetteconv.incidents
+drop cascades to table tenant_recetteconv.support_messages
+drop cascades to table tenant_recetteconv.cash_sessions
+drop cascades to table tenant_recetteconv.cash_movements
+drop cascades to table tenant_recetteconv.invoices
+drop cascades to table tenant_recetteconv.merchant_billing
+drop cascades to table tenant_recetteconv.payouts
+drop cascades to table tenant_recetteconv.pricing_config
+drop cascades to table tenant_recetteconv.company_settings
+drop cascades to table tenant_recetteconv.notif_templates
+drop cascades to table tenant_recetteconv.delivery_proofs
+drop cascades to table tenant_recetteconv.order_events
+  ✓  8 [chromium] › a08.spec.ts:12:5 › TC-A08 — Convertir l’essai en abonnement Entreprise (12.9s)

@@ -1,0 +1,788 @@
+/* =============================================================================
+ * Transpo — site vitrine. Feuille de style unique, sans dépendance ni build.
+ *
+ * La charte n'est PAS inventée : toutes les valeurs ci-dessous sont reprises
+ * telles quelles de la plateforme, pour qu'un visiteur qui passe du site à la
+ * console ne change pas de produit. Origine de chaque famille :
+ *
+ *   - couleurs        → packages/design-tokens/src/index.ts, objet `palette`
+ *                       (échelles Radix EXACTES, clair et sombre, indigo/slate
+ *                       + teintes sémantiques de statut). Accent = indigo,
+ *                       gris = slate, conformément à RADIX_THEME.
+ *   - rayons          → packages/design-tokens/src/index.ts, `radius`
+ *                       (aligné sur RADIX_THEME.radius = 'medium').
+ *   - espacements     → packages/design-tokens/src/index.ts, `space`
+ *                       (échelle Radix space 1..9).
+ *   - cibles tactiles → packages/design-tokens/src/index.ts, `touch`
+ *                       (min 44px, action principale 52px) — PRD-00 §5.14.
+ *   - typographie     → @radix-ui/themes chargé par apps/console-web/app/layout.tsx
+ *                       (--default-font-family, --font-size-*, --line-height-*,
+ *                       --letter-spacing-*, --font-weight-*), scaling 100%.
+ *
+ * Le mode sombre reprend le second jeu de valeurs de `palette.dark` : ce n'est
+ * pas un négatif du clair, c'est bien l'échelle sombre de Radix (cf. commentaire
+ * dans design-tokens : indigo9 est identique, indigo11 change radicalement).
+ * ========================================================================== */
+
+:root {
+  /* --- Échelle slate (gris du produit) — palette.light.slate ---------------- */
+  --slate-1: #fcfcfd;
+  --slate-2: #f9f9fb;
+  --slate-3: #f0f0f3;
+  --slate-4: #e8e8ec;
+  --slate-5: #e0e1e6;
+  --slate-6: #d9d9e0;
+  --slate-7: #cdced6;
+  --slate-8: #b9bbc6;
+  --slate-9: #8b8d98;
+  --slate-10: #80838d;
+  --slate-11: #60646c;
+  --slate-12: #1c2024;
+
+  /* --- Échelle indigo (accent du produit) — palette.light.indigo ----------- */
+  --indigo-1: #fdfdfe;
+  --indigo-2: #f7f9ff;
+  --indigo-3: #edf2fe;
+  --indigo-4: #e1e9ff;
+  --indigo-5: #d2deff;
+  --indigo-6: #c1d0ff;
+  --indigo-7: #abbdf9;
+  --indigo-8: #8da4ef;
+  --indigo-9: #3e63dd;
+  --indigo-10: #3358d4;
+  --indigo-11: #3a5bc7;
+  --indigo-12: #1f2d5c;
+
+  /* --- Teintes sémantiques de statut — palette.light, crans 3/9/11 ---------
+   * Mêmes crans que StatusBadge / CodChip dans le produit : 3 = fond doux,
+   * 9 = plein, 11 = texte sur fond doux. */
+  --green-3: #e6f6eb;  --green-9: #30a46c;  --green-11: #218358;
+  --amber-3: #fff7c2;  --amber-9: #ffc53d;  --amber-11: #ab6400;
+  --red-3: #feebec;    --red-9: #e5484d;    --red-11: #ce2c31;
+  --blue-3: #e6f4fe;   --blue-9: #0090ff;   --blue-11: #0d74ce;
+  --cyan-3: #def7f9;   --cyan-9: #00a2c7;   --cyan-11: #107d98;
+  --violet-3: #f4f0fe; --violet-9: #6e56cf; --violet-11: #6550b9;
+  --orange-3: #ffefd6; --orange-9: #f76b15; --orange-11: #cc4e00;
+
+  /* --- Rôles sémantiques (ce que la page utilise réellement) --------------- */
+  --fond-page: var(--slate-1);
+  --fond-doux: var(--slate-2);
+  --fond-panneau: var(--slate-1);   /* RADIX_THEME.panelBackground = 'solid' */
+  --bordure: var(--slate-6);
+  --bordure-forte: var(--slate-7);
+  --texte: var(--slate-12);
+  --texte-doux: var(--slate-11);
+  --accent-plein: var(--indigo-9);
+  --accent-plein-survol: var(--indigo-10);
+  --accent-texte: var(--indigo-11);
+  --accent-fond: var(--indigo-3);
+  --accent-bordure: var(--indigo-6);
+  --sur-accent: #ffffff;            /* blanc sur indigo-9 : 5,2:1 */
+  --ombre-panneau: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px -8px rgba(0, 0, 0, 0.10);
+
+  /* --- Rayons — design-tokens `radius` (radius: medium) -------------------- */
+  --radius-1: 3px;
+  --radius-2: 4px;
+  --radius-3: 6px;
+  --radius-4: 8px;
+  --radius-5: 12px;
+  --radius-full: 9999px;
+
+  /* --- Espacements — design-tokens `space` (échelle Radix 1..9) ------------ */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 40px;
+  --space-8: 48px;
+  --space-9: 64px;
+
+  /* --- Cibles tactiles — design-tokens `touch` ----------------------------- */
+  --touch-min: 44px;
+  --touch-primary: 52px;
+
+  /* --- Typographie — tokens de @radix-ui/themes, scaling 100% -------------- */
+  --police: -apple-system, BlinkMacSystemFont, 'Segoe UI (Custom)', Roboto,
+    'Helvetica Neue', 'Open Sans (Custom)', system-ui, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji';
+  --font-size-1: 12px;  --line-height-1: 16px;
+  --font-size-2: 14px;  --line-height-2: 20px;
+  --font-size-3: 16px;  --line-height-3: 24px;
+  --font-size-4: 18px;  --line-height-4: 26px;
+  --font-size-5: 20px;  --line-height-5: 28px;
+  --font-size-6: 24px;  --line-height-6: 30px;
+  --font-size-7: 28px;  --line-height-7: 36px;
+  --font-size-8: 35px;  --line-height-8: 40px;
+  --font-size-9: 60px;  --line-height-9: 60px;
+  --ls-6: -0.00625em;
+  --ls-7: -0.0075em;
+  --ls-8: -0.01em;
+  --ls-9: -0.025em;
+  --poids-regular: 400;
+  --poids-medium: 500;
+  --poids-bold: 700;
+
+  /* Largeur de lecture — la console pose ses écrans dans un conteneur borné. */
+  --largeur-max: 1120px;
+
+  color-scheme: light;
+}
+
+/* =============================================================================
+ * Mode sombre — palette.dark de design-tokens (jeu de valeurs distinct).
+ * ========================================================================== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --slate-1: #111113;
+    --slate-2: #18191b;
+    --slate-3: #212225;
+    --slate-4: #272a2d;
+    --slate-5: #2e3135;
+    --slate-6: #363a3f;
+    --slate-7: #43484e;
+    --slate-8: #5a6169;
+    --slate-9: #696e77;
+    --slate-10: #777b84;
+    --slate-11: #b0b4ba;
+    --slate-12: #edeef0;
+
+    --indigo-1: #11131f;
+    --indigo-2: #141726;
+    --indigo-3: #182449;
+    --indigo-4: #1d2e62;
+    --indigo-5: #253974;
+    --indigo-6: #304384;
+    --indigo-7: #3a4f97;
+    --indigo-8: #435db1;
+    --indigo-9: #3e63dd;
+    --indigo-10: #5472e4;
+    --indigo-11: #9eb1ff;
+    --indigo-12: #d6e1ff;
+
+    --green-3: #132d21;  --green-9: #30a46c;  --green-11: #3dd68c;
+    --amber-3: #302008;  --amber-9: #ffc53d;  --amber-11: #ffca16;
+    --red-3: #3b1219;    --red-9: #e5484d;    --red-11: #ff9592;
+    --blue-3: #0d2847;   --blue-9: #0090ff;   --blue-11: #70b8ff;
+    --cyan-3: #082c36;   --cyan-9: #00a2c7;   --cyan-11: #4ccce6;
+    --violet-3: #291f43; --violet-9: #6e56cf; --violet-11: #baa7ff;
+    --orange-3: #331e0b; --orange-9: #f76b15; --orange-11: #ffa057;
+
+    --fond-page: var(--slate-1);
+    --fond-doux: var(--slate-2);
+    --fond-panneau: var(--slate-2);
+    --bordure: var(--slate-6);
+    --bordure-forte: var(--slate-7);
+    --ombre-panneau: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+
+    color-scheme: dark;
+  }
+}
+
+/* =============================================================================
+ * Socle
+ * ========================================================================== */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--fond-page);
+  color: var(--texte);
+  font-family: var(--police);
+  font-size: var(--font-size-3);
+  line-height: var(--line-height-3);
+  font-weight: var(--poids-regular);
+  overflow-x: hidden;           /* filet de sécurité : rien ne doit déborder */
+}
+
+h1, h2, h3, h4 {
+  margin: 0;
+  font-weight: var(--poids-bold);
+  color: var(--texte);
+}
+
+p { margin: 0; }
+ul { margin: 0; padding: 0; list-style: none; }
+img, svg { max-width: 100%; }
+
+a {
+  color: var(--accent-texte);
+  text-decoration-color: var(--accent-bordure);
+  text-underline-offset: 3px;
+}
+a:hover { text-decoration-color: currentColor; }
+
+/* Focus visible partout — exigence d'accessibilité du projet. */
+:focus-visible {
+  outline: 2px solid var(--accent-plein);
+  outline-offset: 2px;
+  border-radius: var(--radius-2);
+}
+
+.saut-au-contenu {
+  position: absolute;
+  left: var(--space-4);
+  top: calc(-1 * var(--space-9));
+  z-index: 100;
+  padding: var(--space-3) var(--space-4);
+  min-height: var(--touch-min);
+  display: inline-flex;
+  align-items: center;
+  background: var(--accent-plein);
+  color: var(--sur-accent);
+  border-radius: var(--radius-3);
+  text-decoration: none;
+  font-weight: var(--poids-medium);
+  transition: top 120ms ease;
+}
+.saut-au-contenu:focus { top: var(--space-4); }
+
+.conteneur {
+  width: 100%;
+  max-width: var(--largeur-max);
+  margin-inline: auto;
+  padding-inline: var(--space-5);
+}
+
+/* =============================================================================
+ * En-tête
+ * ========================================================================== */
+.entete {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--fond-page);
+  background: color-mix(in srgb, var(--fond-page) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--bordure);
+}
+
+.entete__barre {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 64px;
+  padding-block: var(--space-2);
+}
+
+.marque {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--touch-min);
+  color: var(--texte);
+  text-decoration: none;
+  font-size: var(--font-size-4);
+  font-weight: var(--poids-bold);
+  letter-spacing: var(--ls-6);
+}
+.marque__logo { display: block; flex: none; }
+
+/* L'appel à l'action de l'en-tête passe en libellé court sous 600px : en
+ * pleine longueur il repliait sur deux lignes et écrasait la marque à 390px.
+ * `display: none` (et non `aria-hidden`) : le libellé inactif quitte aussi
+ * l'arbre d'accessibilité, le lien garde donc un seul nom à chaque largeur. */
+.entete__appel { white-space: nowrap; }
+.entete__appel--long { display: none; }
+
+.nav { display: none; }
+
+.nav__liste {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.nav__lien {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  padding-inline: var(--space-3);
+  border-radius: var(--radius-3);
+  color: var(--texte-doux);
+  font-size: var(--font-size-2);
+  font-weight: var(--poids-medium);
+  text-decoration: none;
+}
+.nav__lien:hover {
+  color: var(--texte);
+  background: var(--slate-3);
+}
+
+/* =============================================================================
+ * Boutons
+ * ========================================================================== */
+.bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-3);
+  font-family: inherit;
+  font-size: var(--font-size-2);
+  font-weight: var(--poids-medium);
+  line-height: var(--line-height-2);
+  text-decoration: none;
+  cursor: pointer;
+}
+.bouton--principal {
+  background: var(--accent-plein);
+  color: var(--sur-accent);
+}
+.bouton--principal:hover { background: var(--accent-plein-survol); }
+.bouton--secondaire {
+  background: var(--fond-panneau);
+  color: var(--texte);
+  border-color: var(--bordure-forte);
+}
+.bouton--secondaire:hover { background: var(--slate-3); }
+.bouton--grand {
+  min-height: var(--touch-primary);
+  padding-inline: var(--space-5);
+  font-size: var(--font-size-3);
+}
+
+/* =============================================================================
+ * Sections
+ * ========================================================================== */
+.section { padding-block: var(--space-9); }
+.section--douce { background: var(--fond-doux); border-block: 1px solid var(--bordure); }
+
+.section__entete {
+  max-width: 62ch;
+  margin-bottom: var(--space-7);
+}
+.section__sur-titre {
+  display: block;
+  margin-bottom: var(--space-2);
+  color: var(--accent-texte);
+  font-size: var(--font-size-1);
+  line-height: var(--line-height-1);
+  font-weight: var(--poids-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.section__titre {
+  font-size: var(--font-size-7);
+  line-height: var(--line-height-7);
+  letter-spacing: var(--ls-7);
+}
+.section__chapo {
+  margin-top: var(--space-3);
+  color: var(--texte-doux);
+  font-size: var(--font-size-4);
+  line-height: var(--line-height-4);
+}
+
+/* =============================================================================
+ * Bandeau d'accroche
+ * ========================================================================== */
+.accroche { padding-block: var(--space-8) var(--space-9); }
+
+.accroche__grille {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-8);
+  align-items: center;
+}
+
+.etiquette {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--accent-bordure);
+  border-radius: var(--radius-full);
+  background: var(--accent-fond);
+  color: var(--accent-texte);
+  font-size: var(--font-size-1);
+  line-height: var(--line-height-1);
+  font-weight: var(--poids-medium);
+}
+.etiquette__point {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--accent-plein);
+}
+
+.accroche__titre {
+  margin-top: var(--space-5);
+  font-size: var(--font-size-8);
+  line-height: var(--line-height-8);
+  letter-spacing: var(--ls-8);
+}
+.accroche__phrase {
+  margin-top: var(--space-5);
+  max-width: 58ch;
+  color: var(--texte-doux);
+  font-size: var(--font-size-5);
+  line-height: var(--line-height-5);
+}
+.accroche__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+.accroche__preuves {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  margin-top: var(--space-6);
+  color: var(--texte-doux);
+  font-size: var(--font-size-2);
+  line-height: var(--line-height-2);
+}
+.accroche__preuves li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* --- Panneau d'illustration : une carte de commande, dessinée avec les
+ * mêmes jetons que StatusBadge / CodChip dans la console. -------------------- */
+.apercu {
+  border: 1px solid var(--bordure);
+  border-radius: var(--radius-5);
+  background: var(--fond-panneau);
+  box-shadow: var(--ombre-panneau);
+  padding: var(--space-5);
+}
+.apercu__entete {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.apercu__ref {
+  font-size: var(--font-size-4);
+  line-height: var(--line-height-4);
+  font-weight: var(--poids-bold);
+}
+.apercu__meta {
+  margin-top: var(--space-1);
+  color: var(--texte-doux);
+  font-size: var(--font-size-2);
+  line-height: var(--line-height-2);
+}
+.apercu__puces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+.apercu__etapes {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--bordure);
+  display: grid;
+  gap: var(--space-3);
+}
+.etape-suivi {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-2);
+  line-height: var(--line-height-2);
+}
+.etape-suivi__point {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: var(--slate-8);
+}
+.etape-suivi__heure { color: var(--texte-doux); font-variant-numeric: tabular-nums; }
+.etape-suivi--faite .etape-suivi__point { background: var(--green-9); }
+.etape-suivi--en-cours .etape-suivi__point { background: var(--amber-9); }
+
+/* Badges de statut — pastille colorée + libellé neutre.
+ *
+ * Pourquoi pas la variante douce du produit (fond cran 3, texte cran 11) : le
+ * cran 11 de Radix vise 4,5:1 sur le cran 1 de SA PROPRE teinte, pas sur le
+ * gris slate-1 de la page. Mesuré ici : green-11 sur green-3 = 4,21:1 et
+ * amber-11 sur slate-1 = 4,497:1 — sous le seuil AA pour du texte de 12 px.
+ * Le statut est donc porté par une pastille et une bordure au cran 11 (objets
+ * graphiques, seuil 3:1, tous ≥ 4,4:1 ici) et le libellé par --texte
+ * (≈16:1 dans les deux thèmes). Mêmes jetons que le produit, même code
+ * couleur par statut, rien d'inventé. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 1px var(--space-2);
+  border: 1px solid currentColor;
+  border-radius: var(--radius-2);
+  background: var(--fond-panneau);
+  font-size: var(--font-size-1);
+  line-height: var(--line-height-1);
+  font-weight: var(--poids-medium);
+}
+.badge::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: var(--radius-full);
+  background: currentColor;
+}
+.badge > span { color: var(--texte); }
+.badge--livraison { color: var(--amber-11); }
+.badge--cod { color: var(--green-11); }
+.badge--preuve { color: var(--violet-11); }
+.badge--urgent { color: var(--red-11); }
+.badge--zone { color: var(--cyan-11); }
+
+/* =============================================================================
+ * Grilles de cartes
+ * ========================================================================== */
+.grille {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+.carte {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px solid var(--bordure);
+  border-radius: var(--radius-4);
+  background: var(--fond-panneau);
+  box-shadow: var(--ombre-panneau);
+}
+.carte__icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: var(--radius-3);
+  background: var(--accent-fond);
+  color: var(--accent-texte);
+}
+.carte__titre {
+  font-size: var(--font-size-4);
+  line-height: var(--line-height-4);
+  letter-spacing: var(--ls-6);
+}
+.carte__role {
+  color: var(--texte-doux);
+  font-size: var(--font-size-1);
+  line-height: var(--line-height-1);
+  font-weight: var(--poids-medium);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.carte__texte {
+  color: var(--texte-doux);
+  font-size: var(--font-size-2);
+  line-height: var(--line-height-3);
+}
+.carte__liste {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding-top: var(--space-2);
+  font-size: var(--font-size-2);
+  line-height: var(--line-height-2);
+}
+.carte__liste li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2);
+  color: var(--texte-doux);
+}
+.carte__liste svg { color: var(--accent-texte); margin-top: 4px; }
+
+/* =============================================================================
+ * Comment ça marche — 4 étapes
+ * ========================================================================== */
+.etapes {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.etape {
+  position: relative;
+  padding: var(--space-5);
+  border: 1px solid var(--bordure);
+  border-radius: var(--radius-4);
+  background: var(--fond-panneau);
+}
+.etape__numero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: var(--accent-plein);
+  color: var(--sur-accent);
+  font-size: var(--font-size-2);
+  line-height: 1;
+  font-weight: var(--poids-bold);
+  font-variant-numeric: tabular-nums;
+}
+.etape__titre {
+  margin-top: var(--space-3);
+  font-size: var(--font-size-4);
+  line-height: var(--line-height-4);
+}
+.etape__texte {
+  margin-top: var(--space-2);
+  color: var(--texte-doux);
+  font-size: var(--font-size-2);
+  line-height: var(--line-height-3);
+}
+.etape__acteur {
+  display: inline-block;
+  margin-top: var(--space-3);
+  color: var(--accent-texte);
+  font-size: var(--font-size-1);
+  line-height: var(--line-height-1);
+  font-weight: var(--poids-medium);
+}
+
+/* =============================================================================
+ * Conformité
+ * ========================================================================== */
+.conformite {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+.regle {
+  padding: var(--space-5);
+  border: 1px solid var(--bordure);
+  border-left: 3px solid var(--accent-plein);
+  border-radius: var(--radius-4);
+  background: var(--fond-panneau);
+}
+.regle__titre {
+  font-size: var(--font-size-3);
+  line-height: var(--line-height-3);
+}
+.regle__texte {
+  margin-top: var(--space-2);
+  color: var(--texte-doux);
+  font-size: var(--font-size-2);
+  line-height: var(--line-height-3);
+}
+
+/* =============================================================================
+ * Pied de page + appel à l'action
+ * ========================================================================== */
+.appel {
+  padding: var(--space-7) var(--space-5);
+  border: 1px solid var(--accent-bordure);
+  border-radius: var(--radius-5);
+  background: var(--accent-fond);
+  text-align: center;
+}
+.appel__titre {
+  font-size: var(--font-size-6);
+  line-height: var(--line-height-6);
+  letter-spacing: var(--ls-6);
+}
+.appel__texte {
+  margin: var(--space-3) auto 0;
+  max-width: 54ch;
+  color: var(--texte-doux);
+  font-size: var(--font-size-3);
+  line-height: var(--line-height-3);
+}
+.appel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.pied {
+  border-top: 1px solid var(--bordure);
+  padding-block: var(--space-7);
+  background: var(--fond-doux);
+}
+.pied__grille {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+}
+.pied__titre {
+  font-size: var(--font-size-2);
+  line-height: var(--line-height-2);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--texte-doux);
+}
+.pied__liste {
+  display: grid;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+.pied__lien {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  color: var(--texte-doux);
+  font-size: var(--font-size-2);
+  text-decoration: none;
+}
+.pied__lien:hover { color: var(--texte); text-decoration: underline; }
+.pied__mention {
+  margin-top: var(--space-7);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--bordure);
+  color: var(--texte-doux);
+  font-size: var(--font-size-1);
+  line-height: var(--line-height-2);
+}
+
+/* =============================================================================
+ * Points de rupture — téléphone ~390px par défaut, puis tablette et bureau.
+ * ========================================================================== */
+@media (min-width: 600px) {
+  .entete__appel--court { display: none; }
+  .entete__appel--long { display: inline; }
+  .grille { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .etapes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .conformite { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pied__grille { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .accroche__titre {
+    font-size: var(--font-size-9);
+    line-height: var(--line-height-9);
+    letter-spacing: var(--ls-9);
+  }
+}
+
+@media (min-width: 900px) {
+  .nav { display: block; }
+  .section { padding-block: calc(var(--space-9) + var(--space-5)); }
+  .accroche__grille { grid-template-columns: 1.05fr 0.95fr; }
+  .grille--quatre { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .grille--trois { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .etapes { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .pied__grille { grid-template-columns: 1.4fr 1fr 1fr 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
