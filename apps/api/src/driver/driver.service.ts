@@ -16,7 +16,16 @@ const MAX_ARTIFACT_CHARS = 700_000;
 export interface ProofInput { codCollected?: number; photo?: string | null; signature?: string | null }
 
 function rowToOrder(r: any): Order {
-  return { ...r, createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt } as Order;
+  // Le numéro du destinataire ne descend PAS sur le téléphone du livreur.
+  //
+  // La ligne partait tout entière (`{ ...r }`), `drop_phone` compris, alors que l'écran
+  // de mission annonce au livreur « l'API ne fournit pas de numéro client ». C'était faux :
+  // le numéro voyageait en clair jusqu'à l'appareil, seule l'interface choisissait de ne
+  // pas l'afficher. Le PRD prévoit un relais d'appel qui masque ce numéro ; tant qu'il
+  // n'existe pas, la donnée ne sort pas. Le téléphone du point de RETRAIT reste, lui :
+  // c'est le contact professionnel du marchand, pas celui d'un particulier.
+  const { dropPhone: _client, ...reste } = r;
+  return { ...reste, createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt } as Order;
 }
 
 /** Valide un artefact de preuve : data URI d'un type attendu, de taille bornée. */

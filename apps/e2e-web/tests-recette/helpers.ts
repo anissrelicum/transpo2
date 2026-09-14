@@ -148,10 +148,16 @@ export async function logout(page: Page, name?: string) {
   // en inspectent le contenu). Un cas qui invite puis se déconnecte laissait donc un modal
   // ouvert : le clic sur l'avatar était intercepté et la déconnexion expirait au bout de
   // 20 s, sans rapport avec la règle testée (TC-L07 et TC-Q05, homelab 14/09).
+  // Un dialogue déjà en train de se fermer (le cas vient de cliquer « Fermer », Radix
+  // joue sa sortie) disparaît tout seul : on lui laisse une seconde avant d'insister,
+  // sinon le clic tombait sur un bouton en cours de détachement — TC-B11, 14/09.
   const modal = page.getByRole('dialog');
   if (await modal.count()) {
+    await expect(modal).toHaveCount(0, { timeout: 1_000 }).catch(() => undefined);
+  }
+  if (await modal.count()) {
     const fermer = modal.getByRole('button', { name: 'Fermer' });
-    if (await fermer.count()) await fermer.first().click();
+    if (await fermer.count()) await fermer.first().click().catch(() => undefined);
     else await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
   }
