@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, sql } from './helpers';
+import { loginTenant, shotVp, sql, motDePasse } from './helpers';
 
 // TC-F06 — Transition invalide refusée.
 // PAS : appeler directement l'API pour sauter des étapes, et pour déclarer une livraison
@@ -8,7 +8,7 @@ import { loginTenant, shotVp, sql } from './helpers';
 //       livraison passe par la preuve (app livreur), pas par la console.
 test('TC-F06 — transitions invalides refusées par l’API', async ({ page }) => {
   test.setTimeout(180_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/orders');
 

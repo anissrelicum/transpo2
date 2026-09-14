@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, viderCommandes, sql } from './helpers';
+import { loginTenant, shotVp, viderCommandes, sql, motDePasse } from './helpers';
 
 // TC-F02 — Créer un jeu de commandes.
 // PAS : répéter TC-F01 pour obtenir au moins 6 commandes : 2 avec COD, 2 prépayées,
@@ -17,7 +17,7 @@ const JEU = [
 
 test('TC-F02 — jeu de six commandes créé par l’assistant', async ({ page }) => {
   test.setTimeout(300_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/orders');
   await viderCommandes(page);

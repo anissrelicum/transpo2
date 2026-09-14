@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, sql } from './helpers';
+import { loginTenant, shotVp, sql, motDePasse } from './helpers';
 
 // TC-E07 — Un polygone de moins de trois sommets n'en est pas un.
 // PAS : tracer deux sommets et enregistrer sans effacer ; puis forcer par appel direct.
@@ -7,7 +7,7 @@ import { loginTenant, shotVp, sql } from './helpers';
 //       et rendrait tout géofencing muet.
 test('TC-E07 — polygone à moins de trois sommets refusé', async ({ page }) => {
   test.setTimeout(150_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/zones');
   await expect(page.getByText('Rabat Centre').first()).toBeVisible();

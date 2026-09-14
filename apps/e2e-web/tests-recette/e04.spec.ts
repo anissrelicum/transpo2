@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, sql } from './helpers';
+import { loginTenant, shotVp, sql, motDePasse } from './helpers';
 
 // TC-E04 — Retirer un livreur / supprimer une zone.
 // PAS : retirer le livreur → Enregistrer ; créer une zone jetable → Supprimer la zone.
 // ATT : les deux opérations sont effectives après rechargement.
 test('TC-E04 — retrait d’un livreur et suppression d’une zone', async ({ page }) => {
   test.setTimeout(180_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/zones');
   await expect(page.getByText('Rabat Centre').first()).toBeVisible();

@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp } from './helpers';
+import { loginTenant, shotVp, motDePasse } from './helpers';
 
 // TC-D04 — Renouveler un document.
 // PAS : menu du véhicule 2 → renouveler l'assurance avec une date future → Enregistrer.
 // ATT : l'alerte disparaît de la liste et du tableau de bord.
 test('TC-D04 — renouvellement assurance 2222-B-22, alertes résorbées', async ({ page }) => {
   test.setTimeout(120_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/vehicles');
 

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, isoPlus } from './helpers';
+import { loginTenant, shotVp, isoPlus, motDePasse } from './helpers';
 
 // TC-D18 — Renouvellement dans le passé (non-régression OBS-10).
 // PAS : renouveler une échéance avec une date d'hier, côté chauffeur puis véhicule.
@@ -7,7 +7,7 @@ import { loginTenant, shotVp, isoPlus } from './helpers';
 test('TC-D18 — une échéance ne se renouvelle pas dans le passé', async ({ page }) => {
   test.setTimeout(150_000);
   const hier = isoPlus(-1);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
 
   // 1. Chauffeur : le formulaire refuse la date, le bouton reste hors d'atteinte.

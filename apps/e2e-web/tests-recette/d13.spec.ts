@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp } from './helpers';
+import { loginTenant, shotVp, motDePasse } from './helpers';
 
 // TC-D13 — Immatriculation au format invalide.
 // PAS : ajouter un véhicule de plaque `ABCD`.
 // ATT : refus dans l'UI et par l'API (format marocain NNNN-L-NN).
 test('TC-D13 — immatriculation au format invalide refusée (UI + API)', async ({ page }) => {
   test.setTimeout(120_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/vehicles');
   const avant = await page.getByRole('row').count();

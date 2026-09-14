@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp } from './helpers';
+import { loginTenant, shotVp, motDePasse } from './helpers';
 
 // TC-D05 — Retirer un véhicule.
 // PAS : créer un véhicule jetable, puis menu → Retirer → confirmer.
@@ -9,7 +9,7 @@ import { loginTenant, shotVp } from './helpers';
 // rerattaché à Hamid Ouali en fin de cas.
 test('TC-D05 — retrait d’un véhicule jetable, puis d’un véhicule rattaché', async ({ page }) => {
   test.setTimeout(180_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
 
   async function ajouter(plaque: string) {

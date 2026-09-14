@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, sql, creerCommandes } from './helpers';
+import { loginTenant, shotVp, sql, creerCommandes, motDePasse } from './helpers';
 
 // TC-F07 — Actions de masse.
 // PAS : /orders → cocher 3 commandes → Assigner ; puis cocher 2 commandes → Faire avancer.
 // ATT : les actions s'appliquent à toute la sélection ; la sélection se vide ensuite.
 test('TC-F07 — actions de masse sur une sélection', async ({ page }) => {
   test.setTimeout(240_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/orders');
 

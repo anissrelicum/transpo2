@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp } from './helpers';
+import { loginTenant, shotVp, motDePasse } from './helpers';
 
 // TC-D08 — Rattacher un véhicule.
 // PAS : menu de Hamid Ouali → Rattacher un véhicule → 1111-A-11 → Enregistrer.
@@ -13,7 +13,7 @@ import { loginTenant, shotVp } from './helpers';
 // écrite (rechargement manuel).
 test('TC-D08 — rattachement du véhicule 1111-A-11 à Hamid Ouali', async ({ page }) => {
   test.setTimeout(120_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/drivers');
 

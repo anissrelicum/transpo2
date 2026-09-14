@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp } from './helpers';
+import { loginTenant, shotVp, motDePasse } from './helpers';
 
 // TC-D02 — Ajouter un véhicule non conforme.
 // PAS : ajouter 2222-B-22, Moto, Rabat, assurance à une date passée.
@@ -7,7 +7,7 @@ import { loginTenant, shotVp } from './helpers';
 //       du /dashboard (bloc Assurance).
 test('TC-D02 — véhicule 2222-B-22 à assurance expirée + alerte dashboard', async ({ page }) => {
   test.setTimeout(120_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/vehicles');
   // Pré-requis (hors périmètre) : la plaque doit être libre, l'unicité étant désormais

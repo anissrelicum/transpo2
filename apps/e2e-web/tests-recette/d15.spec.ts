@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp } from './helpers';
+import { loginTenant, shotVp, motDePasse } from './helpers';
 
 // TC-D15 — Un véhicule non actif n'est pas rattachable.
 // PAS : passer 1111-A-11 en maintenance, puis ouvrir « Rattacher un véhicule ».
 // ATT : le véhicule n'est pas proposé ; forcé par appel direct, l'API refuse 400.
 test('TC-D15 — véhicule en maintenance non rattachable (UI + API)', async ({ page }) => {
   test.setTimeout(150_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
 
   // Pré-requis : Sara Bennis sans véhicule, 1111-A-11 actif et détaché de tout le monde.

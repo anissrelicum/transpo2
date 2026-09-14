@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, sql } from './helpers';
+import { loginTenant, shotVp, sql, motDePasse } from './helpers';
 
 // TC-E02 — Effacer le tracé en cours.
 // PAS : rouvrir la zone → Dessiner un polygone → 2 clics → Effacer.
 // ATT : les sommets disparaissent sans supprimer la zone tant qu'on n'enregistre pas.
 test('TC-E02 — « Effacer » ne retire que le tracé en cours', async ({ page }) => {
   test.setTimeout(150_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/zones');
   await expect(page.getByText('Rabat Centre').first()).toBeVisible();

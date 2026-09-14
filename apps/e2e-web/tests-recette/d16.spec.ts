@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp } from './helpers';
+import { loginTenant, shotVp, motDePasse } from './helpers';
 
 // TC-D16 — Véhicule déjà rattaché à un autre chauffeur.
 // PAS : rattacher 1111-A-11 (déjà sur Hamid Ouali) à Sara Bennis.
@@ -7,7 +7,7 @@ import { loginTenant, shotVp } from './helpers';
 //       validation. Le partage n'est pas interdit — il ne doit pas se découvrir après coup.
 test('TC-D16 — un véhicule déjà rattaché est annoncé avant validation', async ({ page }) => {
   test.setTimeout(150_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/drivers');
 

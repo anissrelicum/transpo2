@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, sql } from './helpers';
+import { loginTenant, shotVp, sql, motDePasse } from './helpers';
 
 // TC-E06 — Une zone ne peut pas devenir anonyme ni porter un livreur fantôme.
 // PAS : vider le nom d'une zone et l'enregistrer ; puis, par appel direct, affecter à la
@@ -8,7 +8,7 @@ import { loginTenant, shotVp, sql } from './helpers';
 //       livreur fantôme fausse le dispatch (qui affecte par NOM).
 test('TC-E06 — nom vide et livreur inexistant refusés', async ({ page }) => {
   test.setTimeout(150_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/zones');
   await expect(page.getByText('Rabat Centre').first()).toBeVisible();

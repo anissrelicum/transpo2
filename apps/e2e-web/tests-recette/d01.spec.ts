@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, viderFlotte } from './helpers';
+import { loginTenant, shotVp, viderFlotte, motDePasse } from './helpers';
 
 // TC-D01 — Ajouter un véhicule conforme.
 // PAS : /vehicles → Ajouter un véhicule → 1111-A-11, Fourgon, Rabat, assurance 2029-01-01,
@@ -7,7 +7,7 @@ import { loginTenant, shotVp, viderFlotte } from './helpers';
 // ATT : ligne créée, état ACTIF, aucune alerte de conformité.
 test('TC-D01 — ajout du véhicule conforme 1111-A-11', async ({ page }) => {
   test.setTimeout(120_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/vehicles');
   // Pré-requis (hors périmètre) : le cas décrit l'ajout au PARC VIDE — il doit rester

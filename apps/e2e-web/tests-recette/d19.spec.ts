@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp } from './helpers';
+import { loginTenant, shotVp, motDePasse } from './helpers';
 
 // TC-D19 — Modifier la fiche d'un chauffeur (non-régression AN-14).
 // PAS : menu de Sara Bennis → Modifier la fiche → ville, type déclaré, téléphone, permis.
@@ -7,7 +7,7 @@ import { loginTenant, shotVp } from './helpers';
 // ATT : les champs persistent ; le type déclaré SURVIT au détachement.
 test('TC-D19 — fiche chauffeur modifiable, type déclaré conservé au détachement', async ({ page }) => {
   test.setTimeout(180_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/drivers');
 

@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, sql, creerCommandes } from './helpers';
+import { loginTenant, shotVp, sql, creerCommandes, motDePasse } from './helpers';
 
 // TC-F12 — Annulation.
 // PAS : sur une commande non terminale → Annuler.
 // ATT : statut Annulée ; l'action devient indisponible sur les commandes Livrée et Annulée.
 test('TC-F12 — annulation d’une commande', async ({ page }) => {
   test.setTimeout(180_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/orders');
 

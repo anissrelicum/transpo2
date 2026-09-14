@@ -1,22 +1,14 @@
-import * as fs from 'node:fs';
 import { test, expect } from '@playwright/test';
-import { COMPTES, loginTenant, logout, shotVp } from './helpers';
+import { loginTenant, shotVp, motDePasse } from './helpers';
 
 // TC-E08 — Écriture des zones : ouverte au dispatcher, fermée au comptable.
 // La matrice RBAC du plan (§B) place « Dispatch, Zones… : écriture » en ✅ pour le
 // dispatcher et en ❌ pour le comptable. Le cas confronte les deux rôles.
-function pwdOf(marker: string): string {
-  const lines = fs.readFileSync(COMPTES, 'utf-8').split('\n').filter((l) => l.includes(marker));
-  const m = /tempPassword=(\S+)/.exec(lines.at(-1) ?? '');
-  if (!m) throw new Error(`mot de passe introuvable pour ${marker}`);
-  return m[1];
-}
-
 test('TC-E08 — zones : dispatcher écrit, comptable consulte', async ({ page }) => {
   test.setTimeout(180_000);
 
   // 1. Dispatcher : l'écriture lui est ouverte.
-  let err = await loginTenant(page, 'rabatexpress', 'dispatch@rabatexpress.ma', pwdOf('TC-B11'));
+  let err = await loginTenant(page, 'rabatexpress', 'dispatch@rabatexpress.ma', motDePasse('dispatch@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/zones');
   await expect(page.getByRole('button', { name: 'Nouvelle zone' })).toBeVisible();
@@ -36,8 +28,10 @@ test('TC-E08 — zones : dispatcher écrit, comptable consulte', async ({ page }
   expect(dispatcher).toBe(200);
 
   // 2. Comptable : consultation seule, écritures refusées 403.
-  await logout(page, 'Reda Ziani').catch(() => logout(page));
-  err = await loginTenant(page, 'rabatexpress', 'compta@rabatexpress.ma', pwdOf('TC-B08'));
+  // Le menu avatar n'est pas monté sur toutes les pages : on quitte la session par les
+  // cookies. Ce cas teste le cloisonnement des zones, pas la déconnexion (TC-B06).
+  await page.context().clearCookies();
+  err = await loginTenant(page, 'rabatexpress', 'compta@rabatexpress.ma', motDePasse('compta@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/zones');
   await expect(page.getByRole('button', { name: 'Nouvelle zone' })).toHaveCount(0);

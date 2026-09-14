@@ -1,22 +1,14 @@
-import * as fs from 'node:fs';
 import { test, expect } from '@playwright/test';
-import { COMPTES, loginTenant, shotVp } from './helpers';
+import { loginTenant, shotVp, motDePasse } from './helpers';
 
 // TC-D20 — Écriture flotte réservée à l'admin.
 // PAS : se connecter en dispatcher → /vehicles puis /drivers.
 // ATT : consultation possible ; Ajouter / Retirer / Renouveler / Rattacher / Modifier
 //       absents ou désactivés, et les appels API refusés 403. Seule la bascule de
 //       disponibilité reste ouverte au dispatcher (TC-D10).
-function pwdOf(marker: string): string {
-  const lines = fs.readFileSync(COMPTES, 'utf-8').split('\n').filter((l) => l.includes(marker));
-  const m = /tempPassword=(\S+)/.exec(lines.at(-1) ?? '');
-  if (!m) throw new Error(`mot de passe introuvable pour ${marker}`);
-  return m[1];
-}
-
 test('TC-D20 — flotte en lecture seule pour le dispatcher (UI + API)', async ({ page }) => {
   test.setTimeout(150_000);
-  const err = await loginTenant(page, 'rabatexpress', 'dispatch@rabatexpress.ma', pwdOf('TC-B11'));
+  const err = await loginTenant(page, 'rabatexpress', 'dispatch@rabatexpress.ma', motDePasse('dispatch@rabatexpress.ma'));
   expect(err).toBeNull();
 
   // 1. /vehicles : la liste se consulte, aucune action d'écriture n'est offerte.

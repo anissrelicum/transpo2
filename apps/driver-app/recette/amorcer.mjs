@@ -145,7 +145,24 @@ export default async function amorcer() {
   consigner(MARCHAND.email, 'MERCHANT', motDePasseMarchand);
   console.log(`  compte marchand ${MARCHAND.email} prêt`);
 
-  // 6. Un SECOND tenant, vierge : il sert de témoin au cloisonnement (TC-S02) et aux
+  // 6. Les comptes CONSOLE attendus par les sections C à F (dispatcher, comptable).
+  //    Ils naissaient jusqu'ici de la section B, qu'on ne rejoue pas à chaque fois : sans
+  //    eux, quatre cas de cloisonnement échouaient faute de compte, pas faute de produit.
+  for (const [email, nom, role] of [
+    [`dispatch@${TENANT}.ma`, 'Salma Idrissi', 'DISPATCHER'],
+    [`compta@${TENANT}.ma`, 'Fatima Zahra', 'COMPTABLE'],
+  ]) {
+    const liste = (await tapi('/v1/users')).donnees ?? [];
+    const deja = liste.find((u) => u.email === email);
+    const r = deja
+      ? await tapi(`/v1/users/${deja.id}/reset-password`, { method: 'POST' })
+      : await tapi('/v1/users', { method: 'POST', body: { email, name: nom, role } });
+    if (!r.ok) throw new Error(`compte ${role} refusé (${r.status}) : ${JSON.stringify(r.donnees)}`);
+    consigner(email, role, r.donnees.tempPassword);
+  }
+  console.log('  comptes console : dispatcher et comptable prêts');
+
+  // 7. Un SECOND tenant, vierge : il sert de témoin au cloisonnement (TC-S02) et aux
   //    états vides (TC-T04). Sans lui, « aucune donnée d'un autre tenant n'est visible »
   //    ne serait vérifié contre rien.
   const temoin = process.env.TENANT_TEMOIN || 'tangerlog';

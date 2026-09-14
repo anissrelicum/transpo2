@@ -1,6 +1,6 @@
 import * as fs from 'node:fs';
 import { test, expect } from '@playwright/test';
-import { COMPTES, loginTenant, logout, shotVp, sql } from './helpers';
+import { COMPTES, loginTenant, logout, shotVp, sql, motDePasse } from './helpers';
 
 // TC-F13 — Création par le marchand.
 // PAS : se connecter avec un compte marchand → /portail → créer une commande.
@@ -14,7 +14,7 @@ test('TC-F13 — le marchand crée sa commande, sans pouvoir l’exploiter', asy
   test.setTimeout(240_000);
 
   // 1. L'administrateur crée le compte marchand depuis /users (aucun accès shell requis).
-  let err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  let err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/users');
   // Pré-requis (hors périmètre) : le cas doit se rejouer.

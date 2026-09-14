@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp } from './helpers';
+import { loginTenant, shotVp, motDePasse } from './helpers';
 
 // TC-F08 — Filtres et recherche.
 // PAS : filtrer par Statut, Ville, Marchand, Livreur ; chercher une référence ; Réinitialiser.
 // ATT : chaque filtre réduit réellement la liste, ils se combinent, et Réinitialiser restaure.
 test('TC-F08 — filtres et recherche de la liste des commandes', async ({ page }) => {
   test.setTimeout(180_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/orders');
 

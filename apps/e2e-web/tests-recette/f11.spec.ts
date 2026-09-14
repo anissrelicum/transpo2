@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, sql, creerCommandes } from './helpers';
+import { loginTenant, shotVp, sql, creerCommandes, motDePasse } from './helpers';
 
 // TC-F11 — Fiche commande.
 // PAS : ouvrir /orders/<ref> → onglets Détails, Preuve de livraison, Historique,
@@ -8,7 +8,7 @@ import { loginTenant, shotVp, sql, creerCommandes } from './helpers';
 //       code copié (icône ✓).
 test('TC-F11 — fiche commande : onglets, historique, copie du code', async ({ page }) => {
   test.setTimeout(180_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
 
   // Le cas se fabrique une commande qui a VÉCU : créée, affectée, puis avancée jusqu'à la
@@ -65,15 +65,26 @@ test('TC-F11 — fiche commande : onglets, historique, copie du code', async ({ 
   // Copie du code de suivi : le retour visuel ne doit pas mentir. Le homelab est servi en
   // HTTP — hors contexte sécurisé, `navigator.clipboard` est indisponible et le produit
   // doit retomber sur la méthode de repli plutôt qu'afficher un faux succès.
-  const code = sql(`SELECT code FROM tenant_rabatexpress.orders WHERE ref='${ref}'`);
-  await page.evaluate(() => {
+  // Deux chemins mènent au presse-papiers selon le contexte : `navigator.clipboard` en
+  // contexte sécurisé (localhost, HTTPS), le repli `execCommand` sinon — et seul le
+  // second émet un évènement `copy`. Guetter l'évènement faisait donc échouer le cas en
+  // local alors que le produit copiait bien. On constate le RÉSULTAT : ce qu'il y a dans
+  // le presse-papiers, ou à défaut l'évènement.
+  const code = sql(`SELECT code FROM tenant_rabatexpress.orders WHERE ref='${ref}'`).trim();
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']).catch(() => {});
+  await page.evaluate(async () => {
     (window as any).__copie = null;
     document.addEventListener('copy', () => { (window as any).__copie = true; }, { once: true });
+    await navigator.clipboard?.writeText('').catch(() => {});
   });
   await page.getByRole('button', { name: /Copier le code/ }).click();
-  await page.waitForTimeout(600);
-  const copieReelle = await page.evaluate(() => (window as any).__copie);
-  console.log(`code ${code} · évènement de copie capté → ${copieReelle}`);
-  expect(copieReelle, 'le retour vert doit correspondre à une copie réelle').toBe(true);
+  await page.waitForTimeout(800);
+  const constat = await page.evaluate(async () => ({
+    evenement: (window as any).__copie,
+    contenu: await navigator.clipboard?.readText().catch(() => null),
+  }));
+  console.log(`code ${code} · presse-papiers « ${constat.contenu} » · évènement ${constat.evenement}`);
+  expect(constat.contenu === code || constat.evenement === true,
+    'le retour vert doit correspondre à une copie réelle').toBe(true);
   await shotVp(page, 'TC-F11', '05-code-copie');
 });

@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp } from './helpers';
+import { loginTenant, shotVp, motDePasse } from './helpers';
 
 // TC-E05 — Zones visibles au dispatch et au PC flotte.
 // PAS : ouvrir /dispatch puis /fleet.
 // ATT : la zone « Rabat Centre » est affichée sur les deux cartes.
 test('TC-E05 — la zone est tracée sur les cartes dispatch et PC flotte', async ({ page }) => {
   test.setTimeout(150_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
 
   for (const [url, nom] of [['/dispatch', 'dispatch'], ['/fleet', 'PC flotte']] as const) {

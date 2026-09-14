@@ -17,7 +17,35 @@ test('TC-M04 — générer, envoyer, payer et contester une facture', async ({ r
   const token = (await login.json()).token;
   const entetes = { authorization: `Bearer ${token}`, 'x-tenant-slug': 'rabatexpress', 'content-type': 'application/json' };
 
+  // Décor : au moins une course LIVRÉE pour un marchand — sans quoi la génération n'a
+  // rien à facturer et le cas conclurait à tort qu'elle est muette. Les sections
+  // précédentes annulent leurs commandes en partant ; on ne s'appuie pas sur leurs restes.
   sql(`DELETE FROM tenant_rabatexpress.invoices WHERE period = '${periode}'`);
+  // Une course livrée, par le chemin du terrain (créer → affecter → avancer → preuve).
+  const creee = await (await request.post(`${API}/v1/orders`, {
+    headers: entetes,
+    data: { merchant: 'Boutique Test', fromCity: 'Rabat', toCity: 'Casablanca', cod: 0,
+            proofLevel: 'aucune', dropContact: 'Client Facture', dropAddress: '3 rue du Test' },
+  })).json();
+  await request.post(`${API}/v1/orders/${creee.ref}/assign`, { headers: entetes, data: { driver: 'Hamid Ouali' } });
+  const jetonLivreur = (await (await request.post(`${API}/v1/auth/login`, {
+    headers: { 'content-type': 'application/json', 'x-tenant-slug': 'rabatexpress' },
+    data: { email: 'livreur@rabatexpress.ma', password: motDePasse('livreur@rabatexpress.ma') },
+  })).json()).token;
+  const terrain = { 'content-type': 'application/json', 'x-tenant-slug': 'rabatexpress',
+                    authorization: `Bearer ${jetonLivreur}` };
+  for (const etape of [1, 2, 3]) {
+    await request.post(`${API}/v1/driver/orders/${creee.ref}/advance`, {
+      headers: { ...terrain, 'idempotency-key': `${creee.ref}:adv${etape}` }, data: {},
+    });
+  }
+  await request.post(`${API}/v1/driver/orders/${creee.ref}/proof`, {
+    headers: { ...terrain, 'idempotency-key': `${creee.ref}:prf` }, data: { codCollected: 0 },
+  });
+  const livrables = Number(sql(`SELECT count(*) FROM tenant_rabatexpress.orders
+                                WHERE status = 'LIVREE' AND merchant IS NOT NULL`).trim());
+  console.log(`  décor → ${creee.ref} livrée ; ${livrables} course(s) facturable(s)`);
+  expect(livrables, 'une course livrée pour un marchand est requise').toBeGreaterThan(0);
   const gen = await request.post(`${API}/v1/invoices/generate`, { headers: entetes, data: { period: periode } });
   console.log(`  génération ${periode} → ${gen.status()} ${JSON.stringify(await gen.json().catch(() => null))}`);
   expect(gen.ok()).toBe(true);

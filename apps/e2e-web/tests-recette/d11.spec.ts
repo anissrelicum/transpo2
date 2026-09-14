@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, sql, creerCommandes } from './helpers';
+import { loginTenant, shotVp, sql, creerCommandes, motDePasse } from './helpers';
 
 // TC-D11 — Retirer un chauffeur.
 // PAS : créer un chauffeur jetable → Retirer. Puis sur un chauffeur PORTEUR de commandes
@@ -9,7 +9,7 @@ import { loginTenant, shotVp, sql, creerCommandes } from './helpers';
 //       nom, les courses CLÔTURÉES restent au nom du partant — l'historique dit qui a livré.
 test('TC-D11 — retrait d’un chauffeur, avec transfert de ses courses', async ({ page }) => {
   test.setTimeout(150_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/drivers');
   const jetable = () => page.getByRole('row', { name: /Karim Jetable/ });

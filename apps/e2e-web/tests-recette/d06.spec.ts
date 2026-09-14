@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, viderEffectif } from './helpers';
+import { loginTenant, shotVp, viderEffectif, motDePasse } from './helpers';
 
 // TC-D06 — Ajouter les chauffeurs.
 // PAS : /drivers → Ajouter un chauffeur → Hamid Ouali (données §0.4) → Ajouter ;
@@ -7,7 +7,7 @@ import { loginTenant, shotVp, viderEffectif } from './helpers';
 // ATT : les deux fiches existent ; Sara Bennis est marquée non conforme / non affectable.
 test('TC-D06 — ajout de Hamid Ouali et Sara Bennis (visite échue)', async ({ page }) => {
   test.setTimeout(150_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/drivers');
   // Pré-requis (hors périmètre) : l'effectif doit être vide pour que le cas se rejoue.

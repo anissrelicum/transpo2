@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp } from './helpers';
+import { loginTenant, shotVp, motDePasse } from './helpers';
 
 // TC-D12 — Immatriculation en doublon.
 // PAS : ajouter un véhicule dont la plaque est déjà au parc.
 // ATT : refus 409 « Un véhicule porte déjà cette immatriculation. », rien créé.
 test('TC-D12 — immatriculation en doublon refusée', async ({ page }) => {
   test.setTimeout(120_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/vehicles');
   const avant = await page.getByRole('row').count();

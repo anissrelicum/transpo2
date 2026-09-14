@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, sql } from './helpers';
+import { loginTenant, shotVp, sql, motDePasse } from './helpers';
 
 // TC-C01 — Renseigner l'identité légale.
 // PAS : /settings → Raison sociale, ICE/RC, adresse complète → Enregistrer.
 // ATT : bouton passe à « Enregistré ✓ » ; après rechargement, les valeurs persistent.
 test('TC-C01 — identité légale : enregistrement et persistance', async ({ page }) => {
   test.setTimeout(120_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/settings');
   await expect(page.getByRole('heading', { name: 'Identité légale' })).toBeVisible();

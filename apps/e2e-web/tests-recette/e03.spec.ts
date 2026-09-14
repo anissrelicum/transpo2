@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, sql } from './helpers';
+import { loginTenant, shotVp, sql, motDePasse } from './helpers';
 
 // TC-E03 — Affecter un livreur à la zone.
 // PAS : dans l'éditeur → Ajouter → Hamid Ouali → Enregistrer.
@@ -7,7 +7,7 @@ import { loginTenant, shotVp, sql } from './helpers';
 //       « Tous les livreurs sont affectés. » s'affiche.
 test('TC-E03 — affectation des livreurs à la zone', async ({ page }) => {
   test.setTimeout(180_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/zones');
   await expect(page.getByText('Rabat Centre').first()).toBeVisible();

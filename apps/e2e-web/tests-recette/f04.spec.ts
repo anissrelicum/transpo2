@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, sql } from './helpers';
+import { loginTenant, shotVp, sql, motDePasse } from './helpers';
 
 // TC-F04 — Assignation depuis la liste.
 // PAS : /orders → menu « … » → Assigner un livreur › Hamid Ouali.
 // ATT : statut Assignée, chauffeur affiché ; le chauffeur déjà affecté est marqué d'un ✓.
 test('TC-F04 — assignation depuis la liste des commandes', async ({ page }) => {
   test.setTimeout(180_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/orders');
 

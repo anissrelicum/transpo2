@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp } from './helpers';
+import { loginTenant, shotVp, motDePasse } from './helpers';
 
 // TC-D14 — Chauffeur homonyme.
 // PAS : créer un second « Hamid Ouali ».
@@ -7,7 +7,7 @@ import { loginTenant, shotVp } from './helpers';
 //       chauffeur par son nom, l'unicité est une règle métier.
 test('TC-D14 — chauffeur homonyme refusé', async ({ page }) => {
   test.setTimeout(120_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/drivers');
   await expect(page.getByRole('row', { name: /Hamid Ouali/ })).toHaveCount(1);

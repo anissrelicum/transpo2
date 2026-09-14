@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp } from './helpers';
+import { loginTenant, shotVp, motDePasse } from './helpers';
 
 // TC-D17 — Retrait d'un véhicule rattaché (non-régression AN-15).
 // PAS : menu de 1111-A-11 (rattaché à Hamid Ouali) → Retirer → confirmer.
 // ATT : refus explicite NOMMANT le chauffeur ; véhicule toujours au parc, fiche intacte.
 test('TC-D17 — retrait d’un véhicule rattaché refusé, chauffeur nommé', async ({ page }) => {
   test.setTimeout(150_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/drivers');
 

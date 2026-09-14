@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp } from './helpers';
+import { loginTenant, shotVp, motDePasse } from './helpers';
 
 // TC-D03 — Changer d'état.
 // PAS : menu du véhicule 1 → MAINTENANCE, vérifier ; → HORS SERVICE, vérifier ; → ACTIF.
 // ATT : l'état change à chaque fois et est reflété dans la liste.
 test('TC-D03 — cycle Actif → Maintenance → Hors service → Actif', async ({ page }) => {
   test.setTimeout(120_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/vehicles');
   const row = page.getByRole('row', { name: /1111-A-11/ });

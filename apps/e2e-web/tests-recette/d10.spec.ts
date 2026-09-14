@@ -1,26 +1,18 @@
-import * as fs from 'node:fs';
 import { test, expect } from '@playwright/test';
-import { COMPTES, loginTenant, logout, shotVp } from './helpers';
+import { loginTenant, logout, shotVp, motDePasse } from './helpers';
 
 // TC-D10 — Disponibilité.
 // PAS : basculer la disponibilité de Sara Bennis sur « indisponible » (accessible aussi au
 //       dispatcher).
 // ATT : bascule persistée ; un chauffeur indisponible ne doit plus être proposé par le
 //       dispatch (vérifié en TC-F03).
-function pwdOf(marker: string): string {
-  const lines = fs.readFileSync(COMPTES, 'utf-8').split('\n').filter((l) => l.includes(marker));
-  const m = /tempPassword=(\S+)/.exec(lines.at(-1) ?? '');
-  if (!m) throw new Error(`mot de passe introuvable pour ${marker}`);
-  return m[1];
-}
-
 test('TC-D10 — bascule de disponibilité, admin puis dispatcher', async ({ page }) => {
   test.setTimeout(150_000);
   const sara = () => page.getByRole('row', { name: /Sara Bennis/ });
   const bascule = () => sara().getByRole('switch');
 
   // 1. Administrateur : Sara passe indisponible.
-  let err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  let err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/drivers');
   // Pré-requis (hors périmètre) : le cas part d'une Sara disponible, pour être rejouable.
@@ -49,7 +41,7 @@ test('TC-D10 — bascule de disponibilité, admin puis dispatcher', async ({ pag
 
   // 2. Dispatcher : la bascule lui est ouverte (elle n'est pas réservée à l'admin).
   await logout(page, 'Nadia Alaoui');
-  err = await loginTenant(page, 'rabatexpress', 'dispatch@rabatexpress.ma', pwdOf('TC-B11'));
+  err = await loginTenant(page, 'rabatexpress', 'dispatch@rabatexpress.ma', motDePasse('dispatch@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/drivers');
   await expect(bascule()).toBeEnabled();

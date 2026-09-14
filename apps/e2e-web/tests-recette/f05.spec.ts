@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, sql } from './helpers';
+import { loginTenant, shotVp, sql, motDePasse } from './helpers';
 
 // TC-F05 — Progression pas à pas.
 // PAS : sur une commande assignée, Faire progresser de façon répétée.
@@ -8,7 +8,7 @@ import { loginTenant, shotVp, sql } from './helpers';
 //       l'app livreur, avec preuve.
 test('TC-F05 — progression pas à pas jusqu’à la livraison en cours', async ({ page }) => {
   test.setTimeout(180_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/orders');
 

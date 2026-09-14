@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, sql } from './helpers';
+import { loginTenant, shotVp, sql, motDePasse } from './helpers';
 
 // TC-C02 — Commission & TVA.
 // PAS : régler la commission plateforme (ex. 15 %) et la TVA (20 %) → Enregistrer.
@@ -7,7 +7,7 @@ import { loginTenant, shotVp, sql } from './helpers';
 // Pour prouver l'écriture réelle, on passe la commission à 18 % puis on la restaure à 15 %.
 test('TC-C02 — commission & TVA : enregistrement, persistance, restauration', async ({ page }) => {
   test.setTimeout(120_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/settings');
 

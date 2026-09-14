@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, sql } from './helpers';
+import { loginTenant, shotVp, sql, motDePasse } from './helpers';
 
 // TC-F03 — Assignation depuis le dispatch (score).
 // PAS : /dispatch → une commande non affectée → Affecter.
@@ -8,7 +8,7 @@ import { loginTenant, shotVp, sql } from './helpers';
 //       n'apparaît pas. Choisir → la commande passe en Assignée.
 test('TC-F03 — assignation par score depuis le dispatch', async ({ page }) => {
   test.setTimeout(180_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
 
   // Décor : Sara Bennis est laissée indisponible par TC-D10 — elle ne doit pas être proposée.

@@ -1,20 +1,12 @@
-import * as fs from 'node:fs';
 import { test, expect } from '@playwright/test';
-import { COMPTES, loginTenant, shotVp } from './helpers';
+import { loginTenant, shotVp, motDePasse } from './helpers';
 
 // TC-C04 — Écriture réservée à l'admin.
 // PAS : se connecter en dispatcher → /settings.
 // ATT : consultation possible, Enregistrer absent/refusé (403 côté API).
-function pwdOf(marker: string): string {
-  const lines = fs.readFileSync(COMPTES, 'utf-8').split('\n').filter((l) => l.includes(marker));
-  const m = /tempPassword=(\S+)/.exec(lines.at(-1) ?? '');
-  if (!m) throw new Error(`mot de passe introuvable pour ${marker}`);
-  return m[1];
-}
-
 test('TC-C04 — /settings en lecture seule pour le dispatcher', async ({ page }) => {
   test.setTimeout(120_000);
-  const err = await loginTenant(page, 'rabatexpress', 'dispatch@rabatexpress.ma', pwdOf('TC-B11'));
+  const err = await loginTenant(page, 'rabatexpress', 'dispatch@rabatexpress.ma', motDePasse('dispatch@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/settings');
   await expect(page.getByRole('heading', { name: 'Identité légale' })).toBeVisible();

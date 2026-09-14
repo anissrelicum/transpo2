@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, sql } from './helpers';
+import { loginTenant, shotVp, sql, motDePasse } from './helpers';
 
 // TC-C03 — Régional.
 // PAS : devise, fuseau horaire, langue par défaut → Enregistrer.
@@ -9,7 +9,7 @@ import { loginTenant, shotVp, sql } from './helpers';
 // dépend du cookie `lang`, pas de ce réglage — pas d'impact sur l'UI du test).
 test('TC-C03 — régional : langue par défaut persistée', async ({ page }) => {
   test.setTimeout(120_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/settings');
 

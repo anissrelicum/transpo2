@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, creerCommandes, sql } from './helpers';
+import { loginTenant, shotVp, creerCommandes, sql, motDePasse } from './helpers';
 
 // TC-F10 — Pagination.
 // PAS : dépasser une page (8 par page), naviguer avec ‹ / › et les numéros.
 // ATT : pagination réelle, page courante mise en évidence, bornes désactivées aux extrémités.
 test('TC-F10 — pagination de la liste des commandes', async ({ page }) => {
   test.setTimeout(240_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/orders');
 

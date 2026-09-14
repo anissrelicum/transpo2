@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, sql } from './helpers';
+import { loginTenant, shotVp, sql, motDePasse } from './helpers';
 
 // TC-E01 — Créer une zone.
 // PAS : /zones → Nouvelle zone → nom FR « Rabat Centre », nom AR, couleur indigo →
@@ -7,7 +7,7 @@ import { loginTenant, shotVp, sql } from './helpers';
 // ATT : zone visible dans la liste et tracée sur la carte.
 test('TC-E01 — création de la zone Rabat Centre avec polygone', async ({ page }) => {
   test.setTimeout(180_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/zones');
 

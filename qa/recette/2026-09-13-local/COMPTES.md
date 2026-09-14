@@ -13,3 +13,11 @@
 - 2026-09-14T02:52:31.276Z — compta.hub@rabatexpress.ma — COMPTABLE — tempPassword=s7XwBaK2AABi
 - 2026-09-14T04:19:24.130Z — dispatch.finance@rabatexpress.ma — DISPATCHER — tempPassword=9VMrOwuTypst
 - 2026-09-14T04:43:40.258Z — dispatch.fraude@rabatexpress.ma — DISPATCHER — tempPassword=it8BaHNKMXSe
+- 2026-09-14T06:21:33.258Z — admin@rabatexpress.ma — ADMIN — tempPassword=KvpiTUn3zsev
+- 2026-09-14T06:21:58.405Z — admin@rabatexpress.ma — ADMIN — tempPassword=8ldxD52UM1d9
+- 2026-09-14T06:21:58.498Z — livreur@rabatexpress.ma — DRIVER — tempPassword=3_WZbsGiEM1e
+- 2026-09-14T06:21:58.538Z — marchand@rabatexpress.ma — MERCHANT — tempPassword=vq8shu4Gz7_a
+- 2026-09-14T06:21:58.573Z — dispatch@rabatexpress.ma — DISPATCHER — tempPassword=2SyHsb8gXTAP
+- 2026-09-14T06:21:58.607Z — compta@rabatexpress.ma — COMPTABLE — tempPassword=yATtVr3MheV4
+- 2026-09-14T06:21:58.647Z — admin@tangerlog.ma — ADMIN — tempPassword=6OG0muUtThEa
+TC-F13 rabatexpress MERCHANT marchand@rabatexpress.ma tempPassword=Rfn5oYDU_3Li

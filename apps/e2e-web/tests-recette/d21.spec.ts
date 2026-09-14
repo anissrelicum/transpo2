@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, isoPlus } from './helpers';
+import { loginTenant, shotVp, isoPlus, motDePasse } from './helpers';
 
 // TC-D21 — Aucune action de la flotte ne fige la console (non-régression AN-13).
 // PAS : enchaîner sans jamais recharger — rattacher, renouveler, modifier une fiche,
@@ -13,7 +13,7 @@ type Etat = { pointerEvents: string; scrollLocked: boolean; ariaHiddenRacine: bo
 
 test('TC-D21 — la console reste vivante après chaque action de la flotte', async ({ page }) => {
   test.setTimeout(180_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
 
   async function etat(): Promise<Etat> {

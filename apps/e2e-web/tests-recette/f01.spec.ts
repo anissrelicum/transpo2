@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, sql } from './helpers';
+import { loginTenant, shotVp, sql, motDePasse } from './helpers';
 
 // TC-F01 — Créer la première commande (assistant).
 // PAS : /orders/new → point de retrait → point de livraison → colis & options → Créer.
@@ -7,7 +7,7 @@ import { loginTenant, shotVp, sql } from './helpers';
 //       commande créée est ATTEIGNABLE depuis l'écran d'arrivée.
 test('TC-F01 — création d’une commande par l’assistant', async ({ page }) => {
   test.setTimeout(180_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
 
   // Pré-requis (hors périmètre) : repartir d'un carnet vide pour que le cas se rejoue.

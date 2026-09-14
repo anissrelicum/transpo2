@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { loginTenant, shotVp, isoPlus } from './helpers';
+import { loginTenant, shotVp, isoPlus, motDePasse } from './helpers';
 
 // TC-D09 — Régulariser un chauffeur.
 // PAS : renouveler la visite médicale de Sara Bennis avec une date future → Enregistrer.
 // ATT : elle redevient affectable.
 test('TC-D09 — visite médicale renouvelée, Sara Bennis redevient affectable', async ({ page }) => {
   test.setTimeout(120_000);
-  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+  const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', motDePasse('admin@rabatexpress.ma'));
   expect(err).toBeNull();
   await page.goto('/drivers');
 
