@@ -42,6 +42,11 @@ export PG_EXEC="${PG_EXEC:-docker exec transpo2-postgres-1}"
 export ACCOUNT_EXEC="${ACCOUNT_EXEC:-pnpm --filter @transpo/db account}"
 JOURNAL="qa/recette/$RUN_ID/journal.txt"
 mkdir -p "qa/recette/$RUN_ID"
+# Le journal repart à chaque lancement. Il s'accumulait d'un run à l'autre, si bien que le
+# décompte final additionnait les passages de la journée : le 14/09 il a rendu les 69 échecs
+# du matin comme s'ils venaient du rejeu qui venait de passer au vert.
+[ -f "$JOURNAL" ] && mv "$JOURNAL" "qa/recette/$RUN_ID/journal-$(date +%H%M%S).txt"
+: > "$JOURNAL"
 
 etape() { echo -e "\n===== $* =====" | tee -a "$JOURNAL"; }
 web()   { (cd apps/e2e-web && pnpm exec playwright test --config playwright.recette-video.config.ts "$@") 2>&1 | tee -a "$JOURNAL"; }

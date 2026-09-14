@@ -168,9 +168,13 @@ export async function logout(page: Page, name?: string) {
     await page.waitForURL('**/login**', { timeout: 15_000 });
     return;
   }
+  // Le menu avatar de la barre supérieure est un `div` (DropdownMenu.Trigger enveloppe un
+  // Flex) ; les menus « … » des lignes sont des `button`. Viser `[aria-haspopup="menu"]`
+  // sans distinguer prenait donc le menu de la PREMIÈRE LIGNE sur /users — un menu qui ne
+  // contient évidemment pas « Se déconnecter ». TC-L07 et TC-Q05 expiraient là-dessus.
   const cible = () => (name
     ? page.locator('div[aria-haspopup="menu"]').filter({ hasText: name })
-    : page.locator('[aria-haspopup="menu"]').first());
+    : page.locator('div[aria-haspopup="menu"]').first());
   // La matrice RBAC (B15) laisse la page sur un ecran d'acces refuse, qui n'a pas de
   // barre superieure : on revient sur une page applicative avant de deconnecter.
   if (!(await cible().count())) {

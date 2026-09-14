@@ -8,6 +8,7 @@
 // Lancement : node recette/amorcer.mjs   (API_URL / RUN_ID surchargent l'environnement)
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { execSync } from 'node:child_process';
 
 const API = process.env.API_URL || 'http://localhost:3000';
 const TENANT = process.env.TENANT_SLUG || 'rabatexpress';
@@ -19,6 +20,17 @@ export const CHAUFFEUR = 'Hamid Ouali';
 export const CHAUFFEUR_BIS = 'Sara Bennis';
 
 const RUN = process.env.RUN_ID || '2026-09-13-local';
+// Cité en clair par TC-A28, TC-A29 et TC-B02 : ce mot de passe fait partie du jeu de
+// données §0.4, ce n'est pas un secret d'exploitation.
+const MDP_ADMIN = 'Test1234';
+
+/** Pose un compte par le CLI `account`, quel que soit l'environnement (cf. §0.4). */
+function compteCli(tenant, email, nom, role, motDePasse) {
+  const args = `${tenant} ${email} '${nom}' ${role} ${motDePasse}`;
+  const base = process.env.ACCOUNT_EXEC || 'pnpm --filter @transpo/db account';
+  const cmd = base.includes('%ARGS%') ? base.replace('%ARGS%', args) : `${base} ${args}`;
+  return execSync(cmd, { encoding: 'utf-8' }).trim().split('\n').pop();
+}
 const QA = path.resolve(import.meta.dirname, '../../../qa/recette', RUN);
 
 async function appel(chemin, { method = 'GET', body, jeton, tenant } = {}) {
@@ -53,7 +65,6 @@ export default async function amorcer() {
 
   // 1. L'organisation. Déjà là (run précédent) → on réamorce son admin plutôt que d'échouer.
   const tenants = (await appel('/v1/saas/tenants', { jeton: jetonSuper })).donnees ?? [];
-  let motDePasseAdmin;
   if (!tenants.some((t) => t.slug === TENANT)) {
     const p = await appel('/v1/saas/tenants', {
       method: 'POST', jeton: jetonSuper,
@@ -61,19 +72,17 @@ export default async function amorcer() {
               adminEmail: ADMIN.email, adminName: ADMIN.name },
     });
     if (!p.ok) throw new Error(`provisioning refusé (${p.status}) : ${JSON.stringify(p.donnees)}`);
-    motDePasseAdmin = p.donnees.admin.tempPassword;
     console.log(`  organisation ${TENANT} provisionnée (plan Transporteur)`);
   } else {
-    const r = await appel(`/v1/saas/tenants/${TENANT}/admin`, {
-      method: 'POST', jeton: jetonSuper, body: { email: ADMIN.email, name: ADMIN.name },
-    });
-    if (!r.ok) throw new Error(`réamorçage admin refusé (${r.status})`);
-    // La réponse porte le compte sous `admin` — le lire à plat inscrivait « undefined »
-    // dans COMPTES.md, et TOUS les cas suivants échouaient sur une connexion refusée.
-    motDePasseAdmin = r.donnees.admin?.tempPassword ?? r.donnees.tempPassword;
-    if (!motDePasseAdmin) throw new Error('réamorçage admin : aucun mot de passe rendu');
-    console.log(`  organisation ${TENANT} déjà là — administrateur réamorcé`);
+    console.log(`  organisation ${TENANT} déjà là`);
   }
+
+  // L'administrateur garde le mot de passe du jeu de données §0.4, il n'est pas retiré au
+  // sort. Le décor le regénérait : après lui, toute la section B — qui cite `Test1234`,
+  // posé par TC-B02 — devenait injouable, et un cas rejoué seul échouait sur « Identifiants
+  // invalides » sans aucun rapport avec la règle testée.
+  const motDePasseAdmin = MDP_ADMIN;
+  console.log(`  ${compteCli(TENANT, ADMIN.email, ADMIN.name, 'ADMIN', MDP_ADMIN)}`);
   consigner(ADMIN.email, 'ADMIN', motDePasseAdmin);
 
   // 2. Session admin du tenant : tout le reste du décor passe par ses droits.

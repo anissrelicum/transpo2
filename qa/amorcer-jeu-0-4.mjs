@@ -26,9 +26,9 @@ const MDP_ADMIN = 'Test1234';
 
 const ORGS = [
   { slug: 'rabatexpress', name: 'Rabat Express', city: 'Rabat', admin: 'Nadia Alaoui',
-    entreprise: true },
-  { slug: 'tangerlog', name: 'Tanger Logistique', city: 'Tanger', admin: 'Youssef Berrada',
-    entreprise: false },
+    plan: 'transporteur', entreprise: true },
+  { slug: 'tangerlog', name: 'Tanger Logistique', city: 'Tanger', admin: 'Omar Tazi',
+    plan: 'tpe-coursier', entreprise: false },
 ];
 
 async function appel(chemin, { method = 'GET', body, jeton } = {}) {
@@ -68,7 +68,7 @@ for (const org of ORGS) {
   if (!parc.some((t) => t.slug === org.slug)) {
     const p = await appel('/v1/saas/tenants', {
       method: 'POST', jeton,
-      body: { slug: org.slug, name: org.name, city: org.city, planCode: 'transporteur',
+      body: { slug: org.slug, name: org.name, city: org.city, planCode: org.plan,
               adminEmail: `admin@${org.slug}.ma`, adminName: org.admin },
     });
     if (!p.ok) throw new Error(`provisioning ${org.slug} refusé (${p.status}) : ${JSON.stringify(p.donnees)}`);
