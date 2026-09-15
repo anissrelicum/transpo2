@@ -21,11 +21,11 @@
 <meta name="twitter:description" content="Dispatch, flotte, preuve de livraison et chaîne complète du paiement à la livraison. Conçu pour les transporteurs marocains.">
 <meta name="twitter:image" content="https://transpo.wedowonders.com/img/console-tableau-de-bord.png">
 
-<meta name="theme-color" content="#3e63dd" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#11131f" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#30a46c" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1f17" media="(prefers-color-scheme: dark)">
 
 <link rel="stylesheet" href="styles.css">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='6' fill='%233e63dd'/%3E%3Cpath d='M6.5 10.5h8.2v5.4H6.5z' fill='none' stroke='%23fff' stroke-width='1.8'/%3E%3Cpath d='M14.7 12.6h3.1l2.6 2.4v.9h-5.7z' fill='none' stroke='%23fff' stroke-width='1.8'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='7' fill='%2330a46c'/%3E%3Cpath d='M6.5 10.5h8.2v5.4H6.5z' fill='none' stroke='%23fff' stroke-width='1.8'/%3E%3Cpath d='M14.7 12.6h3.1l2.6 2.4v.9h-5.7z' fill='none' stroke='%23fff' stroke-width='1.8'/%3E%3C/svg%3E">
 
 <script type="application/ld+json">
 {
@@ -77,6 +77,8 @@
           "acceptedAnswer": { "@type": "Answer", "text": "Oui. Changement de statut, preuve de livraison et encaissement se font hors connexion, se mettent en file et se rejouent au retour du réseau, sans jamais produire deux fois le même effet." } },
         { "@type": "Question", "name": "Comment le paiement à la livraison est-il suivi ?",
           "acceptedAnswer": { "@type": "Answer", "text": "De bout en bout : encaissement chez le client, caisse du livreur alimentée course par course, déclaration du livreur, dépôt en agence, écart motivé, puis reversement au marchand net de commission." } },
+        { "@type": "Question", "name": "Combien coûte une course dans la grille par défaut ?",
+          "acceptedAnswer": { "@type": "Answer", "text": "La grille d'amorçage va de 22 DH jusqu'à 3 km à 75 DH de 15 à 30 km, puis 3,20 DH par kilomètre au-delà, avec des majorations de 15 DH pour un colis fragile et 10 DH pour une livraison programmée. Elle est entièrement modifiable par société et négociable par marchand." } },
         { "@type": "Question", "name": "Le logiciel est-il disponible en arabe ?",
           "acceptedAnswer": { "@type": "Answer", "text": "Oui, en français et en arabe, avec inversion complète de la mise en page en arabe." } }
       ]
@@ -92,21 +94,23 @@
 <header class="entete">
   <div class="conteneur entete__barre">
     <a class="marque" href="#contenu" aria-label="Transpo, accueil">
-      <svg class="marque__logo" width="30" height="30" viewBox="0 0 28 28" aria-hidden="true" focusable="false">
-        <rect x="1" y="1" width="26" height="26" rx="6" fill="var(--accent-plein)"></rect>
-        <path d="M7 17.5h2.6a2.6 2.6 0 0 0 5.2 0h3.4a2.2 2.2 0 0 0 4.4 0H22" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"></path>
-        <path d="M6.5 10.5h8.2v5.4H6.5z" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"></path>
-        <path d="M14.7 12.6h3.1l2.6 2.4v0.9h-5.7z" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"></path>
-      </svg>
-      <span>Transpo</span>
+      <span class="marque__pastille" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" focusable="false">
+          <path d="M3 15.5h2.2a2.3 2.3 0 0 0 4.6 0h3a2 2 0 0 0 4 0H19" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"></path>
+          <path d="M3.5 8.5h7.2v5H3.5z" fill="none" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"></path>
+          <path d="M10.7 10.2h2.8l2.3 2.1v1.2h-5.1z" fill="none" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"></path>
+        </svg>
+      </span>
+      <span class="marque__nom">Transpo</span>
     </a>
 
     <nav class="nav" aria-label="Navigation principale">
       <ul class="nav__liste">
-        <li><a class="nav__lien" href="#exploitation">La console</a></li>
+        <li><a class="nav__lien" href="#etapes">Comment ça marche</a></li>
+        <li><a class="nav__lien" href="#console">La console</a></li>
         <li><a class="nav__lien" href="#terrain">L’app livreur</a></li>
-        <li><a class="nav__lien" href="#argent">L’argent</a></li>
-        <li><a class="nav__lien" href="#demarrer">Démarrer</a></li>
+        <li><a class="nav__lien" href="#tarifs">Tarifs</a></li>
+        <li><a class="nav__lien" href="#couverture">Couverture</a></li>
       </ul>
     </nav>
 
@@ -118,111 +122,209 @@
 
 <main id="contenu">
 
-  <!-- ============================== Accroche ============================== -->
+  <!-- ================================ Accroche =============================== -->
   <section class="heros" aria-labelledby="heros-titre">
-    <div class="heros__halo" aria-hidden="true"></div>
-    <div class="conteneur">
+    <span class="deco deco--a" aria-hidden="true"></span>
+    <span class="etincelle etincelle--1" aria-hidden="true"></span>
+    <span class="etincelle etincelle--2" aria-hidden="true"></span>
+
+    <div class="conteneur heros__grille">
       <div class="heros__texte">
-        <p class="etiquette"><span class="etiquette__point" aria-hidden="true"></span> Pour les sociétés de transport et de livraison · Maroc</p>
-        <h1 class="heros__titre" id="heros-titre">Votre exploitation ne tient plus dans un cahier et trois groupes WhatsApp.</h1>
+        <p class="etiquette">Pour les sociétés de transport et de livraison · Maroc</p>
+        <h1 class="heros__titre" id="heros-titre">
+          Le logiciel qui tient votre exploitation
+          <span class="encadre">d’un bout à l’autre</span>
+        </h1>
         <p class="heros__phrase">
-          Transpo est le logiciel des transporteurs marocains : le dispatch affecte, le livreur
-          exécute <strong>même sans réseau</strong>, la livraison laisse une <strong>preuve opposable</strong>,
-          et chaque dirham encaissé à la porte est suivi <strong>jusqu’au reversement du marchand</strong>.
+          Le dispatch affecte, le livreur exécute même sans réseau, la livraison laisse une
+          preuve opposable, et chaque dirham encaissé à la porte est suivi jusqu’au
+          reversement du marchand.
         </p>
-        <div class="heros__actions">
-          <a class="bouton bouton--principal bouton--grand" href="#contact">Demander une démonstration</a>
-          <a class="bouton bouton--fantome bouton--grand" href="#exploitation">Voir la console</a>
+
+        <form class="rampe" id="form-rampe">
+          <label class="rampe__label" for="r-email">Votre e-mail professionnel</label>
+          <div class="rampe__ligne">
+            <input id="r-email" name="email" type="email" placeholder="vous@votre-societe.ma" autocomplete="email" required>
+            <button class="bouton bouton--principal" type="submit">Demander une démo</button>
+          </div>
+          <p class="rampe__note">Réponse sous deux jours ouvrés. Aucun engagement.</p>
+        </form>
+      </div>
+
+      <!-- Illustration à plat, dessinée en SVG : aucune image externe. -->
+      <div class="heros__image">
+        <svg class="illu-coursier" viewBox="0 0 520 420" role="img" aria-labelledby="illu-titre">
+          <title id="illu-titre">Un livreur à vélo transportant un colis</title>
+          <circle cx="268" cy="196" r="178" fill="var(--vert-4)"></circle>
+          <circle cx="268" cy="196" r="178" fill="none" stroke="var(--vert-6)" stroke-width="2" stroke-dasharray="7 10"></circle>
+
+          <!-- sol -->
+          <path d="M60 352h400" stroke="var(--vert-7)" stroke-width="4" stroke-linecap="round" fill="none"></path>
+
+          <!-- roues -->
+          <g fill="none" stroke="var(--encre)" stroke-width="7">
+            <circle cx="150" cy="316" r="52"></circle>
+            <circle cx="372" cy="316" r="52"></circle>
+          </g>
+          <g fill="none" stroke="var(--vert-8)" stroke-width="3">
+            <circle cx="150" cy="316" r="38"></circle>
+            <circle cx="372" cy="316" r="38"></circle>
+          </g>
+          <g fill="var(--encre)"><circle cx="150" cy="316" r="6"></circle><circle cx="372" cy="316" r="6"></circle></g>
+
+          <!-- cadre -->
+          <g fill="none" stroke="var(--encre)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M150 316 235 232 300 316 372 316"></path>
+            <path d="M235 232 300 316"></path>
+            <path d="M300 316 322 238"></path>
+            <path d="M300 240h44"></path>
+            <path d="M235 232v-26"></path>
+          </g>
+          <path d="M214 204h42" stroke="var(--encre)" stroke-width="8" stroke-linecap="round"></path>
+
+          <!-- colis sur porte-bagages -->
+          <g>
+            <rect x="326" y="168" width="96" height="84" rx="10" fill="var(--vert-9)"></rect>
+            <path d="M326 202h96" stroke="var(--vert-11)" stroke-width="5"></path>
+            <path d="M366 168v84" stroke="var(--vert-11)" stroke-width="5"></path>
+            <rect x="326" y="168" width="96" height="84" rx="10" fill="none" stroke="var(--encre)" stroke-width="5"></rect>
+          </g>
+
+          <!-- pédalier : sans lui, les jambes du livreur flottent dans le vide -->
+          <g>
+            <circle cx="300" cy="316" r="15" fill="none" stroke="var(--encre)" stroke-width="6"></circle>
+            <path d="M300 316l-16 14" stroke="var(--encre)" stroke-width="6" stroke-linecap="round"></path>
+            <path d="M276 330h18" stroke="var(--vert-11)" stroke-width="9" stroke-linecap="round"></path>
+          </g>
+
+          <!-- livreur -->
+          <g>
+            <path d="M268 250l-4 36 20 40" fill="none" stroke="var(--encre)" stroke-width="15"
+                  stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M284 326h16" stroke="var(--vert-11)" stroke-width="11" stroke-linecap="round"></path>
+            <path d="M266 254c6-32 16-54 28-64l26 18c-12 12-20 30-24 50z" fill="var(--encre)"></path>
+            <path d="M296 200l-52 6" stroke="var(--peau)" stroke-width="13" stroke-linecap="round" fill="none"></path>
+            <path d="M296 176l10-14 12 8-8 16z" fill="var(--peau)"></path>
+            <circle cx="310" cy="152" r="22" fill="var(--peau)"></circle>
+            <path d="M288 150a23 21 0 0 1 45-2l1 7-47 2z" fill="var(--vert-9)"></path>
+            <path d="M333 155h9a4 4 0 0 1 0 8h-9z" fill="var(--vert-11)"></path>
+          </g>
+        </svg>
+
+        <!-- Deux cartes de produit, posées sur l'illustration. -->
+        <div class="vignette vignette--preuve">
+          <span class="vignette__pastille" aria-hidden="true"></span>
+          <div><p class="vignette__titre">Preuve enregistrée</p><p class="vignette__sous">Photo + signature · 13:05</p></div>
+        </div>
+        <div class="vignette vignette--cash">
+          <span class="vignette__pastille vignette__pastille--or" aria-hidden="true"></span>
+          <div><p class="vignette__titre">640 DH encaissés</p><p class="vignette__sous">Portés à la caisse du jour</p></div>
         </div>
       </div>
-
-      <!-- Vraies copies d'écran, présentées en perspective (scene.js). -->
-      <div class="vitre" data-scene>
-        <figure class="ecran-console" data-tilt-doux>
-          <img src="img/console-tableau-de-bord.png" width="1800" height="1128" loading="eager" decoding="async"
-               alt="Tableau de bord de la console Transpo : compteurs de commandes, en cours, livrées, échouées et COD encaissé, activité de la journée, conformité de la flotte et liste des commandes urgentes.">
-        </figure>
-        <figure class="ecran-mobile" data-flotte-tel>
-          <img src="img/app-livreur-missions.png" width="495" height="1100" loading="eager" decoding="async"
-               alt="Écran « Mes missions » de l’application livreur : huit courses actives, montant total de COD à encaisser, et pour chaque course la ville de retrait, la ville de livraison, le marchand et le montant à encaisser.">
-        </figure>
-      </div>
-
-      <ul class="heros__preuves">
-        <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path></svg> Français et arabe, mise en page inversée</li>
-        <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path></svg> Vos données cloisonnées de celles des autres sociétés</li>
-        <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path></svg> Exploitable sous votre propre marque</li>
-      </ul>
     </div>
   </section>
 
-  <!-- ============================ Ce que ça coûte ========================= -->
-  <section class="section section--douce" id="couts" aria-labelledby="couts-titre">
+  <!-- ============================ Bande de réassurance ======================= -->
+  <section class="bande" aria-label="Ce que le logiciel garantit">
+    <div class="conteneur bande__grille">
+      <p class="bande__item"><strong>Hors réseau</strong> L’app livreur travaille sans connexion</p>
+      <p class="bande__item"><strong>FR / AR</strong> Mise en page inversée en arabe</p>
+      <p class="bande__item"><strong>Cloisonné</strong> Vos données séparées des autres sociétés</p>
+      <p class="bande__item"><strong>Marque blanche</strong> Exploitable sous votre nom</p>
+    </div>
+  </section>
+
+  <!-- ============================== Comment ça marche ======================== -->
+  <section class="section" id="etapes" aria-labelledby="etapes-titre">
     <div class="conteneur">
-      <div class="section__entete">
-        <span class="sur-titre">Le point de départ</span>
-        <h2 class="section__titre" id="couts-titre">Ce qui vous coûte de l’argent aujourd’hui</h2>
+      <div class="section__entete section__entete--centre">
+        <span class="sur-titre">Comment ça marche</span>
+        <h2 class="section__titre" id="etapes-titre">Une course, quatre mains, un seul dossier</h2>
         <p class="section__chapo">
-          Aucune de ces situations n’est un défaut d’organisation. Ce sont les conséquences normales
-          d’une exploitation tenue au téléphone, au cahier et au tableur.
+          Le marchand, le dispatch, le livreur et la comptabilité travaillent sur la même
+          commande — chacun depuis son écran, avec ses droits et sa langue.
         </p>
       </div>
-      <div class="grille grille--quatre">
-        <article class="douleur">
-          <h3 class="douleur__titre">Le cash rentre mal</h3>
-          <p class="douleur__texte">Le livreur encaisse, l’agence attend le dépôt, le marchand réclame son reversement. À 18 h, personne ne sait combien de dirhams sont en tournée.</p>
-        </article>
-        <article class="douleur">
-          <h3 class="douleur__titre">Les litiges se paient</h3>
-          <p class="douleur__texte">« Livré » contre « jamais reçu ». Sans photo horodatée ni signature rattachée à un livreur identifié, c’est presque toujours le transporteur qui rembourse.</p>
-        </article>
-        <article class="douleur">
-          <h3 class="douleur__titre">Le dispatch est dans une tête</h3>
-          <p class="douleur__texte">Qui est disponible, dans la bonne zone, avec le bon véhicule, sous sa limite de conduite ? La réponse est juste — tant que c’est la bonne personne qui est au bureau.</p>
-        </article>
-        <article class="douleur">
-          <h3 class="douleur__titre">Les marchands appellent</h3>
-          <p class="douleur__texte">Chaque colis sans suivi partageable devient un appel au marchand, puis au dispatch. Ce coût-là ne figure sur aucune ligne de votre compte d’exploitation.</p>
-        </article>
-      </div>
+
+      <ol class="etapes">
+        <li class="etape">
+          <span class="etape__tuile" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 7h16l-1.4 12H5.4z"></path><path d="M9 7a3 3 0 0 1 6 0"></path>
+            </svg>
+          </span>
+          <p class="etape__n">Étape 1</p>
+          <h3 class="etape__titre">Le marchand dépose</h3>
+          <p class="etape__texte">Depuis son portail ou son système : destinataire, ville, taille du colis, montant à encaisser, niveau de preuve exigé.</p>
+        </li>
+        <li class="etape">
+          <span class="etape__tuile" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="10" r="3"></circle><path d="M12 2c4.2 0 7 3.2 7 7.4 0 5-5.4 10.6-7 12.2-1.6-1.6-7-7.2-7-12.2C5 5.2 7.8 2 12 2z"></path>
+            </svg>
+          </span>
+          <p class="etape__n">Étape 2</p>
+          <h3 class="etape__titre">Le dispatch affecte</h3>
+          <p class="etape__texte">Les livreurs candidats sont classés par zone, disponibilité et charge — et ceux qui sont écartés le sont avec leur motif.</p>
+        </li>
+        <li class="etape">
+          <span class="etape__tuile" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="6" y="2.5" width="12" height="19" rx="2.5"></rect><path d="M10.5 5.5h3"></path><circle cx="12" cy="18" r="1"></circle>
+            </svg>
+          </span>
+          <p class="etape__n">Étape 3</p>
+          <h3 class="etape__titre">Le livreur exécute</h3>
+          <p class="etape__texte">Retrait, scan, livraison, preuve, encaissement. Chaque geste est horodaté — même quand le réseau tombe.</p>
+        </li>
+        <li class="etape">
+          <span class="etape__tuile" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="6" width="18" height="12" rx="2.5"></rect><circle cx="12" cy="12" r="2.5"></circle><path d="M7 12h.01M17 12h.01"></path>
+            </svg>
+          </span>
+          <p class="etape__n">Étape 4</p>
+          <h3 class="etape__titre">La compta rapproche</h3>
+          <p class="etape__texte">Caisse du livreur, dépôt en agence, écart motivé, reversement au marchand net de commission, facture.</p>
+        </li>
+      </ol>
     </div>
   </section>
 
-  <!-- ============================== La console ============================ -->
-  <section class="section" id="exploitation" aria-labelledby="exploitation-titre">
+  <!-- ================================ La console ============================= -->
+  <section class="section section--menthe" id="console" aria-labelledby="console-titre">
     <div class="conteneur">
       <div class="duo">
         <div class="duo__texte">
           <span class="sur-titre">La console d’exploitation</span>
-          <h2 class="section__titre" id="exploitation-titre">Votre journée, sur un seul écran</h2>
+          <h2 class="section__titre" id="console-titre">Votre journée, sur un seul écran</h2>
           <p class="section__chapo">
             Ce que le terrain déclare alimente directement le bureau. Pas de recopie du soir,
             pas de tableur parallèle, pas de version du chiffre qui dépend de qui le donne.
           </p>
           <ul class="liste-coche">
-            <li><strong>Affectation assistée</strong> — les livreurs candidats sont classés par zone, disponibilité et charge, et ceux qui sont écartés le sont <em>avec leur motif</em>.</li>
-            <li><strong>Tournées multi-arrêts</strong> — l’ordre décidé au bureau est celui que suit le livreur, annoncé comme tel sur son téléphone.</li>
-            <li><strong>Flotte et chauffeurs</strong> — assurance, contrôle technique, permis, visite médicale : les échéances alertent avant, pas au contrôle.</li>
-            <li><strong>Rôles séparés</strong> — administrateur, dispatcher, comptable. Chacun borné à son périmètre, à l’écran comme dans l’API.</li>
+            <li><strong>Affectation assistée</strong> — avec le motif d’exclusion des livreurs écartés.</li>
+            <li><strong>Tournées multi-arrêts</strong> — l’ordre décidé au bureau est celui que suit le livreur.</li>
+            <li><strong>Flotte et chauffeurs</strong> — assurance, contrôle technique, permis, visite médicale : alertés avant l’échéance.</li>
+            <li><strong>Rôles séparés</strong> — administrateur, dispatcher, comptable, bornés à l’écran comme dans l’API.</li>
           </ul>
         </div>
         <figure class="capture" data-tilt-doux>
-          <img src="img/console-commandes.png" width="1800" height="1128" loading="lazy" decoding="async"
-               alt="Liste des commandes dans la console Transpo, avec recherche, filtres de statut, marchand, villes de départ et d’arrivée, montant à encaisser et état de chaque course.">
-          <figcaption>Liste des commandes — recherche, filtres, et l’état réel de chaque course.</figcaption>
+          <img src="img/console-tableau-de-bord.png" width="1800" height="1128" loading="lazy" decoding="async"
+               alt="Tableau de bord de la console Transpo : compteurs de commandes, en cours, livrées, échouées et COD encaissé, activité de la journée, conformité de la flotte et commandes urgentes.">
+          <figcaption>Le tableau de bord, au matin d’une journée d’exploitation.</figcaption>
         </figure>
       </div>
     </div>
   </section>
 
-  <!-- ============================= L'app livreur ========================== -->
-  <section class="section section--sombre" id="terrain" aria-labelledby="terrain-titre">
+  <!-- ============================== L'app livreur ============================ -->
+  <section class="section" id="terrain" aria-labelledby="terrain-titre">
     <div class="conteneur">
       <div class="duo duo--inverse">
         <figure class="capture capture--tel" data-tilt-doux>
           <img src="img/app-livreur-missions.png" width="495" height="1100" loading="lazy" decoding="async"
-               alt="Application livreur Transpo, écran des missions du jour avec le total de COD à encaisser et le détail de chaque course.">
-          <figcaption>L’application livreur, telle qu’elle s’ouvre le matin.</figcaption>
+               alt="Application livreur Transpo : écran des missions du jour, total de COD à encaisser, et pour chaque course la ville de retrait, la ville de livraison, le marchand et le montant à encaisser.">
         </figure>
         <div class="duo__texte">
           <span class="sur-titre">Sur le terrain</span>
@@ -231,9 +333,9 @@
             Conçue pour une main, en plein soleil, avec un réseau qui tombe. Votre livreur n’a
             jamais à deviner ce que l’application attend de lui.
           </p>
-          <ul class="liste-coche liste-coche--claire">
-            <li><strong>Hors réseau d’abord</strong> — statut, preuve, encaissement : tout passe sans connexion, se met en file, et se rejoue au retour du réseau sans jamais compter deux fois.</li>
-            <li><strong>La preuve, réglée par course</strong> — aucune, photo, signature, ou les deux. C’est vous qui arbitrez le coût de la preuve, colis par colis.</li>
+          <ul class="liste-coche">
+            <li><strong>Hors réseau d’abord</strong> — statut, preuve, encaissement : tout se met en file et se rejoue au retour du réseau, sans jamais compter deux fois.</li>
+            <li><strong>La preuve, réglée par course</strong> — aucune, photo, signature, ou les deux. C’est vous qui arbitrez le coût de la preuve.</li>
             <li><strong>Le numéro du client n’est pas exposé</strong> — il ne descend pas sur le téléphone du livreur.</li>
             <li><strong>Temps de conduite suivi</strong> — neuf heures par jour au maximum, pause obligatoire, alerte avant la limite.</li>
           </ul>
@@ -242,126 +344,109 @@
     </div>
   </section>
 
-  <!-- =============================== L'argent ============================= -->
-  <section class="section" id="argent" aria-labelledby="argent-titre">
+  <!-- ================================= Tarifs ================================ -->
+  <section class="section section--menthe" id="tarifs" aria-labelledby="tarifs-titre">
     <div class="conteneur">
-      <div class="section__entete">
-        <span class="sur-titre">Le paiement à la livraison</span>
-        <h2 class="section__titre" id="argent-titre">Cinq écritures entre la porte du client et le compte du marchand</h2>
+      <div class="duo">
+        <div class="duo__texte">
+          <span class="sur-titre">Votre grille</span>
+          <h2 class="section__titre" id="tarifs-titre">Calculez le prix d’une course</h2>
+          <p class="section__chapo">
+            Voici la <strong>grille d’amorçage</strong> livrée avec le produit. Elle est
+            entièrement modifiable par société, et négociable marchand par marchand : un prix
+            fixe négocié l’emporte sur une remise contractuelle, qui l’emporte sur la grille.
+          </p>
+          <div class="grille-tarif" role="table" aria-label="Grille tarifaire par défaut">
+            <div class="grille-tarif__ligne" role="row"><span role="cell">Jusqu’à 3 km</span><strong role="cell">22 DH</strong></div>
+            <div class="grille-tarif__ligne" role="row"><span role="cell">3 à 7 km</span><strong role="cell">32 DH</strong></div>
+            <div class="grille-tarif__ligne" role="row"><span role="cell">7 à 15 km</span><strong role="cell">48 DH</strong></div>
+            <div class="grille-tarif__ligne" role="row"><span role="cell">15 à 30 km</span><strong role="cell">75 DH</strong></div>
+            <div class="grille-tarif__ligne" role="row"><span role="cell">Au-delà de 30 km</span><strong role="cell">3,20 DH / km</strong></div>
+          </div>
+        </div>
+
+        <form class="calcul" id="form-calcul">
+          <h3 class="calcul__titre">Estimation</h3>
+          <div class="champ">
+            <label for="c-distance">Distance de la course</label>
+            <div class="champ__unite">
+              <input id="c-distance" name="distance" type="number" min="0" step="0.5" value="8" inputmode="decimal">
+              <span>km</span>
+            </div>
+          </div>
+          <fieldset class="champ champ--cases">
+            <legend>Majorations</legend>
+            <label class="case"><input type="checkbox" id="c-fragile" name="fragile"> Colis fragile <em>+15 DH</em></label>
+            <label class="case"><input type="checkbox" id="c-programmee" name="programmee"> Livraison programmée <em>+10 DH</em></label>
+          </fieldset>
+          <div class="calcul__sortie">
+            <span>Prix de la course</span>
+            <output id="c-total" for="c-distance c-fragile c-programmee">48,00 DH</output>
+          </div>
+          <p class="calcul__note">
+            Estimation sur la grille par défaut, hors TVA et hors conditions négociées.
+            La commission plateforme est de 15 % par défaut, elle aussi paramétrable.
+          </p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================== Couverture ============================== -->
+  <section class="section" id="couverture" aria-labelledby="couverture-titre">
+    <div class="conteneur">
+      <div class="section__entete section__entete--centre">
+        <span class="sur-titre">Couverture</span>
+        <h2 class="section__titre" id="couverture-titre">On ouvre une ville, puis la suivante</h2>
         <p class="section__chapo">
-          C’est le circuit le plus exposé d’un transporteur marocain, et celui qui tient le moins
-          bien dans un tableur. Transpo le découpe, et chaque étape est datée et attribuée.
+          Pas de bascule générale : une ville, quelques livreurs, un marchand pilote. On
+          élargit sur des chiffres, pas sur des impressions.
         </p>
       </div>
-
-      <ol class="chaine">
-        <li class="maillon"><span class="maillon__n">1</span><h3>Encaissement</h3><p>Le livreur saisit le montant reçu. La livraison ne se clôt qu’une fois l’encaissement enregistré.</p></li>
-        <li class="maillon"><span class="maillon__n">2</span><h3>Caisse du livreur</h3><p>Une session par livreur et par jour, alimentée <strong>course par course</strong> — des lignes, pas un total.</p></li>
-        <li class="maillon"><span class="maillon__n">3</span><h3>Déclaration</h3><p>Le livreur déclare ce qu’il a réellement en main. Sans lui, vous ne rapprochez que vos propres chiffres.</p></li>
-        <li class="maillon"><span class="maillon__n">4</span><h3>Dépôt en agence</h3><p>Le montant remis est enregistré. Théorique, déclaré et déposé se confrontent.</p></li>
-        <li class="maillon"><span class="maillon__n">5</span><h3>Reversement</h3><p>Net à virer = brut collecté − commission, avec sa référence de virement. Un seul paiement possible.</p></li>
-      </ol>
-
+      <ul class="villes">
+        <li>Casablanca</li><li>Rabat</li><li>Salé</li><li>Mohammedia</li><li>Kénitra</li>
+        <li>Tanger</li><li>Fès</li><li>Marrakech</li><li>Agadir</li><li>Oujda</li>
+        <li>El Jadida</li><li>Bouskoura</li>
+      </ul>
       <p class="mention">
-        <strong>Aucun écart ne se règle en silence.</strong> Une différence entre le déclaré et le
-        théorique se résout avec un motif nommé et une note — monnaie rendue, paiement partiel,
-        erreur de saisie, manquant à retenir. La session ne se clôt pas autrement.
+        <strong>Et une limite que la machine ne franchit pas.</strong> Elle propose un livreur,
+        signale un risque, bloque un envoi non consenti. Elle ne sanctionne personne et
+        n’affecte rien à votre place.
       </p>
     </div>
   </section>
 
-  <!-- ========================= Marchands & conformité ===================== -->
-  <section class="section section--douce" id="confiance" aria-labelledby="confiance-titre">
-    <div class="conteneur">
-      <div class="section__entete">
-        <span class="sur-titre">Vos clients, et la loi</span>
-        <h2 class="section__titre" id="confiance-titre">Ce qui vous fait garder un marchand, et ce qui vous évite un contrôle</h2>
-      </div>
-      <div class="grille grille--trois">
-        <article class="bloc">
-          <h3 class="bloc__titre">Le marchand se sert seul</h3>
-          <p class="bloc__texte">Il dépose ses courses depuis son portail, suit les siennes — et <strong>uniquement les siennes</strong> — consulte son portefeuille et sa facture. Autant d’appels que votre exploitation ne prend plus.</p>
-        </article>
-        <article class="bloc">
-          <h3 class="bloc__titre">Le client final cesse d’appeler</h3>
-          <p class="bloc__texte">Un code à huit caractères, sans compte, en français ou en arabe. Sans téléphone, sans adresse exacte, sans nom de livreur exposés. Et il note la livraison une fois qu’elle est faite.</p>
-        </article>
-        <article class="bloc">
-          <h3 class="bloc__titre">Les règles sont dans le produit</h3>
-          <p class="bloc__texte">Loi 09-08 sur les données personnelles, temps de conduite, cloisonnement entre sociétés, journal d’audit des actions sensibles. Appliqués par le logiciel, pas par une note de service.</p>
-        </article>
-      </div>
-      <p class="mention mention--humain">
-        Et une limite que la machine ne franchit pas : elle propose un livreur, signale un risque,
-        bloque un envoi non consenti. <strong>Elle ne sanctionne personne et n’affecte rien à votre place.</strong>
-      </p>
-    </div>
-  </section>
-
-  <!-- =============================== Démarrer ============================= -->
-  <section class="section" id="demarrer" aria-labelledby="demarrer-titre">
-    <div class="conteneur">
-      <div class="section__entete">
-        <span class="sur-titre">Mise en route</span>
-        <h2 class="section__titre" id="demarrer-titre">De la signature à la première tournée</h2>
-        <p class="section__chapo">
-          Rien à installer sur vos postes : votre équipe se connecte à votre propre espace.
-          On ouvre sur une ville, avec quelques livreurs et un marchand pilote, puis on élargit
-          sur des chiffres.
-        </p>
-      </div>
-      <div class="grille grille--quatre">
-        <article class="etape-mep"><span class="etape-mep__n">1</span><h3>Votre espace</h3><p>Votre organisation, votre base dédiée, votre premier administrateur.</p></article>
-        <article class="etape-mep"><span class="etape-mep__n">2</span><h3>Votre réalité</h3><p>Véhicules et échéances, chauffeurs et permis, zones, marchands et leurs conditions.</p></article>
-        <article class="etape-mep"><span class="etape-mep__n">3</span><h3>Vos règles</h3><p>Grille tarifaire, commission, TVA, niveaux de preuve par défaut, modèles de notification.</p></article>
-        <article class="etape-mep"><span class="etape-mep__n">4</span><h3>Deux profils à former</h3><p>Le dispatcher sur la console, le livreur sur son téléphone. Il n’y en a pas d’autres.</p></article>
-      </div>
-    </div>
-  </section>
-
-  <!-- ================================ Contact ============================= -->
+  <!-- ================================ Contact ================================ -->
   <section class="section section--contact" id="contact" aria-labelledby="contact-titre">
     <div class="conteneur contact__grille">
       <div>
         <span class="sur-titre">Parlons-en</span>
         <h2 class="section__titre" id="contact-titre">Sur vos courses, pas sur une démo générique</h2>
         <p class="section__chapo">
-          Donnez-nous une journée type — un volume, deux ou trois zones, vos conditions marchands —
-          et nous la rejouons dans un espace d’essai à votre nom. Vous verrez vos chiffres, pas les nôtres.
+          Donnez-nous une journée type — un volume, deux ou trois zones, vos conditions
+          marchands — et nous la rejouons dans un espace d’essai à votre nom. Vous verrez vos
+          chiffres, pas les nôtres.
         </p>
         <dl class="contact__infos">
           <div><dt>Écrire</dt><dd><a href="mailto:contact@transpo.ma">contact@transpo.ma</a></dd></div>
-          <div><dt>Villes couvertes</dt><dd>Casablanca, Rabat, Tanger, Marrakech, Fès, Agadir, Kénitra, Mohammedia — et le reste du Maroc</dd></div>
           <div><dt>Langues</dt><dd>Français et arabe</dd></div>
         </dl>
       </div>
 
       <form class="formulaire" id="form-contact" novalidate>
         <h3 class="formulaire__titre">Demander une démonstration</h3>
-        <div class="champ">
-          <label for="f-societe">Société de transport</label>
-          <input id="f-societe" name="societe" type="text" autocomplete="organization" required>
-        </div>
-        <div class="champ">
-          <label for="f-nom">Votre nom</label>
-          <input id="f-nom" name="nom" type="text" autocomplete="name" required>
-        </div>
-        <div class="champ">
-          <label for="f-email">E-mail</label>
-          <input id="f-email" name="email" type="email" autocomplete="email" required>
-        </div>
+        <div class="champ"><label for="f-societe">Société de transport</label><input id="f-societe" name="societe" type="text" autocomplete="organization" required></div>
+        <div class="champ"><label for="f-nom">Votre nom</label><input id="f-nom" name="nom" type="text" autocomplete="name" required></div>
+        <div class="champ"><label for="f-email">E-mail</label><input id="f-email" name="email" type="email" autocomplete="email" required></div>
         <div class="champ champ--duo">
           <div><label for="f-villes">Villes couvertes</label><input id="f-villes" name="villes" type="text" placeholder="Casablanca, Rabat"></div>
           <div><label for="f-livreurs">Livreurs</label><input id="f-livreurs" name="livreurs" type="number" min="1" inputmode="numeric" placeholder="12"></div>
         </div>
-        <div class="champ">
-          <label for="f-message">Ce que vous cherchez à régler</label>
-          <textarea id="f-message" name="message" rows="3" placeholder="Le cash qui rentre mal, les litiges sans preuve, les marchands qui appellent…"></textarea>
-        </div>
+        <div class="champ"><label for="f-message">Ce que vous cherchez à régler</label><textarea id="f-message" name="message" rows="3" placeholder="Le cash qui rentre mal, les litiges sans preuve, les marchands qui appellent…"></textarea></div>
         <button class="bouton bouton--principal bouton--grand bouton--bloc" type="submit">Ouvrir mon message</button>
         <p class="formulaire__note" id="form-note">
-          Le bouton prépare le message dans votre logiciel de messagerie : rien n’est envoyé ni
-          conservé par ce site, et vous relisez avant d’envoyer.
+          Le bouton prépare le message dans votre logiciel de messagerie : rien n’est envoyé
+          ni conservé par ce site, et vous relisez avant d’envoyer.
         </p>
       </form>
     </div>
@@ -377,9 +462,10 @@
       Montants en dirhams. Interfaces en français et en arabe.
     </p>
     <nav class="pied__liens" aria-label="Pied de page">
-      <a href="#exploitation">La console</a>
+      <a href="#etapes">Comment ça marche</a>
+      <a href="#console">La console</a>
       <a href="#terrain">L’app livreur</a>
-      <a href="#argent">L’argent</a>
+      <a href="#tarifs">Tarifs</a>
       <a href="mailto:contact@transpo.ma">contact@transpo.ma</a>
     </nav>
   </div>
