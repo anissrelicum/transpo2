@@ -213,7 +213,8 @@ a { color: var(--accent-texte); text-underline-offset: 3px; }
     radial-gradient(45% 40% at 12% 8%, color-mix(in srgb, var(--cyan-9) 14%, transparent), transparent 70%);
   pointer-events: none;
 }
-.heros__grille { position: relative; display: grid; grid-template-columns: 1fr; gap: var(--e9); align-items: center; }
+.heros .conteneur { position: relative; }
+.heros__texte { max-width: 44rem; }
 
 .etiquette {
   display: inline-flex; align-items: center; gap: var(--e2);
@@ -228,135 +229,40 @@ a { color: var(--accent-texte); text-underline-offset: 3px; }
   letter-spacing: var(--ls-8); font-weight: 800;
 }
 .heros__phrase {
-  margin-top: var(--e5); max-width: 56ch; color: var(--texte-doux);
+  margin-top: var(--e5); max-width: 62ch; color: var(--texte-doux);
   font-size: var(--fs-4); line-height: var(--lh-4);
 }
 .heros__phrase strong { color: var(--texte); font-weight: 600; }
 .heros__actions { display: flex; flex-wrap: wrap; gap: var(--e3); margin-top: var(--e6); }
 .heros__preuves {
-  display: flex; flex-wrap: wrap; gap: var(--e2) var(--e5); margin-top: var(--e6);
+  display: flex; flex-wrap: wrap; gap: var(--e2) var(--e5); margin-top: var(--e7);
   color: var(--texte-doux); font-size: var(--fs-2); line-height: var(--lh-2);
 }
 .heros__preuves li { display: flex; align-items: center; gap: var(--e2); }
 .heros__preuves svg { color: var(--accent-texte); flex: none; }
 
-/* ------------------------------------------------- scène 3D : le téléphone */
-.scene {
-  position: relative;
-  perspective: 1400px;
-  perspective-origin: 60% 35%;
-  display: flex; justify-content: center;
-  padding-block: var(--e5);
-}
-.phone {
-  position: relative;
-  width: min(286px, 78vw);
-  transform-style: preserve-3d;
-  transform:
-    rotateX(calc(6deg + var(--rx, 0deg)))
-    rotateY(calc(-17deg + var(--ry, 0deg)))
-    rotateZ(1.5deg);
-  transition: transform 260ms cubic-bezier(.2, .7, .3, 1);
-  will-change: transform;
-}
-.phone__lueur {
-  position: absolute; inset: 6% -14% -12% -14%;
-  background: radial-gradient(50% 50% at 50% 55%, color-mix(in srgb, var(--indigo-9) 55%, transparent), transparent 72%);
-  filter: blur(34px); transform: translateZ(-60px); pointer-events: none;
-}
-.phone__corps {
-  position: relative; border-radius: 34px; padding: 10px;
-  background: linear-gradient(160deg, var(--slate-7), var(--slate-12) 55%, #000);
-  box-shadow: var(--ombre-3), 0 0 0 1px rgba(255,255,255,.06) inset;
-  transform-style: preserve-3d;
-}
-.phone__encoche {
-  position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
-  width: 86px; height: 6px; border-radius: var(--rond); background: rgba(255,255,255,.22);
-}
-.phone__ecran {
-  border-radius: 26px; background: var(--fond-page); padding: 22px 14px 10px;
-  display: grid; gap: var(--e3);
-}
-
-.ec__jour { font-size: var(--fs-1); color: var(--texte-doux); }
-.ec__jour strong { color: var(--texte); }
-.ec__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--e2); }
-.ec__stats > div {
-  border: 1px solid var(--bordure); border-radius: var(--r4); padding: var(--e2);
-  background: var(--fond-doux); text-align: center;
-}
-.ec__n { display: block; font-size: var(--fs-4); font-weight: 700; letter-spacing: -.01em; }
-.ec__l { display: block; font-size: 10px; color: var(--texte-doux); margin-top: 2px; }
-.ec__titre { font-size: var(--fs-2); font-weight: 600; margin-top: var(--e1); }
-.ec__liste { display: grid; gap: var(--e2); }
-
-.mis {
-  border: 1px solid var(--bordure); border-radius: var(--r4);
-  background: var(--fond-panneau); padding: var(--e2) var(--e3); display: grid; gap: 6px;
-}
-.mis--pale { opacity: .55; }
-.mis__haut { display: flex; align-items: center; justify-content: space-between; gap: var(--e2); }
-.mis__ref { font-size: var(--fs-1); font-weight: 700; }
-.mis__ville { font-size: 11px; color: var(--texte-doux); }
-.mis__bas { display: flex; flex-wrap: wrap; gap: 6px; }
-
-.puce {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 2px 7px; border-radius: var(--r2); border: 1px solid currentColor;
-  font-size: 10px; font-weight: 600; background: var(--fond-panneau);
-}
-.puce::before { content: ""; width: 6px; height: 6px; border-radius: var(--rond); background: currentColor; flex: none; }
-/* Le libellé prend l'encre du texte : les crans 11 de Radix visent 4,5:1 sur le cran 1 de
- * LEUR teinte, pas sur le gris de la page. La couleur ne porte donc que la pastille et la
- * bordure — des objets graphiques, seuil 3:1 — jamais le sens seul. */
-.puce--route { color: var(--amber-11); }
-.puce--attente { color: var(--slate-11); }
-.puce--cod { color: var(--green-11); }
-.puce--prepaye { color: var(--cyan-11); }
-.puce--preuve { color: var(--violet-11); }
-
-.ec__barre {
-  display: flex; justify-content: space-around; gap: var(--e2);
-  border-top: 1px solid var(--bordure); padding-top: var(--e2); margin-top: var(--e1);
-}
-.ec__onglet { font-size: 10px; color: var(--texte-doux); }
-.ec__onglet--actif { color: var(--accent-texte); font-weight: 700; }
-
-/* Cartes flottantes en avant du téléphone. */
-.flottant {
-  position: absolute; display: flex; align-items: center; gap: var(--e2);
-  padding: var(--e2) var(--e3); border-radius: var(--r5);
-  background: var(--fond-panneau); border: 1px solid var(--bordure);
-  box-shadow: var(--ombre-2);
-  transform: translate3d(var(--fx, 0), var(--fy, 0), 90px);
-  transition: transform 320ms cubic-bezier(.2,.7,.3,1);
-  will-change: transform;
-}
-/* Elles bordent le téléphone, elles ne le recouvrent pas : placées en haut et en bas,
- * là où l'écran ne porte que la date et la barre d'onglets. Sous 960 px il n'y a
- * simplement pas la place — elles disparaissent plutôt que de masquer les missions. */
-.flottant { display: none; max-width: 210px; }
-.flottant--preuve { top: 2%; left: 0; }
-.flottant--cash { bottom: 2%; right: 0; }
-@media (min-width: 960px) { .flottant { display: flex; } }
-.flottant__pastille { width: 9px; height: 9px; border-radius: var(--rond); background: var(--violet-9); flex: none; }
-.flottant__pastille--vert { background: var(--green-9); }
-.flottant__titre { font-size: var(--fs-2); font-weight: 600; }
-.flottant__sous { font-size: 11px; color: var(--texte-doux); }
-
 /* --------------------------------------------------------------- sections */
 .section { padding-block: var(--e9); }
-.section--sombre {
-  background: var(--nuit);
-  --texte: #edeef0; --texte-doux: #b0b4ba; --bordure: rgba(255,255,255,.12);
-  --fond-panneau: rgba(255,255,255,.04); --accent-texte: #9eb1ff;
-  color: var(--texte);
-}
-.section--sombre .section__titre, .section--sombre .bloc__titre { color: var(--texte); }
+.section--douce { background: var(--fond-doux); border-block: 1px solid var(--bordure); }
 .section--contact { background: var(--fond-doux); border-top: 1px solid var(--bordure); }
 
-.section__entete { max-width: 60ch; margin-bottom: var(--e7); }
+/* La section sombre redéfinit les JETONS, pas les composants : tout ce qu'elle contient
+ * suit sans avoir à connaître son existence. Un composant qui poserait sa couleur en dur
+ * y deviendrait illisible. */
+.section--sombre {
+  background: var(--nuit);
+  --texte: #edeef0;
+  --texte-doux: #b0b4ba;
+  --bordure: rgba(255, 255, 255, .14);
+  --bordure-forte: rgba(255, 255, 255, .24);
+  --fond-panneau: rgba(255, 255, 255, .05);
+  --accent-texte: #9eb1ff;
+  --accent-fond: rgba(62, 99, 221, .16);
+  --accent-bordure: rgba(158, 177, 255, .35);
+  color: var(--texte);
+}
+
+.section__entete { max-width: 62ch; margin-bottom: var(--e7); }
 .sur-titre {
   display: block; margin-bottom: var(--e2); color: var(--accent-texte);
   font-size: var(--fs-1); line-height: var(--lh-1); font-weight: 700;
@@ -365,71 +271,159 @@ a { color: var(--accent-texte); text-underline-offset: 3px; }
 .section__titre { font-size: var(--fs-7); line-height: var(--lh-7); letter-spacing: var(--ls-7); }
 .section__chapo { margin-top: var(--e3); color: var(--texte-doux); font-size: var(--fs-4); line-height: var(--lh-4); }
 
-/* --------------------------------------------- trois scènes en perspective */
-.cartes3d { display: grid; grid-template-columns: 1fr; gap: var(--e5); perspective: 1600px; }
-.carte3d {
-  display: flex; flex-direction: column; gap: var(--e3);
-  padding: var(--e5); border: 1px solid var(--bordure); border-radius: var(--r6);
-  background: var(--fond-panneau); box-shadow: var(--ombre-1);
-  transform-style: preserve-3d;
-  transform: rotateX(var(--trx, 0deg)) rotateY(var(--try, 0deg)) translateZ(0);
-  transition: transform 240ms cubic-bezier(.2,.7,.3,1), box-shadow 240ms ease;
+/* ------------------------------- les captures, présentées en perspective ---
+ *
+ * Ce sont de VRAIES copies d'écran du logiciel, pas des maquettes : la perspective les
+ * met en valeur, elle ne les remplace pas. L'inclinaison reste faible — au-delà, le
+ * texte de l'écran devient illisible et la démonstration se retourne contre elle-même.
+ */
+.vitre {
+  position: relative;
+  margin-top: var(--e8);
+  perspective: 2200px;
+  perspective-origin: 50% 30%;
+}
+
+.ecran-console {
+  margin: 0;
+  border-radius: var(--r6);
+  overflow: hidden;
+  border: 1px solid var(--bordure);
+  background: var(--fond-panneau);
+  box-shadow: var(--ombre-3);
+  transform:
+    rotateX(calc(7deg + var(--trx, 0deg)))
+    rotateY(var(--try, 0deg))
+    rotateZ(-.4deg);
+  transform-origin: 50% 0%;
+  transition: transform 300ms cubic-bezier(.2, .7, .3, 1);
   will-change: transform;
 }
-.carte3d:hover { box-shadow: var(--ombre-2); }
-.carte3d__ecran {
-  border: 1px solid var(--bordure); border-radius: var(--r5);
-  background: var(--fond-doux); padding: var(--e4); display: grid; gap: var(--e3);
-  transform: translateZ(28px);
-}
-.carte3d__titre { font-size: var(--fs-4); line-height: var(--lh-4); letter-spacing: -.008em; }
-.carte3d__texte { color: var(--texte-doux); font-size: var(--fs-2); line-height: var(--lh-3); }
-.carte3d__texte strong { color: var(--texte); font-weight: 600; }
+.ecran-console img { display: block; width: 100%; height: auto; }
 
-.mini__titre { font-size: var(--fs-1); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--texte-doux); }
-.mini__note { font-size: 11px; color: var(--texte-doux); }
-.mini__bouton {
-  text-align: center; padding: var(--e2); border-radius: var(--r3);
-  font-size: var(--fs-2); font-weight: 600; background: var(--slate-4); color: var(--texte-doux);
+/* Le téléphone se pose devant la console, décalé : on lit les deux d'un coup d'œil. */
+.ecran-mobile {
+  margin: 0;
+  position: relative;
+  width: min(200px, 44vw);
+  margin-inline: auto;
+  margin-top: calc(-1 * var(--e7));
+  border-radius: 24px;
+  padding: 7px;
+  background: linear-gradient(160deg, var(--slate-7), var(--slate-12) 58%, #000);
+  box-shadow: var(--ombre-3);
+  transform: translate3d(var(--fx, 0), var(--fy, 0), 0) rotateZ(1.5deg);
+  transition: transform 340ms cubic-bezier(.2, .7, .3, 1);
+  will-change: transform;
 }
-.mini__bouton--actif { background: var(--accent-plein); color: var(--sur-accent); }
+.ecran-mobile img { display: block; width: 100%; height: auto; border-radius: 18px; }
 
-.etapes { display: grid; gap: var(--e2); }
-.etapes__pas {
-  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--e2);
-  font-size: var(--fs-2); color: var(--texte-doux);
-}
-.etapes__pas span { width: 9px; height: 9px; border-radius: var(--rond); background: var(--slate-8); }
-.etapes__pas em { font-style: normal; font-size: 11px; font-variant-numeric: tabular-nums; }
-.etapes__pas--fait span { background: var(--green-9); }
-.etapes__pas--fait { color: var(--texte); }
-.etapes__pas--cours span { background: var(--amber-9); }
-.etapes__pas--cours { color: var(--texte); font-weight: 600; }
-
-.preuve { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e2); }
-.preuve__case {
-  display: flex; align-items: center; justify-content: space-between; gap: var(--e2);
-  padding: var(--e2) var(--e3); border-radius: var(--r4);
-  border: 1px solid var(--bordure); font-size: var(--fs-2);
-}
-.preuve__case--ok { border-color: var(--green-9); color: var(--texte); }
-.preuve__case em { font-style: normal; color: var(--green-11); font-weight: 700; }
-
-.caisse { display: grid; gap: var(--e2); }
-.caisse__ligne { display: flex; align-items: baseline; justify-content: space-between; gap: var(--e2); font-size: var(--fs-2); color: var(--texte-doux); }
-.caisse__ligne strong { color: var(--texte); font-variant-numeric: tabular-nums; }
-.caisse__ecart {
-  padding: var(--e2) var(--e3); border-radius: var(--r3);
-  background: var(--amber-3); color: var(--amber-11); font-size: var(--fs-2); font-weight: 600;
+/* Le téléphone déborde sous la console : on réserve la place, sinon il recouvre la
+ * ligne de preuves qui suit. */
+@media (min-width: 900px) {
+  .vitre { margin-bottom: var(--e8); }
+  .ecran-mobile {
+    position: absolute;
+    right: 2%;
+    bottom: -8%;
+    width: 214px;
+    margin: 0;
+    transform: translate3d(var(--fx, 0), var(--fy, 0), 120px) rotateY(-9deg) rotateZ(2deg);
+  }
 }
 
-.mention-hors-ligne, .mention-humain {
+/* ------------------------------------------------------- douleurs, listes */
+.douleur {
+  padding: var(--e5); border: 1px solid var(--bordure); border-radius: var(--r5);
+  border-top: 3px solid var(--amber-9); background: var(--fond-panneau);
+}
+.douleur__titre { font-size: var(--fs-3); line-height: var(--lh-3); }
+.douleur__texte { margin-top: var(--e2); color: var(--texte-doux); font-size: var(--fs-2); line-height: var(--lh-3); }
+
+.liste-coche { display: grid; gap: var(--e3); margin-top: var(--e5); }
+.liste-coche li {
+  position: relative; padding-left: 26px;
+  color: var(--texte-doux); font-size: var(--fs-2); line-height: var(--lh-3);
+}
+.liste-coche li::before {
+  content: ""; position: absolute; left: 0; top: 5px;
+  width: 16px; height: 16px; border-radius: var(--rond);
+  background: var(--accent-fond); border: 1px solid var(--accent-bordure);
+}
+.liste-coche li::after {
+  content: ""; position: absolute; left: 5px; top: 10px;
+  width: 5px; height: 8px; border-right: 2px solid var(--accent-texte);
+  border-bottom: 2px solid var(--accent-texte); transform: rotate(40deg);
+}
+.liste-coche strong { color: var(--texte); font-weight: 600; }
+.liste-coche em { font-style: normal; color: var(--accent-texte); font-weight: 600; }
+
+/* ------------------------------------------- duo texte + capture d'écran */
+.duo { display: grid; grid-template-columns: 1fr; gap: var(--e7); align-items: center; perspective: 1800px; }
+.duo__texte .section__chapo { margin-top: var(--e3); }
+
+.capture {
+  margin: 0;
+  border-radius: var(--r6);
+  border: 1px solid var(--bordure);
+  background: var(--fond-panneau);
+  box-shadow: var(--ombre-2);
+  overflow: hidden;
+  transform: rotateX(var(--trx, 0deg)) rotateY(var(--try, 0deg));
+  transition: transform 280ms cubic-bezier(.2, .7, .3, 1);
+  will-change: transform;
+}
+.capture img { display: block; width: 100%; height: auto; }
+.capture figcaption {
+  padding: var(--e3) var(--e4);
+  border-top: 1px solid var(--bordure);
+  color: var(--texte-doux); font-size: var(--fs-1); line-height: var(--lh-2);
+}
+.capture--tel {
+  width: min(280px, 72vw); margin-inline: auto;
+  border-radius: 26px; padding: 8px; border: none;
+  background: linear-gradient(160deg, var(--slate-7), var(--slate-12) 58%, #000);
+}
+.capture--tel img { border-radius: 20px; }
+.capture--tel figcaption { border-top: none; color: rgba(255,255,255,.62); text-align: center; }
+
+/* ---------------------------------------------------- la chaîne de l'argent */
+.chaine { display: grid; grid-template-columns: 1fr; gap: 0; }
+.maillon {
+  position: relative; padding: var(--e5);
+  border: 1px solid var(--bordure); background: var(--fond-panneau);
+}
+.maillon:first-child { border-radius: var(--r5) var(--r5) 0 0; }
+.maillon:last-child { border-radius: 0 0 var(--r5) var(--r5); }
+.maillon + .maillon { border-top: none; }
+.maillon__n {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: var(--rond);
+  background: var(--accent-plein); color: var(--sur-accent);
+  font-size: var(--fs-2); font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.maillon h3 { margin-top: var(--e3); font-size: var(--fs-3); line-height: var(--lh-3); }
+.maillon p { margin-top: var(--e2); color: var(--texte-doux); font-size: var(--fs-2); line-height: var(--lh-3); }
+.maillon strong { color: var(--texte); font-weight: 600; }
+
+.etape-mep { padding: var(--e5); border: 1px solid var(--bordure); border-radius: var(--r5); background: var(--fond-panneau); }
+.etape-mep__n {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: var(--rond);
+  background: var(--accent-fond); color: var(--accent-texte);
+  font-size: var(--fs-2); font-weight: 700;
+}
+.etape-mep h3 { margin-top: var(--e3); font-size: var(--fs-3); line-height: var(--lh-3); }
+.etape-mep p { margin-top: var(--e2); color: var(--texte-doux); font-size: var(--fs-2); line-height: var(--lh-3); }
+
+.mention {
   margin-top: var(--e7); padding: var(--e4) var(--e5);
   border: 1px solid var(--accent-bordure); border-left-width: 3px;
   border-radius: var(--r5); background: var(--accent-fond);
   color: var(--texte); font-size: var(--fs-2); line-height: var(--lh-3);
 }
-.mention-humain { margin-top: var(--e6); }
+.mention--humain { margin-top: var(--e6); }
+.mention strong { font-weight: 600; }
 
 /* ----------------------------------------------------------------- blocs */
 .grille { display: grid; grid-template-columns: 1fr; gap: var(--e4); }
@@ -481,7 +475,6 @@ a { color: var(--accent-texte); text-underline-offset: 3px; }
 /* ------------------------------------------------------- points de rupture */
 @media (min-width: 640px) {
   .grille { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .cartes3d { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .heros__titre { font-size: var(--fs-9); line-height: var(--lh-9); letter-spacing: var(--ls-9); }
   .court { display: none; }
   .long { display: inline; }
@@ -490,10 +483,14 @@ a { color: var(--accent-texte); text-underline-offset: 3px; }
 @media (min-width: 960px) {
   .nav { display: block; }
   .section { padding-block: calc(var(--e9) + var(--e5)); }
-  .heros__grille { grid-template-columns: 1.02fr .98fr; }
+  .duo { grid-template-columns: 1.05fr .95fr; }
+  .duo--inverse .duo__texte { order: 2; }
+  .chaine { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .maillon:first-child { border-radius: var(--r5) 0 0 var(--r5); }
+  .maillon:last-child { border-radius: 0 var(--r5) var(--r5) 0; }
+  .maillon + .maillon { border-top: 1px solid var(--bordure); border-left: none; }
   .grille--trois { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .grille--quatre { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .cartes3d { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .contact__grille { grid-template-columns: 1fr 1fr; gap: var(--e9); }
   .pied__barre { grid-template-columns: 1fr auto; align-items: center; }
   .pied__liens { grid-column: 1 / -1; }
@@ -502,7 +499,6 @@ a { color: var(--accent-texte); text-underline-offset: 3px; }
 /* La 3D est un agrément, pas le contenu : on la coupe net si la personne l'a demandé. */
 @media (prefers-reduced-motion: reduce) {
   * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
-  .phone { transform: none; }
-  .carte3d { transform: none; }
-  .flottant { transform: none; position: static; margin-top: var(--e3); }
+  .ecran-console, .capture { transform: none; }
+  .ecran-mobile { transform: none; }
 }

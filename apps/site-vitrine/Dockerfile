@@ -6,5 +6,7 @@ COPY apps/site-vitrine/nginx.conf /etc/nginx/conf.d/default.conf
 COPY apps/site-vitrine/index.html apps/site-vitrine/styles.css apps/site-vitrine/scene.js \
      apps/site-vitrine/robots.txt apps/site-vitrine/sitemap.xml \
      /usr/share/nginx/html/
+# Les copies d'écran du produit : elles portent l'essentiel de l'argumentaire.
+COPY apps/site-vitrine/img/ /usr/share/nginx/html/img/
 
 EXPOSE 80

@@ -12,76 +12,69 @@
   const calme = window.matchMedia('(prefers-reduced-motion: reduce)');
   if (calme.matches) return;
 
-  /** Ramène une valeur dans [-1, 1] à partir d'une position dans un rectangle. */
+  // ------------------------------------------- l'accroche : console + téléphone
+  //
+  // La console s'incline sous le pointeur, le téléphone se décale un peu plus : c'est la
+  // différence de course entre les deux qui donne la profondeur, pas l'angle lui-même.
+  // L'inclinaison reste faible — une copie d'écran trop penchée n'est plus lisible, et
+  // c'est précisément ce qu'on veut donner à lire.
+  const vitre = document.querySelector('[data-scene]');
+  const console3d = document.querySelector('[data-tilt-doux]');
+  const tel = document.querySelector('[data-flotte-tel]');
+
+  /** Ramène une position dans un rectangle à une valeur de [-1, 1]. */
   const centre = (valeur, debut, taille) => {
     if (!taille) return 0;
     return Math.max(-1, Math.min(1, ((valeur - debut) / taille) * 2 - 1));
   };
 
-  // ---------------------------------------------------------- le téléphone
-  const scene = document.querySelector('[data-scene]');
-  const phone = document.querySelector('[data-phone]');
-  const flottants = Array.from(document.querySelectorAll('[data-flotte]'));
-
-  if (scene && phone) {
+  if (vitre && console3d) {
     let image = null;
-
     const suivre = (ev) => {
-      const r = scene.getBoundingClientRect();
+      const r = vitre.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > window.innerHeight) return;   // hors écran : rien à animer
       const x = centre(ev.clientX, r.left, r.width);
       const y = centre(ev.clientY, r.top, r.height);
       if (image) return;
       image = requestAnimationFrame(() => {
         image = null;
-        phone.style.setProperty('--ry', `${x * 9}deg`);
-        phone.style.setProperty('--rx', `${-y * 7}deg`);
-        for (const f of flottants) {
-          const profondeur = Number(f.dataset.flotte) || 1;
-          f.style.setProperty('--fx', `${x * 10 * profondeur}px`);
-          f.style.setProperty('--fy', `${y * 8 * profondeur}px`);
+        console3d.style.setProperty('--try', `${x * 3.5}deg`);
+        console3d.style.setProperty('--trx', `${-y * 2.5}deg`);
+        if (tel) {
+          tel.style.setProperty('--fx', `${x * 14}px`);
+          tel.style.setProperty('--fy', `${y * 10}px`);
         }
       });
     };
-
     const relacher = () => {
-      phone.style.setProperty('--ry', '0deg');
-      phone.style.setProperty('--rx', '0deg');
-      for (const f of flottants) {
-        f.style.setProperty('--fx', '0px');
-        f.style.setProperty('--fy', '0px');
-      }
+      console3d.style.setProperty('--try', '0deg');
+      console3d.style.setProperty('--trx', '0deg');
+      if (tel) { tel.style.setProperty('--fx', '0px'); tel.style.setProperty('--fy', '0px'); }
     };
-
-    // Le pointeur est écouté sur la fenêtre : la scène déborde largement de sa boîte,
-    // et n'écouter que celle-ci rendait l'effet saccadé sur les bords.
     window.addEventListener('pointermove', suivre, { passive: true });
     window.addEventListener('pointerleave', relacher, { passive: true });
     window.addEventListener('blur', relacher);
   }
 
-  // ------------------------------------------------------- les trois scènes
-  for (const carte of document.querySelectorAll('[data-tilt]')) {
+  // ------------------------------------------- les captures dans les sections
+  for (const capture of document.querySelectorAll('.capture[data-tilt-doux]')) {
     let image = null;
-
-    carte.addEventListener('pointermove', (ev) => {
-      const r = carte.getBoundingClientRect();
+    capture.addEventListener('pointermove', (ev) => {
+      const r = capture.getBoundingClientRect();
       const x = centre(ev.clientX, r.left, r.width);
       const y = centre(ev.clientY, r.top, r.height);
       if (image) return;
       image = requestAnimationFrame(() => {
         image = null;
-        carte.style.setProperty('--try', `${x * 6}deg`);
-        carte.style.setProperty('--trx', `${-y * 5}deg`);
+        capture.style.setProperty('--try', `${x * 4}deg`);
+        capture.style.setProperty('--trx', `${-y * 3}deg`);
       });
     }, { passive: true });
-
     const reposer = () => {
-      carte.style.setProperty('--try', '0deg');
-      carte.style.setProperty('--trx', '0deg');
+      capture.style.setProperty('--try', '0deg');
+      capture.style.setProperty('--trx', '0deg');
     };
-    carte.addEventListener('pointerleave', reposer, { passive: true });
-    // Au clavier, l'inclinaison n'apporte rien et peut gêner : on remet à plat.
-    carte.addEventListener('focusin', reposer);
+    capture.addEventListener('pointerleave', reposer, { passive: true });
   }
 
   // ------------------------------------------------------------- le contact

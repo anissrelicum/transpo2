@@ -4,21 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Transpo — logiciel de livraison du dernier kilomètre au Maroc</title>
-<meta name="description" content="Transpo équipe les transporteurs et coursiers marocains : application livreur qui fonctionne hors réseau, preuve de livraison horodatée, chaîne complète du paiement à la livraison, suivi client sans compte. Casablanca, Rabat, Tanger, Marrakech.">
+<title>Transpo — le logiciel des sociétés de transport et de livraison au Maroc</title>
+<meta name="description" content="Transpo équipe les sociétés de transport marocaines : dispatch, tournées, flotte, preuve de livraison, paiement à la livraison tracé jusqu'au reversement, portail marchand. Casablanca, Rabat, Tanger, Marrakech, Fès, Agadir.">
 <link rel="canonical" href="https://transpo.wedowonders.com/">
 <meta name="robots" content="index, follow, max-image-preview:large">
-<meta name="author" content="Transpo">
 
 <meta property="og:type" content="website">
 <meta property="og:locale" content="fr_MA">
 <meta property="og:site_name" content="Transpo">
 <meta property="og:url" content="https://transpo.wedowonders.com/">
-<meta property="og:title" content="Transpo — logiciel de livraison du dernier kilomètre au Maroc">
-<meta property="og:description" content="L'application livreur fonctionne hors réseau. La preuve de livraison est horodatée. Le cash encaissé à la porte est tracé jusqu'au reversement du marchand.">
+<meta property="og:title" content="Transpo — le logiciel des sociétés de transport et de livraison au Maroc">
+<meta property="og:description" content="Une exploitation tenue au tableur coûte des litiges, du cash qui rentre mal et des marchands qui partent. Transpo remet le dispatch, la flotte, la preuve et l'argent au même endroit.">
+<meta property="og:image" content="https://transpo.wedowonders.com/img/console-tableau-de-bord.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Transpo — logiciel de livraison du dernier kilomètre au Maroc">
-<meta name="twitter:description" content="L'application livreur fonctionne hors réseau. La preuve est horodatée. Le cash est tracé de la porte au reversement.">
+<meta name="twitter:title" content="Transpo — le logiciel des sociétés de transport au Maroc">
+<meta name="twitter:description" content="Dispatch, flotte, preuve de livraison et chaîne complète du paiement à la livraison. Conçu pour les transporteurs marocains.">
+<meta name="twitter:image" content="https://transpo.wedowonders.com/img/console-tableau-de-bord.png">
 
 <meta name="theme-color" content="#3e63dd" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#11131f" media="(prefers-color-scheme: dark)">
@@ -35,11 +36,13 @@
       "@id": "https://transpo.wedowonders.com/#logiciel",
       "name": "Transpo",
       "applicationCategory": "BusinessApplication",
-      "applicationSubCategory": "Logistique et livraison du dernier kilomètre",
+      "applicationSubCategory": "Logiciel de gestion de transport et de livraison (TMS)",
       "operatingSystem": "Android, Web",
       "inLanguage": ["fr", "ar"],
-      "description": "Plateforme de gestion de livraison pour transporteurs et coursiers : dispatch, tournées, preuve de livraison, paiement à la livraison, suivi client public.",
+      "audience": { "@type": "BusinessAudience", "audienceType": "Sociétés de transport, transporteurs et sociétés de livraison" },
+      "description": "Logiciel d'exploitation pour sociétés de transport : dispatch, tournées multi-arrêts, gestion de flotte et de chauffeurs, preuve de livraison, paiement à la livraison, facturation et portail marchand.",
       "url": "https://transpo.wedowonders.com/",
+      "screenshot": "https://transpo.wedowonders.com/img/console-tableau-de-bord.png",
       "offers": { "@type": "Offer", "priceCurrency": "MAD", "availability": "https://schema.org/InStock" }
     },
     {
@@ -48,49 +51,34 @@
       "name": "Transpo",
       "url": "https://transpo.wedowonders.com/",
       "email": "contact@transpo.ma",
+      "knowsLanguage": ["fr", "ar"],
       "areaServed": [
         { "@type": "Country", "name": "Maroc" },
-        { "@type": "City", "name": "Casablanca" },
-        { "@type": "City", "name": "Rabat" },
-        { "@type": "City", "name": "Tanger" },
-        { "@type": "City", "name": "Marrakech" },
-        { "@type": "City", "name": "Fès" },
-        { "@type": "City", "name": "Agadir" }
-      ],
-      "knowsLanguage": ["fr", "ar"]
+        { "@type": "City", "name": "Casablanca" }, { "@type": "City", "name": "Rabat" },
+        { "@type": "City", "name": "Tanger" }, { "@type": "City", "name": "Marrakech" },
+        { "@type": "City", "name": "Fès" }, { "@type": "City", "name": "Agadir" },
+        { "@type": "City", "name": "Kénitra" }, { "@type": "City", "name": "Mohammedia" }
+      ]
     },
     {
       "@type": "Service",
-      "name": "Logiciel de livraison du dernier kilomètre",
+      "name": "Logiciel d'exploitation pour sociétés de transport",
       "provider": { "@id": "https://transpo.wedowonders.com/#editeur" },
-      "serviceType": "Gestion de livraison, dispatch et paiement à la livraison",
-      "areaServed": {
-        "@type": "GeoShape",
-        "addressCountry": "MA"
-      },
-      "availableChannel": {
-        "@type": "ServiceChannel",
-        "serviceUrl": "https://transpo.wedowonders.com/#contact"
-      }
+      "serviceType": "Gestion de transport, dispatch, livraison et paiement à la livraison",
+      "areaServed": { "@type": "Country", "name": "Maroc" },
+      "availableChannel": { "@type": "ServiceChannel", "serviceUrl": "https://transpo.wedowonders.com/#contact" }
     },
     {
       "@type": "FAQPage",
       "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "L'application livreur fonctionne-t-elle sans réseau ?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Oui. Changement de statut, preuve de livraison et encaissement se font hors connexion, se mettent en file d'attente et se rejouent au retour du réseau, sans jamais produire deux fois le même effet." }
-        },
-        {
-          "@type": "Question",
-          "name": "Transpo gère-t-il le paiement à la livraison ?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Oui, de bout en bout : encaissement sur le pas de la porte, caisse du livreur alimentée course par course, déclaration du livreur, dépôt en agence, écart motivé, puis reversement au marchand net de commission." }
-        },
-        {
-          "@type": "Question",
-          "name": "L'interface est-elle disponible en arabe ?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Oui. Français et arabe, avec inversion complète de la mise en page en arabe — pas seulement la traduction des textes." }
-        }
+        { "@type": "Question", "name": "Transpo convient-il à une société de transport de quelle taille ?",
+          "acceptedAnswer": { "@type": "Answer", "text": "De quelques livreurs à plusieurs dizaines, sur une ou plusieurs villes. Chaque société cliente dispose de son propre espace de données, et le logiciel s'ouvre ville par ville plutôt que d'un coup." } },
+        { "@type": "Question", "name": "L'application livreur fonctionne-t-elle sans réseau ?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Oui. Changement de statut, preuve de livraison et encaissement se font hors connexion, se mettent en file et se rejouent au retour du réseau, sans jamais produire deux fois le même effet." } },
+        { "@type": "Question", "name": "Comment le paiement à la livraison est-il suivi ?",
+          "acceptedAnswer": { "@type": "Answer", "text": "De bout en bout : encaissement chez le client, caisse du livreur alimentée course par course, déclaration du livreur, dépôt en agence, écart motivé, puis reversement au marchand net de commission." } },
+        { "@type": "Question", "name": "Le logiciel est-il disponible en arabe ?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Oui, en français et en arabe, avec inversion complète de la mise en page en arabe." } }
       ]
     }
   ]
@@ -115,9 +103,10 @@
 
     <nav class="nav" aria-label="Navigation principale">
       <ul class="nav__liste">
+        <li><a class="nav__lien" href="#exploitation">La console</a></li>
         <li><a class="nav__lien" href="#terrain">L’app livreur</a></li>
-        <li><a class="nav__lien" href="#exploitation">L’exploitation</a></li>
-        <li><a class="nav__lien" href="#confiance">Conformité</a></li>
+        <li><a class="nav__lien" href="#argent">L’argent</a></li>
+        <li><a class="nav__lien" href="#demarrer">Démarrer</a></li>
       </ul>
     </nav>
 
@@ -129,223 +118,208 @@
 
 <main id="contenu">
 
-  <!-- ============================ Accroche ============================ -->
+  <!-- ============================== Accroche ============================== -->
   <section class="heros" aria-labelledby="heros-titre">
     <div class="heros__halo" aria-hidden="true"></div>
-    <div class="conteneur heros__grille">
+    <div class="conteneur">
       <div class="heros__texte">
-        <p class="etiquette"><span class="etiquette__point" aria-hidden="true"></span> Livraison du dernier kilomètre · Maroc</p>
-        <h1 class="heros__titre" id="heros-titre">Le colis part. À partir de là, plus rien ne se perd.</h1>
+        <p class="etiquette"><span class="etiquette__point" aria-hidden="true"></span> Pour les sociétés de transport et de livraison · Maroc</p>
+        <h1 class="heros__titre" id="heros-titre">Votre exploitation ne tient plus dans un cahier et trois groupes WhatsApp.</h1>
         <p class="heros__phrase">
-          Transpo est le logiciel des transporteurs et coursiers marocains. Le livreur travaille
-          <strong>même sans réseau</strong>, la livraison laisse une <strong>preuve horodatée</strong>,
-          et le cash encaissé à la porte est <strong>tracé jusqu’au reversement</strong> du marchand.
+          Transpo est le logiciel des transporteurs marocains : le dispatch affecte, le livreur
+          exécute <strong>même sans réseau</strong>, la livraison laisse une <strong>preuve opposable</strong>,
+          et chaque dirham encaissé à la porte est suivi <strong>jusqu’au reversement du marchand</strong>.
         </p>
         <div class="heros__actions">
           <a class="bouton bouton--principal bouton--grand" href="#contact">Demander une démonstration</a>
-          <a class="bouton bouton--fantome bouton--grand" href="#terrain">Voir l’app livreur</a>
+          <a class="bouton bouton--fantome bouton--grand" href="#exploitation">Voir la console</a>
         </div>
-        <ul class="heros__preuves">
-          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path></svg> Français et arabe, mise en page inversée</li>
-          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path></svg> Chaque société cliente cloisonnée</li>
-          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path></svg> Vendu en marque blanche</li>
-        </ul>
       </div>
 
-      <!-- Téléphone en perspective : la scène réagit au pointeur (scene.js). -->
-      <div class="scene" data-scene>
-        <div class="phone" data-phone>
-          <div class="phone__lueur" aria-hidden="true"></div>
-          <div class="phone__corps">
-            <div class="phone__encoche" aria-hidden="true"></div>
-            <div class="phone__ecran">
-              <p class="ec__jour">Lundi 14 · <strong>Hamid O.</strong></p>
-              <div class="ec__stats">
-                <div><span class="ec__n">7</span><span class="ec__l">à livrer</span></div>
-                <div><span class="ec__n">2</span><span class="ec__l">retraits</span></div>
-                <div><span class="ec__n">1 350</span><span class="ec__l">DH en caisse</span></div>
-              </div>
-              <p class="ec__titre">Mes missions</p>
-              <ul class="ec__liste">
-                <li class="mis">
-                  <div class="mis__haut"><span class="mis__ref">CMD-118</span><span class="puce puce--route">En route</span></div>
-                  <p class="mis__ville">Rabat-Agdal · 3ᵉ étage</p>
-                  <div class="mis__bas"><span class="puce puce--cod">COD 640 DH</span><span class="puce puce--preuve">Photo + signature</span></div>
-                </li>
-                <li class="mis">
-                  <div class="mis__haut"><span class="mis__ref">CMD-121</span><span class="puce puce--attente">Assignée</span></div>
-                  <p class="mis__ville">Rabat-Hassan · rez-de-chaussée</p>
-                  <div class="mis__bas"><span class="puce puce--prepaye">Prépayée</span><span class="puce puce--preuve">Photo</span></div>
-                </li>
-                <li class="mis mis--pale">
-                  <div class="mis__haut"><span class="mis__ref">CMD-124</span><span class="puce puce--attente">Assignée</span></div>
-                  <p class="mis__ville">Salé · Bettana</p>
-                </li>
-              </ul>
-              <div class="ec__barre" aria-hidden="true">
-                <span class="ec__onglet ec__onglet--actif">Missions</span>
-                <span class="ec__onglet">Tournée</span>
-                <span class="ec__onglet">Profil</span>
-              </div>
-            </div>
-          </div>
-        </div>
+      <!-- Vraies copies d'écran, présentées en perspective (scene.js). -->
+      <div class="vitre" data-scene>
+        <figure class="ecran-console" data-tilt-doux>
+          <img src="img/console-tableau-de-bord.png" width="1800" height="1128" loading="eager" decoding="async"
+               alt="Tableau de bord de la console Transpo : compteurs de commandes, en cours, livrées, échouées et COD encaissé, activité de la journée, conformité de la flotte et liste des commandes urgentes.">
+        </figure>
+        <figure class="ecran-mobile" data-flotte-tel>
+          <img src="img/app-livreur-missions.png" width="495" height="1100" loading="eager" decoding="async"
+               alt="Écran « Mes missions » de l’application livreur : huit courses actives, montant total de COD à encaisser, et pour chaque course la ville de retrait, la ville de livraison, le marchand et le montant à encaisser.">
+        </figure>
+      </div>
 
-        <!-- Deux cartes flottantes en profondeur : ce que le livreur déclenche. -->
-        <div class="flottant flottant--preuve" data-flotte="1" aria-hidden="true">
-          <span class="flottant__pastille"></span>
-          <div>
-            <p class="flottant__titre">Preuve enregistrée</p>
-            <p class="flottant__sous">Photo + signature · 13:05</p>
-          </div>
+      <ul class="heros__preuves">
+        <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path></svg> Français et arabe, mise en page inversée</li>
+        <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path></svg> Vos données cloisonnées de celles des autres sociétés</li>
+        <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path></svg> Exploitable sous votre propre marque</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================ Ce que ça coûte ========================= -->
+  <section class="section section--douce" id="couts" aria-labelledby="couts-titre">
+    <div class="conteneur">
+      <div class="section__entete">
+        <span class="sur-titre">Le point de départ</span>
+        <h2 class="section__titre" id="couts-titre">Ce qui vous coûte de l’argent aujourd’hui</h2>
+        <p class="section__chapo">
+          Aucune de ces situations n’est un défaut d’organisation. Ce sont les conséquences normales
+          d’une exploitation tenue au téléphone, au cahier et au tableur.
+        </p>
+      </div>
+      <div class="grille grille--quatre">
+        <article class="douleur">
+          <h3 class="douleur__titre">Le cash rentre mal</h3>
+          <p class="douleur__texte">Le livreur encaisse, l’agence attend le dépôt, le marchand réclame son reversement. À 18 h, personne ne sait combien de dirhams sont en tournée.</p>
+        </article>
+        <article class="douleur">
+          <h3 class="douleur__titre">Les litiges se paient</h3>
+          <p class="douleur__texte">« Livré » contre « jamais reçu ». Sans photo horodatée ni signature rattachée à un livreur identifié, c’est presque toujours le transporteur qui rembourse.</p>
+        </article>
+        <article class="douleur">
+          <h3 class="douleur__titre">Le dispatch est dans une tête</h3>
+          <p class="douleur__texte">Qui est disponible, dans la bonne zone, avec le bon véhicule, sous sa limite de conduite ? La réponse est juste — tant que c’est la bonne personne qui est au bureau.</p>
+        </article>
+        <article class="douleur">
+          <h3 class="douleur__titre">Les marchands appellent</h3>
+          <p class="douleur__texte">Chaque colis sans suivi partageable devient un appel au marchand, puis au dispatch. Ce coût-là ne figure sur aucune ligne de votre compte d’exploitation.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== La console ============================ -->
+  <section class="section" id="exploitation" aria-labelledby="exploitation-titre">
+    <div class="conteneur">
+      <div class="duo">
+        <div class="duo__texte">
+          <span class="sur-titre">La console d’exploitation</span>
+          <h2 class="section__titre" id="exploitation-titre">Votre journée, sur un seul écran</h2>
+          <p class="section__chapo">
+            Ce que le terrain déclare alimente directement le bureau. Pas de recopie du soir,
+            pas de tableur parallèle, pas de version du chiffre qui dépend de qui le donne.
+          </p>
+          <ul class="liste-coche">
+            <li><strong>Affectation assistée</strong> — les livreurs candidats sont classés par zone, disponibilité et charge, et ceux qui sont écartés le sont <em>avec leur motif</em>.</li>
+            <li><strong>Tournées multi-arrêts</strong> — l’ordre décidé au bureau est celui que suit le livreur, annoncé comme tel sur son téléphone.</li>
+            <li><strong>Flotte et chauffeurs</strong> — assurance, contrôle technique, permis, visite médicale : les échéances alertent avant, pas au contrôle.</li>
+            <li><strong>Rôles séparés</strong> — administrateur, dispatcher, comptable. Chacun borné à son périmètre, à l’écran comme dans l’API.</li>
+          </ul>
         </div>
-        <div class="flottant flottant--cash" data-flotte="2" aria-hidden="true">
-          <span class="flottant__pastille flottant__pastille--vert"></span>
-          <div>
-            <p class="flottant__titre">640 DH encaissés</p>
-            <p class="flottant__sous">Portés à la caisse du jour</p>
-          </div>
+        <figure class="capture" data-tilt-doux>
+          <img src="img/console-commandes.png" width="1800" height="1128" loading="lazy" decoding="async"
+               alt="Liste des commandes dans la console Transpo, avec recherche, filtres de statut, marchand, villes de départ et d’arrivée, montant à encaisser et état de chaque course.">
+          <figcaption>Liste des commandes — recherche, filtres, et l’état réel de chaque course.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================= L'app livreur ========================== -->
+  <section class="section section--sombre" id="terrain" aria-labelledby="terrain-titre">
+    <div class="conteneur">
+      <div class="duo duo--inverse">
+        <figure class="capture capture--tel" data-tilt-doux>
+          <img src="img/app-livreur-missions.png" width="495" height="1100" loading="lazy" decoding="async"
+               alt="Application livreur Transpo, écran des missions du jour avec le total de COD à encaisser et le détail de chaque course.">
+          <figcaption>L’application livreur, telle qu’elle s’ouvre le matin.</figcaption>
+        </figure>
+        <div class="duo__texte">
+          <span class="sur-titre">Sur le terrain</span>
+          <h2 class="section__titre" id="terrain-titre">Une journée qui tient dans le téléphone</h2>
+          <p class="section__chapo">
+            Conçue pour une main, en plein soleil, avec un réseau qui tombe. Votre livreur n’a
+            jamais à deviner ce que l’application attend de lui.
+          </p>
+          <ul class="liste-coche liste-coche--claire">
+            <li><strong>Hors réseau d’abord</strong> — statut, preuve, encaissement : tout passe sans connexion, se met en file, et se rejoue au retour du réseau sans jamais compter deux fois.</li>
+            <li><strong>La preuve, réglée par course</strong> — aucune, photo, signature, ou les deux. C’est vous qui arbitrez le coût de la preuve, colis par colis.</li>
+            <li><strong>Le numéro du client n’est pas exposé</strong> — il ne descend pas sur le téléphone du livreur.</li>
+            <li><strong>Temps de conduite suivi</strong> — neuf heures par jour au maximum, pause obligatoire, alerte avant la limite.</li>
+          </ul>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ============================ L'app livreur ============================ -->
-  <section class="section" id="terrain" aria-labelledby="terrain-titre">
+  <!-- =============================== L'argent ============================= -->
+  <section class="section" id="argent" aria-labelledby="argent-titre">
     <div class="conteneur">
       <div class="section__entete">
-        <span class="sur-titre">Sur le terrain</span>
-        <h2 class="section__titre" id="terrain-titre">Une journée qui tient dans le téléphone</h2>
+        <span class="sur-titre">Le paiement à la livraison</span>
+        <h2 class="section__titre" id="argent-titre">Cinq écritures entre la porte du client et le compte du marchand</h2>
         <p class="section__chapo">
-          L’application livreur est conçue pour une main, en plein soleil, avec un réseau qui tombe.
-          Trois moments valent tout le reste.
+          C’est le circuit le plus exposé d’un transporteur marocain, et celui qui tient le moins
+          bien dans un tableur. Transpo le découpe, et chaque étape est datée et attribuée.
         </p>
       </div>
 
-      <div class="cartes3d" data-scene>
-        <article class="carte3d" data-tilt>
-          <div class="carte3d__ecran">
-            <p class="mini__titre">Progression</p>
-            <ol class="etapes">
-              <li class="etapes__pas etapes__pas--fait"><span></span>Colis récupéré<em>09:12</em></li>
-              <li class="etapes__pas etapes__pas--fait"><span></span>Scanné au hub<em>10:48</em></li>
-              <li class="etapes__pas etapes__pas--cours"><span></span>En livraison<em>13:05</em></li>
-              <li class="etapes__pas"><span></span>Preuve et encaissement<em>—</em></li>
-            </ol>
-            <p class="mini__note">Chaque geste est horodaté, même hors réseau.</p>
-          </div>
-          <h3 class="carte3d__titre">Rien ne saute une étape</h3>
-          <p class="carte3d__texte">
-            Le serveur est seul juge des transitions autorisées. Un statut ne s’invente pas,
-            et l’historique dit qui a fait quoi, à quelle minute.
-          </p>
-        </article>
+      <ol class="chaine">
+        <li class="maillon"><span class="maillon__n">1</span><h3>Encaissement</h3><p>Le livreur saisit le montant reçu. La livraison ne se clôt qu’une fois l’encaissement enregistré.</p></li>
+        <li class="maillon"><span class="maillon__n">2</span><h3>Caisse du livreur</h3><p>Une session par livreur et par jour, alimentée <strong>course par course</strong> — des lignes, pas un total.</p></li>
+        <li class="maillon"><span class="maillon__n">3</span><h3>Déclaration</h3><p>Le livreur déclare ce qu’il a réellement en main. Sans lui, vous ne rapprochez que vos propres chiffres.</p></li>
+        <li class="maillon"><span class="maillon__n">4</span><h3>Dépôt en agence</h3><p>Le montant remis est enregistré. Théorique, déclaré et déposé se confrontent.</p></li>
+        <li class="maillon"><span class="maillon__n">5</span><h3>Reversement</h3><p>Net à virer = brut collecté − commission, avec sa référence de virement. Un seul paiement possible.</p></li>
+      </ol>
 
-        <article class="carte3d" data-tilt>
-          <div class="carte3d__ecran">
-            <p class="mini__titre">Preuve de livraison</p>
-            <div class="preuve">
-              <div class="preuve__case preuve__case--ok"><span>Photo</span><em>✓</em></div>
-              <div class="preuve__case preuve__case--ok"><span>Signature</span><em>✓</em></div>
-            </div>
-            <div class="mini__bouton mini__bouton--actif">Valider la livraison</div>
-            <p class="mini__note">Le bouton nomme ce qui manque, jamais l’inverse.</p>
-          </div>
-          <h3 class="carte3d__titre">Un litige se tranche, il ne se discute pas</h3>
-          <p class="carte3d__texte">
-            Le niveau de preuve se choisit <strong>commande par commande</strong> — aucune, photo,
-            signature, ou les deux. C’est vous qui arbitrez le coût de la preuve.
-          </p>
-        </article>
-
-        <article class="carte3d" data-tilt>
-          <div class="carte3d__ecran">
-            <p class="mini__titre">Ma caisse du jour</p>
-            <div class="caisse">
-              <div class="caisse__ligne"><span>Attendu</span><strong>1 350,00 DH</strong></div>
-              <div class="caisse__ligne"><span>Ce que j’ai en main</span><strong>1 300,00 DH</strong></div>
-              <div class="caisse__ecart">Écart de 50,00 DH — motif à saisir</div>
-            </div>
-            <p class="mini__note">L’attendu vient du serveur, pas de la mémoire du livreur.</p>
-          </div>
-          <h3 class="carte3d__titre">Le cash cesse d’être une question de confiance</h3>
-          <p class="carte3d__texte">
-            Chaque encaissement est une ligne. Le livreur déclare ce qu’il a réellement,
-            l’agence enregistre le dépôt, et l’écart se résout avec un motif nommé.
-          </p>
-        </article>
-      </div>
-
-      <p class="mention-hors-ligne">
-        <strong>Hors réseau d’abord.</strong> Changement de statut, preuve, encaissement : tout passe
-        sans connexion, se met en file, et se rejoue au retour du réseau — sans jamais produire deux
-        fois le même effet.
+      <p class="mention">
+        <strong>Aucun écart ne se règle en silence.</strong> Une différence entre le déclaré et le
+        théorique se résout avec un motif nommé et une note — monnaie rendue, paiement partiel,
+        erreur de saisie, manquant à retenir. La session ne se clôt pas autrement.
       </p>
     </div>
   </section>
 
-  <!-- ============================ L'exploitation ============================ -->
-  <section class="section section--sombre" id="exploitation" aria-labelledby="exploitation-titre">
+  <!-- ========================= Marchands & conformité ===================== -->
+  <section class="section section--douce" id="confiance" aria-labelledby="confiance-titre">
     <div class="conteneur">
       <div class="section__entete">
-        <span class="sur-titre">Au bureau</span>
-        <h2 class="section__titre" id="exploitation-titre">Ce que le terrain déclare, la comptabilité le voit</h2>
-        <p class="section__chapo">
-          Le dispatch, les tournées, la flotte, la caisse et la facturation vivent au même endroit.
-          Pas de tableur parallèle, pas de recopie du soir.
-        </p>
-      </div>
-
-      <div class="grille grille--quatre">
-        <article class="bloc">
-          <h3 class="bloc__titre">Affecter sans deviner</h3>
-          <p class="bloc__texte">Le dispatch classe les livreurs par compatibilité — zone, disponibilité, charge — et <strong>nomme ceux qu’il écarte, avec le motif</strong>. Le dispatcher tranche, l’outil explique.</p>
-        </article>
-        <article class="bloc">
-          <h3 class="bloc__titre">Une tournée qui tient</h3>
-          <p class="bloc__texte">L’ordre décidé au bureau est celui qu’affiche le téléphone du livreur, annoncé comme tel. Une tournée clôturée n’est plus modifiable.</p>
-        </article>
-        <article class="bloc">
-          <h3 class="bloc__titre">Le marchand se sert seul</h3>
-          <p class="bloc__texte">Il dépose ses courses, suit les siennes — et <strong>uniquement les siennes</strong> — et voit ce qui lui sera reversé, net de commission.</p>
-        </article>
-        <article class="bloc">
-          <h3 class="bloc__titre">Le client cesse d’appeler</h3>
-          <p class="bloc__texte">Un code à huit caractères, aucune inscription, en français ou en arabe. Sans téléphone, sans adresse, sans nom de livreur exposés.</p>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================ Conformité ============================ -->
-  <section class="section" id="confiance" aria-labelledby="confiance-titre">
-    <div class="conteneur">
-      <div class="section__entete">
-        <span class="sur-titre">Conformité</span>
-        <h2 class="section__titre" id="confiance-titre">Les règles sont dans le produit, pas dans une note de service</h2>
+        <span class="sur-titre">Vos clients, et la loi</span>
+        <h2 class="section__titre" id="confiance-titre">Ce qui vous fait garder un marchand, et ce qui vous évite un contrôle</h2>
       </div>
       <div class="grille grille--trois">
-        <article class="regle">
-          <h3 class="regle__titre">Loi 09-08</h3>
-          <p class="regle__texte">Aucun message commercial sans consentement, et un consentement retiré redevient opposable immédiatement. Sur demande, les données d’une personne s’exportent et s’effacent : la course est anonymisée, l’écriture comptable reste.</p>
+        <article class="bloc">
+          <h3 class="bloc__titre">Le marchand se sert seul</h3>
+          <p class="bloc__texte">Il dépose ses courses depuis son portail, suit les siennes — et <strong>uniquement les siennes</strong> — consulte son portefeuille et sa facture. Autant d’appels que votre exploitation ne prend plus.</p>
         </article>
-        <article class="regle">
-          <h3 class="regle__titre">Temps de conduite</h3>
-          <p class="regle__texte">Neuf heures par jour au maximum, pause obligatoire après quatre heures trente, alerte avant la limite. La règle est écrite une seule fois et s’applique à l’écran du chauffeur comme à l’aptitude lue par le dispatch.</p>
+        <article class="bloc">
+          <h3 class="bloc__titre">Le client final cesse d’appeler</h3>
+          <p class="bloc__texte">Un code à huit caractères, sans compte, en français ou en arabe. Sans téléphone, sans adresse exacte, sans nom de livreur exposés. Et il note la livraison une fois qu’elle est faite.</p>
         </article>
-        <article class="regle">
-          <h3 class="regle__titre">Cloisonnement</h3>
-          <p class="regle__texte">Chaque société cliente a son propre espace de données. Une requête qui désigne une autre société est refusée, y compris authentifiée. Six rôles, bornés à l’écran comme dans l’API.</p>
+        <article class="bloc">
+          <h3 class="bloc__titre">Les règles sont dans le produit</h3>
+          <p class="bloc__texte">Loi 09-08 sur les données personnelles, temps de conduite, cloisonnement entre sociétés, journal d’audit des actions sensibles. Appliqués par le logiciel, pas par une note de service.</p>
         </article>
       </div>
-      <p class="mention-humain">
+      <p class="mention mention--humain">
         Et une limite que la machine ne franchit pas : elle propose un livreur, signale un risque,
         bloque un envoi non consenti. <strong>Elle ne sanctionne personne et n’affecte rien à votre place.</strong>
       </p>
     </div>
   </section>
 
-  <!-- ============================ Contact ============================ -->
+  <!-- =============================== Démarrer ============================= -->
+  <section class="section" id="demarrer" aria-labelledby="demarrer-titre">
+    <div class="conteneur">
+      <div class="section__entete">
+        <span class="sur-titre">Mise en route</span>
+        <h2 class="section__titre" id="demarrer-titre">De la signature à la première tournée</h2>
+        <p class="section__chapo">
+          Rien à installer sur vos postes : votre équipe se connecte à votre propre espace.
+          On ouvre sur une ville, avec quelques livreurs et un marchand pilote, puis on élargit
+          sur des chiffres.
+        </p>
+      </div>
+      <div class="grille grille--quatre">
+        <article class="etape-mep"><span class="etape-mep__n">1</span><h3>Votre espace</h3><p>Votre organisation, votre base dédiée, votre premier administrateur.</p></article>
+        <article class="etape-mep"><span class="etape-mep__n">2</span><h3>Votre réalité</h3><p>Véhicules et échéances, chauffeurs et permis, zones, marchands et leurs conditions.</p></article>
+        <article class="etape-mep"><span class="etape-mep__n">3</span><h3>Vos règles</h3><p>Grille tarifaire, commission, TVA, niveaux de preuve par défaut, modèles de notification.</p></article>
+        <article class="etape-mep"><span class="etape-mep__n">4</span><h3>Deux profils à former</h3><p>Le dispatcher sur la console, le livreur sur son téléphone. Il n’y en a pas d’autres.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================ Contact ============================= -->
   <section class="section section--contact" id="contact" aria-labelledby="contact-titre">
     <div class="conteneur contact__grille">
       <div>
@@ -353,20 +327,19 @@
         <h2 class="section__titre" id="contact-titre">Sur vos courses, pas sur une démo générique</h2>
         <p class="section__chapo">
           Donnez-nous une journée type — un volume, deux ou trois zones, vos conditions marchands —
-          et nous la rejouons dans un espace d’essai à votre nom. Vous verrez vos chiffres.
+          et nous la rejouons dans un espace d’essai à votre nom. Vous verrez vos chiffres, pas les nôtres.
         </p>
         <dl class="contact__infos">
           <div><dt>Écrire</dt><dd><a href="mailto:contact@transpo.ma">contact@transpo.ma</a></dd></div>
-          <div><dt>Zones couvertes</dt><dd>Casablanca, Rabat, Tanger, Marrakech, Fès, Agadir — et le reste du Maroc</dd></div>
+          <div><dt>Villes couvertes</dt><dd>Casablanca, Rabat, Tanger, Marrakech, Fès, Agadir, Kénitra, Mohammedia — et le reste du Maroc</dd></div>
           <div><dt>Langues</dt><dd>Français et arabe</dd></div>
         </dl>
       </div>
 
       <form class="formulaire" id="form-contact" novalidate>
         <h3 class="formulaire__titre">Demander une démonstration</h3>
-
         <div class="champ">
-          <label for="f-societe">Société</label>
+          <label for="f-societe">Société de transport</label>
           <input id="f-societe" name="societe" type="text" autocomplete="organization" required>
         </div>
         <div class="champ">
@@ -378,26 +351,17 @@
           <input id="f-email" name="email" type="email" autocomplete="email" required>
         </div>
         <div class="champ champ--duo">
-          <div>
-            <label for="f-villes">Villes couvertes</label>
-            <input id="f-villes" name="villes" type="text" placeholder="Casablanca, Rabat">
-          </div>
-          <div>
-            <label for="f-livreurs">Livreurs</label>
-            <input id="f-livreurs" name="livreurs" type="number" min="1" inputmode="numeric" placeholder="12">
-          </div>
+          <div><label for="f-villes">Villes couvertes</label><input id="f-villes" name="villes" type="text" placeholder="Casablanca, Rabat"></div>
+          <div><label for="f-livreurs">Livreurs</label><input id="f-livreurs" name="livreurs" type="number" min="1" inputmode="numeric" placeholder="12"></div>
         </div>
         <div class="champ">
           <label for="f-message">Ce que vous cherchez à régler</label>
-          <textarea id="f-message" name="message" rows="3" placeholder="Le cash qui circule sans trace, les litiges sans preuve…"></textarea>
+          <textarea id="f-message" name="message" rows="3" placeholder="Le cash qui rentre mal, les litiges sans preuve, les marchands qui appellent…"></textarea>
         </div>
-
-        <button class="bouton bouton--principal bouton--grand bouton--bloc" type="submit">
-          Ouvrir mon message
-        </button>
+        <button class="bouton bouton--principal bouton--grand bouton--bloc" type="submit">Ouvrir mon message</button>
         <p class="formulaire__note" id="form-note">
-          Le bouton prépare le message dans votre logiciel de messagerie : rien n’est envoyé
-          ni conservé par ce site, et vous relisez avant d’envoyer.
+          Le bouton prépare le message dans votre logiciel de messagerie : rien n’est envoyé ni
+          conservé par ce site, et vous relisez avant d’envoyer.
         </p>
       </form>
     </div>
@@ -409,13 +373,13 @@
   <div class="conteneur pied__barre">
     <p class="pied__marque">Transpo</p>
     <p class="pied__mention">
-      Logiciel de livraison du dernier kilomètre pour les transporteurs marocains.
+      Logiciel d’exploitation pour les sociétés de transport et de livraison au Maroc.
       Montants en dirhams. Interfaces en français et en arabe.
     </p>
     <nav class="pied__liens" aria-label="Pied de page">
+      <a href="#exploitation">La console</a>
       <a href="#terrain">L’app livreur</a>
-      <a href="#exploitation">L’exploitation</a>
-      <a href="#confiance">Conformité</a>
+      <a href="#argent">L’argent</a>
       <a href="mailto:contact@transpo.ma">contact@transpo.ma</a>
     </nav>
   </div>
