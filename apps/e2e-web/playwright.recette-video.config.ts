@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// Recette vidéo — homelab K8s (transpo.wedowonders.com).
+// Recette vidéo — homelab K8s (console sur app.wedowonders.com ; `transpo.` sert le site vitrine).
 // Contrairement à playwright.homelab.config.ts (captures PNG), cette config
 // enregistre une VIDÉO par cas et range les artefacts dans qa/recette/<run>/.
 //
@@ -19,7 +19,7 @@ export default defineConfig({
   fullyParallel: false,
   reporter: [['list'], ['json', { outputFile: `../../qa/recette/${runId}/resultats.json` }]],
   use: {
-    baseURL: process.env.WEB_URL || 'http://transpo.wedowonders.com',
+    baseURL: process.env.WEB_URL || 'http://app.wedowonders.com',
     video: { mode: 'on', size: { width: 1280, height: 800 } },
     screenshot: 'off',            // la vidéo remplace les captures
     trace: 'retain-on-failure',

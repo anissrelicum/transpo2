@@ -1,0 +1,45 @@
+# Routage des trois hôtes du homelab.
+#
+#   transpo.wedowonders.com      → le SITE VITRINE (public, référencé)
+#   app.wedowonders.com          → la console d'exploitation (accès client)
+#   transpo-api.wedowonders.com  → l'API
+#
+# Le site vitrine prend l'adresse la plus courte parce que c'est elle qu'un prospect
+# reçoit et qu'un moteur indexe ; la console, elle, n'a pas à être trouvée par hasard.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: transpo
+  namespace: transpo
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: transpo.wedowonders.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: transpo-site
+                port: { number: 80 }
+    - host: app.wedowonders.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: transpo-web
+                port: { number: 3001 }
+    - host: transpo-api.wedowonders.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: transpo-api
+                port: { number: 3000 }

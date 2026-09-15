@@ -11,6 +11,7 @@
 export RUN_ID="${RUN_ID:-$(date +%Y-%m-%d)-homelab}"
 export DATABASE_URL="postgres://postgres:501373f412610fa0378f89ddb298a03f@localhost:5433/transpo_db"
 export API_URL="http://transpo-api.wedowonders.com"
-export WEB_URL="http://transpo.wedowonders.com"
+# La console a déménagé sur `app.` le 15/09 : `transpo.` sert désormais le site vitrine.
+export WEB_URL="http://app.wedowonders.com"
 export PG_EXEC="kubectl exec -n transpo deploy/postgres --"
 export ACCOUNT_EXEC='kubectl exec -n transpo deploy/transpo-api -- sh -c "cd /repo && pnpm --filter @transpo/db account %ARGS%"'

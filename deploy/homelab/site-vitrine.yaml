@@ -1,0 +1,43 @@
+# Site vitrine — statique, servi par nginx. Aucune base, aucun secret, aucun état :
+# deux répliques suffisent et redémarrent sans conséquence.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transpo-site
+  namespace: transpo
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: transpo-site }
+  template:
+    metadata:
+      labels: { app: transpo-site }
+    spec:
+      containers:
+        - name: site
+          # Deux noms pour UN registre, vus de deux endroits : on POUSSE vers
+          # `host.docker.internal:5000` (le démon Docker vit dans la VM du Mac, derrière un
+          # port-forward), et le cluster TIRE depuis l'IP de service du registre. Mettre ici
+          # le nom de poussée donne un ImagePullBackOff immédiat.
+          image: 10.105.15.135:5000/apps/transpo-site:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet: { path: /index.html, port: 80 }
+            initialDelaySeconds: 2
+            periodSeconds: 10
+          resources:
+            requests: { cpu: 10m, memory: 24Mi }
+            limits: { cpu: 200m, memory: 128Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: transpo-site
+  namespace: transpo
+spec:
+  selector: { app: transpo-site }
+  ports:
+    - port: 80
+      targetPort: 80

@@ -16,7 +16,7 @@
 #
 # Sur le homelab, exporter le profil avant de lancer :
 #   export DATABASE_URL=postgres://…@localhost:5433/…   # port-forward svc/postgres
-#   export API_URL=http://transpo-api.wedowonders.com WEB_URL=http://transpo.wedowonders.com
+#   export API_URL=http://transpo-api.wedowonders.com WEB_URL=http://app.wedowonders.com
 #   export PG_EXEC='kubectl exec -n transpo deploy/postgres --'
 #   export ACCOUNT_EXEC='kubectl exec -n transpo deploy/transpo-api -- sh -c "cd /repo && pnpm --filter @transpo/db account %ARGS%"'
 # La section G (émulateur) ne se joue PAS contre le homelab : l'app livreur vise l'API locale.

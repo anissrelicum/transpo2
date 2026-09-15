@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// Recette homelab K8s (transpo.wedowonders.com) — contrairement à playwright.config.ts
+// Recette homelab K8s (console sur app.wedowonders.com) — contrairement à playwright.config.ts
 // (Docker interne CI), cette config cible l'ingress du homelab et range les artefacts
 // (captures, traces) dans qa/recette/<run>/.
 //
@@ -18,7 +18,7 @@ export default defineConfig({
   retries: 0,
   reporter: [['list']],
   use: {
-    baseURL: process.env.WEB_URL || 'http://transpo.wedowonders.com',
+    baseURL: process.env.WEB_URL || 'http://app.wedowonders.com',
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
     locale: 'fr-FR',
