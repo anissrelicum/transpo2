@@ -39,9 +39,18 @@
   --texte: var(--slate-12);
   --texte-doux: var(--slate-11);
   --encre: #17322a;            /* l'encre des illustrations : un vert très sombre */
-  --accent-plein: var(--vert-9);
-  --accent-survol: var(--vert-10);
-  --accent-texte: var(--vert-11);
+  /* Deux rôles distincts, et la distinction n'est pas décorative :
+   *   --accent-plein : un aplat qui porte du TEXTE blanc. Mesuré, blanc sur vert-9 ne
+   *     donne que 3,16:1 — sous le seuil AA de 4,5:1 pour du texte. C'est le travers
+   *     connu des verts : leur cran vif ne porte pas de blanc. D'où le cran 11 ici.
+   *   --accent-vif : un aplat DÉCORATIF, ou qui porte une icône. Un objet graphique se
+   *     juge à 3:1, seuil que vert-9 franchit — la vivacité du modèle est donc conservée
+   *     là où elle ne coûte rien à la lecture. */
+  --accent-plein: var(--vert-11);
+  --accent-vif: var(--vert-9);
+  --accent-survol: #1a6f49;
+  /* vert-11 sur le fond menthe ne donne que 4,48:1 : sous le seuil, de peu mais dessous. */
+  --accent-texte: #1a6f49;
   --accent-fond: var(--vert-3);
   --accent-bordure: var(--vert-6);
   --sur-accent: #ffffff;
@@ -73,6 +82,11 @@
 /* Trois états à couvrir : préférence système, choix clair explicite, choix sombre. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
+    --accent-plein: #3dd68c;
+    --accent-vif: var(--vert-9);
+    --accent-survol: #63e3a5;
+    --accent-texte: var(--vert-11);
+    --sur-accent: #0c1f16;
     --vert-1: #0d1912;  --vert-2: #0f1f17;  --vert-3: #132d21;  --vert-4: #163a29;
     --vert-5: #1b4332;  --vert-6: #214e3c;  --vert-7: #285d48;  --vert-8: #2f7c57;
     --vert-9: #30a46c;  --vert-10: #3cb179; --vert-11: #3dd68c; --vert-12: #b1f1cb;
@@ -95,6 +109,11 @@
   }
 }
 :root[data-theme="dark"] {
+    --accent-plein: #3dd68c;
+    --accent-vif: var(--vert-9);
+    --accent-survol: #63e3a5;
+    --accent-texte: var(--vert-11);
+    --sur-accent: #0c1f16;
   --vert-1: #0d1912;  --vert-2: #0f1f17;  --vert-3: #132d21;  --vert-4: #163a29;
   --vert-5: #1b4332;  --vert-6: #214e3c;  --vert-7: #285d48;  --vert-8: #2f7c57;
   --vert-9: #30a46c;  --vert-10: #3cb179; --vert-11: #3dd68c; --vert-12: #b1f1cb;
@@ -160,7 +179,7 @@ a { color: var(--accent-texte); text-underline-offset: 3px; }
 }
 .marque__pastille {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 34px; height: 34px; border-radius: var(--r4); background: var(--accent-plein);
+  width: 34px; height: 34px; border-radius: var(--r4); background: var(--accent-vif);
 }
 .marque__nom { font-size: var(--fs-4); font-weight: 800; letter-spacing: -.012em; }
 .nav { display: none; }
@@ -218,7 +237,7 @@ a { color: var(--accent-texte); text-underline-offset: 3px; }
 /* La phrase encadrée du modèle. */
 .encadre {
   display: inline-block; margin-top: var(--e2); padding: 2px var(--e3);
-  border: 3px solid var(--accent-plein); border-radius: var(--r4);
+  border: 3px solid var(--accent-vif); border-radius: var(--r4);
 }
 .heros__phrase {
   margin-top: var(--e5); max-width: 52ch; color: var(--texte-doux);
@@ -288,7 +307,7 @@ a { color: var(--accent-texte); text-underline-offset: 3px; }
 .etape__tuile {
   display: inline-flex; align-items: center; justify-content: center;
   width: 54px; height: 54px; border-radius: var(--r6);
-  background: var(--accent-plein); color: var(--sur-accent);
+  background: var(--accent-vif); color: #fff;
 }
 .etape__n {
   margin-top: var(--e4); font-size: var(--fs-1); font-weight: 700;
@@ -307,7 +326,7 @@ a { color: var(--accent-texte); text-underline-offset: 3px; }
 }
 .liste-coche li::before {
   content: ""; position: absolute; left: 0; top: 3px;
-  width: 18px; height: 18px; border-radius: var(--rond); background: var(--accent-plein);
+  width: 18px; height: 18px; border-radius: var(--rond); background: var(--accent-vif);
 }
 .liste-coche li::after {
   content: ""; position: absolute; left: 6px; top: 8px;
