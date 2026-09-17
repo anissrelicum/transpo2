@@ -81,5 +81,22 @@ le produit refuse les homonymes dans un même tenant (cf. TC-D14).
 3. **Build de développement** — le push ne fonctionne pas dans Expo Go. `npx expo prebuild`
    puis `npx expo run:android`, ou une build EAS.
 
-Tant que 1 et 3 ne sont pas faits, l'intégration est complète côté code et inerte côté
-terrain — et l'app continue de tourner normalement dans Expo Go, sans push.
+## Vérifié de bout en bout le 17/09
+
+| Étape | Preuve |
+|---|---|
+| Compte de service Firebase déposé | `PUT /apps/{id}` — Android passé à « configuré » |
+| Build de développement Android | `BUILD SUCCESSFUL in 18m 34s`, installée sur l'émulateur |
+| Jeton FCM obtenu par l'appareil | `fIvZHLOXTNmbYZyfMOjs98:APA91bG…` |
+| Abonnement OneSignal | `SUBSCRIBED`, permission accordée — 1 abonné |
+| Envoi à `demoexpress:Hamid Ouali` | `successful: 1, failed: 0` |
+| Affichage sur l'appareil | notification visible dans le volet |
+
+Une remarque utile pour le jour où « ça ne marche pas » : app **au premier plan**, la
+notification est reçue mais ne s'affiche PAS dans le volet — c'est le comportement normal
+d'Android, et `successful: 1` le confirme. Mettre l'app en arrière-plan avant de conclure à
+une panne.
+
+Reste ouvert : iOS (demande un compte Apple Developer), et la section G de la recette, qui
+continue de passer par Expo Go — donc sans push. Les deux mondes coexistent volontairement,
+cf. le garde-fou de `apps/driver-app/lib/push.ts`.
