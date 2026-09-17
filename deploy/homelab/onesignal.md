@@ -33,9 +33,31 @@ le produit refuse les homonymes dans un même tenant (cf. TC-D14).
 ## Ce qui reste à faire avant qu'une notification parte vraiment
 
 1. **Clé FCM (Android)** — l'application OneSignal n'en a AUCUNE aujourd'hui. Sans elle, pas
-   une notification Android ne sera délivrée, quel que soit le code. Il faut un projet
-   Firebase et son fichier de compte de service, déposé dans OneSignal
-   (*Settings → Push & In-App → Google Android*).
+   une notification Android ne sera délivrée, quel que soit le code.
+
+   Elle se dépose **par l'API** (`PUT /apps/{app_id}`, champ `fcm_v1_service_account_json`,
+   fichier encodé en base64) — la clé fournie a bien la portée *organisation* que cet appel
+   réclame, vérifié par un `GET /apps` qui répond 200. Mais l'API ne peut que RECEVOIR ce
+   justificatif : il se génère dans la console Firebase, et cette étape-là n'appartient
+   qu'au propriétaire du projet Google.
+
+   ```
+   Firebase → votre projet → ⚙ Paramètres du projet → Comptes de service
+            → « Générer une nouvelle clé privée » → un fichier .json est téléchargé
+   ```
+
+   Puis, en une commande :
+
+   ```bash
+   ONESIGNAL_API_KEY='<clé organisation>' \
+     node deploy/homelab/onesignal-fcm.mjs ./chemin/vers/compte-de-service.json
+   ```
+
+   Le script refuse un `google-services.json` — c'est le fichier CLIENT, pas le compte de
+   service. La confusion est fréquente, et OneSignal l'accepterait sans rien pouvoir en
+   faire.
+
+   `node deploy/homelab/onesignal-fcm.mjs --verifier` rend l'état courant sans rien écrire.
 2. **Clé APNs (iOS)** — idem, si l'app livreur doit sortir sur iPhone. Demande un compte
    Apple Developer.
 3. **Build de développement** — le push ne fonctionne pas dans Expo Go. `npx expo prebuild`
