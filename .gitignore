@@ -25,3 +25,11 @@ apps/e2e-web/test-results/
 apps/e2e-web/playwright-report/
 .DS_Store
 *.tsbuildinfo
+
+# Justificatifs d'envoi push — clés privées, jamais versionnées.
+# Un compte de service Firebase donne le droit d'envoyer au nom du projet : le déposer
+# dans un dépôt, même privé, c'est le donner à quiconque clone.
+*service-account*.json
+firebase-adminsdk*.json
+*.p8
+*.p12
