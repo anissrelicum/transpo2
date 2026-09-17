@@ -1,5 +1,23 @@
 # Notifications push — OneSignal
 
+## Deux clés, deux usages — ne pas les confondre
+
+OneSignal en distingue deux, et l'une ne fait pas le travail de l'autre. La confusion coûte
+un `401 Access denied` dont le message ne dit pas laquelle manque.
+
+| Clé | Préfixe | Ce qu'elle permet | Où elle vit |
+|---|---|---|---|
+| **Organisation** | `os_v2_org_…` | gérer les applications : lire leur état, déposer la clé FCM (`PUT /apps/{id}`) | à la main, pour les scripts d'administration |
+| **REST de l'application** | `os_v2_app_…` | **envoyer des notifications** (`POST /notifications`) | secret Kubernetes `transpo-onesignal`, clé `api-key` |
+
+Vérifié : la clé d'organisation est refusée par `POST /notifications`, quelle que soit la
+forme de l'en-tête (`Key`, `Basic`, `Bearer`). Et `GET /apps/{id}` ne rend plus
+`basic_auth_key` — la clé d'application ne se récupère donc que dans le tableau de bord :
+
+```
+OneSignal → votre application → Settings → Keys & IDs → « REST API Key »
+```
+
 ## Ce qui est dans le dépôt, et ce qui n'y est pas
 
 | | Où |
