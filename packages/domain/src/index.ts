@@ -445,6 +445,9 @@ export const NOTIF_TEMPLATES: Record<string, { fr: string; ar: string; transacti
   'order.delivered': { fr: 'Votre colis {code} a été livré. Merci !', ar: 'تم تسليم طردكم {code}. شكراً!', transactional: true },
   'order.failed':    { fr: 'Échec de livraison du colis {code}. Nouvel essai prévu.', ar: 'فشل تسليم الطرد {code}. ستتم إعادة المحاولة.', transactional: true },
   'promo':           { fr: 'Offre spéciale de la part de {x}.', ar: 'عرض خاص من {x}.', transactional: false },
+  // Destiné au LIVREUR, pas au client final : c'est le seul modèle dont le destinataire
+  // est un membre de l'équipe, et il part par notification push sur son téléphone.
+  'driver.assigned': { fr: 'Nouvelle mission {code} — {ville}.', ar: 'مهمة جديدة {code} — {ville}.', transactional: true },
 };
 export type NotifEvent = keyof typeof NOTIF_TEMPLATES;
 

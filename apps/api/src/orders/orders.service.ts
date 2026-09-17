@@ -42,6 +42,9 @@ async function journaliser(db: any, ref: string, status: string, actor?: string 
   await db.insert(orderEventsTable).values({ ref, status, actor: actor ?? null, note: note ?? null });
 }
 
+/** `tenant_rabatexpress` → `rabatexpress`. Le slug est la moitié de l'identifiant push. */
+const slugDuSchema = (schema: string): string => schema.replace(/^tenant_/, '');
+
 function rowToOrder(r: any): Order {
   return { ...r, createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt } as Order;
 }
@@ -155,6 +158,14 @@ export class OrdersService {
       const [r] = await db.update(ordersTable).set({ driver: driverName, status }).where(eq(ordersTable.ref, ref)).returning();
       await journaliser(db, ref, status, actor, `Affectée à ${driverName}`);
       return rowToOrder(r);
+    }).then(async (commande) => {
+      // Le livreur apprend sa mission sur son téléphone, sans avoir à rafraîchir sa liste.
+      // Comme les autres notifications, l'envoi suit l'écriture métier et ne la retient
+      // jamais : une panne de passerelle ne doit pas empêcher une affectation.
+      await this.notifs.notifierLivreur(schema, slugDuSchema(schema), driverName, 'driver.assigned', {
+        code: commande.code, ville: commande.toCity,
+      });
+      return commande;
     });
   }
 

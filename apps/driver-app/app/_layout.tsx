@@ -1,10 +1,16 @@
+import * as React from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useTheme } from '../lib/theme';
+import { initialiserLePush } from '../lib/push';
 
 export default function RootLayout() {
   const { mode, colors } = useTheme();
+
+  // OneSignal s'initialise une fois, au démarrage. Dans Expo Go il ne se passe rien :
+  // le module natif n'y existe pas, et `lib/push` le sait (cf. le commentaire là-bas).
+  React.useEffect(() => initialiserLePush(), []);
 
   return (
     <SafeAreaProvider>

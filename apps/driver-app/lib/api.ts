@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import { identifierLeLivreur, oublierLeLivreur } from './push';
 import { createClient, TranspoClient } from '@transpo/api-client';
 import { readToken, writeToken, deleteToken, readJson, writeJson, removeKey } from './storage';
 
@@ -24,6 +25,9 @@ export async function setSession(s: Session): Promise<void> {
   session = s;
   await writeToken(s.token);
   await writeJson(PROFILE_KEY, { name: s.name, tenant: s.tenant });
+  // L'appareil est rattaché au livreur ICI, et non dans l'écran de connexion : toutes les
+  // façons d'ouvrir une session passent par cette fonction, y compris la restauration.
+  identifierLeLivreur(s.tenant, s.name);
 }
 
 /** Restaure la session au démarrage. `null` si le livreur doit se reconnecter. */
@@ -33,6 +37,7 @@ export async function restoreSession(): Promise<Session | null> {
   const profile = await readJson<{ name?: string; tenant?: string }>(PROFILE_KEY, {});
   if (!profile.tenant) return null;
   session = { token, name: profile.name ?? '', tenant: profile.tenant };
+  identifierLeLivreur(session.tenant, session.name);
   return session;
 }
 
@@ -41,6 +46,9 @@ export async function clearSession(): Promise<void> {
   session = null;
   await deleteToken();
   await removeKey(PROFILE_KEY);
+  // Deux livreurs se relaient parfois sur le même téléphone : sans ce détachement, le
+  // second recevrait les missions du premier.
+  oublierLeLivreur();
 }
 
 /** Client public (login) pour un tenant donné. */

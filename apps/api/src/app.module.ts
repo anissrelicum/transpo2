@@ -26,13 +26,15 @@ import { ReviewsModule } from './reviews/reviews.module.js';
 import { HealthController } from './health.controller.js';
 
 // Scoping par tenant via TenantGuard ; auth JWT + RBAC via guards (transpo-auth-security).
+import { DemoModule } from './demo/demo.module.js';
+
 @Module({
   imports: [
     AuthModule, OrdersModule, SaasModule, DispatchModule, FleetModule,
     CashModule, BillingModule, ReturnsModule, AnalyticsModule, FraudModule, MerchantModule,
     PublicModule, TourneesModule, NotificationsModule, PrivacyModule, DriverModule,
     TrackingModule, FieldModule, GeoModule, HubModule, UsersModule, SettingsModule,
-    DriversModule, ReviewsModule,
+    DriversModule, ReviewsModule, DemoModule,
   ],
   controllers: [HealthController],
 })

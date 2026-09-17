@@ -1,4 +1,5 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Inject } from '@nestjs/common';
+import { OneSignalService } from './onesignal.service.js';
 import { withTenantDb, notifConsents, notifications, notifTemplates } from '@transpo/db';
 import { and, desc, eq } from 'drizzle-orm';
 import { NOTIF_CHANNELS, NOTIF_TEMPLATES, renderTemplate, type NotifChannel } from '@transpo/domain';
@@ -14,6 +15,8 @@ const EVENT_RE = /^[a-z][a-z0-9]*(\.[a-z0-9]+)*$/;
 
 @Injectable()
 export class NotificationsService {
+  constructor(@Inject(OneSignalService) private readonly push: OneSignalService) {}
+
   private assertChannel(c: string): NotifChannel {
     if (!NOTIF_CHANNELS.includes(c as NotifChannel)) throw new BadRequestException(`Canal inconnu : ${c}`);
     return c as NotifChannel;
@@ -168,10 +171,54 @@ export class NotificationsService {
       status = 'BLOCKED';
       reason = 'Consentement marketing absent (loi 09-08).';
     }
+    // Le canal PUSH part réellement — les autres canaux n'ont pas encore de passerelle
+    // contractée, et leur statut « SENT » ne dit donc que « prêt à partir ». Ici on peut
+    // faire mieux : si OneSignal refuse, on consigne un ÉCHEC motivé plutôt qu'un envoi
+    // qui n'a pas eu lieu. Un centre de notifications qui ment ne sert à rien.
+    if (status === 'SENT' && msg.channel === 'PUSH') {
+      if (!this.push.configure) {
+        status = 'QUEUED';
+        reason = 'Push non configuré sur cette instance (ONESIGNAL_APP_ID / ONESIGNAL_API_KEY).';
+      } else {
+        try {
+          await this.push.envoyer(msg.recipient, { fr: msg.body });
+        } catch (e) {
+          status = 'FAILED';
+          reason = (e as Error).message.slice(0, 500);
+        }
+      }
+    }
+
     return withTenantDb(schema, async (db) => {
       const [r] = await db.insert(notifications).values({ ...msg, status, reason }).returning();
       return r;
     });
+  }
+
+  /**
+   * Prévient un LIVREUR sur son téléphone.
+   *
+   * Le destinataire n'est pas un numéro mais l'identifiant externe sous lequel l'app
+   * livreur s'est enregistrée — `<tenant>:<chauffeur>`. Comme partout ailleurs, l'envoi
+   * ne doit jamais faire échouer l'acte métier qui l'a déclenché : il est avalé.
+   */
+  async notifierLivreur(
+    schema: string,
+    tenantSlug: string,
+    chauffeur: string | null | undefined,
+    event: string,
+    vars: Record<string, string> = {},
+  ) {
+    if (!chauffeur) return null;
+    try {
+      return await this.send(schema, {
+        event, channel: 'PUSH',
+        recipient: OneSignalService.idExterne(tenantSlug, chauffeur),
+        lang: 'fr', vars,
+      } as SendInput);
+    } catch {
+      return null;
+    }
   }
 
   /**

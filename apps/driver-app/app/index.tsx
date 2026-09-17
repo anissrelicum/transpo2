@@ -9,6 +9,7 @@ import Svg, { Path, Circle } from 'react-native-svg';
 import { router, Stack } from 'expo-router';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
+import { demanderLaPermission, pushDisponible } from '../lib/push';
 import { publicClient, setSession, restoreSession } from '../lib/api';
 import { useTheme, resolveColor } from '../lib/theme';
 import { useLanguage } from '../lib/i18n';
@@ -168,9 +169,15 @@ export default function LoginScreen() {
     let ok = true;
     if (id === 'gps') ok = (await Location.requestForegroundPermissionsAsync()).granted;
     else if (id === 'cam') ok = (await ImagePicker.requestCameraPermissionsAsync()).granted;
-    // 'notif' : pas de dépendance expo-notifications dans ce paquet (ajouter une
-    // dépendance est hors périmètre d'un lot écran, cf. §4 du plan) — on
-    // n'émule pas de vraie boîte de dialogue système pour cette autorisation.
+    else if (id === 'notif') {
+      // La demande est RÉELLE quand le push existe sur cette build (OneSignal). Elle ne
+      // l'était pas jusqu'ici : la case se cochait sans que rien ne soit demandé.
+      //
+      // Là où le push n'existe pas — Expo Go, qui n'embarque aucun module natif ajouté
+      // après coup — il n'y a rien à demander, et on ne bloque pas le livreur pour autant :
+      // il livre très bien sans notification. L'écran le dit plus bas.
+      ok = pushDisponible() ? await demanderLaPermission() : true;
+    }
     if (ok) setGranted((g) => ({ ...g, [id]: true }));
   }
 
