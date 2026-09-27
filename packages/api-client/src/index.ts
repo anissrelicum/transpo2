@@ -140,6 +140,13 @@ export interface AuditEntry {
   id: string; at: string; actor: string; actorRole: string;
   tenant: string | null; action: string; target: string | null; detail: unknown;
 }
+/** Demande de démonstration déposée depuis le site vitrine (realm plateforme). */
+export interface DemoRequest {
+  id: string; societe: string; nom: string; email: string;
+  telephone: string | null; villes: string | null; livreurs: number | null;
+  message: string | null; source: string; statut: string; note: string | null;
+  createdAt: string; handledAt: string | null;
+}
 export interface NotifTemplate {
   event: string; fr: string; ar: string; transactional: boolean; active: boolean;
   customized: boolean; updatedAt: string | null;
@@ -210,10 +217,13 @@ export class TranspoClient {
     if (this.opts.token) headers['authorization'] = `Bearer ${this.opts.token}`;
     if (this.opts.tenant) headers['x-tenant-slug'] = this.opts.tenant;
     if (init.body) headers['content-type'] = 'application/json';
+    // no-store : en build de prod, Next 14 mettrait sinon les réponses GET en Data Cache —
+    // après une mutation, router.refresh() re-rendrait alors la page avec l'ancien état.
     const res = await fetch(`${this.opts.baseUrl}${path}`, {
       method: init.method ?? 'GET',
       headers,
       body: init.body ? JSON.stringify(init.body) : undefined,
+      cache: 'no-store',
     });
     const json = await res.json().catch(() => null);
     if (!res.ok) {
@@ -431,6 +441,13 @@ export class TranspoClient {
   }
   runSaasCycle(): Promise<CycleResult> {
     return this.req('/v1/saas/cycle/run', { method: 'POST', body: {} });
+  }
+  // Demandes de démonstration venues du site vitrine (SUPER_ADMIN).
+  listDemoRequests(statut?: string): Promise<DemoRequest[]> {
+    return this.req(`/v1/saas/demo-requests${statut ? `?statut=${encodeURIComponent(statut)}` : ''}`);
+  }
+  updateDemoRequest(id: string, body: { statut: string; note?: string }): Promise<DemoRequest> {
+    return this.req(`/v1/saas/demo-requests/${id}`, { method: 'PATCH', body });
   }
   // Journal d'audit plateforme (GET /v1/audit, SUPER_ADMIN). Limite API : 500.
   getAudit(filters: { tenant?: string; action?: string; limit?: number } = {}): Promise<AuditEntry[]> {

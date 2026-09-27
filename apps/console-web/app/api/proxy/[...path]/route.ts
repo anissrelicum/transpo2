@@ -21,6 +21,9 @@ async function forward(req: NextRequest, path: string[], method: 'GET' | 'POST' 
       ...(body ? { 'content-type': 'application/json' } : {}),
     },
     body,
+    // Pas de Data Cache sur un passthrough authentifié : un GET mis en cache en prod
+    // servirait un état périmé aux relectures client (même défaut que l'api-client).
+    cache: 'no-store',
   });
   const data = await res.json().catch(() => null);
   if (!res.ok) return NextResponse.json({ error: data?.message ?? 'Action impossible' }, { status: res.status });

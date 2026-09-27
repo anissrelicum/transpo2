@@ -103,16 +103,7 @@ export function UsersView({ users, isAdmin, chauffeurs = [] }: { users: ConsoleU
                     <Table.Cell><Badge color={u.active ? 'green' : 'gray'} variant="soft">{u.active ? 'Actif' : 'Désactivé'}</Badge></Table.Cell>
                     {isAdmin && (
                       <Table.Cell>
-                        <RowMenu>
-                            <ChangeRoleItem user={u} onChange={(role) => call(`users/${u.id}/role`, 'PATCH', { role })} />
-                            <DropdownMenu.Item onSelect={() => resetPassword(u)}><ReloadIcon /> Réinitialiser le mot de passe</DropdownMenu.Item>
-                            <DropdownMenu.Separator />
-                            {u.active ? (
-                              <DeactivateItem user={u} onConfirm={() => call(`users/${u.id}/active`, 'PATCH', { active: false })} />
-                            ) : (
-                              <DropdownMenu.Item onSelect={() => call(`users/${u.id}/active`, 'PATCH', { active: true })}><CheckIcon /> Réactiver</DropdownMenu.Item>
-                            )}
-                        </RowMenu>
+                        <UserRowActions user={u} call={call} resetPassword={resetPassword} />
                       </Table.Cell>
                     )}
                   </Table.Row>
@@ -145,15 +136,48 @@ export function UsersView({ users, isAdmin, chauffeurs = [] }: { users: ConsoleU
   );
 }
 
-function ChangeRoleItem({ user, onChange }: { user: ConsoleUser; onChange: (role: ConsoleRole) => Promise<unknown> }) {
-  const [open, setOpen] = React.useState(false);
-  const fermerMenu = useFermerMenu();
-  // Fermeture programmatique : referme le dialogue ET le menu qui l'a ouvert.
-  const fermer = () => { setOpen(false); fermerMenu(); };
+/**
+ * Actions d'une ligne utilisateur. Le dialogue « Changer de rôle » est rendu EN DEHORS
+ * du menu : un dialogue enfant du DropdownMenu est démonté avec lui — le fermer à
+ * l'ouverture du dialogue emportait le dialogue (auto-fermeture ~300 ms, retest QA).
+ * Ici le menu se referme de lui-même au clic (pas de preventDefault) et le dialogue,
+ * frère du menu, persiste.
+ */
+function UserRowActions({ user, call, resetPassword }: {
+  user: ConsoleUser;
+  call: (path: string, method: string, body?: unknown) => Promise<any>;
+  resetPassword: (u: ConsoleUser) => Promise<void>;
+}) {
+  const [roleDialogOpen, setRoleDialogOpen] = React.useState(false);
+  return (
+    <>
+      <RowMenu>
+        <DropdownMenu.Item onSelect={() => setRoleDialogOpen(true)}><PersonIcon /> Changer de rôle</DropdownMenu.Item>
+        <DropdownMenu.Item onSelect={() => resetPassword(user)}><ReloadIcon /> Réinitialiser le mot de passe</DropdownMenu.Item>
+        <DropdownMenu.Separator />
+        {user.active ? (
+          <DeactivateItem user={user} onConfirm={() => call(`users/${user.id}/active`, 'PATCH', { active: false })} />
+        ) : (
+          <DropdownMenu.Item onSelect={() => call(`users/${user.id}/active`, 'PATCH', { active: true })}><CheckIcon /> Réactiver</DropdownMenu.Item>
+        )}
+      </RowMenu>
+      <ChangeRoleDialog
+        user={user}
+        open={roleDialogOpen}
+        onOpenChange={setRoleDialogOpen}
+        onChange={(role) => call(`users/${user.id}/role`, 'PATCH', { role })}
+      />
+    </>
+  );
+}
+
+function ChangeRoleDialog({ user, open, onOpenChange, onChange }: {
+  user: ConsoleUser; open: boolean; onOpenChange: (open: boolean) => void;
+  onChange: (role: ConsoleRole) => Promise<unknown>;
+}) {
   const [role, setRole] = React.useState<ConsoleRole>(user.role);
   return (
-    <Dialog.Root open={open} onOpenChange={(v) => { setOpen(v); if (v) setRole(user.role); }}>
-      <Dialog.Trigger><DropdownMenu.Item onSelect={(e) => { e.preventDefault(); setOpen(true); }}><PersonIcon /> Changer de rôle</DropdownMenu.Item></Dialog.Trigger>
+    <Dialog.Root open={open} onOpenChange={(v) => { onOpenChange(v); if (v) setRole(user.role); }}>
       <Dialog.Content maxWidth="360px">
         <Dialog.Title>Changer de rôle</Dialog.Title>
         <Dialog.Description size="2" color="gray" mb="3">{user.name}</Dialog.Description>
@@ -163,16 +187,20 @@ function ChangeRoleItem({ user, onChange }: { user: ConsoleUser; onChange: (role
         </Select.Root>
         <Flex gap="3" mt="4" justify="end">
           <Dialog.Close><Button variant="soft" color="gray">Annuler</Button></Dialog.Close>
-          <Button disabled={role === user.role} onClick={async () => { if (await onChange(role)) fermer(); }}>Enregistrer</Button>
+          {/* On attend la fin de l'action (succès OU refus — le refus est déjà signalé
+              par l'alerte) avant de refermer le dialogue, comme DeactivateItem. */}
+          <Button disabled={role === user.role} onClick={async () => { await onChange(role); onOpenChange(false); }}>Enregistrer</Button>
         </Flex>
       </Dialog.Content>
     </Dialog.Root>
   );
 }
 
-function DeactivateItem({ user, onConfirm }: { user: ConsoleUser; onConfirm: () => void }) {
+function DeactivateItem({ user, onConfirm }: { user: ConsoleUser; onConfirm: () => Promise<unknown> }) {
   const fermerMenu = useFermerMenu();
   const [ouvert, setOuvert] = React.useState(false);
+  // Fermeture programmatique : referme le dialogue ET le menu qui l'a ouvert.
+  const fermer = () => { setOuvert(false); fermerMenu(); };
   return (
     <AlertDialog.Root open={ouvert} onOpenChange={(o) => { setOuvert(o); if (!o) fermerMenu(); }}>
       <AlertDialog.Trigger><DropdownMenu.Item color="red" onSelect={(e) => { e.preventDefault(); setOuvert(true); }}><LockClosedIcon /> Désactiver</DropdownMenu.Item></AlertDialog.Trigger>
@@ -183,7 +211,9 @@ function DeactivateItem({ user, onConfirm }: { user: ConsoleUser; onConfirm: () 
         </AlertDialog.Description>
         <Flex gap="3" mt="4" justify="end">
           <AlertDialog.Cancel><Button variant="soft" color="gray">Annuler</Button></AlertDialog.Cancel>
-          <AlertDialog.Action><Button color="red" onClick={onConfirm}>Désactiver</Button></AlertDialog.Action>
+          {/* Pas d'AlertDialog.Action : on attend la fin de l'action (succès OU refus)
+              avant de refermer dialogue et menu — sinon le menu survivait à un refus. */}
+          <Button color="red" onClick={async () => { await onConfirm(); fermer(); }}>Désactiver</Button>
         </Flex>
       </AlertDialog.Content>
     </AlertDialog.Root>
