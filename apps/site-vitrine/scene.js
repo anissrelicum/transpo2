@@ -57,35 +57,64 @@
     recalculer();
   }
 
-  /* ------------------------------------------------------------ messages ---
-   * Le site est statique : il n'a ni serveur ni base pour recevoir un formulaire. Plutôt
-   * que de faire semblant — un bouton « Envoyer » qui ne mène nulle part est pire que pas
-   * de formulaire — on compose le message dans la messagerie du visiteur, qui le relit et
-   * l'envoie lui-même. C'est écrit sous le bouton.
+  /* ------------------------------------------------------------ demandes ---
+   *
+   * La demande est ENVOYÉE AU SERVEUR, qui l'enregistre. Elle ouvrait auparavant la
+   * messagerie du visiteur : sur un téléphone en webmail elle ne s'ouvre souvent pas, et
+   * la demande se perdait sans que personne le sache. Le relais est de même origine
+   * (`/api/demande`), l'API n'est pas exposée au navigateur.
    */
-  const ecrire = (sujet, lignes) => {
-    window.location.href = `mailto:contact@transpo.ma?subject=${encodeURIComponent(sujet)}`
-      + `&body=${encodeURIComponent(lignes.join('\n'))}`;
+  const envoyer = async (donnees, bouton, note, succes) => {
+    const libelle = bouton.textContent;
+    bouton.disabled = true;
+    bouton.textContent = 'Envoi…';
+    try {
+      const r = await fetch('/api/demande', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(donnees),
+      });
+      if (!r.ok) throw new Error(String(r.status));
+      note.textContent = succes;
+      note.dataset.etat = 'ok';
+      return true;
+    } catch {
+      // On ne prétend pas avoir reçu ce qu'on n'a pas reçu.
+      note.textContent = 'L’envoi a échoué. Réessayez dans un instant, ou écrivez-nous '
+        + 'directement — nous répondons aussi par téléphone.';
+      note.dataset.etat = 'erreur';
+      return false;
+    } finally {
+      bouton.disabled = false;
+      bouton.textContent = libelle;
+    }
   };
 
-  document.getElementById('form-rampe')?.addEventListener('submit', (ev) => {
+  const rampe = document.getElementById('form-rampe');
+  rampe?.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const email = document.getElementById('r-email');
+    const note = document.getElementById('rampe-note');
+    const bouton = rampe.querySelector('button[type="submit"]');
     if (!(email instanceof HTMLInputElement) || !email.checkValidity()) {
       email?.reportValidity();
       return;
     }
-    ecrire('Démonstration Transpo', [
-      'Bonjour,', '',
-      'Nous souhaitons voir Transpo en démonstration sur nos propres courses.', '',
-      `Contact : ${email.value}`, '',
-      'Société :', 'Villes couvertes :', 'Nombre de livreurs :', '',
-      'Merci.',
-    ]);
+    // Depuis l'accroche on n'a que l'adresse : société et nom sont déduits du domaine,
+    // et l'échange se poursuit par courriel. Mieux vaut une demande incomplète qu'un
+    // formulaire de huit champs qui fait fuir.
+    const domaine = email.value.split('@')[1] ?? '';
+    const ok = await envoyer({
+      societe: domaine || 'Non précisée',
+      nom: 'À préciser',
+      email: email.value,
+      source: 'accroche',
+    }, bouton, note, 'Demande enregistrée. Nous revenons vers vous sous deux jours ouvrés.');
+    if (ok) rampe.reset();
   });
 
   const contact = document.getElementById('form-contact');
-  contact?.addEventListener('submit', (ev) => {
+  contact?.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const d = new FormData(contact);
     const v = (k) => String(d.get(k) ?? '').trim();
@@ -93,22 +122,15 @@
       contact.reportValidity();
       return;
     }
-    ecrire(`Démonstration Transpo — ${v('societe')}`, [
-      'Bonjour,', '',
-      'Nous souhaitons voir Transpo en démonstration sur nos propres courses.', '',
-      `Société : ${v('societe')}`,
-      `Contact : ${v('nom')} (${v('email')})`,
-      `Villes couvertes : ${v('villes') || '—'}`,
-      `Nombre de livreurs : ${v('livreurs') || '—'}`, '',
-      'Ce que nous cherchons à régler :',
-      v('message') || '—', '',
-      'Merci.',
-    ]);
+    const bouton = contact.querySelector('button[type="submit"]');
     const note = document.getElementById('form-note');
-    if (note) {
-      note.textContent = 'Message préparé dans votre logiciel de messagerie. '
-        + 'S’il ne s’est pas ouvert, écrivez directement à contact@transpo.ma.';
-    }
+    const ok = await envoyer({
+      societe: v('societe'), nom: v('nom'), email: v('email'),
+      telephone: v('telephone'), villes: v('villes'),
+      livreurs: v('livreurs'), message: v('message'), source: 'contact',
+    }, bouton, note, 'Demande enregistrée. Nous revenons vers vous sous deux jours ouvrés '
+       + 'avec un créneau, et nous rejouerons une journée type sur vos propres chiffres.');
+    if (ok) contact.reset();
   });
 
   /* ---------------------------------------------------------- le relief ---- */

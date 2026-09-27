@@ -476,3 +476,9 @@ a { color: var(--accent-texte); text-underline-offset: 3px; }
   * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
   .capture { transform: none; }
 }
+
+/* Le formulaire parle : la note passe au vert quand la demande est enregistrée, au rouge
+ * quand l'envoi a échoué. On ne prétend jamais avoir reçu ce qu'on n'a pas reçu. */
+.formulaire__note[data-etat="ok"], .rampe__note[data-etat="ok"] { color: var(--accent-texte); font-weight: 600; }
+.formulaire__note[data-etat="erreur"], .rampe__note[data-etat="erreur"] { color: #b5341c; font-weight: 600; }
+.facultatif { font-weight: 400; opacity: .75; }

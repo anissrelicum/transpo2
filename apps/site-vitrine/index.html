@@ -50,7 +50,6 @@
       "@id": "https://transpo.wedowonders.com/#editeur",
       "name": "Transpo",
       "url": "https://transpo.wedowonders.com/",
-      "email": "contact@transpo.ma",
       "knowsLanguage": ["fr", "ar"],
       "areaServed": [
         { "@type": "Country", "name": "Maroc" },
@@ -147,7 +146,7 @@
             <input id="r-email" name="email" type="email" placeholder="vous@votre-societe.ma" autocomplete="email" required>
             <button class="bouton bouton--principal" type="submit">Demander une démo</button>
           </div>
-          <p class="rampe__note">Réponse sous deux jours ouvrés. Aucun engagement.</p>
+          <p class="rampe__note" id="rampe-note" role="status">Réponse sous deux jours ouvrés. Aucun engagement.</p>
         </form>
       </div>
 
@@ -428,7 +427,7 @@
           chiffres, pas les nôtres.
         </p>
         <dl class="contact__infos">
-          <div><dt>Écrire</dt><dd><a href="mailto:contact@transpo.ma">contact@transpo.ma</a></dd></div>
+          <div><dt>Réponse</dt><dd>Sous deux jours ouvrés, par la personne qui suivra votre dossier</dd></div>
           <div><dt>Langues</dt><dd>Français et arabe</dd></div>
         </dl>
       </div>
@@ -437,16 +436,19 @@
         <h3 class="formulaire__titre">Demander une démonstration</h3>
         <div class="champ"><label for="f-societe">Société de transport</label><input id="f-societe" name="societe" type="text" autocomplete="organization" required></div>
         <div class="champ"><label for="f-nom">Votre nom</label><input id="f-nom" name="nom" type="text" autocomplete="name" required></div>
-        <div class="champ"><label for="f-email">E-mail</label><input id="f-email" name="email" type="email" autocomplete="email" required></div>
+        <div class="champ champ--duo">
+          <div><label for="f-email">E-mail</label><input id="f-email" name="email" type="email" autocomplete="email" required></div>
+          <div><label for="f-telephone">Téléphone <span class="facultatif">(facultatif)</span></label><input id="f-telephone" name="telephone" type="tel" autocomplete="tel" placeholder="+212 6 00 00 00 00"></div>
+        </div>
         <div class="champ champ--duo">
           <div><label for="f-villes">Villes couvertes</label><input id="f-villes" name="villes" type="text" placeholder="Casablanca, Rabat"></div>
           <div><label for="f-livreurs">Livreurs</label><input id="f-livreurs" name="livreurs" type="number" min="1" inputmode="numeric" placeholder="12"></div>
         </div>
         <div class="champ"><label for="f-message">Ce que vous cherchez à régler</label><textarea id="f-message" name="message" rows="3" placeholder="Le cash qui rentre mal, les litiges sans preuve, les marchands qui appellent…"></textarea></div>
-        <button class="bouton bouton--principal bouton--grand bouton--bloc" type="submit">Ouvrir mon message</button>
-        <p class="formulaire__note" id="form-note">
-          Le bouton prépare le message dans votre logiciel de messagerie : rien n’est envoyé
-          ni conservé par ce site, et vous relisez avant d’envoyer.
+        <button class="bouton bouton--principal bouton--grand bouton--bloc" type="submit">Envoyer ma demande</button>
+        <p class="formulaire__note" id="form-note" role="status">
+          Votre demande nous parvient directement. Nous conservons ce que vous écrivez ici
+          pour vous répondre, et rien d’autre.
         </p>
       </form>
     </div>
@@ -466,7 +468,6 @@
       <a href="#console">La console</a>
       <a href="#terrain">L’app livreur</a>
       <a href="#tarifs">Tarifs</a>
-      <a href="mailto:contact@transpo.ma">contact@transpo.ma</a>
     </nav>
   </div>
 </footer>
