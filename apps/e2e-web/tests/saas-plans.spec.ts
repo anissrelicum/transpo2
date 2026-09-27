@@ -10,6 +10,7 @@ test.describe.configure({ mode: 'serial' });
 let token: string;
 const suffix = uniq('');
 const usageCode = `usage-reg-${suffix}`;
+const usageLabel = `Usage Reg ${suffix}`;
 const freeCode = `sans-abonne-reg-${suffix}`;
 
 test.beforeAll(async ({ request }) => {
@@ -43,15 +44,19 @@ test('création d’un plan à l’usage + version 3 paliers publiée', async ({
   // Création du plan (code auto depuis le libellé, rendu unique pour la régression).
   await page.getByRole('button', { name: 'Nouveau plan' }).click();
   let dialog = page.getByRole('dialog');
-  await dialog.getByPlaceholder('Pay as you go').fill('Usage Reg');
+  await dialog.getByPlaceholder('Pay as you go').fill(usageLabel);
   await dialog.getByPlaceholder('pay-as-you-go').fill(usageCode);
   await dialog.getByPlaceholder('الدفع حسب الاستعمال').fill('الدفع حسب الاستعمال');
   await dialog.getByRole('button', { name: 'Créer le plan' }).click();
   await expect(dialog).toBeHidden();
   await page.reload();
 
-  // Bandeau « plan sans tarif » visible avant publication.
-  await expect(page.getByText(/plan\(s\) sans tarif/)).toBeVisible({ timeout: 30_000 });
+  // Bandeau « plan sans tarif » : il liste NOTRE plan (d'anciens runs peuvent laisser
+  // d'autres plans sans tarif → on vérifie la mention du libellé, pas le nombre).
+  // On cible le texte du Callout : un getByText regex remonterait jusqu'à un ancêtre
+  // contenant aussi la ligne du plan dans le tableau (faux positif persistant).
+  const banner = page.locator('.rt-CalloutText', { hasText: 'sans tarif' });
+  await expect(banner).toContainText(usageLabel, { timeout: 30_000 });
 
   // Nouvelle version de tarif, mode À l'usage, 3 paliers : 1–100 à 6 · 101–500 à 4,50 · 501+ à 3.
   await openPlanMenu(page, usageCode);
@@ -79,8 +84,9 @@ test('création d’un plan à l’usage + version 3 paliers publiée', async ({
   await expect(dialog).toBeHidden();
   await page.reload();
 
-  // Bandeau disparu, ligne à jour.
-  await expect(page.getByText(/plan\(s\) sans tarif/)).toHaveCount(0);
+  // Bandeau ne mentionne plus notre plan (il peut rester visible pour d'autres
+  // plans sans tarif légués par d'anciens runs), ligne à jour.
+  await expect(page.locator('.rt-CalloutText', { hasText: usageLabel })).toHaveCount(0, { timeout: 30_000 });
   const row = page.getByRole('row', { name: new RegExp(usageCode) });
   await expect(row).toContainText('À l’usage — dès 3 DH/cmd', { timeout: 30_000 });
   await expect(row).toContainText('3 paliers · rétroactif');

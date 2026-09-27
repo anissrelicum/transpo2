@@ -63,4 +63,24 @@ Verdicts : **OK** / **KO** / **BLOQUÉ** / **N/A** — un cas = une ligne, captu
 | TC-D06 | OK | Hamid Ouali et Sara Bennis créés ; Sara : visite « Expiré (251 j) » + badge Bloqué, KPI Conformité 1, bandeau « exclus des suggestions de dispatch » | TC-D06/01–03 | 09/09 |
 | TC-D07 | OK | Téléphone « abc » : UI bloquée (« Numéro invalide. », Ajouter désactivé) ; API POST /v1/drivers → 400 « Téléphone invalide. » ; rien créé | TC-D07/01, 02 | 09/09 |
 
+**Clôture du run (consignée le 21/09).** Ce run s'est arrêté à TC-D07 le 09/09. Les cas
+restants des sections D et E ont été exécutés sur le même homelab dans le **run
+2026-09-12-homelab** (preuves vidéo `.webm` + `verdict.md` par cas), puis rejoués dans le
+rejeu intégral **2026-09-14-homelab (172/172 OK)**. Ils ne sont donc pas rejoués ici —
+les lignes ci-dessous renvoient à ces verdicts, elles ne constituent pas une exécution
+sous le présent run.
+
+| Cas | Statut | Constat / anomalie | Captures | Date |
+|---|---|---|---|---|
+| TC-D05 | OK ↪ run 09-12 | Véhicule jetable retiré ; retrait du véhicule rattaché d'abord silencieux (AN-15) puis **corrigé** : refus 400 nommant le chauffeur | 2026-09-12-homelab/TC-D05/ | 12/09 |
+| TC-D08 | OK ↪ run 09-12 | 1111-A-11 rattaché à Hamid Ouali, type synchronisé Fourgon ; revérifié en l'état le 21/09 (fiche + présélection du dialogue, `d08-verif.spec.ts` verte) | 2026-09-12-homelab/TC-D08/ | 12/09 |
+| TC-D09 | OK ↪ run 09-12 | Visite médicale de Sara Bennis renouvelée : redevient affectable (plus d'« Expiré » ni de Bloqué) | 2026-09-12-homelab/TC-D09/ | 12/09 |
+| TC-D10 | OK ↪ run 09-12 | Bascule d'indisponibilité persistée côté admin et dispatcher ; Sara laissée indisponible pour TC-F03 | 2026-09-12-homelab/TC-D10/ | 12/09 |
+| TC-D11 | OK ↪ run 09-12 | Retrait direct sans course ; **règle révisée** : avec courses en cours, transfert à un repreneur exigé (400 sinon) ; bug proxy query-string corrigé au passage | 2026-09-12-homelab/TC-D11/ | 13/09 |
+| TC-E01 | OK ↪ run 09-12 | Zone Rabat Centre créée (indigo, 4 sommets exacts en base) après correctif AN-17 (sommets ajoutés au carré par défaut) | 2026-09-12-homelab/TC-E01/ | 12/09 |
+| TC-E02 | OK ↪ run 09-12 | « Effacer » ne supprime que le tracé en cours ; zone et tracé enregistré intacts au rechargement | 2026-09-12-homelab/TC-E02/ | 12/09 |
+| TC-E03 | OK ↪ run 09-12 | Affectation immédiate et persistée ; « Tous les livreurs sont affectés. » atteignable (AN-18 corrigée) | 2026-09-12-homelab/TC-E03/ | 12/09 |
+| TC-E04 | OK ↪ run 09-12 | Livreur retiré de la zone, zone jetable supprimée ; confirmation devenue un dialogue applicatif | 2026-09-12-homelab/TC-E04/ | 12/09 |
+| TC-E05 | OK ↪ run 09-12 | La zone est tracée sur les cartes /dispatch (cercle) et /fleet (polygone) | 2026-09-12-homelab/TC-E05/ | 12/09 |
+
 *(rempli par l'agent testeur au fil du run)*

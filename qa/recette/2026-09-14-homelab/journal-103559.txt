@@ -1,0 +1,3081 @@
+
+===== Base remise à zéro (tenants, plans, journal d'audit) =====
+
+Reset OK — 5 schéma(s) tenant supprimé(s), 5 plan(s) purgé(s) du catalogue (relancer `migrate-plans` pour ré-amorcer les 4 plans historiques). Super-admin conservé : ops@transpo.ma (mdp: "transpo").
+Migrations OK — platform + 0 tenant(s).
+Catalogue OK — 4 plan(s), 4 version(s) de tarif, 0 abonnement(s) créé(s) sur 0 tenant(s) sans abonnement.
+
+===== Section A — plateforme & provisionnement (29 cas) =====
+
+Running 29 tests using 1 worker
+
+organisations au parc → 0
+  ✓  1 [chromium] › a01.spec.ts:8:5 › TC-A01 — Connexion super-admin (6.8s)
+  ✓  2 [chromium] › a02.spec.ts:7:5 › TC-A02 — Bascule de realm (4.5s)
+  ✓  3 [chromium] › a03.spec.ts:14:5 › TC-A03 — Provisionner une organisation (13.1s)
+slug api → Slug réservé à l’infrastructure : api
+slug www → Slug réservé à l’infrastructure : www
+slug admin → Slug réservé à l’infrastructure : admin
+  ✓  4 [chromium] › a04.spec.ts:6:5 › TC-A04 — Slugs réservés refusés (14.1s)
+doublon recetteprov → Tenant déjà existant : recetteprov
+  ✓  5 [chromium] › a05.spec.ts:9:5 › TC-A05 — Slug en doublon refusé (11.4s)
+NOTICE:  drop cascades to 25 other objects
+DETAIL:  drop cascades to table tenant_recetteiso.orders
+drop cascades to table tenant_recetteiso.users
+drop cascades to table tenant_recetteiso.drivers
+drop cascades to table tenant_recetteiso.zones
+drop cascades to table tenant_recetteiso.vehicles
+drop cascades to table tenant_recetteiso.returns
+drop cascades to table tenant_recetteiso.fraud_cases
+drop cascades to table tenant_recetteiso.tournees
+drop cascades to table tenant_recetteiso.notif_consents
+drop cascades to table tenant_recetteiso.notifications
+drop cascades to table tenant_recetteiso.idempotency_keys
+drop cascades to table tenant_recetteiso.driver_positions
+drop cascades to table tenant_recetteiso.geofences
+drop cascades to table tenant_recetteiso.incidents
+drop cascades to table tenant_recetteiso.support_messages
+drop cascades to table tenant_recetteiso.cash_sessions
+drop cascades to table tenant_recetteiso.cash_movements
+drop cascades to table tenant_recetteiso.invoices
+drop cascades to table tenant_recetteiso.merchant_billing
+drop cascades to table tenant_recetteiso.payouts
+drop cascades to table tenant_recetteiso.pricing_config
+drop cascades to table tenant_recetteiso.company_settings
+drop cascades to table tenant_recetteiso.notif_templates
+drop cascades to table tenant_recetteiso.delivery_proofs
+drop cascades to table tenant_recetteiso.order_events
+NOTICE:  drop cascades to 25 other objects
+DETAIL:  drop cascades to table tenant_recetteprov.orders
+drop cascades to table tenant_recetteprov.users
+drop cascades to table tenant_recetteprov.drivers
+drop cascades to table tenant_recetteprov.zones
+drop cascades to table tenant_recetteprov.vehicles
+drop cascades to table tenant_recetteprov.returns
+drop cascades to table tenant_recetteprov.fraud_cases
+drop cascades to table tenant_recetteprov.tournees
+drop cascades to table tenant_recetteprov.notif_consents
+drop cascades to table tenant_recetteprov.notifications
+drop cascades to table tenant_recetteprov.idempotency_keys
+drop cascades to table tenant_recetteprov.driver_positions
+drop cascades to table tenant_recetteprov.geofences
+drop cascades to table tenant_recetteprov.incidents
+drop cascades to table tenant_recetteprov.support_messages
+drop cascades to table tenant_recetteprov.cash_sessions
+drop cascades to table tenant_recetteprov.cash_movements
+drop cascades to table tenant_recetteprov.invoices
+drop cascades to table tenant_recetteprov.merchant_billing
+drop cascades to table tenant_recetteprov.payouts
+drop cascades to table tenant_recetteprov.pricing_config
+drop cascades to table tenant_recetteprov.company_settings
+drop cascades to table tenant_recetteprov.notif_templates
+drop cascades to table tenant_recetteprov.delivery_proofs
+drop cascades to table tenant_recetteprov.order_events
+  ✓  6 [chromium] › a06.spec.ts:11:5 › TC-A06 — Provisionner une seconde organisation (23.2s)
+parc → 0 organisation(s) · repère → 
+  ✘  7 [chromium] › a07.spec.ts:9:5 › TC-A07 — Recherche et filtre (19.0s)
+tarif Entreprise courant → 2 499 DH/mois
+racine aria-hidden après fermeture → 0
+NOTICE:  drop cascades to 25 other objects
+DETAIL:  drop cascades to table tenant_recetteconv.orders
+drop cascades to table tenant_recetteconv.users
+drop cascades to table tenant_recetteconv.drivers
+drop cascades to table tenant_recetteconv.zones
+drop cascades to table tenant_recetteconv.vehicles
+drop cascades to table tenant_recetteconv.returns
+drop cascades to table tenant_recetteconv.fraud_cases
+drop cascades to table tenant_recetteconv.tournees
+drop cascades to table tenant_recetteconv.notif_consents
+drop cascades to table tenant_recetteconv.notifications
+drop cascades to table tenant_recetteconv.idempotency_keys
+drop cascades to table tenant_recetteconv.driver_positions
+drop cascades to table tenant_recetteconv.geofences
+drop cascades to table tenant_recetteconv.incidents
+drop cascades to table tenant_recetteconv.support_messages
+drop cascades to table tenant_recetteconv.cash_sessions
+drop cascades to table tenant_recetteconv.cash_movements
+drop cascades to table tenant_recetteconv.invoices
+drop cascades to table tenant_recetteconv.merchant_billing
+drop cascades to table tenant_recetteconv.payouts
+drop cascades to table tenant_recetteconv.pricing_config
+drop cascades to table tenant_recetteconv.company_settings
+drop cascades to table tenant_recetteconv.notif_templates
+drop cascades to table tenant_recetteconv.delivery_proofs
+drop cascades to table tenant_recetteconv.order_events
+  ✓  8 [chromium] › a08.spec.ts:12:5 › TC-A08 — Convertir l’essai en abonnement Entreprise (12.9s)
+  ✘  9 [chromium] › a09.spec.ts:10:5 › TC-A09 — Changement de plan à l’échéance (25.7s)
+abonnements en base :
+
+  ✓  10 [chromium] › a10.spec.ts:10:5 › TC-A10 — Facturation plateforme (4.6s)
+plans au catalogue → 4
+catalogue courant :
+Entreprise | FORFAIT | 249900 | illimite
+Essai | FORFAIT | 0 | 50
+TPE Coursier | FORFAIT | 29900 | 500
+Transporteur | FORFAIT | 89900 | 5000
+répartition du parc :
+Entreprise | 0
+Essai | 0
+TPE Coursier | 0
+Transporteur | 0
+  ✓  11 [chromium] › a11.spec.ts:10:5 › TC-A11 — Catalogue des plans (6.9s)
+  ✓  12 [chromium] › a12.spec.ts:6:5 › TC-A12 — Cloisonnement du realm plateforme (8.8s)
+  ✓  13 [chromium] › a13.spec.ts:9:5 › TC-A13 — Plan à l’usage avec paliers (11.3s)
+UI : recalage automatique du palier 2 à 51 — trou impossible dans l’éditeur.
+API grille trouée → 400 {"error":"Paliers 1 et 2 non contigus : le suivant doit commencer à 51."}
+  ✓  14 [chromium] › a14.spec.ts:7:5 › TC-A14 — Grille non contiguë refusée (6.4s)
+  ✓  15 [chromium] › a15.spec.ts:7:5 › TC-A15 — Simulateur VOLUME / GRADUÉ (6.3s)
+v1 (2026-09-14, 0 abonné(s)) → v2 au 2026-09-15 à 2799 DH
+  ✓  16 [chromium] › a16.spec.ts:12:5 › TC-A16 — Prix gelé pour les abonnés (8.6s)
+  ✓  17 [chromium] › a17.spec.ts:7:5 › TC-A17 — Date d’effet antérieure refusée (5.5s)
+abonnés au plan Entreprise → 0
+  ✘  18 [chromium] › a18.spec.ts:7:5 › TC-A18 — Archivage protégé (21.7s)
+doublon essai → Plan déjà existant : essai
+  ✓  19 [chromium] › a19.spec.ts:6:5 › TC-A19 — Code de plan en doublon (6.6s)
+  ✘  20 [chromium] › a20.spec.ts:6:5 › TC-A20 — Traçabilité audit (22.4s)
+  ✓  21 [chromium] › a21.spec.ts:7:5 › TC-A21 — Tout tenant naît en essai daté (7.1s)
+cycle 1 → Cycle du 2026-09-14 |  | 0 essai(s) expiré(s) | 0 suspension(s) | 0 reconduction(s) | 0 statut(s) tenant réaligné(s)
+cycle 2 → Cycle du 2026-09-14 |  | 0 essai(s) expiré(s) | 0 suspension(s) | 0 reconduction(s) | 0 statut(s) tenant réaligné(s)
+  ✘  22 [chromium] › a22.spec.ts:6:5 › TC-A22 — Cycle neutre ×2 (22.0s)
+cycle → Cycle du 2026-09-14 |  | 1 essai(s) expiré(s) | 0 suspension(s) | 0 reconduction(s) | 1 statut(s) tenant réaligné(s)
+  ✓  23 [chromium] › a23.spec.ts:10:5 › TC-A23 — Expiration de l’essai (7.0s)
+cycle → Cycle du 2026-09-14 |  | 0 essai(s) expiré(s) | 0 suspension(s) | 0 reconduction(s) | 0 statut(s) tenant réaligné(s)
+cycle → Cycle du 2026-09-14 |  | 0 essai(s) expiré(s) | 1 suspension(s) | 0 reconduction(s) | 1 statut(s) tenant réaligné(s)
+connexion suspendue → Espace suspendu — contactez la plateforme.
+  ✓  24 [chromium] › a24.spec.ts:12:5 › TC-A24 — Suspension après le délai de grâce (12.3s)
+avant → 
+rattrapage déjà joué — vérification de l’état final.
+  ✘  25 [chromium] › a25.spec.ts:11:5 › TC-A25 — Rattrapage d’un cron manqué (2.6s)
+  ✓  26 [chromium] › a26.spec.ts:6:5 › TC-A26 — Régularisation (7.4s)
+connexion résiliée → Espace suspendu — contactez la plateforme.
+  ✓  27 [chromium] › a27.spec.ts:8:5 › TC-A27 — Résiliation (9.4s)
+cycle → Cycle du 2026-09-14 |  | 2 essai(s) expiré(s) | 0 suspension(s) | 0 reconduction(s) | 2 statut(s) tenant réaligné(s)
+cycle → Cycle du 2026-09-14 |  | 0 essai(s) expiré(s) | 1 suspension(s) | 0 reconduction(s) | 1 statut(s) tenant réaligné(s)
+  ✘  28 [chromium] › a28.spec.ts:59:5 › TC-A28 — Cohérence statut / accès (5 statuts) (11.4s)
+  ✘  29 [chromium] › a29.spec.ts:14:5 › TC-A29 — administrateur d’une organisation existante créé puis réinitialisé (26.5s)
+
+
+  1) [chromium] › a07.spec.ts:9:5 › TC-A07 — Recherche et filtre ───────────────────────────────────
+
+    Error: [31mTimed out 15000ms waiting for [39m[2mexpect([22m[31mlocator[39m[2m).[22mtoHaveCount[2m([22m[32mexpected[39m[2m)[22m
+
+    Locator: locator('table tbody tr')
+    Expected: [32m1[39m
+    Received: [31m0[39m
+    Call log:
+      [2m- expect.toHaveCount with timeout 15000ms[22m
+    [2m  - waiting for locator('table tbody tr')[22m
+    [2m  -   locator resolved to 0 elements[22m
+    [2m  -   unexpected value "0"[22m
+    [2m  -   locator resolved to 0 elements[22m
+    [2m  -   unexpected value "0"[22m
+    [2m  -   locator resolved to 0 elements[22m
+    [2m  -   unexpected value "0"[22m
+    [2m  -   locator resolved to 0 elements[22m
+    [2m  -   unexpected value "0"[22m
+    [2m  -   locator resolved to 0 elements[22m
+    [2m  -   unexpected value "0"[22m
+    [2m  -   locator resolved to 0 elements[22m
+    [2m  -   unexpected value "0"[22m
+    [2m  -   locator resolved to 0 elements[22m
+    [2m  -   unexpected value "0"[22m
+    [2m  -   locator resolved to 0 elements[22m
+    [2m  -   unexpected value "0"[22m
+    [2m  -   locator resolved to 0 elements[22m
+    [2m  -   unexpected value "0"[22m
+    [2m  -   locator resolved to 0 elements[22m
+    [2m  -   unexpected value "0"[22m
+    [2m  -   locator resolved to 0 elements[22m
+    [2m  -   unexpected value "0"[22m
+    [2m  -   locator resolved to 0 elements[22m
+    [2m  -   unexpected value "0"[22m
+    [2m  -   locator resolved to 0 elements[22m
+    [2m  -   unexpected value "0"[22m
+    [2m  -   locator resolved to 0 elements[22m
+    [2m  -   unexpected value "0"[22m
+    [2m  -   locator resolved to 0 elements[22m
+    [2m  -   unexpected value "0"[22m
+    [2m  -   locator resolved to 0 elements[22m
+    [2m  -   unexpected value "0"[22m
+    [2m  -   locator resolved to 0 elements[22m
+    [2m  -   unexpected value "0"[22m
+    [2m  -   locator resolved to 0 elements[22m
+    [2m  -   unexpected value "0"[22m
+    [2m  -   locator resolved to 0 elements[22m
+    [2m  -   unexpected value "0"[22m
+
+
+      20 |   console.log(`parc → ${parc} organisation(s) · repère → ${repere}`);
+      21 |   await search.fill(repere);
+    > 22 |   await expect(rows).toHaveCount(1);
+         |                      ^
+      23 |   await expect(page.getByRole('row', { name: new RegExp(repere) })).toBeVisible();
+      24 |   await shot(page, 'TC-A07', '01-recherche-isole-une-ligne');
+      25 |
+
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/a07.spec.ts:22:22
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/a07-TC-A07-—-Recherche-et-filtre-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/a07-TC-A07-—-Recherche-et-filtre-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/a07-TC-A07-—-Recherche-et-filtre-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › a09.spec.ts:10:5 › TC-A09 — Changement de plan à l’échéance ──────────────────────
+
+    TimeoutError: locator.click: Timeout 20000ms exceeded.
+    Call log:
+      [2m- waiting for getByRole('row', { name: /rabatexpress/ }).getByRole('button').last()[22m
+
+
+       at helpers.ts:189
+
+      187 | export async function openTenantMenu(page: Page, slug: string) {
+      188 |   const row = page.getByRole('row', { name: new RegExp(slug) });
+    > 189 |   await row.getByRole('button').last().click();
+          |                                        ^
+      190 | }
+      191 |
+      192 | /** Ouvre le menu « … » de la ligne d'un plan sur /saas/plans. */
+
+        at openTenantMenu (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:189:40)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/a09.spec.ts:16:23
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/a09-TC-A09-—-Changement-de-plan-à-l’échéance-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/a09-TC-A09-—-Changement-de-plan-à-l’échéance-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/a09-TC-A09-—-Changement-de-plan-à-l’échéance-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › a18.spec.ts:7:5 › TC-A18 — Archivage protégé ─────────────────────────────────────
+
+    Error: [31mTimed out 15000ms waiting for [39m[2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m
+
+    Locator: getByRole('alertdialog').getByText(/0 organisation\(s\) y sont abonnées/)
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+      [2m- expect.toBeVisible with timeout 15000ms[22m
+    [2m  - waiting for getByRole('alertdialog').getByText(/0 organisation\(s\) y sont abonnées/)[22m
+
+
+      22 |      WHERE p.code = 'entreprise'`);
+      23 |   console.log(`abonnés au plan Entreprise → ${abonnes}`);
+    > 24 |   await expect(confirm.getByText(new RegExp(`${abonnes} organisation\\(s\\) y sont abonnées`))).toBeVisible();
+         |                                                                                                 ^
+      25 |   await shotVp(page, 'TC-A18', '01-confirmation-archivage-entreprise');
+      26 |   const refused = nextAlert(page);
+      27 |   await confirm.getByRole('button', { name: 'Archiver' }).click();
+
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/a18.spec.ts:24:97
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/a18-TC-A18-—-Archivage-protégé-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/a18-TC-A18-—-Archivage-protégé-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/a18-TC-A18-—-Archivage-protégé-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › a20.spec.ts:6:5 › TC-A20 — Traçabilité audit ─────────────────────────────────────
+
+    Error: [31mTimed out 15000ms waiting for [39m[2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m
+
+    Locator: getByRole('row', { name: /plan\.archive/ }).first()
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+      [2m- expect.toBeVisible with timeout 15000ms[22m
+    [2m  - waiting for getByRole('row', { name: /plan\.archive/ }).first()[22m
+
+
+      27 |   // que l'archivage effectif (pay-as-you-go) : vérifier archive + restore sur cette cible.
+      28 |   const archive = page.getByRole('row', { name: /plan\.archive/ });
+    > 29 |   await expect(archive.first()).toBeVisible();
+         |                                 ^
+      30 |   await expect(archive.first()).toContainText('pay-as-you-go');
+      31 |   const restore = page.getByRole('row', { name: /plan\.restore/ });
+      32 |   await expect(restore.first()).toBeVisible();
+
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/a20.spec.ts:29:33
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/a20-TC-A20-—-Traçabilité-audit-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/a20-TC-A20-—-Traçabilité-audit-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/a20-TC-A20-—-Traçabilité-audit-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › a22.spec.ts:6:5 › TC-A22 — Cycle neutre ×2 ───────────────────────────────────────
+
+    Error: [31mTimed out 15000ms waiting for [39m[2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m()[22m
+
+    Locator: getByRole('row', { name: /tangerlog/ }).getByText('Essai')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+      [2m- expect.toBeVisible with timeout 15000ms[22m
+    [2m  - waiting for getByRole('row', { name: /tangerlog/ }).getByText('Essai')[22m
+
+
+      24 |   const atlas = page.getByRole('row', { name: /atlasfret/ });
+      25 |   await expect(atlas.getByText('Essai')).toBeVisible({ timeout: 30_000 });
+    > 26 |   await expect(page.getByRole('row', { name: /tangerlog/ }).getByText('Essai')).toBeVisible();
+         |                                                                                 ^
+      27 |   await expect(page.getByRole('row', { name: /rabatexpress/ }).getByText('Actif')).toBeVisible();
+      28 |   await shotVp(page, 'TC-A22', '03-statuts-inchanges');
+      29 | });
+
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/a22.spec.ts:26:81
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/a22-TC-A22-—-Cycle-neutre-×2-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/a22-TC-A22-—-Cycle-neutre-×2-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/a22-TC-A22-—-Cycle-neutre-×2-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [chromium] › a25.spec.ts:11:5 › TC-A25 — Rattrapage d’un cron manqué ──────────────────────────
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m"ACTIF|2026-09|2026-10-01"[39m
+    Received: [31m""[39m
+
+      31 |
+      32 |   // Période courante = mois en cours, échéance repassée dans le futur.
+    > 33 |   expect(sql(SUB)).toBe('ACTIF|2026-09|2026-10-01');
+         |                    ^
+      34 |   const row = page.getByRole('row', { name: /rabatexpress/ });
+      35 |   await expect(row.getByText('Actif', { exact: true })).toBeVisible({ timeout: 30_000 });
+      36 |   await expect(row).toContainText('échéance 2026-10-01');
+
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/a25.spec.ts:33:20
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/a25-TC-A25-—-Rattrapage-d’un-cron-manqué-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/a25-TC-A25-—-Rattrapage-d’un-cron-manqué-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/a25-TC-A25-—-Rattrapage-d’un-cron-manqué-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [chromium] › a28.spec.ts:59:5 › TC-A28 — Cohérence statut / accès (5 statuts) ─────────────────
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m"ESSAI"[39m
+    Received: [31m""[39m
+
+      94 |
+      95 |   // 2. Les 5 statuts présents dans la colonne Abonnement.
+    > 96 |   expect(subStatus('tangerlog')).toBe('ESSAI');
+         |                                  ^
+      97 |   expect(subStatus('rabatexpress')).toBe('ACTIF');
+      98 |   expect(subStatus('demoimpaye')).toBe('IMPAYE');
+      99 |   expect(subStatus('demosuspendu')).toBe('SUSPENDU');
+
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/a28.spec.ts:96:34
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/a28-TC-A28-—-Cohérence-statut-accès-5-statuts--chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/a28-TC-A28-—-Cohérence-statut-accès-5-statuts--chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/a28-TC-A28-—-Cohérence-statut-accès-5-statuts--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8) [chromium] › a29.spec.ts:14:5 › TC-A29 — administrateur d’une organisation existante créé puis réinitialisé 
+
+    TimeoutError: locator.click: Timeout 20000ms exceeded.
+    Call log:
+      [2m- waiting for getByRole('row', { name: /tangerlog/ }).getByRole('button').last()[22m
+
+
+      19 |     await page.goto('/saas');
+      20 |     const ligne = page.getByRole('row', { name: new RegExp(slug) });
+    > 21 |     await ligne.getByRole('button').last().click();
+         |                                            ^
+      22 |     await page.getByRole('menuitem', { name: 'Créer / réinitialiser l’administrateur' }).click();
+      23 |     const dlg = page.getByRole('dialog');
+      24 |     await dlg.getByPlaceholder('Nadia Alaoui').fill(nom);
+
+        at reinitialiser (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/a29.spec.ts:21:44)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/a29.spec.ts:51:19
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/a29-TC-A29-—-administrateu-5c37b-ante-créé-puis-réinitialisé-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/a29-TC-A29-—-administrateu-5c37b-ante-créé-puis-réinitialisé-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/a29-TC-A29-—-administrateu-5c37b-ante-créé-puis-réinitialisé-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  Slow test file: [chromium] › a29.spec.ts (26.5s)
+  Slow test file: [chromium] › a09.spec.ts (25.7s)
+  Slow test file: [chromium] › a06.spec.ts (23.2s)
+  Slow test file: [chromium] › a20.spec.ts (22.4s)
+  Slow test file: [chromium] › a22.spec.ts (22.0s)
+  Consider splitting slow test files to speed up parallel execution
+  8 failed
+    [chromium] › a07.spec.ts:9:5 › TC-A07 — Recherche et filtre ────────────────────────────────────
+    [chromium] › a09.spec.ts:10:5 › TC-A09 — Changement de plan à l’échéance ───────────────────────
+    [chromium] › a18.spec.ts:7:5 › TC-A18 — Archivage protégé ──────────────────────────────────────
+    [chromium] › a20.spec.ts:6:5 › TC-A20 — Traçabilité audit ──────────────────────────────────────
+    [chromium] › a22.spec.ts:6:5 › TC-A22 — Cycle neutre ×2 ────────────────────────────────────────
+    [chromium] › a25.spec.ts:11:5 › TC-A25 — Rattrapage d’un cron manqué ───────────────────────────
+    [chromium] › a28.spec.ts:59:5 › TC-A28 — Cohérence statut / accès (5 statuts) ──────────────────
+    [chromium] › a29.spec.ts:14:5 › TC-A29 — administrateur d’une organisation existante créé puis réinitialisé 
+  21 passed (6.1m)
+
+===== Section B — amorçage des comptes & authentification (16 cas) =====
+
+Running 18 tests using 1 worker
+
+TC-B01 erreur affichée → Identifiants invalides.
+  ✓  1 [chromium] › b01.spec.ts:10:5 › TC-B01 — identifiants invalides sur compte non amorcé (2.9s)
+Tenant inconnu : rabatexpress — provisionnez-le d'abord depuis la console plateforme.
+command terminated with exit code 1
+  ✘  2 [chromium] › b02.spec.ts:8:5 › TC-B02 — amorçage admin en CLI puis connexion (2.2s)
+organisation inconnue → Identifiants invalides.
+organisation réelle, mdp faux → Identifiants invalides.
+codes HTTP → {"inconnue":401,"reelle":401}
+  ✓  3 [chromium] › b03.spec.ts:10:5 › TC-B03 — organisation inconnue : réponse indistinguable d’un mot de passe faux (5.2s)
+tentative 1 → Identifiants invalides.
+tentative 2 → Identifiants invalides.
+tentative 3 → Identifiants invalides.
+tentative 4 → Identifiants invalides.
+tentative 5 → Identifiants invalides.
+tentative 6 → Trop de tentatives. Réessayez plus tard.
+  ✓  4 [chromium] › b04.spec.ts:12:5 › TC-B04 — anti-bruteforce (6 tentatives) (6.1s)
+  ✘  5 [chromium] › b05.spec.ts:23:5 › TC-B05 — suspension puis réactivation de rabatexpress (28.5s)
+  ✘  6 [chromium] › b06.spec.ts:7:5 › TC-B06 — déconnexion (2.3s)
+  ✘  7 [chromium] › b07.spec.ts:7:5 › TC-B07 — invitation dispatcher (2.1s)
+  ✘  8 [chromium] › b07b.spec.ts:8:5 › TC-B07 suite — dispatcher listé et actif (1.8s)
+  ✘  9 [chromium] › b08.spec.ts:7:5 › TC-B08 — invitation comptable (1.8s)
+  ✘  10 [chromium] › b09.spec.ts:7:5 › TC-B09 — email invalide puis doublon (1.9s)
+  ✘  11 [chromium] › b10.spec.ts:16:5 › TC-B10 — connexion dispatcher puis comptable (708ms)
+  ✘  12 [chromium] › b11.spec.ts:18:5 › TC-B11 — réinitialisation du mot de passe dispatcher (811ms)
+  ✘  13 [chromium] › b12.spec.ts:29:5 › TC-B12 — changement de rôle comptable → dispatcher → comptable (1.4s)
+  ✘  14 [chromium] › b13.spec.ts:18:5 › TC-B13 — désactivation puis réactivation du dispatcher (1.3s)
+  ✘  15 [chromium] › b14.spec.ts:10:5 › TC-B14 — protection du dernier administrateur (2.2s)
+  ✘  16 [chromium] › b15.spec.ts:33:5 › TC-B15 — matrice RBAC console (815ms)
+  ✘  17 [chromium] › b15b.spec.ts:29:5 › TC-B15 suite — matrice RBAC comptable (1.5s)
+compteur en base pour brute-b16-mu0xv5xy@rabatexpress.ma → 5
+Warning: would violate PodSecurity "restricted:latest": allowPrivilegeEscalation != false (container "api" must set securityContext.allowPrivilegeEscalation=false), unrestricted capabilities (container "api" must set securityContext.capabilities.drop=["ALL"]), runAsNonRoot != true (pod or container "api" must set securityContext.runAsNonRoot=true), seccompProfile (pod or container "api" must set securityContext.seccompProfile.type to "RuntimeDefault" or "Localhost")
+API redémarrée
+(API pas encore stable : « Échec de connexion »)
+après redémarrage → Trop de tentatives. Réessayez plus tard.
+balayage freiné à la tentative n°11 (0 = jamais freiné)
+clés « ip: » en base → 2
+compteurs par source purgés → reste 0
+  ✘  18 [chromium] › b16.spec.ts:9:5 › TC-B16 — compteur d’échecs durable et comptage par source (48.1s)
+
+
+  1) [chromium] › b02.spec.ts:8:5 › TC-B02 — amorçage admin en CLI puis connexion ──────────────────
+
+    Error: Command failed: kubectl exec -n transpo deploy/transpo-api -- sh -c 'cd /repo && pnpm --filter @transpo/db account rabatexpress admin@rabatexpress.ma "Nadia Alaoui" ADMIN Test1234'
+    Tenant inconnu : rabatexpress — provisionnez-le d'abord depuis la console plateforme.
+    command terminated with exit code 1
+
+
+       7 | // ATT : la connexion /login?org=rabatexpress avec Test1234 aboutit sur /dashboard.
+       8 | test('TC-B02 — amorçage admin en CLI puis connexion', async ({ page }) => {
+    >  9 |   const out = execSync(
+         |                       ^
+      10 |     `kubectl exec -n transpo deploy/transpo-api -- sh -c 'cd /repo && pnpm --filter @transpo/db account rabatexpress admin@rabatexpress.ma "Nadia Alaoui" ADMIN Test1234'`,
+      11 |     { encoding: 'utf-8' },
+      12 |   ).trim();
+
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b02.spec.ts:9:23
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b02-TC-B02-—-amorçage-admin-en-CLI-puis-connexion-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b02-TC-B02-—-amorçage-admin-en-CLI-puis-connexion-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/b02-TC-B02-—-amorçage-admin-en-CLI-puis-connexion-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › b05.spec.ts:23:5 › TC-B05 — suspension puis réactivation de rabatexpress ─────────
+
+    TimeoutError: locator.click: Timeout 20000ms exceeded.
+    Call log:
+      [2m- waiting for getByRole('row', { name: /rabatexpress/ }).getByRole('button').last()[22m
+
+
+       at helpers.ts:189
+
+      187 | export async function openTenantMenu(page: Page, slug: string) {
+      188 |   const row = page.getByRole('row', { name: new RegExp(slug) });
+    > 189 |   await row.getByRole('button').last().click();
+          |                                        ^
+      190 | }
+      191 |
+      192 | /** Ouvre le menu « … » de la ligne d'un plan sur /saas/plans. */
+
+        at openTenantMenu (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:189:40)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b05.spec.ts:29:25
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b05-TC-B05-—-suspension-puis-réactivation-de-rabatexpress-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b05-TC-B05-—-suspension-puis-réactivation-de-rabatexpress-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/b05-TC-B05-—-suspension-puis-réactivation-de-rabatexpress-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › b06.spec.ts:7:5 › TC-B06 — déconnexion ───────────────────────────────────────────
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeNull[2m()[22m
+
+    Received: [31m"Identifiants invalides."[39m
+
+       7 | test('TC-B06 — déconnexion', async ({ page }) => {
+       8 |   const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+    >  9 |   expect(err).toBeNull();
+         |               ^
+      10 |   await shotVp(page, 'TC-B06', '01-connecte-dashboard');
+      11 |
+      12 |   await logout(page, 'Nadia Alaoui');
+
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b06.spec.ts:9:15
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b06-TC-B06-—-déconnexion-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b06-TC-B06-—-déconnexion-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/b06-TC-B06-—-déconnexion-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › b07.spec.ts:7:5 › TC-B07 — invitation dispatcher ─────────────────────────────────
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeNull[2m()[22m
+
+    Received: [31m"Identifiants invalides."[39m
+
+       8 |   await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+       9 |   const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+    > 10 |   expect(err).toBeNull();
+         |               ^
+      11 |   await page.goto('/users');
+      12 |   await expect(page.getByRole('heading', { name: 'Utilisateurs & rôles' })).toBeVisible();
+      13 |   // Pré-requis (hors périmètre) : l'adresse doit être libre, sinon c'est le refus de doublon
+
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b07.spec.ts:10:15
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b07-TC-B07-—-invitation-dispatcher-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b07-TC-B07-—-invitation-dispatcher-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/b07-TC-B07-—-invitation-dispatcher-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › b07b.spec.ts:8:5 › TC-B07 suite — dispatcher listé et actif ──────────────────────
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeNull[2m()[22m
+
+    Received: [31m"Identifiants invalides."[39m
+
+       8 | test('TC-B07 suite — dispatcher listé et actif', async ({ page }) => {
+       9 |   const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+    > 10 |   expect(err).toBeNull();
+         |               ^
+      11 |   await page.goto('/users');
+      12 |   await expect(page.getByRole('heading', { name: 'Utilisateurs & rôles' })).toBeVisible();
+      13 |
+
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b07b.spec.ts:10:15
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b07b-TC-B07-suite-—-dispatcher-listé-et-actif-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b07b-TC-B07-suite-—-dispatcher-listé-et-actif-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/b07b-TC-B07-suite-—-dispatcher-listé-et-actif-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [chromium] › b08.spec.ts:7:5 › TC-B08 — invitation comptable ──────────────────────────────────
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeNull[2m()[22m
+
+    Received: [31m"Identifiants invalides."[39m
+
+       7 | test('TC-B08 — invitation comptable', async ({ page }) => {
+       8 |   const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+    >  9 |   expect(err).toBeNull();
+         |               ^
+      10 |   await page.goto('/users');
+      11 |   // Pré-requis (hors périmètre) : l'adresse doit être libre, sinon c'est le refus de doublon
+      12 |   // (TC-B09) qui se déclenche et non l'invitation testée ici.
+
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b08.spec.ts:9:15
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b08-TC-B08-—-invitation-comptable-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b08-TC-B08-—-invitation-comptable-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/b08-TC-B08-—-invitation-comptable-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [chromium] › b09.spec.ts:7:5 › TC-B09 — email invalide puis doublon ───────────────────────────
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeNull[2m()[22m
+
+    Received: [31m"Identifiants invalides."[39m
+
+       7 | test('TC-B09 — email invalide puis doublon', async ({ page }) => {
+       8 |   const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+    >  9 |   expect(err).toBeNull();
+         |               ^
+      10 |   await page.goto('/users');
+      11 |
+      12 |   // 1. Email invalide : le formulaire bloque la soumission (bouton désactivé) ;
+
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b09.spec.ts:9:15
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b09-TC-B09-—-email-invalide-puis-doublon-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b09-TC-B09-—-email-invalide-puis-doublon-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/b09-TC-B09-—-email-invalide-puis-doublon-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8) [chromium] › b10.spec.ts:16:5 › TC-B10 — connexion dispatcher puis comptable ──────────────────
+
+    Error: mot de passe introuvable pour TC-B07 dans COMPTES.md
+
+      10 |   const lines = fs.readFileSync(COMPTES, 'utf-8').split('\n').filter((l) => l.includes(marker));
+      11 |   const m = /tempPassword=(\S+)/.exec(lines.at(-1) ?? '');
+    > 12 |   if (!m) throw new Error(`mot de passe introuvable pour ${marker} dans COMPTES.md`);
+         |                 ^
+      13 |   return m[1];
+      14 | }
+      15 |
+
+        at pwdOf (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b10.spec.ts:12:17)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b10.spec.ts:17:19
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b10-TC-B10-—-connexion-dispatcher-puis-comptable-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/b10-TC-B10-—-connexion-dispatcher-puis-comptable-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  9) [chromium] › b11.spec.ts:18:5 › TC-B11 — réinitialisation du mot de passe dispatcher ──────────
+
+    Error: mot de passe introuvable pour TC-B07
+
+       9 |   const lines = fs.readFileSync(COMPTES, 'utf-8').split('\n').filter((l) => l.includes(marker));
+      10 |   const m = /tempPassword=(\S+)/.exec(lines.at(-1) ?? '');
+    > 11 |   if (!m) throw new Error(`mot de passe introuvable pour ${marker}`);
+         |                 ^
+      12 |   return m[1];
+      13 | }
+      14 |
+
+        at pwdOf (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b11.spec.ts:11:17)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b11.spec.ts:21:18
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b11-TC-B11-—-réinitialisation-du-mot-de-passe-dispatcher-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/b11-TC-B11-—-réinitialisation-du-mot-de-passe-dispatcher-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  10) [chromium] › b12.spec.ts:29:5 › TC-B12 — changement de rôle comptable → dispatcher → comptable 
+
+    Error: mot de passe introuvable pour TC-B08
+
+       9 |   const lines = fs.readFileSync(COMPTES, 'utf-8').split('\n').filter((l) => l.includes(marker));
+      10 |   const m = /tempPassword=(\S+)/.exec(lines.at(-1) ?? '');
+    > 11 |   if (!m) throw new Error(`mot de passe introuvable pour ${marker}`);
+         |                 ^
+      12 |   return m[1];
+      13 | }
+      14 |
+
+        at pwdOf (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b12.spec.ts:11:17)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b12.spec.ts:31:15
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b12-TC-B12-—-changement-de-25ee6-le-→-dispatcher-→-comptable-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/b12-TC-B12-—-changement-de-25ee6-le-→-dispatcher-→-comptable-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  11) [chromium] › b13.spec.ts:18:5 › TC-B13 — désactivation puis réactivation du dispatcher ───────
+
+    Error: mot de passe introuvable pour TC-B11
+
+       9 |   const lines = fs.readFileSync(COMPTES, 'utf-8').split('\n').filter((l) => l.includes(marker));
+      10 |   const m = /tempPassword=(\S+)/.exec(lines.at(-1) ?? '');
+    > 11 |   if (!m) throw new Error(`mot de passe introuvable pour ${marker}`);
+         |                 ^
+      12 |   return m[1];
+      13 | }
+      14 |
+
+        at pwdOf (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b13.spec.ts:11:17)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b13.spec.ts:20:15
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b13-TC-B13-—-désactivation-puis-réactivation-du-dispatcher-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/b13-TC-B13-—-désactivation-puis-réactivation-du-dispatcher-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12) [chromium] › b14.spec.ts:10:5 › TC-B14 — protection du dernier administrateur ────────────────
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeNull[2m()[22m
+
+    Received: [31m"Trop de tentatives. Réessayez plus tard."[39m
+
+      10 | test('TC-B14 — protection du dernier administrateur', async ({ page }) => {
+      11 |   const err = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+    > 12 |   expect(err).toBeNull();
+         |               ^
+      13 |   await page.goto('/users');
+      14 |   const row = page.locator('tr', { hasText: 'admin@rabatexpress.ma' }).first();
+      15 |
+
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b14.spec.ts:12:15
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b14-TC-B14-—-protection-du-dernier-administrateur-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b14-TC-B14-—-protection-du-dernier-administrateur-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/b14-TC-B14-—-protection-du-dernier-administrateur-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  13) [chromium] › b15.spec.ts:33:5 › TC-B15 — matrice RBAC console ────────────────────────────────
+
+    Error: mot de passe introuvable pour TC-B11
+
+      12 |   const lines = fs.readFileSync(COMPTES, 'utf-8').split('\n').filter((l) => l.includes(marker));
+      13 |   const m = /tempPassword=(\S+)/.exec(lines.at(-1) ?? '');
+    > 14 |   if (!m) throw new Error(`mot de passe introuvable pour ${marker}`);
+         |                 ^
+      15 |   return m[1];
+      16 | }
+      17 |
+
+        at pwdOf (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b15.spec.ts:14:17)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b15.spec.ts:35:19
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b15-TC-B15-—-matrice-RBAC-console-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/b15-TC-B15-—-matrice-RBAC-console-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  14) [chromium] › b15b.spec.ts:29:5 › TC-B15 suite — matrice RBAC comptable ───────────────────────
+
+    Error: mot de passe introuvable pour TC-B08
+
+       9 |   const lines = fs.readFileSync(COMPTES, 'utf-8').split('\n').filter((l) => l.includes(marker));
+      10 |   const m = /tempPassword=(\S+)/.exec(lines.at(-1) ?? '');
+    > 11 |   if (!m) throw new Error(`mot de passe introuvable pour ${marker}`);
+         |                 ^
+      12 |   return m[1];
+      13 | }
+      14 |
+
+        at pwdOf (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b15b.spec.ts:11:17)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b15b.spec.ts:31:21
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b15b-TC-B15-suite-—-matrice-RBAC-comptable-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/b15b-TC-B15-suite-—-matrice-RBAC-comptable-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  15) [chromium] › b16.spec.ts:9:5 › TC-B16 — compteur d’échecs durable et comptage par source ─────
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeNull[2m()[22m
+
+    Received: [31m"Trop de tentatives. Réessayez plus tard."[39m
+
+      68 |   console.log(`compteurs par source purgés → reste ${reste}`);
+      69 |   const ok = await loginTenant(page, 'rabatexpress', 'admin@rabatexpress.ma', 'Test1234');
+    > 70 |   expect(ok).toBeNull();
+         |              ^
+      71 |   await shotVp(page, 'TC-B16', '04-run-debloque');
+      72 | });
+      73 |
+
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b16.spec.ts:70:14
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b16-TC-B16-—-compteur-d’éc-6bf67-able-et-comptage-par-source-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b16-TC-B16-—-compteur-d’éc-6bf67-able-et-comptage-par-source-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/b16-TC-B16-—-compteur-d’éc-6bf67-able-et-comptage-par-source-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  Slow test file: [chromium] › b16.spec.ts (48.1s)
+  Slow test file: [chromium] › b05.spec.ts (28.5s)
+  Consider splitting slow test files to speed up parallel execution
+  15 failed
+    [chromium] › b02.spec.ts:8:5 › TC-B02 — amorçage admin en CLI puis connexion ───────────────────
+    [chromium] › b05.spec.ts:23:5 › TC-B05 — suspension puis réactivation de rabatexpress ──────────
+    [chromium] › b06.spec.ts:7:5 › TC-B06 — déconnexion ────────────────────────────────────────────
+    [chromium] › b07.spec.ts:7:5 › TC-B07 — invitation dispatcher ──────────────────────────────────
+    [chromium] › b07b.spec.ts:8:5 › TC-B07 suite — dispatcher listé et actif ───────────────────────
+    [chromium] › b08.spec.ts:7:5 › TC-B08 — invitation comptable ───────────────────────────────────
+    [chromium] › b09.spec.ts:7:5 › TC-B09 — email invalide puis doublon ────────────────────────────
+    [chromium] › b10.spec.ts:16:5 › TC-B10 — connexion dispatcher puis comptable ───────────────────
+    [chromium] › b11.spec.ts:18:5 › TC-B11 — réinitialisation du mot de passe dispatcher ───────────
+    [chromium] › b12.spec.ts:29:5 › TC-B12 — changement de rôle comptable → dispatcher → comptable ─
+    [chromium] › b13.spec.ts:18:5 › TC-B13 — désactivation puis réactivation du dispatcher ─────────
+    [chromium] › b14.spec.ts:10:5 › TC-B14 — protection du dernier administrateur ──────────────────
+    [chromium] › b15.spec.ts:33:5 › TC-B15 — matrice RBAC console ──────────────────────────────────
+    [chromium] › b15b.spec.ts:29:5 › TC-B15 suite — matrice RBAC comptable ─────────────────────────
+    [chromium] › b16.spec.ts:9:5 › TC-B16 — compteur d’échecs durable et comptage par source ───────
+  3 passed (2.5m)
+
+===== Sections C à F — paramètres, flotte, zones, commandes (46 cas) =====
+
+Running 46 tests using 1 worker
+
+  ✘  1 [chromium] › c01.spec.ts:7:5 › TC-C01 — identité légale : enregistrement et persistance (565ms)
+  ✘  2 [chromium] › c02.spec.ts:8:5 › TC-C02 — commission & TVA : enregistrement, persistance, restauration (555ms)
+  ✘  3 [chromium] › c03.spec.ts:10:5 › TC-C03 — régional : langue par défaut persistée (739ms)
+  ✘  4 [chromium] › c04.spec.ts:7:5 › TC-C04 — /settings en lecture seule pour le dispatcher (645ms)
+  ✘  5 [chromium] › d01.spec.ts:8:5 › TC-D01 — ajout du véhicule conforme 1111-A-11 (707ms)
+  ✘  6 [chromium] › d02.spec.ts:8:5 › TC-D02 — véhicule 2222-B-22 à assurance expirée + alerte dashboard (648ms)
+  ✘  7 [chromium] › d03.spec.ts:7:5 › TC-D03 — cycle Actif → Maintenance → Hors service → Actif (695ms)
+  ✘  8 [chromium] › d04.spec.ts:7:5 › TC-D04 — renouvellement assurance 2222-B-22, alertes résorbées (632ms)
+  ✘  9 [chromium] › d05.spec.ts:10:5 › TC-D05 — retrait d’un véhicule jetable, puis d’un véhicule rattaché (862ms)
+  ✘  10 [chromium] › d06.spec.ts:8:5 › TC-D06 — ajout de Hamid Ouali et Sara Bennis (visite échue) (639ms)
+  ✘  11 [chromium] › d07.spec.ts:7:5 › TC-D07 — téléphone invalide refusé (UI + API) (1.3s)
+  ✘  12 [chromium] › d08.spec.ts:14:5 › TC-D08 — rattachement du véhicule 1111-A-11 à Hamid Ouali (2.0s)
+  ✘  13 [chromium] › d09.spec.ts:7:5 › TC-D09 — visite médicale renouvelée, Sara Bennis redevient affectable (1.0s)
+  ✘  14 [chromium] › d10.spec.ts:9:5 › TC-D10 — bascule de disponibilité, admin puis dispatcher (893ms)
+  ✘  15 [chromium] › d11.spec.ts:10:5 › TC-D11 — retrait d’un chauffeur, avec transfert de ses courses (741ms)
+  ✘  16 [chromium] › d12.spec.ts:7:5 › TC-D12 — immatriculation en doublon refusée (1.2s)
+  ✘  17 [chromium] › d13.spec.ts:7:5 › TC-D13 — immatriculation au format invalide refusée (UI + API) (897ms)
+  ✘  18 [chromium] › d14.spec.ts:8:5 › TC-D14 — chauffeur homonyme refusé (809ms)
+  ✘  19 [chromium] › d15.spec.ts:7:5 › TC-D15 — véhicule en maintenance non rattachable (UI + API) (1.9s)
+  ✘  20 [chromium] › d16.spec.ts:8:5 › TC-D16 — un véhicule déjà rattaché est annoncé avant validation (1.5s)
+  ✘  21 [chromium] › d17.spec.ts:7:5 › TC-D17 — retrait d’un véhicule rattaché refusé, chauffeur nommé (2.2s)
+  ✘  22 [chromium] › d18.spec.ts:7:5 › TC-D18 — une échéance ne se renouvelle pas dans le passé (1.6s)
+  ✘  23 [chromium] › d19.spec.ts:8:5 › TC-D19 — fiche chauffeur modifiable, type déclaré conservé au détachement (1.1s)
+  ✘  24 [chromium] › d20.spec.ts:9:5 › TC-D20 — flotte en lecture seule pour le dispatcher (UI + API) (792ms)
+  ✘  25 [chromium] › d21.spec.ts:14:5 › TC-D21 — la console reste vivante après chaque action de la flotte (818ms)
+  ✘  26 [chromium] › e01.spec.ts:8:5 › TC-E01 — création de la zone Rabat Centre avec polygone (1.0s)
+  ✘  27 [chromium] › e02.spec.ts:7:5 › TC-E02 — « Effacer » ne retire que le tracé en cours (975ms)
+  ✘  28 [chromium] › e03.spec.ts:8:5 › TC-E03 — affectation des livreurs à la zone (1.2s)
+  ✘  29 [chromium] › e04.spec.ts:7:5 › TC-E04 — retrait d’un livreur et suppression d’une zone (1.3s)
+  ✘  30 [chromium] › e05.spec.ts:7:5 › TC-E05 — la zone est tracée sur les cartes dispatch et PC flotte (2.9s)
+  ✘  31 [chromium] › e06.spec.ts:9:5 › TC-E06 — nom vide et livreur inexistant refusés (2.2s)
+  ✘  32 [chromium] › e07.spec.ts:8:5 › TC-E07 — polygone à moins de trois sommets refusé (3.2s)
+  ✘  33 [chromium] › e08.spec.ts:7:5 › TC-E08 — zones : dispatcher écrit, comptable consulte (1.6s)
+  ✘  34 [chromium] › f01.spec.ts:8:5 › TC-F01 — création d’une commande par l’assistant (1.5s)
+  ✘  35 [chromium] › f02.spec.ts:18:5 › TC-F02 — jeu de six commandes créé par l’assistant (1.2s)
+  ✘  36 [chromium] › f03.spec.ts:9:5 › TC-F03 — assignation par score depuis le dispatch (838ms)
+  ✘  37 [chromium] › f04.spec.ts:7:5 › TC-F04 — assignation depuis la liste des commandes (903ms)
+  ✘  38 [chromium] › f05.spec.ts:9:5 › TC-F05 — progression pas à pas jusqu’à la livraison en cours (907ms)
+  ✘  39 [chromium] › f06.spec.ts:9:5 › TC-F06 — transitions invalides refusées par l’API (1.2s)
+  ✘  40 [chromium] › f07.spec.ts:7:5 › TC-F07 — actions de masse sur une sélection (1.1s)
+  ✘  41 [chromium] › f08.spec.ts:7:5 › TC-F08 — filtres et recherche de la liste des commandes (1.3s)
+  ✘  42 [chromium] › f09.spec.ts:7:5 › TC-F09 — recherche globale depuis la barre supérieure (1.6s)
+  ✘  43 [chromium] › f10.spec.ts:7:5 › TC-F10 — pagination de la liste des commandes (998ms)
+  ✘  44 [chromium] › f11.spec.ts:9:5 › TC-F11 — fiche commande : onglets, historique, copie du code (939ms)
+  ✘  45 [chromium] › f12.spec.ts:7:5 › TC-F12 — annulation d’une commande (774ms)
+  ✘  46 [chromium] › f13.spec.ts:13:5 › TC-F13 — le marchand crée sa commande, sans pouvoir l’exploiter (1.0s)
+
+
+  1) [chromium] › c01.spec.ts:7:5 › TC-C01 — identité légale : enregistrement et persistance ───────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/c01.spec.ts:9:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/c01-TC-C01-—-identité-légale-enregistrement-et-persistance-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/c01-TC-C01-—-identité-légale-enregistrement-et-persistance-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › c02.spec.ts:8:5 › TC-C02 — commission & TVA : enregistrement, persistance, restauration 
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/c02.spec.ts:10:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/c02-TC-C02-—-commission-TV-4319f-nt-persistance-restauration-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/c02-TC-C02-—-commission-TV-4319f-nt-persistance-restauration-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › c03.spec.ts:10:5 › TC-C03 — régional : langue par défaut persistée ───────────────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/c03.spec.ts:12:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/c03-TC-C03-—-régional-langue-par-défaut-persistée-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/c03-TC-C03-—-régional-langue-par-défaut-persistée-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › c04.spec.ts:7:5 › TC-C04 — /settings en lecture seule pour le dispatcher ─────────
+
+    Error: Aucun mot de passe consigné pour dispatch@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/c04.spec.ts:9:93
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/c04-TC-C04-—-settings-en-lecture-seule-pour-le-dispatcher-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/c04-TC-C04-—-settings-en-lecture-seule-pour-le-dispatcher-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › d01.spec.ts:8:5 › TC-D01 — ajout du véhicule conforme 1111-A-11 ──────────────────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/d01.spec.ts:10:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d01-TC-D01-—-ajout-du-véhicule-conforme-1111-A-11-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/d01-TC-D01-—-ajout-du-véhicule-conforme-1111-A-11-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [chromium] › d02.spec.ts:8:5 › TC-D02 — véhicule 2222-B-22 à assurance expirée + alerte dashboard 
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/d02.spec.ts:10:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d02-TC-D02-—-véhicule-2222-c7c9c-ce-expirée-alerte-dashboard-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/d02-TC-D02-—-véhicule-2222-c7c9c-ce-expirée-alerte-dashboard-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [chromium] › d03.spec.ts:7:5 › TC-D03 — cycle Actif → Maintenance → Hors service → Actif ──────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/d03.spec.ts:9:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d03-TC-D03-—-cycle-Actif-→-54b18-ance-→-Hors-service-→-Actif-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/d03-TC-D03-—-cycle-Actif-→-54b18-ance-→-Hors-service-→-Actif-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8) [chromium] › d04.spec.ts:7:5 › TC-D04 — renouvellement assurance 2222-B-22, alertes résorbées ─
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/d04.spec.ts:9:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d04-TC-D04-—-renouvellemen-ac7ee-2222-B-22-alertes-résorbées-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/d04-TC-D04-—-renouvellemen-ac7ee-2222-B-22-alertes-résorbées-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  9) [chromium] › d05.spec.ts:10:5 › TC-D05 — retrait d’un véhicule jetable, puis d’un véhicule rattaché 
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/d05.spec.ts:12:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d05-TC-D05-—-retrait-d’un--6b310-puis-d’un-véhicule-rattaché-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/d05-TC-D05-—-retrait-d’un--6b310-puis-d’un-véhicule-rattaché-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  10) [chromium] › d06.spec.ts:8:5 › TC-D06 — ajout de Hamid Ouali et Sara Bennis (visite échue) ───
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/d06.spec.ts:10:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d06-TC-D06-—-ajout-de-Hami-e65bf-t-Sara-Bennis-visite-échue--chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/d06-TC-D06-—-ajout-de-Hami-e65bf-t-Sara-Bennis-visite-échue--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  11) [chromium] › d07.spec.ts:7:5 › TC-D07 — téléphone invalide refusé (UI + API) ─────────────────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/d07.spec.ts:9:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d07-TC-D07-—-téléphone-invalide-refusé-UI-API--chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/d07-TC-D07-—-téléphone-invalide-refusé-UI-API--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12) [chromium] › d08.spec.ts:14:5 › TC-D08 — rattachement du véhicule 1111-A-11 à Hamid Ouali ────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/d08.spec.ts:16:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d08-TC-D08-—-rattachement--cd3a1-ule-1111-A-11-à-Hamid-Ouali-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/d08-TC-D08-—-rattachement--cd3a1-ule-1111-A-11-à-Hamid-Ouali-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  13) [chromium] › d09.spec.ts:7:5 › TC-D09 — visite médicale renouvelée, Sara Bennis redevient affectable 
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/d09.spec.ts:9:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d09-TC-D09-—-visite-médica-14f74-Bennis-redevient-affectable-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/d09-TC-D09-—-visite-médica-14f74-Bennis-redevient-affectable-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  14) [chromium] › d10.spec.ts:9:5 › TC-D10 — bascule de disponibilité, admin puis dispatcher ──────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/d10.spec.ts:15:88
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d10-TC-D10-—-bascule-de-disponibilité-admin-puis-dispatcher-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/d10-TC-D10-—-bascule-de-disponibilité-admin-puis-dispatcher-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  15) [chromium] › d11.spec.ts:10:5 › TC-D11 — retrait d’un chauffeur, avec transfert de ses courses 
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/d11.spec.ts:12:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d11-TC-D11-—-retrait-d’un--080e4-ec-transfert-de-ses-courses-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/d11-TC-D11-—-retrait-d’un--080e4-ec-transfert-de-ses-courses-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  16) [chromium] › d12.spec.ts:7:5 › TC-D12 — immatriculation en doublon refusée ───────────────────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/d12.spec.ts:9:90
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d12-TC-D12-—-immatriculation-en-doublon-refusée-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d12-TC-D12-—-immatriculation-en-doublon-refusée-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/d12-TC-D12-—-immatriculation-en-doublon-refusée-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  17) [chromium] › d13.spec.ts:7:5 › TC-D13 — immatriculation au format invalide refusée (UI + API) 
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/d13.spec.ts:9:90
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d13-TC-D13-—-immatriculati-b6596-at-invalide-refusée-UI-API--chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d13-TC-D13-—-immatriculati-b6596-at-invalide-refusée-UI-API--chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/d13-TC-D13-—-immatriculati-b6596-at-invalide-refusée-UI-API--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  18) [chromium] › d14.spec.ts:8:5 › TC-D14 — chauffeur homonyme refusé ────────────────────────────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/d14.spec.ts:10:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d14-TC-D14-—-chauffeur-homonyme-refusé-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/d14-TC-D14-—-chauffeur-homonyme-refusé-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  19) [chromium] › d15.spec.ts:7:5 › TC-D15 — véhicule en maintenance non rattachable (UI + API) ───
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/d15.spec.ts:9:90
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d15-TC-D15-—-véhicule-en-maintenance-non-rattachable-UI-API--chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d15-TC-D15-—-véhicule-en-maintenance-non-rattachable-UI-API--chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/d15-TC-D15-—-véhicule-en-maintenance-non-rattachable-UI-API--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  20) [chromium] › d16.spec.ts:8:5 › TC-D16 — un véhicule déjà rattaché est annoncé avant validation 
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/d16.spec.ts:10:90
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d16-TC-D16-—-un-véhicule-d-0951b-st-annoncé-avant-validation-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d16-TC-D16-—-un-véhicule-d-0951b-st-annoncé-avant-validation-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/d16-TC-D16-—-un-véhicule-d-0951b-st-annoncé-avant-validation-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  21) [chromium] › d17.spec.ts:7:5 › TC-D17 — retrait d’un véhicule rattaché refusé, chauffeur nommé 
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/d17.spec.ts:9:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d17-TC-D17-—-retrait-d’un--40e1a-aché-refusé-chauffeur-nommé-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/d17-TC-D17-—-retrait-d’un--40e1a-aché-refusé-chauffeur-nommé-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  22) [chromium] › d18.spec.ts:7:5 › TC-D18 — une échéance ne se renouvelle pas dans le passé ──────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/d18.spec.ts:10:90
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d18-TC-D18-—-une-échéance-ne-se-renouvelle-pas-dans-le-passé-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d18-TC-D18-—-une-échéance-ne-se-renouvelle-pas-dans-le-passé-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/d18-TC-D18-—-une-échéance-ne-se-renouvelle-pas-dans-le-passé-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  23) [chromium] › d19.spec.ts:8:5 › TC-D19 — fiche chauffeur modifiable, type déclaré conservé au détachement 
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/d19.spec.ts:10:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d19-TC-D19-—-fiche-chauffe-238d0-aré-conservé-au-détachement-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/d19-TC-D19-—-fiche-chauffe-238d0-aré-conservé-au-détachement-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  24) [chromium] › d20.spec.ts:9:5 › TC-D20 — flotte en lecture seule pour le dispatcher (UI + API) 
+
+    Error: Aucun mot de passe consigné pour dispatch@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/d20.spec.ts:11:93
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d20-TC-D20-—-flotte-en-lec-ae1ac--pour-le-dispatcher-UI-API--chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/d20-TC-D20-—-flotte-en-lec-ae1ac--pour-le-dispatcher-UI-API--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  25) [chromium] › d21.spec.ts:14:5 › TC-D21 — la console reste vivante après chaque action de la flotte 
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/d21.spec.ts:16:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/d21-TC-D21-—-la-console-re-508a8--chaque-action-de-la-flotte-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/d21-TC-D21-—-la-console-re-508a8--chaque-action-de-la-flotte-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  26) [chromium] › e01.spec.ts:8:5 › TC-E01 — création de la zone Rabat Centre avec polygone ───────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/e01.spec.ts:10:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/e01-TC-E01-—-création-de-la-zone-Rabat-Centre-avec-polygone-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/e01-TC-E01-—-création-de-la-zone-Rabat-Centre-avec-polygone-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  27) [chromium] › e02.spec.ts:7:5 › TC-E02 — « Effacer » ne retire que le tracé en cours ──────────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/e02.spec.ts:9:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/e02-TC-E02-—-«-Effacer-»-ne-retire-que-le-tracé-en-cours-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/e02-TC-E02-—-«-Effacer-»-ne-retire-que-le-tracé-en-cours-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  28) [chromium] › e03.spec.ts:8:5 › TC-E03 — affectation des livreurs à la zone ───────────────────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/e03.spec.ts:10:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/e03-TC-E03-—-affectation-des-livreurs-à-la-zone-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/e03-TC-E03-—-affectation-des-livreurs-à-la-zone-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  29) [chromium] › e04.spec.ts:7:5 › TC-E04 — retrait d’un livreur et suppression d’une zone ───────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/e04.spec.ts:9:90
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/e04-TC-E04-—-retrait-d’un-livreur-et-suppression-d’une-zone-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/e04-TC-E04-—-retrait-d’un-livreur-et-suppression-d’une-zone-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/e04-TC-E04-—-retrait-d’un-livreur-et-suppression-d’une-zone-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  30) [chromium] › e05.spec.ts:7:5 › TC-E05 — la zone est tracée sur les cartes dispatch et PC flotte 
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/e05.spec.ts:9:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/e05-TC-E05-—-la-zone-est-t-ddc53-artes-dispatch-et-PC-flotte-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/e05-TC-E05-—-la-zone-est-t-ddc53-artes-dispatch-et-PC-flotte-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  31) [chromium] › e06.spec.ts:9:5 › TC-E06 — nom vide et livreur inexistant refusés ───────────────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/e06.spec.ts:11:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/e06-TC-E06-—-nom-vide-et-livreur-inexistant-refusés-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/e06-TC-E06-—-nom-vide-et-livreur-inexistant-refusés-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  32) [chromium] › e07.spec.ts:8:5 › TC-E07 — polygone à moins de trois sommets refusé ─────────────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/e07.spec.ts:10:90
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/e07-TC-E07-—-polygone-à-moins-de-trois-sommets-refusé-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/e07-TC-E07-—-polygone-à-moins-de-trois-sommets-refusé-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/e07-TC-E07-—-polygone-à-moins-de-trois-sommets-refusé-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  33) [chromium] › e08.spec.ts:7:5 › TC-E08 — zones : dispatcher écrit, comptable consulte ─────────
+
+    Error: Aucun mot de passe consigné pour dispatch@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/e08.spec.ts:11:91
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/e08-TC-E08-—-zones-dispatcher-écrit-comptable-consulte-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/e08-TC-E08-—-zones-dispatcher-écrit-comptable-consulte-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  34) [chromium] › f01.spec.ts:8:5 › TC-F01 — création d’une commande par l’assistant ──────────────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/f01.spec.ts:10:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/f01-TC-F01-—-création-d’une-commande-par-l’assistant-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/f01-TC-F01-—-création-d’une-commande-par-l’assistant-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  35) [chromium] › f02.spec.ts:18:5 › TC-F02 — jeu de six commandes créé par l’assistant ───────────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/f02.spec.ts:20:90
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/f02-TC-F02-—-jeu-de-six-commandes-créé-par-l’assistant-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/f02-TC-F02-—-jeu-de-six-commandes-créé-par-l’assistant-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/f02-TC-F02-—-jeu-de-six-commandes-créé-par-l’assistant-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  36) [chromium] › f03.spec.ts:9:5 › TC-F03 — assignation par score depuis le dispatch ─────────────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/f03.spec.ts:11:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/f03-TC-F03-—-assignation-par-score-depuis-le-dispatch-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/f03-TC-F03-—-assignation-par-score-depuis-le-dispatch-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  37) [chromium] › f04.spec.ts:7:5 › TC-F04 — assignation depuis la liste des commandes ────────────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/f04.spec.ts:9:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/f04-TC-F04-—-assignation-depuis-la-liste-des-commandes-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/f04-TC-F04-—-assignation-depuis-la-liste-des-commandes-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  38) [chromium] › f05.spec.ts:9:5 › TC-F05 — progression pas à pas jusqu’à la livraison en cours ──
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/f05.spec.ts:11:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/f05-TC-F05-—-progression-p-1fda9-squ’à-la-livraison-en-cours-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/f05-TC-F05-—-progression-p-1fda9-squ’à-la-livraison-en-cours-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  39) [chromium] › f06.spec.ts:9:5 › TC-F06 — transitions invalides refusées par l’API ─────────────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/f06.spec.ts:11:90
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/f06-TC-F06-—-transitions-invalides-refusées-par-l’API-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/f06-TC-F06-—-transitions-invalides-refusées-par-l’API-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/f06-TC-F06-—-transitions-invalides-refusées-par-l’API-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  40) [chromium] › f07.spec.ts:7:5 › TC-F07 — actions de masse sur une sélection ───────────────────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/f07.spec.ts:9:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/f07-TC-F07-—-actions-de-masse-sur-une-sélection-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/f07-TC-F07-—-actions-de-masse-sur-une-sélection-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  41) [chromium] › f08.spec.ts:7:5 › TC-F08 — filtres et recherche de la liste des commandes ───────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/f08.spec.ts:9:90
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/f08-TC-F08-—-filtres-et-recherche-de-la-liste-des-commandes-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/f08-TC-F08-—-filtres-et-recherche-de-la-liste-des-commandes-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/f08-TC-F08-—-filtres-et-recherche-de-la-liste-des-commandes-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  42) [chromium] › f09.spec.ts:7:5 › TC-F09 — recherche globale depuis la barre supérieure ─────────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/f09.spec.ts:9:90
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/f09-TC-F09-—-recherche-globale-depuis-la-barre-supérieure-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/f09-TC-F09-—-recherche-globale-depuis-la-barre-supérieure-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/f09-TC-F09-—-recherche-globale-depuis-la-barre-supérieure-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  43) [chromium] › f10.spec.ts:7:5 › TC-F10 — pagination de la liste des commandes ─────────────────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/f10.spec.ts:9:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/f10-TC-F10-—-pagination-de-la-liste-des-commandes-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/f10-TC-F10-—-pagination-de-la-liste-des-commandes-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  44) [chromium] › f11.spec.ts:9:5 › TC-F11 — fiche commande : onglets, historique, copie du code ──
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/f11.spec.ts:11:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/f11-TC-F11-—-fiche-commande-onglets-historique-copie-du-code-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/f11-TC-F11-—-fiche-commande-onglets-historique-copie-du-code-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  45) [chromium] › f12.spec.ts:7:5 › TC-F12 — annulation d’une commande ────────────────────────────
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/f12.spec.ts:9:90
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/f12-TC-F12-—-annulation-d’une-commande-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/f12-TC-F12-—-annulation-d’une-commande-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  46) [chromium] › f13.spec.ts:13:5 › TC-F13 — le marchand crée sa commande, sans pouvoir l’exploiter 
+
+    Error: Aucun mot de passe consigné pour admin@rabatexpress.ma dans /Volumes/workspace/transpo2/qa/recette/2026-09-14-homelab/COMPTES.md
+
+       at helpers.ts:228
+
+      226 |   const match = lignes.filter((l) => l.includes(email)).pop();
+      227 |   const mdp = match?.match(/tempPassword=(\S+)/)?.[1];
+    > 228 |   if (!mdp) throw new Error(`Aucun mot de passe consigné pour ${email} dans ${COMPTES}`);
+          |                   ^
+      229 |   return mdp;
+      230 | }
+      231 |
+
+        at motDePasse (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:228:19)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/f13.spec.ts:17:88
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/f13-TC-F13-—-le-marchand-c-1cea2-de-sans-pouvoir-l’exploiter-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/f13-TC-F13-—-le-marchand-c-1cea2-de-sans-pouvoir-l’exploiter-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/f13-TC-F13-—-le-marchand-c-1cea2-de-sans-pouvoir-l’exploiter-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  46 failed
+    [chromium] › c01.spec.ts:7:5 › TC-C01 — identité légale : enregistrement et persistance ────────
+    [chromium] › c02.spec.ts:8:5 › TC-C02 — commission & TVA : enregistrement, persistance, restauration 
+    [chromium] › c03.spec.ts:10:5 › TC-C03 — régional : langue par défaut persistée ────────────────
+    [chromium] › c04.spec.ts:7:5 › TC-C04 — /settings en lecture seule pour le dispatcher ──────────
+    [chromium] › d01.spec.ts:8:5 › TC-D01 — ajout du véhicule conforme 1111-A-11 ───────────────────
+    [chromium] › d02.spec.ts:8:5 › TC-D02 — véhicule 2222-B-22 à assurance expirée + alerte dashboard 
+    [chromium] › d03.spec.ts:7:5 › TC-D03 — cycle Actif → Maintenance → Hors service → Actif ───────
+    [chromium] › d04.spec.ts:7:5 › TC-D04 — renouvellement assurance 2222-B-22, alertes résorbées ──
+    [chromium] › d05.spec.ts:10:5 › TC-D05 — retrait d’un véhicule jetable, puis d’un véhicule rattaché 
+    [chromium] › d06.spec.ts:8:5 › TC-D06 — ajout de Hamid Ouali et Sara Bennis (visite échue) ─────
+    [chromium] › d07.spec.ts:7:5 › TC-D07 — téléphone invalide refusé (UI + API) ───────────────────
+    [chromium] › d08.spec.ts:14:5 › TC-D08 — rattachement du véhicule 1111-A-11 à Hamid Ouali ──────
+    [chromium] › d09.spec.ts:7:5 › TC-D09 — visite médicale renouvelée, Sara Bennis redevient affectable 
+    [chromium] › d10.spec.ts:9:5 › TC-D10 — bascule de disponibilité, admin puis dispatcher ────────
+    [chromium] › d11.spec.ts:10:5 › TC-D11 — retrait d’un chauffeur, avec transfert de ses courses ─
+    [chromium] › d12.spec.ts:7:5 › TC-D12 — immatriculation en doublon refusée ─────────────────────
+    [chromium] › d13.spec.ts:7:5 › TC-D13 — immatriculation au format invalide refusée (UI + API) ──
+    [chromium] › d14.spec.ts:8:5 › TC-D14 — chauffeur homonyme refusé ──────────────────────────────
+    [chromium] › d15.spec.ts:7:5 › TC-D15 — véhicule en maintenance non rattachable (UI + API) ─────
+    [chromium] › d16.spec.ts:8:5 › TC-D16 — un véhicule déjà rattaché est annoncé avant validation ─
+    [chromium] › d17.spec.ts:7:5 › TC-D17 — retrait d’un véhicule rattaché refusé, chauffeur nommé ─
+    [chromium] › d18.spec.ts:7:5 › TC-D18 — une échéance ne se renouvelle pas dans le passé ────────
+    [chromium] › d19.spec.ts:8:5 › TC-D19 — fiche chauffeur modifiable, type déclaré conservé au détachement 
+    [chromium] › d20.spec.ts:9:5 › TC-D20 — flotte en lecture seule pour le dispatcher (UI + API) ──
+    [chromium] › d21.spec.ts:14:5 › TC-D21 — la console reste vivante après chaque action de la flotte 
+    [chromium] › e01.spec.ts:8:5 › TC-E01 — création de la zone Rabat Centre avec polygone ─────────
+    [chromium] › e02.spec.ts:7:5 › TC-E02 — « Effacer » ne retire que le tracé en cours ────────────
+    [chromium] › e03.spec.ts:8:5 › TC-E03 — affectation des livreurs à la zone ─────────────────────
+    [chromium] › e04.spec.ts:7:5 › TC-E04 — retrait d’un livreur et suppression d’une zone ─────────
+    [chromium] › e05.spec.ts:7:5 › TC-E05 — la zone est tracée sur les cartes dispatch et PC flotte 
+    [chromium] › e06.spec.ts:9:5 › TC-E06 — nom vide et livreur inexistant refusés ─────────────────
+    [chromium] › e07.spec.ts:8:5 › TC-E07 — polygone à moins de trois sommets refusé ───────────────
+    [chromium] › e08.spec.ts:7:5 › TC-E08 — zones : dispatcher écrit, comptable consulte ───────────
+    [chromium] › f01.spec.ts:8:5 › TC-F01 — création d’une commande par l’assistant ────────────────
+    [chromium] › f02.spec.ts:18:5 › TC-F02 — jeu de six commandes créé par l’assistant ─────────────
+    [chromium] › f03.spec.ts:9:5 › TC-F03 — assignation par score depuis le dispatch ───────────────
+    [chromium] › f04.spec.ts:7:5 › TC-F04 — assignation depuis la liste des commandes ──────────────
+    [chromium] › f05.spec.ts:9:5 › TC-F05 — progression pas à pas jusqu’à la livraison en cours ────
+    [chromium] › f06.spec.ts:9:5 › TC-F06 — transitions invalides refusées par l’API ───────────────
+    [chromium] › f07.spec.ts:7:5 › TC-F07 — actions de masse sur une sélection ─────────────────────
+    [chromium] › f08.spec.ts:7:5 › TC-F08 — filtres et recherche de la liste des commandes ─────────
+    [chromium] › f09.spec.ts:7:5 › TC-F09 — recherche globale depuis la barre supérieure ───────────
+    [chromium] › f10.spec.ts:7:5 › TC-F10 — pagination de la liste des commandes ───────────────────
+    [chromium] › f11.spec.ts:9:5 › TC-F11 — fiche commande : onglets, historique, copie du code ────
+    [chromium] › f12.spec.ts:7:5 › TC-F12 — annulation d’une commande ──────────────────────────────
+    [chromium] › f13.spec.ts:13:5 › TC-F13 — le marchand crée sa commande, sans pouvoir l’exploiter 
+
+===== Décor du terrain (comptes livreur, marchand, console ; organisation témoin) =====
+  organisation rabatexpress provisionnée (plan Transporteur)
+Amorçage impossible — connexion admin refusée (429)
+
+===== Section G — app livreur, sur émulateur (18 cas) + TC-I05, TC-L03m, TC-T06 =====
+
+=== TC-G01 — Connexion livreur ===
+ERROR: null root node returned by UiTestAutomationBridge.
+g01 : ÉCHEC — l'écran de connexion ne s'affiche pas
+
+=== TC-G02 — Autorisations ===
+ERROR: null root node returned by UiTestAutomationBridge.
+ERROR: null root node returned by UiTestAutomationBridge.
+
+===== Base remise à zéro (tenants, plans, journal d'audit) =====
+
+Reset OK — 5 schéma(s) tenant supprimé(s), 5 plan(s) purgé(s) du catalogue (relancer `migrate-plans` pour ré-amorcer les 4 plans historiques). Super-admin conservé : ops@transpo.ma (mdp: "transpo").
+Migrations OK — platform + 0 tenant(s).
+Catalogue OK — 4 plan(s), 4 version(s) de tarif, 0 abonnement(s) créé(s) sur 0 tenant(s) sans abonnement.
+
+===== Jeu de données §0.4 (rabatexpress abonné Entreprise, tangerlog témoin) =====
+  rabatexpress provisionnée (essai, plan Transporteur)
+  rabatexpress → abonnement Entreprise actif
+  tangerlog provisionnée (essai, plan Transporteur)
+  > @transpo/db@0.0.0 account /repo/packages/db
+> tsx src/create-account.ts "rabatexpress" "admin@rabatexpress.ma" "Nadia Alaoui" "ADMIN" "Test1234"
+
+Compte OK — admin@rabatexpress.ma (ADMIN) sur le tenant rabatexpress.
+Jeu §0.4 en place.
+
+===== Section A — plateforme & provisionnement (29 cas) =====
+
+Running 29 tests using 1 worker
+
+organisations au parc → 2
+  ✓  1 [chromium] › a01.spec.ts:8:5 › TC-A01 — Connexion super-admin (5.2s)
+  ✓  2 [chromium] › a02.spec.ts:7:5 › TC-A02 — Bascule de realm (4.2s)
+  ✓  3 [chromium] › a03.spec.ts:14:5 › TC-A03 — Provisionner une organisation (11.9s)
+slug api → Slug réservé à l’infrastructure : api
+slug www → Slug réservé à l’infrastructure : www
+slug admin → Slug réservé à l’infrastructure : admin
+  ✓  4 [chromium] › a04.spec.ts:6:5 › TC-A04 — Slugs réservés refusés (10.3s)
+doublon recetteprov → Tenant déjà existant : recetteprov
+  ✓  5 [chromium] › a05.spec.ts:9:5 › TC-A05 — Slug en doublon refusé (9.0s)
+NOTICE:  drop cascades to 25 other objects
+DETAIL:  drop cascades to table tenant_recetteiso.orders
+drop cascades to table tenant_recetteiso.users
+drop cascades to table tenant_recetteiso.drivers
+drop cascades to table tenant_recetteiso.zones
+drop cascades to table tenant_recetteiso.vehicles
+drop cascades to table tenant_recetteiso.returns
+drop cascades to table tenant_recetteiso.fraud_cases
+drop cascades to table tenant_recetteiso.tournees
+drop cascades to table tenant_recetteiso.notif_consents
+drop cascades to table tenant_recetteiso.notifications
+drop cascades to table tenant_recetteiso.idempotency_keys
+drop cascades to table tenant_recetteiso.driver_positions
+drop cascades to table tenant_recetteiso.geofences
+drop cascades to table tenant_recetteiso.incidents
+drop cascades to table tenant_recetteiso.support_messages
+drop cascades to table tenant_recetteiso.cash_sessions
+drop cascades to table tenant_recetteiso.cash_movements
+drop cascades to table tenant_recetteiso.invoices
+drop cascades to table tenant_recetteiso.merchant_billing
+drop cascades to table tenant_recetteiso.payouts
+drop cascades to table tenant_recetteiso.pricing_config
+drop cascades to table tenant_recetteiso.company_settings
+drop cascades to table tenant_recetteiso.notif_templates
+drop cascades to table tenant_recetteiso.delivery_proofs
+drop cascades to table tenant_recetteiso.order_events
+NOTICE:  drop cascades to 25 other objects
+DETAIL:  drop cascades to table tenant_recetteprov.orders
+drop cascades to table tenant_recetteprov.users
+drop cascades to table tenant_recetteprov.drivers
+drop cascades to table tenant_recetteprov.zones
+drop cascades to table tenant_recetteprov.vehicles
+drop cascades to table tenant_recetteprov.returns
+drop cascades to table tenant_recetteprov.fraud_cases
+drop cascades to table tenant_recetteprov.tournees
+drop cascades to table tenant_recetteprov.notif_consents
+drop cascades to table tenant_recetteprov.notifications
+drop cascades to table tenant_recetteprov.idempotency_keys
+drop cascades to table tenant_recetteprov.driver_positions
+drop cascades to table tenant_recetteprov.geofences
+drop cascades to table tenant_recetteprov.incidents
+drop cascades to table tenant_recetteprov.support_messages
+drop cascades to table tenant_recetteprov.cash_sessions
+drop cascades to table tenant_recetteprov.cash_movements
+drop cascades to table tenant_recetteprov.invoices
+drop cascades to table tenant_recetteprov.merchant_billing
+drop cascades to table tenant_recetteprov.payouts
+drop cascades to table tenant_recetteprov.pricing_config
+drop cascades to table tenant_recetteprov.company_settings
+drop cascades to table tenant_recetteprov.notif_templates
+drop cascades to table tenant_recetteprov.delivery_proofs
+drop cascades to table tenant_recetteprov.order_events
+  ✓  6 [chromium] › a06.spec.ts:11:5 › TC-A06 — Provisionner une seconde organisation (17.9s)
+parc → 2 organisation(s) · repère → rabatexpress
+filtre Essai → 1 attendue(s)
+filtre Actif → 1 attendue(s)
+filtre Impayé → 0 attendue(s)
+filtre Suspendu → 0 attendue(s)
+filtre Résilié → 0 attendue(s)
+  ✓  7 [chromium] › a07.spec.ts:9:5 › TC-A07 — Recherche et filtre (16.1s)
+tarif Entreprise courant → 2 499 DH/mois
+racine aria-hidden après fermeture → 0
+NOTICE:  drop cascades to 25 other objects
+DETAIL:  drop cascades to table tenant_recetteconv.orders
+drop cascades to table tenant_recetteconv.users
+drop cascades to table tenant_recetteconv.drivers
+drop cascades to table tenant_recetteconv.zones
+drop cascades to table tenant_recetteconv.vehicles
+drop cascades to table tenant_recetteconv.returns
+drop cascades to table tenant_recetteconv.fraud_cases
+drop cascades to table tenant_recetteconv.tournees
+drop cascades to table tenant_recetteconv.notif_consents
+drop cascades to table tenant_recetteconv.notifications
+drop cascades to table tenant_recetteconv.idempotency_keys
+drop cascades to table tenant_recetteconv.driver_positions
+drop cascades to table tenant_recetteconv.geofences
+drop cascades to table tenant_recetteconv.incidents
+drop cascades to table tenant_recetteconv.support_messages
+drop cascades to table tenant_recetteconv.cash_sessions
+drop cascades to table tenant_recetteconv.cash_movements
+drop cascades to table tenant_recetteconv.invoices
+drop cascades to table tenant_recetteconv.merchant_billing
+drop cascades to table tenant_recetteconv.payouts
+drop cascades to table tenant_recetteconv.pricing_config
+drop cascades to table tenant_recetteconv.company_settings
+drop cascades to table tenant_recetteconv.notif_templates
+drop cascades to table tenant_recetteconv.delivery_proofs
+drop cascades to table tenant_recetteconv.order_events
+  ✓  8 [chromium] › a08.spec.ts:12:5 › TC-A08 — Convertir l’essai en abonnement Entreprise (11.6s)
+  ✓  9 [chromium] › a09.spec.ts:10:5 › TC-A09 — Changement de plan à l’échéance (13.8s)
+abonnements en base :
+rabatexpress | ACTIF | ACTIF | Entreprise | 249900
+tangerlog | ESSAI | ESSAI | Transporteur | 89900
+rabatexpress · Entreprise · ACTIF → attendu 2 499 DH
+  ✓  10 [chromium] › a10.spec.ts:10:5 › TC-A10 — Facturation plateforme (4.6s)
+plans au catalogue → 4
+catalogue courant :
+Entreprise | FORFAIT | 249900 | illimite
+Essai | FORFAIT | 0 | 50
+TPE Coursier | FORFAIT | 29900 | 500
+Transporteur | FORFAIT | 89900 | 5000
+répartition du parc :
+Entreprise | 1
+Essai | 0
+TPE Coursier | 0
+Transporteur | 1
+  ✓  11 [chromium] › a11.spec.ts:10:5 › TC-A11 — Catalogue des plans (6.8s)
+  ✓  12 [chromium] › a12.spec.ts:6:5 › TC-A12 — Cloisonnement du realm plateforme (7.0s)
+  ✓  13 [chromium] › a13.spec.ts:9:5 › TC-A13 — Plan à l’usage avec paliers (11.5s)
+UI : recalage automatique du palier 2 à 51 — trou impossible dans l’éditeur.
+API grille trouée → 400 {"error":"Paliers 1 et 2 non contigus : le suivant doit commencer à 51."}
+  ✓  14 [chromium] › a14.spec.ts:7:5 › TC-A14 — Grille non contiguë refusée (7.0s)
+  ✓  15 [chromium] › a15.spec.ts:7:5 › TC-A15 — Simulateur VOLUME / GRADUÉ (5.7s)
+v1 (2026-09-14, 1 abonné(s)) → v2 au 2026-09-15 à 2799 DH
+  ✓  16 [chromium] › a16.spec.ts:12:5 › TC-A16 — Prix gelé pour les abonnés (8.3s)
+  ✓  17 [chromium] › a17.spec.ts:7:5 › TC-A17 — Date d’effet antérieure refusée (5.7s)
+abonnés au plan Entreprise → 1
+archivage entreprise → 1 organisation(s) sont abonnées à ce plan. Archivage refusé.
+  ✓  18 [chromium] › a18.spec.ts:7:5 › TC-A18 — Archivage protégé (14.4s)
+doublon essai → Plan déjà existant : essai
+  ✓  19 [chromium] › a19.spec.ts:6:5 › TC-A19 — Code de plan en doublon (6.1s)
+  ✓  20 [chromium] › a20.spec.ts:6:5 › TC-A20 — Traçabilité audit (5.7s)
+  ✓  21 [chromium] › a21.spec.ts:7:5 › TC-A21 — Tout tenant naît en essai daté (8.9s)
+cycle 1 → Cycle du 2026-09-14 |  | 0 essai(s) expiré(s) | 0 suspension(s) | 0 reconduction(s) | 0 statut(s) tenant réaligné(s)
+cycle 2 → Cycle du 2026-09-14 |  | 0 essai(s) expiré(s) | 0 suspension(s) | 0 reconduction(s) | 0 statut(s) tenant réaligné(s)
+  ✓  22 [chromium] › a22.spec.ts:6:5 › TC-A22 — Cycle neutre ×2 (5.7s)
+cycle → Cycle du 2026-09-14 |  | 1 essai(s) expiré(s) | 0 suspension(s) | 0 reconduction(s) | 1 statut(s) tenant réaligné(s)
+  ✓  23 [chromium] › a23.spec.ts:10:5 › TC-A23 — Expiration de l’essai (6.5s)
+cycle → Cycle du 2026-09-14 |  | 0 essai(s) expiré(s) | 0 suspension(s) | 0 reconduction(s) | 0 statut(s) tenant réaligné(s)
+cycle → Cycle du 2026-09-14 |  | 0 essai(s) expiré(s) | 1 suspension(s) | 0 reconduction(s) | 1 statut(s) tenant réaligné(s)
+connexion suspendue → Espace suspendu — contactez la plateforme.
+  ✓  24 [chromium] › a24.spec.ts:12:5 › TC-A24 — Suspension après le délai de grâce (12.0s)
+avant → ACTIF|2026-09|2026-10-01
+cycle → Cycle du 2026-09-14 |  | 0 essai(s) expiré(s) | 0 suspension(s) | 3 reconduction(s) | 0 statut(s) tenant réaligné(s)
+  ✓  25 [chromium] › a25.spec.ts:11:5 › TC-A25 — Rattrapage d’un cron manqué (4.8s)
+  ✓  26 [chromium] › a26.spec.ts:6:5 › TC-A26 — Régularisation (7.6s)
+connexion résiliée → Espace suspendu — contactez la plateforme.
+  ✓  27 [chromium] › a27.spec.ts:8:5 › TC-A27 — Résiliation (11.7s)
+cycle → Cycle du 2026-09-14 |  | 2 essai(s) expiré(s) | 0 suspension(s) | 0 reconduction(s) | 2 statut(s) tenant réaligné(s)
+cycle → Cycle du 2026-09-14 |  | 0 essai(s) expiré(s) | 1 suspension(s) | 0 reconduction(s) | 1 statut(s) tenant réaligné(s)
+ESSAI tangerlog → connexion OK
+ACTIF rabatexpress → connexion OK
+IMPAYE demoimpaye → connexion OK
+SUSPENDU demosuspendu → refusée (Espace suspendu — contactez la plateforme.)
+RÉSILIE atlasfret → refusée (Espace suspendu — contactez la plateforme.)
+  ✓  28 [chromium] › a28.spec.ts:59:5 › TC-A28 — Cohérence statut / accès (5 statuts) (38.1s)
+état de /saas après l'action → {"pointerEvents":"auto","scrollLocked":false,"ariaHiddenRacine":false,"menusOuverts":0}
+admin créé → secours-mu10jsy6@tangerlog.ma
+état de /saas après l'action → {"pointerEvents":"auto","scrollLocked":false,"ariaHiddenRacine":false,"menusOuverts":0}
+admin réinitialisé → secours-mu10jsy6@tangerlog.ma
+journal d'audit → tenant.admin.reset | tenant.admin.create
+  ✓  29 [chromium] › a29.spec.ts:14:5 › TC-A29 — administrateur d’une organisation existante créé puis réinitialisé (23.6s)
+
+  Slow test file: [chromium] › a28.spec.ts (38.1s)
+  Slow test file: [chromium] › a29.spec.ts (23.6s)
+  Slow test file: [chromium] › a06.spec.ts (17.9s)
+  Slow test file: [chromium] › a07.spec.ts (16.1s)
+  Consider splitting slow test files to speed up parallel execution
+  29 passed (5.1m)
+
+===== Section B — amorçage des comptes & authentification (16 cas) =====
+
+Running 18 tests using 1 worker
+
+TC-B01 erreur affichée → Identifiants invalides.
+  ✓  1 [chromium] › b01.spec.ts:10:5 › TC-B01 — identifiants invalides sur compte non amorcé (3.1s)
+TC-B02 account CLI → > @transpo/db@0.0.0 account /repo/packages/db
+> tsx src/create-account.ts "rabatexpress" "admin@rabatexpress.ma" "Nadia Alaoui" "ADMIN" "Test1234"
+
+Compte OK — admin@rabatexpress.ma (ADMIN) sur le tenant rabatexpress.
+  ✓  2 [chromium] › b02.spec.ts:7:5 › TC-B02 — amorçage admin en CLI puis connexion (5.3s)
+organisation inconnue → Identifiants invalides.
+organisation réelle, mdp faux → Identifiants invalides.
+codes HTTP → {"inconnue":401,"reelle":401}
+  ✓  3 [chromium] › b03.spec.ts:10:5 › TC-B03 — organisation inconnue : réponse indistinguable d’un mot de passe faux (5.5s)
+tentative 1 → Identifiants invalides.
+tentative 2 → Identifiants invalides.
+tentative 3 → Identifiants invalides.
+tentative 4 → Identifiants invalides.
+tentative 5 → Identifiants invalides.
+tentative 6 → Trop de tentatives. Réessayez plus tard.
+  ✓  4 [chromium] › b04.spec.ts:12:5 › TC-B04 — anti-bruteforce (6 tentatives) (7.2s)
+connexion suspendue → Espace suspendu — contactez la plateforme.
+  ✓  5 [chromium] › b05.spec.ts:23:5 › TC-B05 — suspension puis réactivation de rabatexpress (13.1s)
+  ✓  6 [chromium] › b06.spec.ts:7:5 › TC-B06 — déconnexion (6.0s)
+TC-B07 mdp temporaire dispatcher = lCaIt-d9W79_
+TC-B07 copie → retour visuel vert confirme (presse-papiers non lisible en HTTP)
+  ✓  7 [chromium] › b07.spec.ts:7:5 › TC-B07 — invitation dispatcher (8.0s)
+  ✓  8 [chromium] › b07b.spec.ts:8:5 › TC-B07 suite — dispatcher listé et actif (3.9s)
+TC-B08 mdp temporaire comptable = L9CgLOVco4hb
+  ✓  9 [chromium] › b08.spec.ts:7:5 › TC-B08 — invitation comptable (7.5s)
+API invite email invalide → 400 {"error":"Email invalide."}
+doublon → Cet email est déjà utilisé.
+  ✓  10 [chromium] › b09.spec.ts:7:5 › TC-B09 — email invalide puis doublon (6.7s)
+  ✓  11 [chromium] › b10.spec.ts:16:5 › TC-B10 — connexion dispatcher puis comptable (7.3s)
+TC-B11 nouveau mdp dispatcher = FTiCNzTKTlzC
+TC-B11 Copier → clipboardApi=false pageError=null presse-papiers=null icone=rt-reset rt-BaseButton rt-r-size-1 rt-variant-soft rt-IconButton|green
+  ✘  12 [chromium] › b11.spec.ts:18:5 › TC-B11 — réinitialisation du mot de passe dispatcher (28.7s)
+  ✓  13 [chromium] › b12.spec.ts:29:5 › TC-B12 — changement de rôle comptable → dispatcher → comptable (15.4s)
+connexion compte désactivé → Identifiants invalides.
+  ✓  14 [chromium] › b13.spec.ts:18:5 › TC-B13 — désactivation puis réactivation du dispatcher (16.3s)
+désactivation dernier admin → Impossible : dernier administrateur du tenant.
+rétrogradation dernier admin → Impossible : dernier administrateur du tenant.
+  ✓  15 [chromium] › b14.spec.ts:10:5 › TC-B14 — protection du dernier administrateur (8.1s)
+== ADMIN ==
+  API GET users → 200 (attendu 200) OK
+  API GET cash/sessions → 200 (attendu 200) OK
+  API GET fraud/cases → 200 (attendu 200) OK
+  API GET notifications → 200 (attendu 200) OK
+== DISPATCHER ==
+  UI pricing Enregistrer : présent=false actif=false
+  UI /fraud dispatcher → http://transpo.wedowonders.com/login
+  API POST users → 403 (attendu 403) OK
+  API POST drivers → 403 (attendu 403) OK
+  API POST vehicles → 403 (attendu 403) OK
+  API POST settings/company → 403 (attendu 403) OK
+  API POST pricing/config → 403 (attendu 403) OK
+  API POST fraud/cases/00000000-0000-0000-0000-000000000000/confirm → 403 (attendu 403) OK
+  API GET cash/sessions → 403 (attendu 403) OK
+  API GET tournees → 200 (attendu 200) OK
+  API POST orders → 400 (attendu 400|422) OK
+  API GET analytics/summary → 200 (attendu 200) OK
+  API GET reviews → 200 (attendu 200) OK
+== COMPTABLE ==
+  UI /orders/new comptable → http://transpo.wedowonders.com/orders
+  UI pricing Enregistrer (comptable) : actif=false
+  UI /cash comptable → http://transpo.wedowonders.com/cash
+  UI /invoices comptable → http://transpo.wedowonders.com/invoices
+  UI /notifications comptable → http://transpo.wedowonders.com/notifications
+  API POST orders → 403 (attendu 403) OK
+  API POST users → 403 (attendu 403) OK
+  API POST drivers → 403 (attendu 403) OK
+  API POST settings/company → 403 (attendu 403) OK
+  API POST pricing/config → 403 (attendu 403) OK
+  API POST fraud/cases/00000000-0000-0000-0000-000000000000/clear → 403 (attendu 403) OK
+  API POST notifications/send → 403 (attendu 403) OK
+  API GET notifications → 200 (attendu 200) OK
+  API GET cash/sessions → 200 (attendu 200) OK
+  API GET invoices → 200 (attendu 200) OK
+  API GET analytics/summary → 200 (attendu 200) OK
+  API GET reviews → 200 (attendu 200) OK
+  ✓  16 [chromium] › b15.spec.ts:33:5 › TC-B15 — matrice RBAC console (36.4s)
+== COMPTABLE ==
+  UI /orders/new comptable → http://transpo.wedowonders.com/orders
+  UI pricing Enregistrer (comptable) : actif=false
+  UI /cash comptable → http://transpo.wedowonders.com/cash
+  UI /invoices comptable → http://transpo.wedowonders.com/invoices
+  UI /notifications comptable → http://transpo.wedowonders.com/notifications
+  API POST orders → 403 (attendu 403) OK
+  API POST users → 403 (attendu 403) OK
+  API POST drivers → 403 (attendu 403) OK
+  API POST settings/company → 403 (attendu 403) OK
+  API POST pricing/config → 403 (attendu 403) OK
+  API POST fraud/cases/00000000-0000-0000-0000-000000000000/clear → 403 (attendu 403) OK
+  API POST notifications/send → 403 (attendu 403) OK
+  API GET notifications → 200 (attendu 200) OK
+  API GET cash/sessions → 200 (attendu 200) OK
+  API GET invoices → 200 (attendu 200) OK
+  API GET analytics/summary → 200 (attendu 200) OK
+  API GET reviews → 200 (attendu 200) OK
+  ✓  17 [chromium] › b15b.spec.ts:29:5 › TC-B15 suite — matrice RBAC comptable (16.0s)
+compteur en base pour brute-b16-mu10oqaz@rabatexpress.ma → 5
+Warning: would violate PodSecurity "restricted:latest": allowPrivilegeEscalation != false (container "api" must set securityContext.allowPrivilegeEscalation=false), unrestricted capabilities (container "api" must set securityContext.capabilities.drop=["ALL"]), runAsNonRoot != true (pod or container "api" must set securityContext.runAsNonRoot=true), seccompProfile (pod or container "api" must set securityContext.seccompProfile.type to "RuntimeDefault" or "Localhost")
+API redémarrée
+(API pas encore stable : « Échec de connexion »)
+après redémarrage → Trop de tentatives. Réessayez plus tard.
+balayage freiné à la tentative n°14 (0 = jamais freiné)
+clés « ip: » en base → 1
+compteurs par source purgés → reste 0
+  ✓  18 [chromium] › b16.spec.ts:9:5 › TC-B16 — compteur d’échecs durable et comptage par source (1.1m)
+
+
+  1) [chromium] › b11.spec.ts:18:5 › TC-B11 — réinitialisation du mot de passe dispatcher ──────────
+
+    TimeoutError: locator.click: Timeout 20000ms exceeded.
+    Call log:
+      [2m- waiting for getByRole('dialog').getByRole('button', { name: 'Fermer' }).first()[22m
+    [2m  -   locator resolved to <button type="button" data-accent-color="" class="rt-reset rt-BaseButton rt-r-size-2 rt-variant-solid rt-Button">Fermer</button>[22m
+    [2m  - attempting click action[22m
+    [2m  -   waiting for element to be visible, enabled and stable[22m
+    [2m  -   element is not stable[22m
+    [2m  - retrying click action, attempt #1[22m
+    [2m  -   waiting for element to be visible, enabled and stable[22m
+    [2m  -   element is visible, enabled and stable[22m
+    [2m  -   scrolling into view if needed[22m
+    [2m  -   done scrolling[22m
+    [2m  -   element is not visible[22m
+    [2m  - retrying click action, attempt #2[22m
+    [2m  -   waiting 20ms[22m
+    [2m  -   waiting for element to be visible, enabled and stable[22m
+    [2m  - element was detached from the DOM, retrying[22m
+
+
+       at helpers.ts:154
+
+      152 |   if (await modal.count()) {
+      153 |     const fermer = modal.getByRole('button', { name: 'Fermer' });
+    > 154 |     if (await fermer.count()) await fermer.first().click();
+          |                                                    ^
+      155 |     else await page.keyboard.press('Escape');
+      156 |     await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
+      157 |   }
+
+        at logout (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:154:52)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/b11.spec.ts:57:3
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b11-TC-B11-—-réinitialisation-du-mot-de-passe-dispatcher-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/b11-TC-B11-—-réinitialisation-du-mot-de-passe-dispatcher-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/b11-TC-B11-—-réinitialisation-du-mot-de-passe-dispatcher-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  Slow test file: [chromium] › b16.spec.ts (1.1m)
+  Slow test file: [chromium] › b15.spec.ts (36.4s)
+  Slow test file: [chromium] › b11.spec.ts (28.7s)
+  Slow test file: [chromium] › b13.spec.ts (16.3s)
+  Slow test file: [chromium] › b15b.spec.ts (16.0s)
+  Consider splitting slow test files to speed up parallel execution
+  1 failed
+    [chromium] › b11.spec.ts:18:5 › TC-B11 — réinitialisation du mot de passe dispatcher ───────────
+  17 passed (4.4m)
+DELETE 6
+
+===== Sections C à F — paramètres, flotte, zones, commandes (46 cas) =====
+
+Running 46 tests using 1 worker
+
+base → Rabat Express SARL | 002345678000012 | RC456789 | 45 Av. Mohammed V, 10000 Rabat
+  ✓  1 [chromium] › c01.spec.ts:7:5 › TC-C01 — identité légale : enregistrement et persistance (7.8s)
+base → 0.18 | 0.2
+base après restauration → 0.15 | 0.2
+  ✓  2 [chromium] › c02.spec.ts:8:5 › TC-C02 — commission & TVA : enregistrement, persistance, restauration (8.8s)
+base → MAD | Africa/Casablanca | ar
+  ✓  3 [chromium] › c03.spec.ts:10:5 › TC-C03 — régional : langue par défaut persistée (9.2s)
+POST /v1/settings/company (dispatcher) → 403 {"error":"Rôle insuffisant pour cette action."}
+  ✓  4 [chromium] › c04.spec.ts:7:5 › TC-C04 — /settings en lecture seule pour le dispatcher (5.3s)
+  ✓  5 [chromium] › d01.spec.ts:8:5 › TC-D01 — ajout du véhicule conforme 1111-A-11 (8.4s)
+  ✓  6 [chromium] › d02.spec.ts:8:5 › TC-D02 — véhicule 2222-B-22 à assurance expirée + alerte dashboard (7.9s)
+  ✓  7 [chromium] › d03.spec.ts:7:5 › TC-D03 — cycle Actif → Maintenance → Hors service → Actif (8.2s)
+  ✓  8 [chromium] › d04.spec.ts:7:5 › TC-D04 — renouvellement assurance 2222-B-22, alertes résorbées (7.6s)
+DELETE /v1/vehicles/<1111-A-11 rattaché> → 400 · « Impossible : véhicule rattaché à Porteur Jetable. Détachez-le d’abord depuis la fiche chauffeur. »
+  ✓  9 [chromium] › d05.spec.ts:10:5 › TC-D05 — retrait d’un véhicule jetable, puis d’un véhicule rattaché (14.5s)
+  ✓  10 [chromium] › d06.spec.ts:8:5 › TC-D06 — ajout de Hamid Ouali et Sara Bennis (visite échue) (11.8s)
+POST /v1/drivers phone=abc → 400 {"error":"Téléphone invalide."}
+  ✓  11 [chromium] › d07.spec.ts:7:5 › TC-D07 — téléphone invalide refusé (UI + API) (6.6s)
+PATCH .../vehicle → 200
+APRÈS ENREGISTREMENT → {"pointerEvents":"auto","scrollLocked":false,"ariaHiddenRacine":false,"dialogueOuvert":false,"plaqueAffichee":true}
+  ✓  12 [chromium] › d08.spec.ts:14:5 › TC-D08 — rattachement du véhicule 1111-A-11 à Hamid Ouali (13.6s)
+POST .../renew → 200
+APRÈS ENREGISTREMENT → {"pointerEvents":"auto","ariaHiddenRacine":false}
+  ✓  13 [chromium] › d09.spec.ts:7:5 › TC-D09 — visite médicale renouvelée, Sara Bennis redevient affectable (10.9s)
+  ✓  14 [chromium] › d10.spec.ts:9:5 › TC-D10 — bascule de disponibilité, admin puis dispatcher (12.5s)
+effectif de départ → 2
+DELETE /v1/drivers/<Karim Jetable> → 200
+courses transférées à Hamid Ouali → 2
+course livrée → toujours au nom de « Younes Partant »
+retrait sans repreneur → 400 {"error":"Impossible : 1 commande(s) en cours sur ce chauffeur. Transférez-les à un autre chauffeur."}
+  ✓  15 [chromium] › d11.spec.ts:10:5 › TC-D11 — retrait d’un chauffeur, avec transfert de ses courses (23.0s)
+POST /v1/vehicles (plaque en doublon) → 409
+  ✓  16 [chromium] › d12.spec.ts:7:5 › TC-D12 — immatriculation en doublon refusée (7.4s)
+POST /v1/vehicles plate=ABCD → 400 {"error":"Immatriculation invalide (format marocain NNNN-L-NN)."}
+  ✓  17 [chromium] › d13.spec.ts:7:5 › TC-D13 — immatriculation au format invalide refusée (UI + API) (5.6s)
+POST /v1/drivers (homonyme) → 409
+  ✓  18 [chromium] › d14.spec.ts:8:5 › TC-D14 — chauffeur homonyme refusé (6.2s)
+PATCH .../vehicle sur véhicule en maintenance → 400 {"error":"Véhicule non actif : rattachement impossible."}
+  ✓  19 [chromium] › d15.spec.ts:7:5 › TC-D15 — véhicule en maintenance non rattachable (UI + API) (11.2s)
+  ✓  20 [chromium] › d16.spec.ts:8:5 › TC-D16 — un véhicule déjà rattaché est annoncé avant validation (8.2s)
+DELETE /v1/vehicles (rattaché) → 400 · message « Impossible : véhicule rattaché à Hamid Ouali. Détachez-le d’abord depuis la fiche chauffeur. »
+  ✓  21 [chromium] › d17.spec.ts:7:5 › TC-D17 — retrait d’un véhicule rattaché refusé, chauffeur nommé (9.3s)
+POST /v1/drivers/<id>/renew due=2026-09-13 → 400 {"error":"La nouvelle échéance doit être postérieure à aujourd’hui."}
+POST /v1/vehicles/<id>/renew due=2026-09-13 → 400 {"error":"La nouvelle échéance doit être postérieure à aujourd’hui."}
+  ✓  22 [chromium] › d18.spec.ts:7:5 › TC-D18 — une échéance ne se renouvelle pas dans le passé (11.0s)
+type déclaré avant rattachement → 1111-A-11 Fourgon
+type déclaré après détachement → Fourgon (non rattaché)
+  ✓  23 [chromium] › d19.spec.ts:8:5 › TC-D19 — fiche chauffeur modifiable, type déclaré conservé au détachement (18.3s)
+ÉCRITURES DISPATCHER → {"POST /v1/vehicles":403,"DELETE /v1/vehicles/:id":403,"POST /v1/vehicles/:id/renew":403,"POST /v1/drivers":403,"PATCH /v1/drivers/:id":403,"PATCH /v1/drivers/:id/vehicle":403,"DELETE /v1/drivers/:id":403}
+  ✓  24 [chromium] › d20.spec.ts:9:5 › TC-D20 — flotte en lecture seule pour le dispatcher (UI + API) (8.3s)
+RELEVÉS → {"rattacher un véhicule":{"pointerEvents":"auto","scrollLocked":false,"ariaHiddenRacine":false},"renouveler une échéance":{"pointerEvents":"auto","scrollLocked":false,"ariaHiddenRacine":false},"modifier la fiche":{"pointerEvents":"auto","scrollLocked":false,"ariaHiddenRacine":false},"changer l’état d’un véhicule":{"pointerEvents":"auto","scrollLocked":false,"ariaHiddenRacine":false},"réactiver un véhicule":{"pointerEvents":"auto","scrollLocked":false,"ariaHiddenRacine":false}}
+  ✓  25 [chromium] › d21.spec.ts:14:5 › TC-D21 — la console reste vivante après chaque action de la flotte (23.6s)
+base → Rabat Centre | الرباط الوسط | indigo | 4
+  ✓  26 [chromium] › e01.spec.ts:8:5 › TC-E01 — création de la zone Rabat Centre avec polygone (11.5s)
+sommets enregistrés avant → 4
+sommets enregistrés après → 4
+  ✓  27 [chromium] › e02.spec.ts:7:5 › TC-E02 — « Effacer » ne retire que le tracé en cours (9.2s)
+livreurs en base → {"Hamid Ouali"}
+  ✓  28 [chromium] › e03.spec.ts:8:5 › TC-E03 — affectation des livreurs à la zone (9.3s)
+livreurs restants → {"Hamid Ouali"}
+  ✓  29 [chromium] › e04.spec.ts:7:5 › TC-E04 — retrait d’un livreur et suppression d’une zone (10.6s)
+dispatch → 1 forme(s) tracée(s)
+PC flotte → 1 forme(s) tracée(s)
+  ✓  30 [chromium] › e05.spec.ts:7:5 › TC-E05 — la zone est tracée sur les cartes dispatch et PC flotte (4.8s)
+PATCH zone nameFr="" → 400
+PATCH zone drivers=[fantôme] → 400 {"error":"Livreur inconnu : Fantôme Inexistant."}
+livreurs en base → {"Hamid Ouali"}
+  ✓  31 [chromium] › e06.spec.ts:9:5 › TC-E06 — nom vide et livreur inexistant refusés (6.7s)
+PATCH polygone à 2 sommets → 400
+sommets enregistrés : avant 4 → après 4
+  ✓  32 [chromium] › e07.spec.ts:8:5 › TC-E07 — polygone à moins de trois sommets refusé (7.5s)
+PATCH zone (dispatcher) → 200
+écritures comptable → {"creation":403,"maj":403,"suppression":403}
+  ✓  33 [chromium] › e08.spec.ts:7:5 › TC-E08 — zones : dispatcher écrit, comptable consulte (7.1s)
+commande créée → CMD-20260914-MU10XI5Q3 | HYBWCVCU | NOUVELLE | Rabat | Casablanca | 450 | photo | Boutique Test
+coordonnées enregistrées → Atelier Rabat | 12 rue des Consuls, Médina | Yasmine Cherkaoui | 45 bd Anfa, 3ᵉ étage
+  ✓  34 [chromium] › f01.spec.ts:8:5 › TC-F01 — création d’une commande par l’assistant (10.8s)
+avec COD | prépayées | niveaux de preuve | villes de départ → 3 | 3 | 4 | 5
+  ✓  35 [chromium] › f02.spec.ts:18:5 › TC-F02 — jeu de six commandes créé par l’assistant (26.0s)
+effectif → Hamid Ouali | t | Sara Bennis | f
+commandes assignées : 0 → 1
+  ✓  36 [chromium] › f03.spec.ts:9:5 › TC-F03 — assignation par score depuis le dispatch (11.4s)
+commande visée → CMD-20260914-MU10XPUH4
+  ✓  37 [chromium] › f04.spec.ts:7:5 › TC-F04 — assignation depuis la liste des commandes (10.0s)
+commande visée → CMD-20260914-MU10XPUH4
+  ✓  38 [chromium] › f05.spec.ts:9:5 › TC-F05 — progression pas à pas jusqu’à la livraison en cours (13.4s)
+nouvelle → CMD-20260914-MU10XS225 · en livraison → CMD-20260914-MU10XPUH4
+Nouvelle + advance → 200
+LIVRAISON + advance → 400 {"error":"La livraison se clôture par la preuve, depuis l’app livreur."}
+commandes livrées → 0
+  ✓  39 [chromium] › f06.spec.ts:9:5 › TC-F06 — transitions invalides refusées par l’API (6.3s)
+décor → CMD-20260914-MU10Z2NOA, CMD-20260914-MU10Z2QVB, CMD-20260914-MU10Z2TOC
+assignées par l'action de masse → 3
+avancées par l'action de masse → 2
+  ✓  40 [chromium] › f07.spec.ts:7:5 › TC-F07 — actions de masse sur une sélection (9.8s)
+total → 9 commande(s)
+filtre Statut=Nouvelle → 3
++ Ville=Salé → 0, état vide annoncé
+  ✓  41 [chromium] › f08.spec.ts:7:5 › TC-F08 — filtres et recherche de la liste des commandes (9.6s)
+référence cherchée → CMD-20260914-MU10Z2TOC
+URL d'arrivée → /orders?q=CMD-20260914-MU10Z2TOC
+  ✓  42 [chromium] › f09.spec.ts:7:5 › TC-F09 — recherche globale depuis la barre supérieure (4.5s)
+20 commande(s) → 3 page(s)
+  ✓  43 [chromium] › f10.spec.ts:7:5 › TC-F10 — pagination de la liste des commandes (10.1s)
+fiche ouverte → CMD-20260914-MU10ZSTCO
+historique → 5 entrée(s) :
+Statut → Nouvelle · Commande créée
+14/09/2026 · 10:13 · admin@rabatexpress.ma
+Statut → Assignée · Affectée à Hamid Ouali
+14/09/2026 · 10:13 · admin@rabatexpress.ma
+Statut → En route (retrait)
+14/09/2026 · 10:13 · admin@rabatexpress.ma
+Statut → Récupérée
+14/09/2026 · 10:13 · admin@rabatexpress.ma
+Statut → En route (livraison)
+14/09/2026 · 10:13 · admin@rabatexpress.ma
+code UG62GTMJ · presse-papiers « undefined » · évènement true
+  ✓  44 [chromium] › f11.spec.ts:9:5 › TC-F11 — fiche commande : onglets, historique, copie du code (9.9s)
+commande à annuler → CMD-20260914-MU1100DMP
+seconde annulation → 400 {"error":"Annulation impossible."}
+  ✓  45 [chromium] › f12.spec.ts:7:5 › TC-F12 — annulation d’une commande (8.7s)
+connexion marchand → OK
+commande du marchand → CMD-20260914-MU110DGPQ | Boutique Test | 220 | Client du marchand
+actions d'exploitation tentées par le marchand → {"assign":403,"advance":403,"cancel":403,"console":403}
+tentative au nom d'Atlas Store → 200
+marchand réellement attribué → Boutique Test
+  ✓  46 [chromium] › f13.spec.ts:13:5 › TC-F13 — le marchand crée sa commande, sans pouvoir l’exploiter (14.9s)
+
+  Slow test file: [chromium] › f02.spec.ts (26.0s)
+  Slow test file: [chromium] › d21.spec.ts (23.6s)
+  Slow test file: [chromium] › d11.spec.ts (23.0s)
+  Slow test file: [chromium] › d19.spec.ts (18.3s)
+  Consider splitting slow test files to speed up parallel execution
+  46 passed (8.0m)
+
+===== Décor du terrain (comptes livreur, marchand, console ; organisation témoin) =====
+  organisation rabatexpress déjà là — administrateur réamorcé
+  flotte : Hamid Ouali, Sara Bennis, véhicule 1111-A-11
+  compte livreur livreur@rabatexpress.ma prêt (mot de passe consigné dans 2026-09-14-homelab/COMPTES.md)
+  compte marchand marchand@rabatexpress.ma prêt
+  comptes console : dispatcher et comptable prêts
+  organisation témoin tangerlog déjà là — administrateur réamorcé
+Décor de la section G en place.
+
+===== Section G ignorée (--sans-mobile) =====
+
+===== Sections H à T — consoles (57 cas) =====
+
+Running 58 tests using 1 worker
+
+  décor → D4AGFBWA, SYTHE7J7, QTAJP332
+  ✓  1 [chromium] › h01.spec.ts:7:5 › TC-H01 — enregistrer l’entrée d’un colis au hub (12.4s)
+  code inconnu → « Code inconnu sur ce hub. »
+  ✓  2 [chromium] › h02.spec.ts:6:5 › TC-H02 — code colis invalide ou inconnu (5.4s)
+  ✓  3 [chromium] › h03.spec.ts:6:5 › TC-H03 — un colis traverse les trois colonnes du tri (9.2s)
+  manifeste → 2 colis, total affiché 500 DH (attendu 500)
+  après scellement → 2 colis toujours sur quai (aucune trace de transfert)
+  ✓  4 [chromium] › h04.spec.ts:8:5 › TC-H04 — manifeste de transfert d’une destination (7.8s)
+  /hub vu par un comptable → Transpo Console transport Se connecter Organisation transpo E-mail Mot de passe Se connecter L’organisation est détermin
+  POST /v1/hub/scan en comptable → 403
+  ✓  5 [chromium] › h05.spec.ts:7:5 › TC-H05 — le hub est fermé à la comptabilité (6.2s)
+  décor → CMD-20260914-MU111KZYY, CMD-20260914-MU111L2TZ, CMD-20260914-MU111L5A10
+  tournée créée → PLANIFIEE, arrêts {CMD-20260914-MU111KZYY,CMD-20260914-MU111L2TZ,CMD-20260914-MU111L5A10}
+  écran /tournees → statut visible : true
+  COD total attendu 450 DH
+  ✓  6 [chromium] › i01.spec.ts:6:5 › TC-I01 — créer une tournée de trois arrêts (10.8s)
+  ordre avant {CMD-20260914-MU111KZYY,CMD-20260914-MU111L2TZ,CMD-20260914-MU111L5A10}
+  ordre après {CMD-20260914-MU111KZYY,CMD-20260914-MU111L2TZ,CMD-20260914-MU111L5A10}
+  ✓  7 [chromium] › i02.spec.ts:6:5 › TC-I02 — optimisation de l’ordre des arrêts (55.0s)
+  carte du premier arrêt → 2 bouton(s)
+  avant CMD-20260914-MU111KZYY → CMD-20260914-MU111L2TZ → CMD-20260914-MU111L5A10
+  après CMD-20260914-MU111L2TZ → CMD-20260914-MU111KZYY → CMD-20260914-MU111L5A10
+  ✓  8 [chromium] › i03.spec.ts:6:5 › TC-I03 — réordonnancement manuel persistant (55.9s)
+  Planifiée → En cours
+  En cours → Clôturée
+  API sur tournée close → reorder 400, advance 400
+  ✓  9 [chromium] › i04.spec.ts:7:5 › TC-I04 — cycle de vie et fermeture d’une tournée (54.2s)
+  dernière position en base → Hamid Ouali · 34.0209 · -6.8416 · 2026-09-14 09:17:54.395697+00
+  /tracking/live → {"driver":"Hamid Ouali","lat":34.0209,"lng":-6.8416,"at":"2026-09-14T09:17:54.395Z","zone":null,"distanceM":null,"outOfZone":false}
+  ✓  10 [chromium] › j01.spec.ts:7:5 › TC-J01 — le PC flotte montre la dernière position du livreur (7.5s)
+  suivre → recentrage ; plein écran → aller-retour effectif
+  ✓  11 [chromium] › j02.spec.ts:7:5 › TC-J02 — suivre un chauffeur et basculer en plein écran (9.9s)
+  alertes → [{"d":"Hamid Ouali","m":85201,"z":"Rabat Centre"}]
+  ✓  12 [chromium] › j03.spec.ts:7:5 › TC-J03 — sortie de géofence signalée au PC flotte (13.0s)
+  ✓  13 [chromium] › j04.spec.ts:6:5 › TC-J04 — raccourcis du PC flotte (7.6s)
+  retour en base → CMD-20260914-MU1165UJ11 · A_TRAITER · 1 tentative(s) · « Destinataire absent — deux passages sans réponse »
+  COD bloqué attendu → 340 DH
+  ✓  14 [chromium] › k01.spec.ts:8:5 › TC-K01 — l’échec du terrain ouvre un retour à traiter (8.9s)
+  retour → REPLANIFIE, 2 tentatives
+  commande → LIVRAISON, livreur Hamid Ouali
+  ✓  15 [chromium] › k02.spec.ts:7:5 › TC-K02 — reprogrammer une tentative de livraison (6.7s)
+  API reschedule au plafond → 400 {"error":"Plafond de 3 tentatives atteint."}
+  ✓  16 [chromium] › k03.spec.ts:7:5 › TC-K03 — plafond de trois tentatives (5.9s)
+  retour RENDU, commande RETOUR
+  API sur retour clos → reschedule 400, retour 400
+  ✓  17 [chromium] › k04.spec.ts:7:5 › TC-K04 — restitution au marchand et clôture du retour (11.4s)
+  décor → CMD-20260914-MU116VMK12 (450 DH), CMD-20260914-MU116WPI13 (250 DH)
+  mouvements du jour → 2 encaissement(s), 700 DH
+  session → théorique 700 DH, 2 livraison(s), statut EN_COURS
+  mouvements rattachés aux courses : CMD-20260914-MU116VMK12, CMD-20260914-MU116WPI13
+  ✓  18 [chromium] › l01.spec.ts:8:5 › TC-L01 — la caisse du livreur se remplit de ses encaissements (10.3s)
+  déposé 700 DH pour un déclaré de 700 DH
+  second dépôt → 400
+  ✓  19 [chromium] › l02.spec.ts:6:5 › TC-L02 — dépôt en agence d’une caisse à déposer (9.3s)
+  déclaration livreur → théorique 700, déclaré 600, écart 100, statut ECART
+  écran /cash → écart annoncé : true
+  écart résolu → motif « Client a payé partiellement », note « Client a réglé 100 DH de moins, compléme… »
+  ✓  20 [chromium] › l03.spec.ts:7:5 › TC-L03 — écart de caisse déclaré par le livreur, résolu par la comptabilité (12.5s)
+  fichier téléchargé → reconciliation-cash.csv
+  contenu → 1 ligne(s)
+  ✓  21 [chromium] › l04.spec.ts:6:5 › TC-L04 — export comptable des sessions de caisse (5.8s)
+  génération 2026-09 → {"created":1,"merchants":["Boutique Test"]}
+  1 reversement(s) en base : Boutique Test 700 DH
+  Boutique Test → brut 700 − commission undefined = net undefined
+  paiement → {"id":"7631737c-94d9-4e41-b33e-dc0403443a2a","status":"VERSE","method":"virement","reference":"VIR-RECETTE-001"}
+  second paiement → 400
+  ✓  22 [chromium] › l05.spec.ts:7:5 › TC-L05 — générer puis payer un reversement marchand (11.2s)
+  ✘  23 [chromium] › l07.spec.ts:7:5 › TC-L07 — le dispatch n’écrit pas sur l’argent (27.9s)
+  grille avant → 5 palier(s), fragile 15, remise 0.1
+  grille après rechargement → fragile 22
+  ✓  24 [chromium] › m01.spec.ts:7:5 › TC-M01 — modifier et enregistrer la grille tarifaire (9.0s)
+  9 km → base 48, remisé 43.2, TVA 8.64, TTC attendu 51.84
+  TTC affiché → 51.84
+  /pricing/quote (remisé) → {"applied":"remise","base":43.2,"surcharges":0,"ht":43.2,"tva":8.64,"ttc":51.84}
+  /pricing/quote (sans contrat) → {"applied":"grille","base":48,"surcharges":0,"ht":48,"tva":9.6,"ttc":57.6}
+  ✓  25 [chromium] › m02.spec.ts:7:5 › TC-M02 — le devis simulé suit la grille enregistrée (3.3s)
+  CSV → 6 ligne(s) pour 5 palier(s)
+  ✓  26 [chromium] › m03.spec.ts:6:5 › TC-M03 — export CSV de la grille (3.3s)
+  décor → CMD-20260914-MU118VXM14 livrée ; 3 course(s) facturable(s)
+  génération 2026-09 → 200 {"created":1,"refs":["FCT-2026-09-0001"]}
+  1 facture(s) générée(s)
+  Boutique Test → livraisons 816, commission 122, net 694, TVA 139
+  après envoi → ENVOYEE
+  après paiement → PAYEE
+  ✓  27 [chromium] › m04.spec.ts:8:5 › TC-M04 — générer, envoyer, payer et contester une facture (6.2s)
+  1 facture(s) en base
+  CSV → 2 ligne(s)
+  ✓  28 [chromium] › m07.spec.ts:6:5 › TC-M07 — export CSV des factures (6.3s)
+  Boutique Test → 18 commande(s), 3 livrée(s), 3310 DH de COD à encaisser
+  5 commande(s) d’un autre marchand : absentes de l’écran
+  /v1/merchant/orders → 18 commande(s), toutes de Boutique Test
+  ✓  29 [chromium] › n01.spec.ts:6:5 › TC-N01 — le portail marchand ne montre que ses commandes (6.6s)
+  18 commande(s) du marchand, 5 d’un autre
+  portefeuille → {"codCollected":700,"commissionRate":0.15,"commission":105,"net":595}
+  COD encaissé en base pour Boutique Test → 700 DH
+  ✓  30 [chromium] › n02.spec.ts:7:5 › TC-N02 — commandes et portefeuille du marchand (10.2s)
+  facture marchande → {"merchant":"Boutique Test","deliveries":3,"codCollected":700,"commission":105,"netHt":595,"tva":119,"ttc":714}
+  taux du tenant → commission 0.15, TVA 0.2
+  ⚠ la facture marchande ne rend pas le détail brut/commission/net — à consigner
+  ✓  31 [chromium] › n03.spec.ts:7:5 › TC-N03 — la facture du marchand suit les règles du tenant (7.4s)
+  /dashboard en marchand → /portail
+  /orders en marchand → /portail
+  /cash en marchand → /portail
+  API en marchand → {"/v1/orders":403,"/v1/drivers":403,"/v1/cash/sessions":403,"/v1/users":403}
+  ✓  32 [chromium] › n04.spec.ts:6:5 › TC-N04 — un marchand n’entre pas dans la console transport (6.5s)
+  suivi de YHALU3DX → Livrée, 7 étape(s)
+  aucune donnée sensible dans la réponse publique (téléphone, adresse, livreur)
+  code inconnu → 404 {"message":"Suivi introuvable.","error":"Not Found","statusC
+  ✓  33 [chromium] › o01.spec.ts:7:5 › TC-O01 — suivi public d’une commande, sans fuite de données (653ms)
+  notation → 200 {"code":"YHALU3DX","rating":4,"ratingComment":"Livraison rapide et soignee."}
+  seconde notation → 400
+  notation d’une commande non livrée → 400
+  ✓  34 [chromium] › o01.spec.ts:41:5 › TC-O03 — notation d’une livraison, une seule fois (2.8s)
+  avis en base → CMD-20260914-MU118VXM14 · 4★ · Hamid Ouali · Boutique Test
+  distribution en base → 4★:1
+  /v1/reviews → 1 avis pour 1 en base
+  ✓  35 [chromium] › o04.spec.ts:7:5 › TC-O04 — un avis client remonte à l’exploitation (6.4s)
+  journal → 9 notification(s) en base
+  après envoi → 10 notification(s)
+  dernière → +212600112233 · SMS · SENT · order.created
+  ✓  36 [chromium] › p01.spec.ts:7:5 › TC-P01 — journal des notifications et envoi manuel (13.4s)
+  envoi initial → BLOCKED (Consentement marketing absent (loi 09-08).)
+  rejeu sans consentement → 200 {"id":"ed3a8447-043e-4341-beda-a1abedf01fca","event":"promo","channel":"SMS","recipient":"
+  journal : 1 → 2 tentative(s)
+  rejeu après consentement → SENT
+  ✓  37 [chromium] › p03.spec.ts:8:5 › TC-P03 — rejouer une notification bloquée (2.6s)
+  promo sans consentement → BLOCKED (Consentement marketing absent (loi 09-08).)
+  transactionnel sans consentement → SENT
+  promo avec consentement → SENT
+  promo après retrait → BLOCKED (Consentement marketing absent (loi 09-08).)
+  ✓  38 [chromium] › p04.spec.ts:7:5 › TC-P04 — le consentement marketing est opposable, le transactionnel passe (1.3s)
+  modèle order.delivered → « Votre colis {code} a été livré. Merci ! »
+  enregistrement → 200
+  message rendu → « Votre colis TESTCODE est arrive. Merci de votre confiance. »
+  rétablissement → 200
+  modèle rétabli → « Votre colis {code} a été livré. Merci ! »
+  ✓  39 [chromium] › p05.spec.ts:7:5 › TC-P05 — cycle de vie d’un modèle de notification (7.4s)
+  commande CMD-20260914-MU11AJEL15 créée pour +212600445566
+  message envoyé → « Votre colis 5CBNER3G est enregistré. »
+  statut après deux progressions → RECUPEREE
+  ✓  40 [chromium] › p06.spec.ts:7:5 › TC-P06 — les événements de course notifient le client (2.1s)
+  décor → livraison CMD-20260914-MU11AN0M16 encaissée 400 DH
+  cas de fraude → Hamid Ouali · {hors_geo,ecart_cash} · 58 · OUVERT · Livraison CMD-20260914-MU11AN0M16 validée à 85.2 km hors de la zone Rabat Centre · Écart de caisse de 150 DH — Cash manquant — à retenir sur prime
+  signaux hors_geo + ecart_cash → score attendu 58, obtenu 58
+  classement → [{"driver":"Hamid Ouali","cases":1,"risk":58}]
+  ✓  41 [chromium] › q01.spec.ts:7:5 › TC-Q01 — un écart de caisse ouvre un cas de fraude (14.4s)
+  Ouvert → Enquête
+  Enquête → Confirmé
+  journal d’audit fraude : 1 → 2
+  second cas → Blanchi
+  ✓  42 [chromium] › q02.spec.ts:6:5 › TC-Q02 — enquête, confirmation et blanchiment d’un cas (15.7s)
+  ✘  43 [chromium] › q05.spec.ts:6:5 › TC-Q05 — le dossier de fraude est fermé au dispatch (28.1s)
+  base → 39 commande(s), 4 livrée(s), 17 en cours, 1100 DH encaissés
+  écran → livrées 4, en cours 3316
+  véhicules non conformes en base → aucun
+  ✓  44 [chromium] › r01.spec.ts:7:5 › TC-R01 — le tableau de bord dit la vérité sur les données (7.9s)
+  statuts → ANNULEE:1 ASSIGNEE:6 LIVRAISON:2 LIVREE:4 NOUVELLE:16 RECUPEREE:7 RETOUR:1 RETRAIT:2
+  1 motif(s) d’échec en base
+  motif attendu à l’écran → « Destinataire absent »
+  1 chauffeur(s) livrant : tous présents
+  ✓  45 [chromium] › r02.spec.ts:7:5 › TC-R02 — l’analytique compte ce que la base contient (9.3s)
+  vérité de la base → {"livrees":4,"echecs":0,"codEncaisse":1100,"caisse":400}
+  API → 4 livrée(s), 1100 DH encaissés, caisse 400, réconciliation 1100
+  caisse 400 DH vs réconciliation 1100 DH vs COD encaissé 1100 DH
+  échecs en base : 0 · retours : 1
+  ✓  46 [chromium] › r03.spec.ts:7:5 › TC-R03 — les mêmes faits comptés partout pareil (9.9s)
+  chez tangerlog → chauffeur TEMOIN-MU11CHW8
+  15 pages parcourues : aucune donnée de tangerlog
+  ✓  47 [chromium] › s01.spec.ts:6:5 › TC-S01 — deux organisations ne se voient pas (19.8s)
+  GET /v1/orders avec x-tenant-slug: tangerlog → 403
+  commandes de tangerlog : 0 avant, 0 après tentative d’écriture
+  ✓  48 [chromium] › s02.spec.ts:7:5 › TC-S02 — l’en-tête de tenant ne contourne pas le jeton (2.6s)
+  jeton livreur → chauffeur Hamid Ouali, rôle DRIVER
+  10 mission(s) rendues ; 0 commande(s) d’un autre chauffeur en base
+  /v1/orders en livreur → 403
+  /v1/drivers en livreur → 403
+  /v1/cash/sessions en livreur → 403
+  /v1/users en livreur → 403
+  ✓  49 [chromium] › s03.spec.ts:7:5 › TC-S03 — le compte livreur est borné à son chauffeur (1.1s)
+  témoin → CMD-TEMOIN-1789377832973
+INSERT 0 1 au nom de Concurrent MU11D0CT
+  /v1/merchant/orders → 20 commande(s)
+  /v1/merchant/dashboard → 200
+  /v1/merchant/wallet → 200
+  /v1/merchant/invoice → 200
+  /v1/orders en marchand → 403
+  /v1/drivers en marchand → 403
+  /v1/cash/sessions en marchand → 403
+  /v1/users en marchand → 403
+  /v1/fraud/cases en marchand → 403
+  ✓  50 [chromium] › s04.spec.ts:7:5 › TC-S04 — le compte marchand est borné à son enseigne (2.4s)
+  actions tracées → fraud.clear, fraud.confirm, fraud.investigate, plan.archive, plan.create, plan.restore, plan.version, subscription.cancel, subscription.cycle, subscription.reactivate, subscription.subscribe, subscription.suspend, tenant.admin.create, tenant.admin.reset, tenant.provision, user.deactivate, user.invite, user.password_reset, user.reactivate, user.role_change
+  entrées sans acteur ou sans date → 0
+  dernière entrée → user.invite par admin@rabatexpress.ma
+  ✓  51 [chromium] › s05.spec.ts:6:5 › TC-S05 — les actions sensibles laissent une trace (6.6s)
+  sujet +212600445566 → 1 commande(s)
+  export → 200
+  effacement → 200 {"subject":"+212600445566","consentsDeleted":0,"notificationsAnonymised":1,"ordersAnonymised":1}
+  après effacement → 0 commande(s) portant encore le téléphone
+  commandes toujours en base → 40
+  ✓  52 [chromium] › s06.spec.ts:7:5 › TC-S06 — export et effacement des données d’une personne (2.3s)
+  après suppression du cookie → /login
+  ✓  53 [chromium] › s07.spec.ts:7:5 › TC-S07 — la perte de session renvoie au login (4.1s)
+  français → dir=ltr
+  arabe → dir=rtl, lang=ar
+  caractères arabes à l’écran : true
+  /orders → dir=rtl
+  /cash → dir=rtl
+  /settings → dir=rtl
+  ✓  54 [chromium] › t01.spec.ts:6:5 › TC-T01 — la console bascule en arabe, en RTL, et garde le thème choisi (13.0s)
+  départ → fond rgb(255, 255, 255), texte rgb(28, 32, 36)
+  après bascule → fond rgb(17, 17, 19), texte rgb(237, 238, 240)
+  classe racine : « radix-themes light » → « radix-themes dark »
+  /orders → fond rgb(17, 17, 19)
+  /cash → fond rgb(17, 17, 19)
+  ✓  55 [chromium] › t02.spec.ts:8:5 › TC-T02 — bascule de thème et persistance (11.4s)
+  1024px /orders → débordement page 0px, corps 0px
+  1024px /dispatch → débordement page 0px, corps 0px
+  1024px /cash → débordement page 0px, corps 0px
+  768px /orders → débordement page 0px, corps 0px
+  768px /dispatch → débordement page 0px, corps 0px
+  768px /cash → débordement page 0px, corps 0px
+  ✓  56 [chromium] › t03.spec.ts:7:5 › TC-T03 — la console tient à 1024 et 768 px sans déborder (18.8s)
+  /dashboard       → 841 car.
+  /orders          → 550 car.
+  /dispatch        → 521 car.
+  /drivers         → 669 car.
+  /vehicles        → 512 car.
+  /zones           → 505 car.
+  /tournees        → 455 car.
+  /hub             → 632 car.
+  /returns         → 657 car.
+  /cash            → 640 car.
+  /payout          → 628 car.
+  /pricing         → 1074 car.
+  /invoices        → 642 car.
+  /fleet           → 668 car.
+  /fraud           → 836 car.
+  /analytics       → 773 car.
+  /notifications   → 625 car.
+  /templates       → 1256 car.
+  /reviews         → 872 car.
+  /users           → 908 car.
+  /settings        → 876 car.
+  erreurs JavaScript relevées : 0
+  ✓  57 [chromium] › t04.spec.ts:7:5 › TC-T04 — un tenant neuf ne rend aucun écran blanc (28.3s)
+  commande témoin → CMD-TEMOIN-1789377832973 (TEMOIN01) au statut NOUVELLE
+  libellé de référence → « Nouvelle »
+  même libellé sur la liste, la fiche et le suivi client
+  ✓  58 [chromium] › t05.spec.ts:6:5 › TC-T05 — un statut se dit pareil partout (8.9s)
+
+
+  1) [chromium] › l07.spec.ts:7:5 › TC-L07 — le dispatch n’écrit pas sur l’argent ──────────────────
+
+    TimeoutError: locator.click: Timeout 20000ms exceeded.
+    Call log:
+      [2m- waiting for getByRole('menuitem', { name: 'Se déconnecter' })[22m
+
+
+       at helpers.ts:182
+
+      180 |   }
+      181 |   await cible().click();
+    > 182 |   await page.getByRole('menuitem', { name: 'Se déconnecter' }).click();
+          |                                                                ^
+      183 |   await page.waitForURL('**/login**', { timeout: 15_000 });
+      184 | }
+      185 |
+
+        at logout (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:182:64)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/l07.spec.ts:17:5
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/l07-TC-L07-—-le-dispatch-n’écrit-pas-sur-l’argent-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/l07-TC-L07-—-le-dispatch-n’écrit-pas-sur-l’argent-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/l07-TC-L07-—-le-dispatch-n’écrit-pas-sur-l’argent-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › q05.spec.ts:6:5 › TC-Q05 — le dossier de fraude est fermé au dispatch ────────────
+
+    TimeoutError: locator.click: Timeout 20000ms exceeded.
+    Call log:
+      [2m- waiting for getByRole('menuitem', { name: 'Se déconnecter' })[22m
+
+
+       at helpers.ts:182
+
+      180 |   }
+      181 |   await cible().click();
+    > 182 |   await page.getByRole('menuitem', { name: 'Se déconnecter' }).click();
+          |                                                                ^
+      183 |   await page.waitForURL('**/login**', { timeout: 15_000 });
+      184 | }
+      185 |
+
+        at logout (/Volumes/workspace/transpo2/apps/e2e-web/tests-recette/helpers.ts:182:64)
+        at /Volumes/workspace/transpo2/apps/e2e-web/tests-recette/q05.spec.ts:16:5
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/q05-TC-Q05-—-le-dossier-de-fraude-est-fermé-au-dispatch-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../qa/recette/2026-09-14-homelab/videos/q05-TC-Q05-—-le-dossier-de-fraude-est-fermé-au-dispatch-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../qa/recette/2026-09-14-homelab/videos/q05-TC-Q05-—-le-dossier-de-fraude-est-fermé-au-dispatch-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  Slow test file: [chromium] › i03.spec.ts (55.9s)
+  Slow test file: [chromium] › i02.spec.ts (55.0s)
+  Slow test file: [chromium] › i04.spec.ts (54.2s)
+  Slow test file: [chromium] › t04.spec.ts (28.3s)
+  Slow test file: [chromium] › q05.spec.ts (28.1s)
+  Consider splitting slow test files to speed up parallel execution
+  2 failed
+    [chromium] › l07.spec.ts:7:5 › TC-L07 — le dispatch n’écrit pas sur l’argent ───────────────────
+    [chromium] › q05.spec.ts:6:5 › TC-Q05 — le dossier de fraude est fermé au dispatch ─────────────
+  56 passed (11.2m)
+
+===== Fin — verdicts dans qa/recette/2026-09-14-homelab/journal.txt =====

@@ -11,3 +11,4 @@ TC-B11 rabatexpress DISPATCHER dispatch@rabatexpress.ma tempPassword=hT03a5YbHBg
 TC-B11 rabatexpress DISPATCHER dispatch@rabatexpress.ma tempPassword=8sYa1LEZF0Ew
 TC-B11 rabatexpress DISPATCHER dispatch@rabatexpress.ma tempPassword=TBggHvXW8rRL
 TC-B11 retest rabatexpress DISPATCHER dispatch@rabatexpress.ma tempPassword=8s9xU2jf0R7g
+TC-B14 retest-r2ter rabatexpress DISPATCHER dispatch@rabatexpress.ma tempPassword=KHJhFLAJ12rv (reset mdp témoin 22/09)

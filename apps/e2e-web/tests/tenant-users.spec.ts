@@ -83,9 +83,7 @@ test('désactivation → connexion refusée → réactivation → connexion rét
   const confirm = page.getByRole('alertdialog');
   await expect(confirm.getByText('Désactiver Disp Reg ?')).toBeVisible();
   await confirm.getByRole('button', { name: 'Désactiver' }).click();
-  // Sur le homelab (Next 14 en build de prod), le rafraîchissement RSC après mutation
-  // peut servir un rendu périmé ; un rechargement complet force la relecture.
-  await page.reload();
+  // BUG-R1 corrigé : le badge se met à jour via router.refresh(), sans rechargement.
   await expect(row.getByText('Désactivé', { exact: true })).toBeVisible({ timeout: 15_000 });
   await logout(page, 'Admin Users');
 
@@ -100,7 +98,6 @@ test('désactivation → connexion refusée → réactivation → connexion rét
   await page.goto('/users');
   await row.getByRole('button').last().click();
   await page.getByRole('menuitem', { name: 'Réactiver' }).click();
-  await page.reload(); // même raison : rendu RSC potentiellement périmé sur le homelab
   await expect(row.getByText('Actif', { exact: true })).toBeVisible({ timeout: 15_000 });
   await logout(page, 'Admin Users');
 
@@ -123,9 +120,7 @@ test('protection du dernier administrateur : désactivation et rétrogradation r
   const alert1 = nextAlert(page);
   await confirm.getByRole('button', { name: 'Désactiver' }).click();
   expect(await alert1).toContain('dernier administrateur');
-  // Le menu reste ouvert après le refus (masque le tableau en aria-hidden) → on le ferme.
-  await page.keyboard.press('Escape');
-  await page.keyboard.press('Escape');
+  // BUG-R2 corrigé : menu et dialogue sont refermés après le refus, aucune surcouche.
   await expect(row.getByText('Actif', { exact: true })).toBeVisible();
 
   // 2. Rétrograder l'unique admin → refus explicite.
@@ -137,6 +132,5 @@ test('protection du dernier administrateur : désactivation et rétrogradation r
   const alert2 = nextAlert(page);
   await dlg.getByRole('button', { name: 'Enregistrer' }).click();
   expect(await alert2).toContain('dernier administrateur');
-  await page.keyboard.press('Escape');
   await expect(row.getByText('Administrateur')).toBeVisible();
 });

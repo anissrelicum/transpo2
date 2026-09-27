@@ -134,3 +134,17 @@ export function nextAlert(page: Page): Promise<string> {
     page.once('dialog', async (d) => { const m = d.message(); await d.accept(); resolve(m); });
   });
 }
+
+/**
+ * Ferme menu / alertdialog / dialog restés ouverts après une action refusée :
+ * tant qu'une surcouche Radix est ouverte, elle masque le tableau en aria-hidden
+ * et les lignes sortent de l'arbre d'accessibilité.
+ */
+export async function closeOverlays(page: Page) {
+  const overlays = page.locator('[role="menu"], [role="alertdialog"], [role="dialog"]');
+  for (let i = 0; i < 6 && (await overlays.count()) > 0; i++) {
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(400);
+  }
+  await expect(overlays).toHaveCount(0);
+}
