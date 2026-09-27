@@ -53,7 +53,7 @@
       "./plugins/withDedoublonnageGradle"
     ],
     "extra": {
-      "apiUrl": "https://api.transpo.wedo.technology",
+      "apiUrl": "https://transpo-api.wedowonders.com",
       "router": {
         "origin": false
       },

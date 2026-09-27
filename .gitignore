@@ -33,3 +33,8 @@ apps/e2e-web/playwright-report/
 firebase-adminsdk*.json
 *.p8
 *.p12
+
+# Projets natifs régénérés par `expo prebuild` (génération native continue).
+# Les versionner ferait diverger deux sources de vérité : app.json et le code généré.
+apps/driver-app/android/
+apps/driver-app/ios/
