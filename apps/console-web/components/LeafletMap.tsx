@@ -31,10 +31,22 @@ function makeIcon(m: MapMarker): L.DivIcon {
   });
 }
 
+// Les fonds CARTO exigent une clé Basemaps depuis septembre 2026 (sans elle, chaque tuile
+// affiche « API KEY REQUIRED »). Clé injectée au build ; à défaut, repli sur OSM, assombri
+// par filtre CSS en thème sombre faute de fond sombre OSM.
+const CARTO_KEY = process.env.NEXT_PUBLIC_CARTO_BASEMAPS_KEY;
+
 function TileByTheme() {
   const { appearance } = useAppTheme();
-  // Les fonds CARTO exigent désormais une clé (tuile « API KEY REQUIRED ») : tuiles OSM,
-  // assombries par filtre CSS en thème sombre faute de fond sombre OSM.
+  if (CARTO_KEY) {
+    const style = appearance === 'dark' ? 'dark_all' : 'rastertiles/voyager';
+    return (
+      <TileLayer
+        url={`https://{s}.basemaps.cartocdn.com/${style}/{z}/{x}/{y}{r}.png?key=${CARTO_KEY}`}
+        subdomains="abcd" maxZoom={20} attribution="&copy; OpenStreetMap, &copy; CARTO"
+      />
+    );
+  }
   return (
     <>
     <style>{'.tp-tiles-dark{filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.9)}'}</style>

@@ -7,6 +7,9 @@ WORKDIR /repo
 COPY . .
 RUN pnpm install --no-frozen-lockfile
 WORKDIR /repo/apps/console-web
+# Clé CARTO Basemaps, inlinée dans le bundle client par Next (vide → repli OSM).
+ARG NEXT_PUBLIC_CARTO_BASEMAPS_KEY=
+ENV NEXT_PUBLIC_CARTO_BASEMAPS_KEY=$NEXT_PUBLIC_CARTO_BASEMAPS_KEY
 RUN pnpm build
 EXPOSE 3001
 CMD ["pnpm", "start"]
