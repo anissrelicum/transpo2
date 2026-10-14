@@ -11,6 +11,7 @@ import {
 import { money } from '@transpo/ui-web';
 import type { Reversement } from '@transpo/api-client';
 import { PageHeader, KPI } from './ui';
+import { periodeCourante } from '../lib/periode';
 
 const ini = (n: string) => n.split(' ').map((x) => x[0]).join('').slice(0, 2).toUpperCase();
 const METHOD_LABEL: Record<string, string> = { virement: 'Virement bancaire', especes: 'Espèces', cheque: 'Chèque' };
@@ -55,7 +56,7 @@ export function ReversementView({ rows }: { rows: Reversement[] }) {
         actions={
           <Flex gap="2">
             <Button variant="soft" color="gray" onClick={exportCsv}><DownloadIcon /> Export CSV</Button>
-            <Button disabled={busy} onClick={() => post('cash/reversements/generate', { period: '2026-07' })}><PlusIcon /> Générer</Button>
+            <Button disabled={busy} onClick={() => post('cash/reversements/generate', { period: periodeCourante() })}><PlusIcon /> Générer</Button>
           </Flex>
         }
       />
@@ -178,7 +179,7 @@ function PayDialog({ reversement, onPay, busy }: {
           </Select.Content>
         </Select.Root>
         <Box mt="3"><Text as="div" size="2" weight="medium" mb="2">Référence de paiement (optionnel)</Text>
-          <TextField.Root placeholder="ex. VIR-2026-07-0042" value={reference} onChange={(e) => setReference(e.target.value)} /></Box>
+          <TextField.Root placeholder={`ex. VIR-${periodeCourante()}-0042`} value={reference} onChange={(e) => setReference(e.target.value)} /></Box>
         <Flex gap="3" mt="4" justify="end">
           <Dialog.Close><Button variant="soft" color="gray">Annuler</Button></Dialog.Close>
           <Button color="green" disabled={busy} onClick={async () => { if (await onPay(method, reference)) setOpen(false); }}>Confirmer le reversement</Button>

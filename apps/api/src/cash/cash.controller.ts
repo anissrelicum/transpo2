@@ -48,7 +48,7 @@ export class CashController {
   @HttpCode(200)
   @Roles('ADMIN', 'COMPTABLE')
   generateReversements(@Req() req: any, @Body() body: { period?: string }) {
-    return this.cash.generateReversements(req.tenantSchema, body?.period || '2026-07');
+    return this.cash.generateReversements(req.tenantSchema, body?.period || periodeCourante());
   }
 
   @Post('reversements/:id/pay')
@@ -69,4 +69,9 @@ export class CashController {
   payouts(@Req() req: any) {
     return this.cash.merchantPayouts(req.tenantSchema);
   }
+}
+
+/** Période comptable courante (`AAAA-MM`) à l'heure du Maroc — défaut quand le client n'en envoie pas. */
+function periodeCourante(): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Casablanca', year: 'numeric', month: '2-digit' }).format(new Date());
 }

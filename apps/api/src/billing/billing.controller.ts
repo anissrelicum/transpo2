@@ -67,7 +67,7 @@ export class BillingController {
   @HttpCode(200)
   @Roles('ADMIN', 'COMPTABLE')
   generate(@Req() req: any, @Body() body: { period?: string }) {
-    return this.billing.generate(req.tenantSchema, body?.period || '2026-07');
+    return this.billing.generate(req.tenantSchema, body?.period || periodeCourante());
   }
 
   @Post('invoices/:id/send')
@@ -97,4 +97,9 @@ export class BillingController {
   resolve(@Req() req: any, @Param('id') id: string, @Body() body: { decision: string }) {
     return this.billing.resolveDispute(req.tenantSchema, id, body?.decision || 'avoir');
   }
+}
+
+/** Période comptable courante (`AAAA-MM`) à l'heure du Maroc — défaut quand le client n'en envoie pas. */
+function periodeCourante(): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Casablanca', year: 'numeric', month: '2-digit' }).format(new Date());
 }

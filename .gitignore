@@ -38,3 +38,6 @@ firebase-adminsdk*.json
 # Les versionner ferait diverger deux sources de vérité : app.json et le code généré.
 apps/driver-app/android/
 apps/driver-app/ios/
+
+# Vidéos de démo : rendus et voix synthétisées (régénérables par qa/demo/).
+qa/demo/sortie/

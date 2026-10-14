@@ -12,6 +12,7 @@ import {
 import { money } from '@transpo/ui-web';
 import type { Invoice, BillingMode } from '@transpo/api-client';
 import { PageHeader, KPI } from './ui';
+import { periodeCourante } from '../lib/periode';
 
 const STATUS_LABEL: Record<string, string> = { BROUILLON: 'Brouillon', ENVOYEE: 'Envoyée', PAYEE: 'Payée', LITIGE: 'En litige' };
 const badgeColor = (c: string) => (['gray', 'blue', 'green', 'red', 'amber', 'indigo'].includes(c) ? c : 'gray') as any;
@@ -79,7 +80,7 @@ export function BillingView({ invoices, modes }: { invoices: Invoice[]; modes: B
         actions={
           <Flex gap="2">
             <Button variant="soft" color="gray" onClick={exportCsv}><DownloadIcon /> Export CSV</Button>
-            <Button disabled={busy} onClick={() => post('invoices/generate', { period: '2026-07' })}><PlusIcon /> Générer les factures</Button>
+            <Button disabled={busy} onClick={() => post('invoices/generate', { period: periodeCourante() })}><PlusIcon /> Générer les factures</Button>
           </Flex>
         }
       />

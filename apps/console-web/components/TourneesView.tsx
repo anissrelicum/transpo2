@@ -13,6 +13,7 @@ import { CITY_COORDS, haversineMeters } from '@transpo/domain';
 import type { Order } from '@transpo/domain';
 import type { Tournee } from '@transpo/api-client';
 import { Map, type MapMarker, type MapPolyline } from './Map';
+import { jourCourant } from '../lib/periode';
 
 const HUB: [number, number] = CITY_COORDS['Casablanca'] as [number, number];
 const AVG_KMH = 22;
@@ -190,7 +191,7 @@ function HubRow({ label }: { label: string }) {
 function NewTourneeButton({ drivers, unassigned, onCreated }: { drivers: string[]; unassigned: { ref: string; toCity: string }[]; onCreated: (t: Tournee) => void }) {
   const [open, setOpen] = React.useState(false);
   const [driver, setDriver] = React.useState(drivers[0] ?? '');
-  const [day, setDay] = React.useState('2026-07-20');
+  const [day, setDay] = React.useState(jourCourant);
   const [picked, setPicked] = React.useState<string[]>([]);
   const [busy, setBusy] = React.useState(false);
   const toggle = (r: string) => setPicked((p) => p.includes(r) ? p.filter((x) => x !== r) : [...p, r]);
