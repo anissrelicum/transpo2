@@ -33,10 +33,19 @@ function makeIcon(m: MapMarker): L.DivIcon {
 
 function TileByTheme() {
   const { appearance } = useAppTheme();
-  const url = appearance === 'dark'
-    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-    : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-  return <TileLayer url={url} subdomains="abcd" maxZoom={20} attribution="&copy; OpenStreetMap, &copy; CARTO" />;
+  // Les fonds CARTO exigent désormais une clé (tuile « API KEY REQUIRED ») : tuiles OSM,
+  // assombries par filtre CSS en thème sombre faute de fond sombre OSM.
+  return (
+    <>
+    <style>{'.tp-tiles-dark{filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.9)}'}</style>
+    <TileLayer
+      url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+      maxZoom={19}
+      attribution="&copy; OpenStreetMap"
+      className={appearance === 'dark' ? 'tp-tiles-dark' : undefined}
+    />
+    </>
+  );
 }
 
 function ZoomExpose({ onMap }: { onMap: (m: L.Map) => void }) {
