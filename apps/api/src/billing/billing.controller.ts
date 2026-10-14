@@ -11,8 +11,10 @@ import { Roles, CONSOLE_ROLES } from '../auth/roles.decorator.js';
 export class BillingController {
   constructor(@Inject(BillingService) private readonly billing: BillingService) {}
 
-  // Devis tarifaire (accessible à tous les rôles authentifiés du tenant).
+  // Devis tarifaire (accessible à tous les rôles authentifiés du tenant) : l'assistant de
+  // commande du portail marchand l'appelle aussi, d'où MERCHANT en plus des rôles console.
   @Post('pricing/quote')
+  @Roles(...CONSOLE_ROLES, 'MERCHANT')
   @HttpCode(200)
   quote(@Req() req: any, @Body() body: any) {
     return this.billing.quote(req.tenantSchema, {

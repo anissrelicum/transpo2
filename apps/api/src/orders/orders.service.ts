@@ -29,7 +29,9 @@ export interface CreateOrderInput {
   description?: string; vehicleType?: string;
 }
 
-const PHONE_RE = /^\+?[0-9\s-]{9,15}$/;
+// 9 à 15 CHIFFRES, espaces et tirets de présentation ignorés : « +212 6 00 00 00 00 », le
+// format montré en exemple dans les formulaires, comptait 18 caractères et était refusé.
+const PHONE_RE = { test: (v: string) => /^\+?[0-9\s-]+$/.test(v) && /^\d{9,15}$/.test(v.replace(/[^\d]/g, '')) };
 /** Nettoie une chaîne facultative : vide ou blanche → `null`. */
 const texte = (v?: string): string | null => (v?.trim() ? v.trim() : null);
 

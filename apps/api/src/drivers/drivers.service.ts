@@ -8,7 +8,9 @@ import {
 import { eq } from 'drizzle-orm';
 
 const OPEN_STATUSES = ['NOUVELLE', 'ASSIGNEE', 'RETRAIT', 'RECUPEREE', 'LIVRAISON'];
-const PHONE_RE = /^\+?[0-9\s-]{9,15}$/;
+// 9 à 15 CHIFFRES, espaces et tirets de présentation ignorés : « +212 6 00 00 00 00 », le
+// format montré en exemple dans les formulaires, comptait 18 caractères et était refusé.
+const PHONE_RE = { test: (v: string) => /^\+?[0-9\s-]+$/.test(v) && /^\d{9,15}$/.test(v.replace(/[^\d]/g, '')) };
 
 type DriverRow = typeof driversTable.$inferSelect;
 type VehicleRow = typeof vehiclesTable.$inferSelect;

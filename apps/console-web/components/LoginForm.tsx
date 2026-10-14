@@ -16,8 +16,8 @@ function orgFromHost(host: string): string | null {
 
 export function LoginForm({ lang }: { lang: Lang }) {
   const tr = t(lang);
-  const [email, setEmail] = React.useState('admin@casaexpress.ma');
-  const [password, setPassword] = React.useState('transpo');
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
   const [org, setOrg] = React.useState<string | null>(null);   // override ?org= (dev/test)
   const [detected, setDetected] = React.useState<string>('');  // org affichée
   const [error, setError] = React.useState<string | null>(null);
