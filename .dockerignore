@@ -8,3 +8,13 @@
 .env.local
 pgdata
 *.log
+
+# Rendus et preuves vidéo de la recette et de la démo : jamais dans une image.
+# (Les vidéos publiées dans la console vivent dans apps/console-web/demos/.)
+qa/demo/sortie
+qa/recette/**/*.mp4
+qa/recette/**/*.webm
+qa/recette/**/*.png
+qa/recette/*/videos
+qa/recette/*/artefacts
+apps/driver-app/android

@@ -11,6 +11,7 @@ const TABS = [
   { href: '/saas/plans', label: 'Plans' },
   { href: '/saas/demandes', label: 'Demandes' },
   { href: '/saas/audit', label: 'Audit' },
+  { href: '/saas/demos', label: 'Démos' },
 ];
 
 export function SaasNav({ name }: { name: string }) {
@@ -22,7 +23,7 @@ export function SaasNav({ name }: { name: string }) {
   }
 
   return (
-    <Flex align="center" gap="4">
+    <Flex align="center" gap="4" wrap="wrap">
       {TABS.map((t) => {
         const active = pathname === t.href;
         return (

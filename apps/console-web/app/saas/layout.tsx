@@ -19,7 +19,7 @@ export default function SaasLayout({ children }: { children: React.ReactNode }) 
   return (
     <Box style={{ minHeight: '100vh', background: 'var(--gray-2)' }}>
       <Box style={{ borderBottom: '1px solid var(--gray-a5)', background: 'var(--color-panel-solid)' }}>
-        <Flex align="center" justify="between" gap="4" px="5" py="3" style={{ maxWidth: 1300, margin: '0 auto' }}>
+        <Flex align="center" justify="between" gap="4" wrap="wrap" px="5" py="3" style={{ maxWidth: 1300, margin: '0 auto' }}>
           <Flex align="center" gap="3">
             <Heading size="4">Transpo</Heading>
             <Badge color="amber" variant="soft">Console SaaS</Badge>

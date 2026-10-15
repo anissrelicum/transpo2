@@ -41,3 +41,5 @@ apps/driver-app/ios/
 
 # Vidéos de démo : rendus et voix synthétisées (régénérables par qa/demo/).
 qa/demo/sortie/
+# Vidéos de démo publiées dans la console (produites par qa/demo/, poussées par qa/demo/publier.mjs).
+apps/console-web/demos/
