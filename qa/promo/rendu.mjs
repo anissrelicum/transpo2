@@ -19,7 +19,7 @@ const IMAGES = path.join(SORTIE, 'images');
 const IPS = 30;
 
 // Instant de départ de chaque phrase de la voix (medias/voix-N.wav), en secondes.
-const PISTES = [0.45, 4.45, 8.55, 13.15, 17.55, 21.15, 27.6];
+const PISTES = [0.45, 4.5, 8.6, 13.2, 17.6, 21.25, 27.7];
 
 fs.mkdirSync(IMAGES, { recursive: true });
 for (const f of fs.readdirSync(IMAGES)) fs.unlinkSync(path.join(IMAGES, f));
