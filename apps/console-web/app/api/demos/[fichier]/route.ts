@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createReadStream, promises as fs } from 'node:fs';
-import { Readable } from 'node:stream';
 import * as path from 'node:path';
 import { API_URL } from '../../../../lib/server';
 import { FICHIERS_DEMOS } from '../../../../lib/demos';
@@ -28,6 +27,26 @@ async function sessionPlateforme(token: string): Promise<boolean> {
   if (!res?.ok) { sessionsVerifiees.delete(token); return false; }
   sessionsVerifiees.set(token, Date.now() + VALIDITE_MS);
   return true;
+}
+
+/**
+ * Flux web sur une plage du fichier. `Readable.toWeb` levait ERR_INVALID_STATE à chaque
+ * requête abandonnée par le navigateur (déplacement dans la vidéo) : ici, l'annulation
+ * ferme proprement la lecture disque.
+ */
+function flux(chemin: string, debut?: number, fin?: number): ReadableStream<Uint8Array> {
+  let lecture: ReturnType<typeof createReadStream>;
+  return new ReadableStream<Uint8Array>({
+    start(controleur) {
+      lecture = createReadStream(chemin, { start: debut, end: fin });
+      lecture.on('data', (morceau) => {
+        try { controleur.enqueue(new Uint8Array(morceau as Buffer)); } catch { lecture.destroy(); }
+      });
+      lecture.on('end', () => { try { controleur.close(); } catch { /* déjà fermé */ } });
+      lecture.on('error', (e) => { try { controleur.error(e); } catch { /* déjà fermé */ } });
+    },
+    cancel() { lecture?.destroy(); },
+  });
 }
 
 export async function GET(req: NextRequest, { params }: { params: { fichier: string } }) {
@@ -58,12 +77,10 @@ export async function GET(req: NextRequest, { params }: { params: { fichier: str
     if (debut >= stat.size || debut > fin) {
       return new NextResponse(null, { status: 416, headers: { 'content-range': `bytes */${stat.size}` } });
     }
-    const flux = Readable.toWeb(createReadStream(chemin, { start: debut, end: fin })) as ReadableStream;
-    return new NextResponse(flux, {
+    return new NextResponse(flux(chemin, debut, fin), {
       status: 206,
       headers: { ...entetes, 'content-length': String(fin - debut + 1), 'content-range': `bytes ${debut}-${fin}/${stat.size}` },
     });
   }
-  const flux = Readable.toWeb(createReadStream(chemin)) as ReadableStream;
-  return new NextResponse(flux, { status: 200, headers: { ...entetes, 'content-length': String(stat.size) } });
+  return new NextResponse(flux(chemin), { status: 200, headers: { ...entetes, 'content-length': String(stat.size) } });
 }
