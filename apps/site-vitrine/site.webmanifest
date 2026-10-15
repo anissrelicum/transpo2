@@ -1,0 +1,17 @@
+{
+  "name": "Portrail",
+  "short_name": "Portrail",
+  "description": "Logiciel de livraison last-mile pour transporteurs — votre exploitation, sur les rails.",
+  "lang": "fr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "browser",
+  "theme_color": "#0B1537",
+  "background_color": "#0B1537",
+  "icons": [
+    { "src": "/medias/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/medias/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/medias/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

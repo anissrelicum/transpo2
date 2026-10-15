@@ -1,85 +1,148 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" dir="ltr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Transpo — le logiciel des sociétés de transport et de livraison au Maroc</title>
-<meta name="description" content="Transpo équipe les sociétés de transport marocaines : dispatch, tournées, flotte, preuve de livraison, paiement à la livraison tracé jusqu'au reversement, portail marchand. Casablanca, Rabat, Tanger, Marrakech, Fès, Agadir.">
-<link rel="canonical" href="https://transpo.wedowonders.com/">
-<meta name="robots" content="index, follow, max-image-preview:large">
+<title>Portrail — logiciel de livraison last-mile pour transporteurs</title>
+<meta name="description" content="Dispatch assisté, app livreur hors réseau, preuve de livraison et encaissements suivis jusqu’au reversement marchand : le logiciel des transporteurs last-mile.">
+<link rel="canonical" href="__SITE__/">
+<link rel="alternate" hreflang="fr" href="__SITE__/">
+<link rel="alternate" hreflang="en" href="__SITE__/en/">
+<link rel="alternate" hreflang="x-default" href="__SITE__/">
+<meta name="robots" content="index, follow, max-image-preview:large, max-video-preview:-1">
 
 <meta property="og:type" content="website">
-<meta property="og:locale" content="fr_MA">
-<meta property="og:site_name" content="Transpo">
-<meta property="og:url" content="https://transpo.wedowonders.com/">
-<meta property="og:title" content="Transpo — le logiciel des sociétés de transport et de livraison au Maroc">
-<meta property="og:description" content="Une exploitation tenue au tableur coûte des litiges, du cash qui rentre mal et des marchands qui partent. Transpo remet le dispatch, la flotte, la preuve et l'argent au même endroit.">
-<meta property="og:image" content="https://transpo.wedowonders.com/img/console-tableau-de-bord.png">
+<meta property="og:site_name" content="Portrail">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:url" content="__SITE__/">
+<meta property="og:title" content="Portrail — votre exploitation, sur les rails">
+<meta property="og:description" content="Dispatch, app livreur hors réseau, preuve de livraison et chaque encaissement suivi jusqu’au reversement du marchand. Un seul logiciel pour les transporteurs last-mile.">
+<meta property="og:image" content="__SITE__/medias/og-fr.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Portrail — votre exploitation, sur les rails. Logiciel de livraison last-mile.">
+<meta property="og:video" content="__SITE__/medias/portrail-presentation.mp4">
+<meta property="og:video:type" content="video/mp4">
+<meta property="og:video:width" content="1920">
+<meta property="og:video:height" content="1080">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Transpo — le logiciel des sociétés de transport au Maroc">
-<meta name="twitter:description" content="Dispatch, flotte, preuve de livraison et chaîne complète du paiement à la livraison. Conçu pour les transporteurs marocains.">
-<meta name="twitter:image" content="https://transpo.wedowonders.com/img/console-tableau-de-bord.png">
+<meta name="twitter:title" content="Portrail — votre exploitation, sur les rails">
+<meta name="twitter:description" content="Dispatch, app livreur hors réseau, preuve de livraison et chaque encaissement suivi jusqu’au reversement du marchand.">
+<meta name="twitter:image" content="__SITE__/medias/og-fr.jpg">
+<meta name="twitter:image:alt" content="Portrail — votre exploitation, sur les rails.">
 
-<meta name="theme-color" content="#30a46c" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0e1f17" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#0B1537">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
 
-<link rel="stylesheet" href="styles.css">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='7' fill='%2330a46c'/%3E%3Cpath d='M6.5 10.5h8.2v5.4H6.5z' fill='none' stroke='%23fff' stroke-width='1.8'/%3E%3Cpath d='M14.7 12.6h3.1l2.6 2.4v.9h-5.7z' fill='none' stroke='%23fff' stroke-width='1.8'/%3E%3C/svg%3E">
+<link rel="preload" href="/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/medias/hero.webp" as="image" type="image/webp" fetchpriority="high" imagesrcset="/medias/hero-600.webp 600w, /medias/hero.webp 928w" imagesizes="(max-width: 1023px) min(440px, calc(100vw - 40px)), 480px">
+<link rel="stylesheet" href="/styles.css">
 
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": "SoftwareApplication",
-      "@id": "https://transpo.wedowonders.com/#logiciel",
-      "name": "Transpo",
-      "applicationCategory": "BusinessApplication",
-      "applicationSubCategory": "Logiciel de gestion de transport et de livraison (TMS)",
-      "operatingSystem": "Android, Web",
-      "inLanguage": ["fr", "ar"],
-      "audience": { "@type": "BusinessAudience", "audienceType": "Sociétés de transport, transporteurs et sociétés de livraison" },
-      "description": "Logiciel d'exploitation pour sociétés de transport : dispatch, tournées multi-arrêts, gestion de flotte et de chauffeurs, preuve de livraison, paiement à la livraison, facturation et portail marchand.",
-      "url": "https://transpo.wedowonders.com/",
-      "screenshot": "https://transpo.wedowonders.com/img/console-tableau-de-bord.png",
-      "offers": { "@type": "Offer", "priceCurrency": "MAD", "availability": "https://schema.org/InStock" }
-    },
-    {
       "@type": "Organization",
-      "@id": "https://transpo.wedowonders.com/#editeur",
-      "name": "Transpo",
-      "url": "https://transpo.wedowonders.com/",
-      "knowsLanguage": ["fr", "ar"],
-      "areaServed": [
-        { "@type": "Country", "name": "Maroc" },
-        { "@type": "City", "name": "Casablanca" }, { "@type": "City", "name": "Rabat" },
-        { "@type": "City", "name": "Tanger" }, { "@type": "City", "name": "Marrakech" },
-        { "@type": "City", "name": "Fès" }, { "@type": "City", "name": "Agadir" },
-        { "@type": "City", "name": "Kénitra" }, { "@type": "City", "name": "Mohammedia" }
-      ]
+      "@id": "__SITE__/#organisation",
+      "name": "Portrail",
+      "url": "__SITE__/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "__SITE__/medias/icon-512.png",
+        "width": 512,
+        "height": 512
+      },
+      "slogan": "Votre exploitation, sur les rails.",
+      "knowsLanguage": ["fr", "ar", "en"]
     },
     {
-      "@type": "Service",
-      "name": "Logiciel d'exploitation pour sociétés de transport",
-      "provider": { "@id": "https://transpo.wedowonders.com/#editeur" },
-      "serviceType": "Gestion de transport, dispatch, livraison et paiement à la livraison",
-      "areaServed": { "@type": "Country", "name": "Maroc" },
-      "availableChannel": { "@type": "ServiceChannel", "serviceUrl": "https://transpo.wedowonders.com/#contact" }
+      "@type": "WebSite",
+      "@id": "__SITE__/#site",
+      "name": "Portrail",
+      "url": "__SITE__/",
+      "inLanguage": "fr",
+      "publisher": { "@id": "__SITE__/#organisation" }
+    },
+    {
+      "@type": "WebPage",
+      "@id": "__SITE__/#page",
+      "url": "__SITE__/",
+      "name": "Portrail — logiciel de livraison last-mile pour transporteurs",
+      "inLanguage": "fr",
+      "isPartOf": { "@id": "__SITE__/#site" },
+      "about": { "@id": "__SITE__/#logiciel" },
+      "primaryImageOfPage": "__SITE__/medias/og-fr.jpg"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "__SITE__/#logiciel",
+      "name": "Portrail",
+      "applicationCategory": "BusinessApplication",
+      "applicationSubCategory": "Logiciel de gestion de livraison last-mile",
+      "operatingSystem": "Web, Android",
+      "inLanguage": ["fr", "ar"],
+      "url": "__SITE__/",
+      "description": "Logiciel d’exploitation pour sociétés de livraison last-mile : dispatch avec suggestion de livreur, app livreur hors réseau, preuve de livraison, encaissement à la livraison suivi jusqu’au reversement marchand, facturation, portail marchand, flotte et conformité.",
+      "screenshot": [
+        "__SITE__/medias/ecran-dashboard.webp",
+        "__SITE__/medias/ecran-dispatch.webp",
+        "__SITE__/medias/ecran-cash.webp",
+        "__SITE__/medias/ecran-portail.webp"
+      ],
+      "publisher": { "@id": "__SITE__/#organisation" },
+      "audience": { "@type": "BusinessAudience", "audienceType": "Sociétés de livraison et de transport last-mile" },
+      "offers": {
+        "@type": "Offer",
+        "name": "Essai gratuit de 14 jours",
+        "price": "0",
+        "priceCurrency": "EUR",
+        "availability": "https://schema.org/InStock",
+        "url": "__SITE__/#demo",
+        "eligibleDuration": { "@type": "QuantitativeValue", "value": 14, "unitCode": "DAY" }
+      }
+    },
+    {
+      "@type": "VideoObject",
+      "@id": "__SITE__/#video",
+      "name": "Portrail en 30 secondes",
+      "description": "Présentation de Portrail : le marchand dépose, le dispatch affecte, le livreur exécute et la comptabilité rapproche — votre exploitation, sur les rails.",
+      "thumbnailUrl": "__SITE__/medias/presentation-affiche.webp",
+      "contentUrl": "__SITE__/medias/portrail-presentation.mp4",
+      "uploadDate": "2026-10-15",
+      "duration": "PT31S",
+      "inLanguage": "fr",
+      "publisher": { "@id": "__SITE__/#organisation" }
     },
     {
       "@type": "FAQPage",
+      "@id": "__SITE__/#faq",
+      "inLanguage": "fr",
       "mainEntity": [
-        { "@type": "Question", "name": "Transpo convient-il à une société de transport de quelle taille ?",
-          "acceptedAnswer": { "@type": "Answer", "text": "De quelques livreurs à plusieurs dizaines, sur une ou plusieurs villes. Chaque société cliente dispose de son propre espace de données, et le logiciel s'ouvre ville par ville plutôt que d'un coup." } },
-        { "@type": "Question", "name": "L'application livreur fonctionne-t-elle sans réseau ?",
+        { "@type": "Question", "name": "Portrail convient-il à une société de quelle taille ?",
+          "acceptedAnswer": { "@type": "Answer", "text": "De quelques livreurs à plusieurs dizaines, sur une ou plusieurs villes. Chaque société cliente dispose de son propre espace de données, et le déploiement se fait ville par ville plutôt que d’un coup." } },
+        { "@type": "Question", "name": "L’application livreur fonctionne-t-elle sans réseau ?",
           "acceptedAnswer": { "@type": "Answer", "text": "Oui. Changement de statut, preuve de livraison et encaissement se font hors connexion, se mettent en file et se rejouent au retour du réseau, sans jamais produire deux fois le même effet." } },
-        { "@type": "Question", "name": "Comment le paiement à la livraison est-il suivi ?",
-          "acceptedAnswer": { "@type": "Answer", "text": "De bout en bout : encaissement chez le client, caisse du livreur alimentée course par course, déclaration du livreur, dépôt en agence, écart motivé, puis reversement au marchand net de commission." } },
-        { "@type": "Question", "name": "Combien coûte une course dans la grille par défaut ?",
-          "acceptedAnswer": { "@type": "Answer", "text": "La grille d'amorçage va de 22 DH jusqu'à 3 km à 75 DH de 15 à 30 km, puis 3,20 DH par kilomètre au-delà, avec des majorations de 15 DH pour un colis fragile et 10 DH pour une livraison programmée. Elle est entièrement modifiable par société et négociable par marchand." } },
-        { "@type": "Question", "name": "Le logiciel est-il disponible en arabe ?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Oui, en français et en arabe, avec inversion complète de la mise en page en arabe." } }
+        { "@type": "Question", "name": "Comment l’argent encaissé à la livraison est-il suivi ?",
+          "acceptedAnswer": { "@type": "Answer", "text": "De bout en bout : encaissement chez le client, caisse du livreur alimentée course par course, déclaration du livreur, dépôt en agence, écart motivé, puis reversement au marchand net de commission." } },
+        { "@type": "Question", "name": "Comment localiser un client qui n’a pas d’adresse précise ?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Collez le lien de position que le client a partagé — Google Maps, WhatsApp, Waze, Plans ou OpenStreetMap — ou posez une épingle sur la carte. Le lien d’origine est transmis au livreur, qui ouvre le point exact d’un geste dans son application de navigation." } },
+        { "@type": "Question", "name": "Le logiciel est-il disponible en arabe ?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Oui, en français et en arabe, avec inversion complète de la mise en page en arabe." } },
+        { "@type": "Question", "name": "Nos données sont-elles séparées de celles des autres transporteurs ?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Oui. Chaque société dispose de son propre espace de données, cloisonné des autres. Les rôles limitent ce que chacun voit et fait, et les actions sensibles sont journalisées." } },
+        { "@type": "Question", "name": "Comment nos marchands créent-ils leurs commandes ?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Depuis leur portail, en une minute : ils collent même le lien de localisation envoyé par leur client, puis suivent chaque commande en temps réel." } },
+        { "@type": "Question", "name": "Peut-on exploiter Portrail sous notre propre marque ?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Oui, en marque blanche : vos marchands et vos clients travaillent avec votre nom." } },
+        { "@type": "Question", "name": "Combien coûte Portrail ?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Le tarif dépend de votre volume mensuel de commandes et de vos besoins. Quatre formules, de l’essai gratuit de 14 jours à l’offre Entreprise sans limite de volume, et un devis établi après la démonstration." } }
       ]
     }
   ]
@@ -88,339 +151,631 @@
 </head>
 <body>
 
+<svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M9 6.5v11l9-5.5z" fill="currentColor"/></symbol>
+    <symbol id="i-fermer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-fleche" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-hors-reseau" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8.5a15 15 0 0 1 4.6-2.9M10.2 5.1A15 15 0 0 1 22 8.5M5 12a10 10 0 0 1 3.4-2.1M15.6 10.1A10 10 0 0 1 19 12M8.5 15.5a5 5 0 0 1 7 0M12 19.5h.01M3 3l18 18"/></symbol>
+    <symbol id="i-langues" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
+    <symbol id="i-bouclier" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5.5c0 4.5-3 8-7 9.5-4-1.5-7-5-7-9.5V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+    <symbol id="i-etiquette" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8" r="1.5"/></symbol>
+    <symbol id="i-photo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+    <symbol id="i-especes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.5"/><path d="M7 12h.01M17 12h.01"/></symbol>
+    <symbol id="i-telephone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 5.5h3M12 18h.01"/></symbol>
+    <symbol id="i-route" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h7a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h7"/></symbol>
+    <symbol id="i-horloge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M7 12h10"/></symbol>
+    <symbol id="i-camion" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5h11v10H3zM14 10h4l3 3v3.5h-7"/><circle cx="7" cy="18" r="1.8"/><circle cx="17.5" cy="18" r="1.8"/></symbol>
+    <symbol id="i-courbe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16M7 16v-4M12 16V7M17 16v-7"/></symbol>
+    <symbol id="i-retour" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
+    <symbol id="i-reglages" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h5M13 7h7M4 12h11M19 12h1M4 17h3M11 17h9"/><circle cx="11" cy="7" r="2"/><circle cx="17" cy="12" r="2"/><circle cx="9" cy="17" r="2"/></symbol>
+    <symbol id="i-cloche" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16v-5a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></symbol>
+    <symbol id="i-boutique" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9l1.5-5h13L20 9M4 9v11h16V9M4 9h16M9.5 20v-6h5v6"/></symbol>
+    <symbol id="i-epingle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+    <symbol id="i-lien" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"/></symbol>
+    <symbol id="i-navigation" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-8-8 18-2-8z"/></symbol>
+    <symbol id="i-roles" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/></symbol>
+    <symbol id="i-journal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 12h7M9 16h7"/></symbol>
+    <symbol id="i-cadenas" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="i-balance" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M7 20h10M5 7h14M5 7l-3 6a3 3 0 0 0 6 0zM19 7l-3 6a3 3 0 0 0 6 0z"/></symbol>
+    <symbol id="i-alerte" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 10v4.5M12 17.5h.01"/></symbol>
+    <symbol id="i-rembourser" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/></symbol>
+    <symbol id="i-colis" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5l9-4.5 9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5l9 4.5 9-4.5M12 12v9"/></symbol>
+    <symbol id="i-tableau" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z"/></symbol>
+    <symbol id="i-carte" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L3 6.5V20l6-2.5 6 2.5 6-2.5V4l-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/></symbol>
+    <symbol id="i-cible" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+  </defs>
+</svg>
+
 <a class="saut" href="#contenu">Aller au contenu</a>
 
-<header class="entete">
+<header class="entete" data-entete>
   <div class="conteneur entete__barre">
-    <a class="marque" href="#contenu" aria-label="Transpo, accueil">
-      <span class="marque__pastille" aria-hidden="true">
-        <svg width="20" height="20" viewBox="0 0 24 24" focusable="false">
-          <path d="M3 15.5h2.2a2.3 2.3 0 0 0 4.6 0h3a2 2 0 0 0 4 0H19" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"></path>
-          <path d="M3.5 8.5h7.2v5H3.5z" fill="none" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"></path>
-          <path d="M10.7 10.2h2.8l2.3 2.1v1.2h-5.1z" fill="none" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"></path>
-        </svg>
-      </span>
-      <span class="marque__nom">Transpo</span>
+    <a class="marque" href="/" aria-label="Portrail, accueil">
+      <img src="/medias/symbole.svg" width="34" height="34" alt="">
+      <span>Portrail</span>
     </a>
 
-    <nav class="nav" aria-label="Navigation principale">
+    <nav class="nav" id="nav-principale" aria-label="Navigation principale">
       <ul class="nav__liste">
-        <li><a class="nav__lien" href="#etapes">Comment ça marche</a></li>
-        <li><a class="nav__lien" href="#console">La console</a></li>
-        <li><a class="nav__lien" href="#terrain">L’app livreur</a></li>
-        <li><a class="nav__lien" href="#tarifs">Tarifs</a></li>
-        <li><a class="nav__lien" href="#couverture">Couverture</a></li>
+        <li><a class="nav__lien" href="#produit">Produit</a></li>
+        <li><a class="nav__lien" href="#fonctionnement">Fonctionnement</a></li>
+        <li><a class="nav__lien" href="#terrain">Terrain</a></li>
+        <li><a class="nav__lien" href="#encaissements">Encaissements</a></li>
+        <li><a class="nav__lien" href="#offres">Offres</a></li>
+        <li><a class="nav__lien" href="#faq">FAQ</a></li>
       </ul>
     </nav>
 
-    <a class="bouton bouton--principal" href="#contact">
-      <span class="court">Contact</span><span class="long">Demander une démonstration</span>
-    </a>
+    <div class="entete__actions">
+      <a class="langue" href="/en/" hreflang="en" lang="en" >
+        <svg width="18" height="18" aria-hidden="true"><use href="#i-langues"/></svg>EN<span class="sr-only"> — English version</span>
+      </a>
+      <a class="bouton bouton--principal bouton--petit" href="#demo">Demander une démo</a>
+      <button class="menu-bouton" type="button" aria-expanded="false" aria-controls="nav-principale" data-menu>
+        <span class="sr-only">Menu</span>
+        <span class="menu-bouton__barres" aria-hidden="true"><span></span></span>
+      </button>
+    </div>
   </div>
 </header>
 
 <main id="contenu">
 
-  <!-- ================================ Accroche =============================== -->
+  <!-- ================================================================ héros === -->
   <section class="heros" aria-labelledby="heros-titre">
-    <span class="deco deco--a" aria-hidden="true"></span>
-    <span class="etincelle etincelle--1" aria-hidden="true"></span>
-    <span class="etincelle etincelle--2" aria-hidden="true"></span>
+    <div class="heros__grille-fond" aria-hidden="true"></div>
+    <svg class="heros__route" viewBox="0 0 1440 820" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+      <path d="M700 860 C 860 840, 960 760, 1040 640 S 1240 300, 1480 230"/>
+    </svg>
 
-    <div class="conteneur heros__grille">
-      <div class="heros__texte">
-        <p class="etiquette">Pour les sociétés de transport et de livraison · Maroc</p>
-        <h1 class="heros__titre" id="heros-titre">
-          Le logiciel qui tient votre exploitation
-          <span class="encadre">d’un bout à l’autre</span>
-        </h1>
-        <p class="heros__phrase">
-          Le dispatch affecte, le livreur exécute même sans réseau, la livraison laisse une
-          preuve opposable, et chaque dirham encaissé à la porte est suivi jusqu’au
-          reversement du marchand.
-        </p>
-
-        <form class="rampe" id="form-rampe">
-          <label class="rampe__label" for="r-email">Votre e-mail professionnel</label>
-          <div class="rampe__ligne">
-            <input id="r-email" name="email" type="email" placeholder="vous@votre-societe.ma" autocomplete="email" required>
-            <button class="bouton bouton--principal" type="submit">Demander une démo</button>
-          </div>
-          <p class="rampe__note" id="rampe-note" role="status">Réponse sous deux jours ouvrés. Aucun engagement.</p>
-        </form>
-      </div>
-
-      <!-- Illustration à plat, dessinée en SVG : aucune image externe. -->
-      <div class="heros__image">
-        <svg class="illu-coursier" viewBox="0 0 520 420" role="img" aria-labelledby="illu-titre">
-          <title id="illu-titre">Un livreur à vélo transportant un colis</title>
-          <circle cx="268" cy="196" r="178" fill="var(--vert-4)"></circle>
-          <circle cx="268" cy="196" r="178" fill="none" stroke="var(--vert-6)" stroke-width="2" stroke-dasharray="7 10"></circle>
-
-          <!-- sol -->
-          <path d="M60 352h400" stroke="var(--vert-7)" stroke-width="4" stroke-linecap="round" fill="none"></path>
-
-          <!-- roues -->
-          <g fill="none" stroke="var(--encre)" stroke-width="7">
-            <circle cx="150" cy="316" r="52"></circle>
-            <circle cx="372" cy="316" r="52"></circle>
-          </g>
-          <g fill="none" stroke="var(--vert-8)" stroke-width="3">
-            <circle cx="150" cy="316" r="38"></circle>
-            <circle cx="372" cy="316" r="38"></circle>
-          </g>
-          <g fill="var(--encre)"><circle cx="150" cy="316" r="6"></circle><circle cx="372" cy="316" r="6"></circle></g>
-
-          <!-- cadre -->
-          <g fill="none" stroke="var(--encre)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M150 316 235 232 300 316 372 316"></path>
-            <path d="M235 232 300 316"></path>
-            <path d="M300 316 322 238"></path>
-            <path d="M300 240h44"></path>
-            <path d="M235 232v-26"></path>
-          </g>
-          <path d="M214 204h42" stroke="var(--encre)" stroke-width="8" stroke-linecap="round"></path>
-
-          <!-- colis sur porte-bagages -->
-          <g>
-            <rect x="326" y="168" width="96" height="84" rx="10" fill="var(--vert-9)"></rect>
-            <path d="M326 202h96" stroke="var(--vert-11)" stroke-width="5"></path>
-            <path d="M366 168v84" stroke="var(--vert-11)" stroke-width="5"></path>
-            <rect x="326" y="168" width="96" height="84" rx="10" fill="none" stroke="var(--encre)" stroke-width="5"></rect>
-          </g>
-
-          <!-- pédalier : sans lui, les jambes du livreur flottent dans le vide -->
-          <g>
-            <circle cx="300" cy="316" r="15" fill="none" stroke="var(--encre)" stroke-width="6"></circle>
-            <path d="M300 316l-16 14" stroke="var(--encre)" stroke-width="6" stroke-linecap="round"></path>
-            <path d="M276 330h18" stroke="var(--vert-11)" stroke-width="9" stroke-linecap="round"></path>
-          </g>
-
-          <!-- livreur -->
-          <g>
-            <path d="M268 250l-4 36 20 40" fill="none" stroke="var(--encre)" stroke-width="15"
-                  stroke-linecap="round" stroke-linejoin="round"></path>
-            <path d="M284 326h16" stroke="var(--vert-11)" stroke-width="11" stroke-linecap="round"></path>
-            <path d="M266 254c6-32 16-54 28-64l26 18c-12 12-20 30-24 50z" fill="var(--encre)"></path>
-            <path d="M296 200l-52 6" stroke="var(--peau)" stroke-width="13" stroke-linecap="round" fill="none"></path>
-            <path d="M296 176l10-14 12 8-8 16z" fill="var(--peau)"></path>
-            <circle cx="310" cy="152" r="22" fill="var(--peau)"></circle>
-            <path d="M288 150a23 21 0 0 1 45-2l1 7-47 2z" fill="var(--vert-9)"></path>
-            <path d="M333 155h9a4 4 0 0 1 0 8h-9z" fill="var(--vert-11)"></path>
-          </g>
-        </svg>
-
-        <!-- Deux cartes de produit, posées sur l'illustration. -->
-        <div class="vignette vignette--preuve">
-          <span class="vignette__pastille" aria-hidden="true"></span>
-          <div><p class="vignette__titre">Preuve enregistrée</p><p class="vignette__sous">Photo + signature · 13:05</p></div>
-        </div>
-        <div class="vignette vignette--cash">
-          <span class="vignette__pastille vignette__pastille--or" aria-hidden="true"></span>
-          <div><p class="vignette__titre">640 DH encaissés</p><p class="vignette__sous">Portés à la caisse du jour</p></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================ Bande de réassurance ======================= -->
-  <section class="bande" aria-label="Ce que le logiciel garantit">
-    <div class="conteneur bande__grille">
-      <p class="bande__item"><strong>Hors réseau</strong> L’app livreur travaille sans connexion</p>
-      <p class="bande__item"><strong>FR / AR</strong> Mise en page inversée en arabe</p>
-      <p class="bande__item"><strong>Cloisonné</strong> Vos données séparées des autres sociétés</p>
-      <p class="bande__item"><strong>Marque blanche</strong> Exploitable sous votre nom</p>
-    </div>
-  </section>
-
-  <!-- ============================== Comment ça marche ======================== -->
-  <section class="section" id="etapes" aria-labelledby="etapes-titre">
     <div class="conteneur">
-      <div class="section__entete section__entete--centre">
-        <span class="sur-titre">Comment ça marche</span>
-        <h2 class="section__titre" id="etapes-titre">Une course, quatre mains, un seul dossier</h2>
+      <div class="heros__grille">
+        <div class="heros__texte">
+          <p class="sur-titre">Logiciel de livraison last-mile</p>
+          <h1 class="heros__titre" id="heros-titre">Votre exploitation, <span class="accent">sur les rails.</span></h1>
+          <p class="heros__phrase">
+            Portrail réunit le dispatch, l’app livreur, la preuve de livraison et l’argent
+            encaissé à la porte dans un seul logiciel. Chaque course est suivie, de la commande
+            du marchand jusqu’à son reversement.
+          </p>
+          <div class="heros__actions">
+            <a class="bouton bouton--principal bouton--grand" href="#demo">
+              Demander une démo
+              <svg width="18" height="18" aria-hidden="true"><use href="#i-fleche"/></svg>
+            </a>
+            <a class="bouton bouton--fantome bouton--grand" href="#video" data-video-ouvrir aria-haspopup="dialog">
+              <span class="bouton__lecture" aria-hidden="true"><svg width="16" height="16"><use href="#i-play"/></svg></span>
+              Voir la vidéo (30 s)
+            </a>
+          </div>
+          <ul class="heros__points">
+            <li><svg width="18" height="18" aria-hidden="true"><use href="#i-check"/></svg>Essai gratuit de 14 jours</li>
+            <li><svg width="18" height="18" aria-hidden="true"><use href="#i-check"/></svg>Français et arabe</li>
+            <li><svg width="18" height="18" aria-hidden="true"><use href="#i-check"/></svg>App livreur hors réseau</li>
+          </ul>
+        </div>
+
+        <div class="heros__visuel">
+          <figure class="heros__photo">
+            <img src="/medias/hero.webp" srcset="/medias/hero-600.webp 600w, /medias/hero.webp 928w" sizes="(max-width: 1023px) min(440px, calc(100vw - 40px)), 480px" width="928" height="1152" fetchpriority="high" decoding="async"
+                 alt="Illustration 3D : un livreur en casquette remet un colis à un client sur le pas de sa porte, en fin de journée.">
+          </figure>
+          <div class="carte-flottante carte-flottante--preuve" aria-hidden="true">
+            <span class="carte-flottante__icone"><svg width="20" height="20"><use href="#i-photo"/></svg></span>
+            <div><strong>Livraison prouvée</strong>Photo + signature · 13:05</div>
+          </div>
+          <div class="carte-flottante carte-flottante--cash" aria-hidden="true">
+            <span class="carte-flottante__icone"><svg width="20" height="20"><use href="#i-especes"/></svg></span>
+            <div><strong>Encaissement enregistré</strong>Porté à la caisse du livreur</div>
+          </div>
+          <div class="carte-flottante carte-flottante--sync" aria-hidden="true">
+            <span class="carte-flottante__icone"><svg width="20" height="20"><use href="#i-hors-reseau"/></svg></span>
+            <div><strong>Hors réseau</strong>Actions en file, rejouées au retour</div>
+          </div>
+        </div>
+      </div>
+
+      <ul class="garanties" aria-label="Ce que Portrail garantit">
+        <li><svg width="22" height="22" aria-hidden="true"><use href="#i-hors-reseau"/></svg><div><strong>Hors réseau</strong>L’app livreur travaille sans connexion</div></li>
+        <li><svg width="22" height="22" aria-hidden="true"><use href="#i-langues"/></svg><div><strong>Français · arabe</strong>Mise en page inversée en arabe</div></li>
+        <li><svg width="22" height="22" aria-hidden="true"><use href="#i-bouclier"/></svg><div><strong>Cloisonné</strong>Vos données séparées des autres sociétés</div></li>
+        <li><svg width="22" height="22" aria-hidden="true"><use href="#i-etiquette"/></svg><div><strong>Marque blanche</strong>Exploitable sous votre nom</div></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================================== produit === -->
+  <section class="section produit" id="produit" aria-labelledby="produit-titre">
+    <div class="conteneur">
+      <div class="section__entete section__entete--centre" data-revele>
+        <p class="sur-titre">La console d’exploitation</p>
+        <h2 class="section__titre" id="produit-titre">Toute votre journée d’exploitation, sur un seul écran</h2>
+        <p class="section__chapo">
+          Ce que le terrain déclare alimente directement le bureau. Pas de recopie du soir, pas
+          de tableur parallèle, pas de version du chiffre qui dépend de qui le donne.
+        </p>
+      </div>
+
+      <div class="onglets" role="tablist" aria-label="Écrans du produit" data-onglets>
+        <button class="onglet" type="button" role="tab" id="onglet-tableau" aria-controls="panneau-tableau" aria-selected="true">
+          <svg width="18" height="18" aria-hidden="true"><use href="#i-tableau"/></svg>Tableau de bord
+        </button>
+        <button class="onglet" type="button" role="tab" id="onglet-dispatch" aria-controls="panneau-dispatch" aria-selected="false" tabindex="-1">
+          <svg width="18" height="18" aria-hidden="true"><use href="#i-carte"/></svg>Dispatch
+        </button>
+        <button class="onglet" type="button" role="tab" id="onglet-caisse" aria-controls="panneau-caisse" aria-selected="false" tabindex="-1">
+          <svg width="18" height="18" aria-hidden="true"><use href="#i-especes"/></svg>Caisse
+        </button>
+        <button class="onglet" type="button" role="tab" id="onglet-portail" aria-controls="panneau-portail" aria-selected="false" tabindex="-1">
+          <svg width="18" height="18" aria-hidden="true"><use href="#i-boutique"/></svg>Portail marchand
+        </button>
+      </div>
+
+      <div class="panneaux" data-panneaux>
+        <div class="panneau" id="panneau-tableau" role="tabpanel" aria-labelledby="onglet-tableau" data-revele>
+          <figure class="cadre">
+            <div class="cadre__barre" aria-hidden="true"><span class="cadre__points"><span></span><span></span><span></span></span><span class="cadre__adresse">Console transport · Tableau de bord</span></div>
+            <img src="/medias/ecran-dashboard.webp" srcset="/medias/ecran-dashboard-800.webp 800w, /medias/ecran-dashboard.webp 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
+                 alt="Tableau de bord de la console : compteurs de commandes en cours, livrées et échouées, encaissements du jour, activité par heure, conformité de la flotte et commandes urgentes.">
+          </figure>
+          <div class="panneau__legende">
+            <h3>Le tableau de bord</h3>
+            <p>Commandes du jour, livraisons en cours, échecs à traiter, encaissements à reverser et échéances de flotte : l’état de l’exploitation au premier coup d’œil, sans attendre le point du soir.</p>
+          </div>
+        </div>
+
+        <div class="panneau" id="panneau-dispatch" role="tabpanel" aria-labelledby="onglet-dispatch">
+          <figure class="cadre">
+            <div class="cadre__barre" aria-hidden="true"><span class="cadre__points"><span></span><span></span><span></span></span><span class="cadre__adresse">Console transport · Dispatch</span></div>
+            <img src="/medias/ecran-dispatch.webp" srcset="/medias/ecran-dispatch-800.webp 800w, /medias/ecran-dispatch.webp 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
+                 alt="Écran de dispatch : carte en temps réel des livreurs en ligne et file des commandes non affectées, chacune avec un bouton Affecter.">
+          </figure>
+          <div class="panneau__legende">
+            <h3>Le dispatch</h3>
+            <p>La carte des livreurs en ligne et la file des commandes à affecter. Les livreurs candidats sont classés par zone, disponibilité et charge — et ceux qui sont écartés le sont avec leur motif.</p>
+          </div>
+        </div>
+
+        <div class="panneau" id="panneau-caisse" role="tabpanel" aria-labelledby="onglet-caisse">
+          <figure class="cadre">
+            <div class="cadre__barre" aria-hidden="true"><span class="cadre__points"><span></span><span></span><span></span></span><span class="cadre__adresse">Console transport · Réconciliation cash</span></div>
+            <img src="/medias/ecran-cash.webp" srcset="/medias/ecran-cash-800.webp 800w, /medias/ecran-cash.webp 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
+                 alt="Écran de réconciliation cash : par livreur, montants théorique, déclaré, écart et statut de dépôt, avec le cash en circulation et le montant à déposer.">
+          </figure>
+          <div class="panneau__legende">
+            <h3>La caisse</h3>
+            <p>Théorique, déclaré, déposé : livreur par livreur, le rapprochement se fait le jour même. Un écart se voit tout de suite, pas en fin de mois.</p>
+          </div>
+        </div>
+
+        <div class="panneau" id="panneau-portail" role="tabpanel" aria-labelledby="onglet-portail">
+          <figure class="cadre">
+            <div class="cadre__barre" aria-hidden="true"><span class="cadre__points"><span></span><span></span><span></span></span><span class="cadre__adresse">Espace marchand · Tableau de bord</span></div>
+            <img src="/medias/ecran-portail.webp" srcset="/medias/ecran-portail-800.webp 800w, /medias/ecran-portail.webp 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
+                 alt="Portail marchand : commandes, livraisons réussies, encaissements à reverser, dernières commandes avec leur statut et taux de réussite.">
+          </figure>
+          <div class="panneau__legende">
+            <h3>Le portail marchand</h3>
+            <p>Vos marchands déposent leurs commandes, suivent leurs expéditions, leurs encaissements et leurs factures — sans appeler votre bureau.</p>
+          </div>
+        </div>
+      </div>
+
+      <ul class="atouts" data-revele>
+        <li><strong>Affectation assistée</strong>Une suggestion de livreur, avec le motif d’exclusion des autres.</li>
+        <li><strong>Rôles séparés</strong>Administrateur, dispatcher, comptable : bornés à l’écran comme dans l’API.</li>
+        <li><strong>Temps réel</strong>Un statut changé sur le terrain apparaît au bureau.</li>
+        <li><strong>Clair ou sombre</strong>Les interfaces suivent le thème choisi.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ======================================================= quatre mains === -->
+  <section class="section section--douce" id="fonctionnement" aria-labelledby="fonctionnement-titre">
+    <div class="conteneur">
+      <div class="section__entete section__entete--centre" data-revele>
+        <p class="sur-titre">Comment ça marche</p>
+        <h2 class="section__titre" id="fonctionnement-titre">Une course, quatre mains, un seul dossier</h2>
         <p class="section__chapo">
           Le marchand, le dispatch, le livreur et la comptabilité travaillent sur la même
           commande — chacun depuis son écran, avec ses droits et sa langue.
         </p>
       </div>
 
-      <ol class="etapes">
-        <li class="etape">
-          <span class="etape__tuile" aria-hidden="true">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 7h16l-1.4 12H5.4z"></path><path d="M9 7a3 3 0 0 1 6 0"></path>
-            </svg>
-          </span>
-          <p class="etape__n">Étape 1</p>
-          <h3 class="etape__titre">Le marchand dépose</h3>
-          <p class="etape__texte">Depuis son portail ou son système : destinataire, ville, taille du colis, montant à encaisser, niveau de preuve exigé.</p>
+      <ol class="mains">
+        <li class="main" data-revele>
+          <div class="main__image"><img src="/medias/marchand.webp" srcset="/medias/marchand-800.webp 800w, /medias/marchand.webp 1376w" sizes="(max-width: 599px) calc(100vw - 40px), (max-width: 1079px) calc(50vw - 30px), 290px" width="1376" height="768" loading="lazy" decoding="async" alt="Illustration 3D : une commerçante prépare un colis dans son atelier."></div>
+          <div class="main__corps">
+            <p class="main__n"><span>1</span>Marchand</p>
+            <h3 class="main__titre">Le marchand dépose</h3>
+            <p class="main__texte">Depuis son portail ou son système : destinataire, position, taille du colis, montant à encaisser, niveau de preuve exigé.</p>
+          </div>
         </li>
-        <li class="etape">
-          <span class="etape__tuile" aria-hidden="true">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="10" r="3"></circle><path d="M12 2c4.2 0 7 3.2 7 7.4 0 5-5.4 10.6-7 12.2-1.6-1.6-7-7.2-7-12.2C5 5.2 7.8 2 12 2z"></path>
-            </svg>
-          </span>
-          <p class="etape__n">Étape 2</p>
-          <h3 class="etape__titre">Le dispatch affecte</h3>
-          <p class="etape__texte">Les livreurs candidats sont classés par zone, disponibilité et charge — et ceux qui sont écartés le sont avec leur motif.</p>
+        <li class="main" data-revele>
+          <div class="main__image"><img src="/medias/dispatch.webp" srcset="/medias/dispatch-800.webp 800w, /medias/dispatch.webp 1344w" sizes="(max-width: 599px) calc(100vw - 40px), (max-width: 1079px) calc(50vw - 30px), 290px" width="1344" height="768" loading="lazy" decoding="async" alt="Illustration 3D : une dispatcheuse, tablette en main, devant un grand écran de carte avec les trajets en cours."></div>
+          <div class="main__corps">
+            <p class="main__n"><span>2</span>Dispatch</p>
+            <h3 class="main__titre">Le dispatch affecte</h3>
+            <p class="main__texte">Les livreurs candidats sont classés par zone, disponibilité et charge — et ceux qui sont écartés le sont avec leur motif.</p>
+          </div>
         </li>
-        <li class="etape">
-          <span class="etape__tuile" aria-hidden="true">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="6" y="2.5" width="12" height="19" rx="2.5"></rect><path d="M10.5 5.5h3"></path><circle cx="12" cy="18" r="1"></circle>
-            </svg>
-          </span>
-          <p class="etape__n">Étape 3</p>
-          <h3 class="etape__titre">Le livreur exécute</h3>
-          <p class="etape__texte">Retrait, scan, livraison, preuve, encaissement. Chaque geste est horodaté — même quand le réseau tombe.</p>
+        <li class="main" data-revele>
+          <div class="main__image"><img src="/medias/terrain.webp" srcset="/medias/terrain-800.webp 800w, /medias/terrain.webp 1376w" sizes="(max-width: 599px) calc(100vw - 40px), (max-width: 1079px) calc(50vw - 30px), 290px" width="1376" height="768" loading="lazy" decoding="async" alt="Illustration 3D : un livreur en scooter traverse une rue commerçante le soir, un colis à l’arrière."></div>
+          <div class="main__corps">
+            <p class="main__n"><span>3</span>Livreur</p>
+            <h3 class="main__titre">Le livreur exécute</h3>
+            <p class="main__texte">Retrait, scan, livraison, preuve, encaissement. Chaque geste est horodaté — même quand le réseau tombe.</p>
+          </div>
         </li>
-        <li class="etape">
-          <span class="etape__tuile" aria-hidden="true">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="6" width="18" height="12" rx="2.5"></rect><circle cx="12" cy="12" r="2.5"></circle><path d="M7 12h.01M17 12h.01"></path>
-            </svg>
-          </span>
-          <p class="etape__n">Étape 4</p>
-          <h3 class="etape__titre">La compta rapproche</h3>
-          <p class="etape__texte">Caisse du livreur, dépôt en agence, écart motivé, reversement au marchand net de commission, facture.</p>
+        <li class="main" data-revele>
+          <div class="main__image"><img src="/medias/compta.webp" srcset="/medias/compta-800.webp 800w, /medias/compta.webp 1344w" sizes="(max-width: 599px) calc(100vw - 40px), (max-width: 1079px) calc(50vw - 30px), 290px" width="1344" height="768" loading="lazy" decoding="async" alt="Illustration 3D : un comptable souriant devant un ordinateur affichant une validation."></div>
+          <div class="main__corps">
+            <p class="main__n"><span>4</span>Comptabilité</p>
+            <h3 class="main__titre">La compta rapproche</h3>
+            <p class="main__texte">Caisse du livreur, dépôt en agence, écart motivé, reversement au marchand net de commission, facture.</p>
+          </div>
         </li>
       </ol>
     </div>
   </section>
 
-  <!-- ================================ La console ============================= -->
-  <section class="section section--menthe" id="console" aria-labelledby="console-titre">
-    <div class="conteneur">
-      <div class="duo">
-        <div class="duo__texte">
-          <span class="sur-titre">La console d’exploitation</span>
-          <h2 class="section__titre" id="console-titre">Votre journée, sur un seul écran</h2>
-          <p class="section__chapo">
-            Ce que le terrain déclare alimente directement le bureau. Pas de recopie du soir,
-            pas de tableur parallèle, pas de version du chiffre qui dépend de qui le donne.
-          </p>
-          <ul class="liste-coche">
-            <li><strong>Affectation assistée</strong> — avec le motif d’exclusion des livreurs écartés.</li>
-            <li><strong>Tournées multi-arrêts</strong> — l’ordre décidé au bureau est celui que suit le livreur.</li>
-            <li><strong>Flotte et chauffeurs</strong> — assurance, contrôle technique, permis, visite médicale : alertés avant l’échéance.</li>
-            <li><strong>Rôles séparés</strong> — administrateur, dispatcher, comptable, bornés à l’écran comme dans l’API.</li>
-          </ul>
-        </div>
-        <figure class="capture" data-tilt-doux>
-          <img src="img/console-tableau-de-bord.png" width="1800" height="1128" loading="lazy" decoding="async"
-               alt="Tableau de bord de la console Transpo : compteurs de commandes, en cours, livrées, échouées et COD encaissé, activité de la journée, conformité de la flotte et commandes urgentes.">
-          <figcaption>Le tableau de bord, au matin d’une journée d’exploitation.</figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================== L'app livreur ============================ -->
-  <section class="section" id="terrain" aria-labelledby="terrain-titre">
-    <div class="conteneur">
-      <div class="duo duo--inverse">
-        <figure class="capture capture--tel" data-tilt-doux>
-          <img src="img/app-livreur-missions.png" width="495" height="1100" loading="lazy" decoding="async"
-               alt="Application livreur Transpo : écran des missions du jour, total de COD à encaisser, et pour chaque course la ville de retrait, la ville de livraison, le marchand et le montant à encaisser.">
-        </figure>
-        <div class="duo__texte">
-          <span class="sur-titre">Sur le terrain</span>
-          <h2 class="section__titre" id="terrain-titre">Une journée qui tient dans le téléphone</h2>
-          <p class="section__chapo">
-            Conçue pour une main, en plein soleil, avec un réseau qui tombe. Votre livreur n’a
-            jamais à deviner ce que l’application attend de lui.
-          </p>
-          <ul class="liste-coche">
-            <li><strong>Hors réseau d’abord</strong> — statut, preuve, encaissement : tout se met en file et se rejoue au retour du réseau, sans jamais compter deux fois.</li>
-            <li><strong>La preuve, réglée par course</strong> — aucune, photo, signature, ou les deux. C’est vous qui arbitrez le coût de la preuve.</li>
-            <li><strong>Le numéro du client n’est pas exposé</strong> — il ne descend pas sur le téléphone du livreur.</li>
-            <li><strong>Temps de conduite suivi</strong> — neuf heures par jour au maximum, pause obligatoire, alerte avant la limite.</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ================================= Tarifs ================================ -->
-  <section class="section section--menthe" id="tarifs" aria-labelledby="tarifs-titre">
-    <div class="conteneur">
-      <div class="duo">
-        <div class="duo__texte">
-          <span class="sur-titre">Votre grille</span>
-          <h2 class="section__titre" id="tarifs-titre">Calculez le prix d’une course</h2>
-          <p class="section__chapo">
-            Voici la <strong>grille d’amorçage</strong> livrée avec le produit. Elle est
-            entièrement modifiable par société, et négociable marchand par marchand : un prix
-            fixe négocié l’emporte sur une remise contractuelle, qui l’emporte sur la grille.
-          </p>
-          <div class="grille-tarif" role="table" aria-label="Grille tarifaire par défaut">
-            <div class="grille-tarif__ligne" role="row"><span role="cell">Jusqu’à 3 km</span><strong role="cell">22 DH</strong></div>
-            <div class="grille-tarif__ligne" role="row"><span role="cell">3 à 7 km</span><strong role="cell">32 DH</strong></div>
-            <div class="grille-tarif__ligne" role="row"><span role="cell">7 à 15 km</span><strong role="cell">48 DH</strong></div>
-            <div class="grille-tarif__ligne" role="row"><span role="cell">15 à 30 km</span><strong role="cell">75 DH</strong></div>
-            <div class="grille-tarif__ligne" role="row"><span role="cell">Au-delà de 30 km</span><strong role="cell">3,20 DH / km</strong></div>
-          </div>
-        </div>
-
-        <form class="calcul" id="form-calcul">
-          <h3 class="calcul__titre">Estimation</h3>
-          <div class="champ">
-            <label for="c-distance">Distance de la course</label>
-            <div class="champ__unite">
-              <input id="c-distance" name="distance" type="number" min="0" step="0.5" value="8" inputmode="decimal">
-              <span>km</span>
-            </div>
-          </div>
-          <fieldset class="champ champ--cases">
-            <legend>Majorations</legend>
-            <label class="case"><input type="checkbox" id="c-fragile" name="fragile"> Colis fragile <em>+15 DH</em></label>
-            <label class="case"><input type="checkbox" id="c-programmee" name="programmee"> Livraison programmée <em>+10 DH</em></label>
-          </fieldset>
-          <div class="calcul__sortie">
-            <span>Prix de la course</span>
-            <output id="c-total" for="c-distance c-fragile c-programmee">48,00 DH</output>
-          </div>
-          <p class="calcul__note">
-            Estimation sur la grille par défaut, hors TVA et hors conditions négociées.
-            La commission plateforme est de 15 % par défaut, elle aussi paramétrable.
-          </p>
-        </form>
-      </div>
-    </div>
-  </section>
-
-  <!-- =============================== Couverture ============================== -->
-  <section class="section" id="couverture" aria-labelledby="couverture-titre">
-    <div class="conteneur">
-      <div class="section__entete section__entete--centre">
-        <span class="sur-titre">Couverture</span>
-        <h2 class="section__titre" id="couverture-titre">On ouvre une ville, puis la suivante</h2>
+  <!-- ================================================================ vidéo === -->
+  <section class="section sombre" id="video" aria-labelledby="video-titre">
+    <div class="conteneur video-bloc">
+      <div data-revele>
+        <p class="sur-titre">En 30 secondes</p>
+        <h2 class="section__titre" id="video-titre">Portrail, raconté par ceux qui l’utilisent</h2>
         <p class="section__chapo">
-          Pas de bascule générale : une ville, quelques livreurs, un marchand pilote. On
-          élargit sur des chiffres, pas sur des impressions.
+          Le marchand, la dispatcheuse, le livreur et le comptable : une même commande, de la
+          préparation du colis jusqu’au rapprochement de la caisse.
+        </p>
+        <p class="video-bloc__note">Durée : 31 secondes · voix off en français.</p>
+      </div>
+      <div class="video-cadre" data-revele>
+        <video controls preload="none" playsinline width="1920" height="1080"
+               poster="/medias/presentation-affiche.webp" aria-label="Vidéo de présentation de Portrail">
+          <source src="/medias/portrail-presentation.mp4" type="video/mp4">
+          <a href="/medias/portrail-presentation.mp4">Télécharger la vidéo de présentation (MP4)</a>
+        </video>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================== terrain === -->
+  <section class="section" id="terrain" aria-labelledby="terrain-titre">
+    <div class="conteneur duo">
+      <div class="terrain-visuel" data-revele>
+        <figure class="terrain-visuel__grande">
+          <img src="/medias/terrain.webp" srcset="/medias/terrain-800.webp 800w, /medias/terrain.webp 1376w" sizes="(max-width: 959px) calc(88vw - 40px), 520px" width="1376" height="768" loading="lazy" decoding="async" alt="Illustration 3D : un livreur en scooter dans une rue animée, le soir.">
+        </figure>
+        <figure class="terrain-visuel__petite">
+          <img src="/medias/remise.webp" srcset="/medias/remise-800.webp 800w, /medias/remise.webp 1344w" sizes="(max-width: 959px) 48vw, 320px" width="1344" height="768" loading="lazy" decoding="async" alt="Illustration 3D : sur le pas de la porte, le livreur tend son téléphone à une cliente pour qu’elle signe la réception.">
+        </figure>
+        <span class="terrain-visuel__etiquette" aria-hidden="true"><span class="point-vivant"></span>Signature recueillie</span>
+      </div>
+
+      <div data-revele>
+        <p class="sur-titre">L’app livreur</p>
+        <h2 class="section__titre" id="terrain-titre">Une journée qui tient dans le téléphone</h2>
+        <p class="section__chapo">
+          Conçue pour une main, en plein soleil, avec un réseau qui tombe. Votre livreur n’a
+          jamais à deviner ce que l’application attend de lui.
+        </p>
+        <ul class="liste-points">
+          <li><span class="liste-points__icone" aria-hidden="true"><svg width="20" height="20"><use href="#i-hors-reseau"/></svg></span>
+            <div><strong>Hors réseau d’abord</strong><p>Statut, preuve, encaissement : tout se met en file et se rejoue au retour du réseau, sans jamais compter deux fois.</p></div></li>
+          <li><span class="liste-points__icone" aria-hidden="true"><svg width="20" height="20"><use href="#i-photo"/></svg></span>
+            <div><strong>La preuve, réglée par course</strong><p>Aucune, photo, signature, ou les deux. C’est vous qui arbitrez le coût de la preuve.</p></div></li>
+          <li><span class="liste-points__icone" aria-hidden="true"><svg width="20" height="20"><use href="#i-especes"/></svg></span>
+            <div><strong>L’encaissement à la porte</strong><p>Le montant à encaisser est sur la course ; l’encaissement alimente la caisse du livreur, course par course.</p></div></li>
+          <li><span class="liste-points__icone" aria-hidden="true"><svg width="20" height="20"><use href="#i-telephone"/></svg></span>
+            <div><strong>Le numéro du client n’est pas exposé</strong><p>Il ne descend pas sur le téléphone du livreur.</p></div></li>
+          <li><span class="liste-points__icone" aria-hidden="true"><svg width="20" height="20"><use href="#i-horloge"/></svg></span>
+            <div><strong>Temps de conduite suivi</strong><p>Neuf heures par jour au maximum, pause obligatoire, alerte avant la limite.</p></div></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================= encaissements === -->
+  <section class="section sombre argent" id="encaissements" aria-labelledby="encaissements-titre">
+    <div class="conteneur">
+      <div class="section__entete" data-revele>
+        <p class="sur-titre">Paiement à la livraison</p>
+        <h2 class="section__titre" id="encaissements-titre">Chaque encaissement, suivi jusqu’au reversement du marchand</h2>
+        <p class="section__chapo">
+          C’est là que les transporteurs perdent de l’argent — et des marchands. Portrail suit
+          l’argent encaissé à la porte de bout en bout, et chaque écart porte un motif.
         </p>
       </div>
-      <ul class="villes">
-        <li>Casablanca</li><li>Rabat</li><li>Salé</li><li>Mohammedia</li><li>Kénitra</li>
-        <li>Tanger</li><li>Fès</li><li>Marrakech</li><li>Agadir</li><li>Oujda</li>
-        <li>El Jadida</li><li>Bouskoura</li>
-      </ul>
-      <p class="mention">
-        <strong>Et une limite que la machine ne franchit pas.</strong> Elle propose un livreur,
-        signale un risque, bloque un envoi non consenti. Elle ne sanctionne personne et
-        n’affecte rien à votre place.
-      </p>
+
+      <ol class="flux" data-revele>
+        <li><strong>Encaissé à la porte</strong>Par le livreur, horodaté, même hors réseau.</li>
+        <li><strong>Porté à sa caisse</strong>Course par course, avec un plafond de cash en main.</li>
+        <li><strong>Déclaré, puis déposé</strong>En agence : théorique, déclaré et déposé rapprochés.</li>
+        <li><strong>Écart motivé</strong>Aucun écart ne disparaît sans explication.</li>
+        <li><strong>Reversé au marchand</strong>Net de commission, détaillé dans son portefeuille.</li>
+        <li><strong>Facturé</strong>Factures marchands, litiges ouverts et suivis.</li>
+      </ol>
+
+      <div class="argent__grille">
+        <figure class="cadre" data-revele>
+          <div class="cadre__barre" aria-hidden="true"><span class="cadre__points"><span></span><span></span><span></span></span><span class="cadre__adresse">Console transport · Réconciliation cash</span></div>
+          <img src="/medias/ecran-cash.webp" srcset="/medias/ecran-cash-800.webp 800w, /medias/ecran-cash.webp 1440w" sizes="(max-width: 959px) calc(100vw - 40px), 790px" width="1440" height="900" loading="lazy" decoding="async"
+               alt="Réconciliation cash : pour chaque livreur, le montant théorique, le montant déclaré, l’écart et le statut du dépôt.">
+        </figure>
+        <div class="argent__cartes">
+          <div class="carte-sombre" data-revele>
+            <h3><svg width="22" height="22" aria-hidden="true"><use href="#i-alerte"/></svg>Détection de fraude</h3>
+            <p>Un score de risque construit sur des signaux : écart de caisse, livraison hors zone, échec sans preuve, dépôt tardif, encaissement non déclaré. Une alerte appelle une revue humaine — jamais une sanction automatique.</p>
+          </div>
+          <div class="carte-sombre" data-revele>
+            <h3><svg width="22" height="22" aria-hidden="true"><use href="#i-rembourser"/></svg>Remboursements tracés</h3>
+            <p>Un encaissement déjà perçu sur une commande annulée ou retournée est remboursé et rattaché à sa commande. Rien ne sort de la caisse sans trace.</p>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- ================================ Contact ================================ -->
-  <section class="section section--contact" id="contact" aria-labelledby="contact-titre">
+  <!-- ========================================================== localisation === -->
+  <section class="section" id="localisation" aria-labelledby="localisation-titre">
+    <div class="conteneur duo">
+      <div data-revele>
+        <p class="sur-titre">Localisation par lien <span class="pastille-nouveau">Nouveau</span></p>
+        <h2 class="section__titre" id="localisation-titre">Le client envoie sa position. Le livreur arrive au bon endroit.</h2>
+        <p class="section__chapo">
+          Vos clients partagent leur position par WhatsApp, sous forme de lien. Collez-le dans
+          la commande — ou posez une épingle sur la carte — et le livreur ouvre le point exact
+          d’un geste.
+        </p>
+        <ul class="liste-points">
+          <li><span class="liste-points__icone" aria-hidden="true"><svg width="20" height="20"><use href="#i-lien"/></svg></span>
+            <div><strong>Un collage suffit</strong><p>Liens courts compris : la position est lue dans le lien, même raccourci.</p></div></li>
+          <li><span class="liste-points__icone" aria-hidden="true"><svg width="20" height="20"><use href="#i-navigation"/></svg></span>
+            <div><strong>Le lien d’origine va au livreur</strong><p>Son téléphone l’ouvre dans l’application de navigation qu’il connaît.</p></div></li>
+          <li><span class="liste-points__icone" aria-hidden="true"><svg width="20" height="20"><use href="#i-bouclier"/></svg></span>
+            <div><strong>Jamais de lien arbitraire</strong><p>Un lien d’une source inconnue n’est pas relayé : la position est gardée, le lien remplacé par un lien de carte standard.</p></div></li>
+          <li><span class="liste-points__icone" aria-hidden="true"><svg width="20" height="20"><use href="#i-route"/></svg></span>
+            <div><strong>Un devis plus juste</strong><p>Avec deux épingles, la distance est estimée sur les positions réelles, et non de ville à ville.</p></div></li>
+        </ul>
+      </div>
+
+      <div class="loc-maquette" data-revele>
+        <div class="loc-carte" role="img" aria-label="Exemple : un lien Google Maps collé dans une commande est reconnu, la position s’affiche sur la carte et le lien est transmis au livreur.">
+          <div class="loc-carte__entete">Point de livraison <span>Commande en cours de création</span></div>
+          <div class="loc-carte__corps">
+            <span class="loc-champ__label">Lien de position ou adresse</span>
+            <div class="loc-champ"><svg width="18" height="18"><use href="#i-lien"/></svg><span>https://maps.app.goo.gl/…</span></div>
+            <p class="loc-statut"><svg width="18" height="18"><use href="#i-check"/></svg>Position reconnue · lien d’origine conservé</p>
+            <div class="loc-plan">
+              <svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice">
+                <rect width="400" height="170" fill="#EEF1F6"/>
+                <path d="M0 120 L400 70" stroke="#fff" stroke-width="14"/>
+                <path d="M140 0 L190 170" stroke="#fff" stroke-width="10"/>
+                <path d="M300 0 L270 170" stroke="#fff" stroke-width="8"/>
+                <path d="M0 40 L400 20" stroke="#fff" stroke-width="6"/>
+                <rect x="20" y="58" width="90" height="40" rx="4" fill="#E2E7F0"/>
+                <rect x="205" y="100" width="55" height="50" rx="4" fill="#E2E7F0"/>
+                <rect x="315" y="95" width="70" height="55" rx="4" fill="#DDEFE3"/>
+                <path d="M40 150 C 110 130, 150 110, 232 72" stroke="#F5A524" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="2 9"/>
+                <circle cx="40" cy="150" r="7" fill="#0B1537" stroke="#fff" stroke-width="3"/>
+              </svg>
+              <span class="loc-epingle"><svg width="34" height="34" viewBox="0 0 24 24"><path d="M12 22s-7.5-6.4-7.5-12a7.5 7.5 0 0 1 15 0c0 5.6-7.5 12-7.5 12z" fill="currentColor"/><circle cx="12" cy="10" r="2.8" fill="#fff"/></svg></span>
+            </div>
+            <div class="loc-envoi">
+              <span class="loc-envoi__icone"><svg width="18" height="18"><use href="#i-navigation"/></svg></span>
+              <div><strong>Transmis au livreur</strong>Ouvert d’un geste dans son application de navigation</div>
+            </div>
+          </div>
+        </div>
+        <ul class="sources" aria-label="Sources de liens reconnues">
+          <li>Google Maps</li><li>WhatsApp</li><li>Waze</li><li>Plans</li><li>OpenStreetMap</li><li>Coordonnées</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================= fonctionnalités === -->
+  <section class="section section--douce" id="fonctionnalites" aria-labelledby="fonctionnalites-titre">
+    <div class="conteneur">
+      <div class="section__entete section__entete--centre" data-revele>
+        <p class="sur-titre">Tout le reste</p>
+        <h2 class="section__titre" id="fonctionnalites-titre">Ce qu’une exploitation demande, déjà en place</h2>
+        <p class="section__chapo">Du hub de tri au suivi client, les modules partagent la même commande et les mêmes règles.</p>
+      </div>
+
+      <ul class="bento">
+        <li class="tuile tuile--image" data-revele>
+          <div class="tuile__texte">
+            <span class="tuile__icone" aria-hidden="true"><svg width="22" height="22"><use href="#i-scan"/></svg></span>
+            <h3>Tri en hub et scan</h3>
+            <p>Colis scannés au retrait, au hub et à la livraison ; manifestes de transfert entre villes.</p>
+          </div>
+          <img src="/medias/hub.webp" srcset="/medias/hub-800.webp 800w, /medias/hub.webp 1376w" sizes="(max-width: 599px) calc(100vw - 40px), 400px" width="1376" height="768" loading="lazy" decoding="async" alt="Illustration 3D : un livreur scanne un colis dans un entrepôt de tri.">
+        </li>
+        <li class="tuile" data-revele>
+          <span class="tuile__icone" aria-hidden="true"><svg width="22" height="22"><use href="#i-route"/></svg></span>
+          <h3>Tournées multi-arrêts</h3>
+          <p>L’ordre décidé au bureau est celui que suit le livreur.</p>
+        </li>
+        <li class="tuile" data-revele>
+          <span class="tuile__icone" aria-hidden="true"><svg width="22" height="22"><use href="#i-camion"/></svg></span>
+          <h3>Flotte et conformité</h3>
+          <p>Assurance, contrôle technique, permis, visite médicale : alertés avant l’échéance.</p>
+        </li>
+        <li class="tuile" data-revele>
+          <span class="tuile__icone" aria-hidden="true"><svg width="22" height="22"><use href="#i-courbe"/></svg></span>
+          <h3>Analytics et SLA</h3>
+          <p>Délais et taux de réussite par zone, par livreur et par marchand.</p>
+        </li>
+        <li class="tuile" data-revele>
+          <span class="tuile__icone" aria-hidden="true"><svg width="22" height="22"><use href="#i-retour"/></svg></span>
+          <h3>Retours maîtrisés</h3>
+          <p>Motif normalisé, trois tentatives au plus, puis retour au hub.</p>
+        </li>
+        <li class="tuile" data-revele>
+          <span class="tuile__icone" aria-hidden="true"><svg width="22" height="22"><use href="#i-reglages"/></svg></span>
+          <h3>Tarification négociable</h3>
+          <p>Grille par distance, remise contractuelle, prix fixe par marchand : la règle la plus précise l’emporte.</p>
+        </li>
+        <li class="tuile" data-revele>
+          <span class="tuile__icone" aria-hidden="true"><svg width="22" height="22"><use href="#i-cloche"/></svg></span>
+          <h3>Notifications consenties</h3>
+          <p>SMS et WhatsApp bloqués tant que le destinataire n’a pas donné son accord.</p>
+        </li>
+        <li class="tuile" data-revele>
+          <span class="tuile__icone" aria-hidden="true"><svg width="22" height="22"><use href="#i-journal"/></svg></span>
+          <h3>Exports comptables</h3>
+          <p>Caisse, reversements et factures exportés en un fichier, prêts pour votre cabinet.</p>
+        </li>
+        <li class="tuile" data-revele>
+          <span class="tuile__icone" aria-hidden="true"><svg width="22" height="22"><use href="#i-carte"/></svg></span>
+          <h3>Zones et géorepérage</h3>
+          <p>Zones dessinées sur la carte, livreurs affectés par zone, alerte quand un livreur en sort.</p>
+        </li>
+        <li class="tuile" data-revele>
+          <span class="tuile__icone" aria-hidden="true"><svg width="22" height="22"><use href="#i-epingle"/></svg></span>
+          <h3>Suivi client sans compte</h3>
+          <p>Un code de suivi, une page en français ou en arabe — sans application à installer.</p>
+        </li>
+        <li class="tuile" data-revele>
+          <span class="tuile__icone" aria-hidden="true"><svg width="22" height="22"><use href="#i-check"/></svg></span>
+          <h3>Avis clients</h3>
+          <p>Une note après chaque livraison ; les livreurs à accompagner remontent en premier.</p>
+        </li>
+      </ul>
+
+      <div class="deploiement" data-revele>
+        <img src="/medias/ville.webp" srcset="/medias/ville-800.webp 800w, /medias/ville.webp 1344w" sizes="(max-width: 699px) calc(100vw - 40px), 1200px" width="1344" height="768" loading="lazy" decoding="async" alt="Illustration 3D : une ville miniature vue du ciel, parcourue de routes lumineuses et de véhicules de livraison.">
+        <div class="deploiement__texte">
+          <h3>On ouvre une zone, puis la suivante</h3>
+          <p>Pas de bascule générale : une ville, quelques livreurs, un marchand pilote. On élargit sur des chiffres, pas sur des impressions.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================= confiance === -->
+  <section class="section" id="confiance" aria-labelledby="confiance-titre">
+    <div class="conteneur">
+      <div class="section__entete section__entete--centre" data-revele>
+        <p class="sur-titre">Sécurité et données</p>
+        <h2 class="section__titre" id="confiance-titre">Vos données, vos règles</h2>
+        <p class="section__chapo">Un transporteur confie ses marchands, ses clients et sa caisse. Portrail est construit pour que rien ne fuie, et que tout se retrouve.</p>
+      </div>
+      <ul class="confiance" data-revele>
+        <li><svg width="28" height="28" aria-hidden="true"><use href="#i-bouclier"/></svg><h3>Un espace cloisonné par société</h3><p>Chaque transporteur dispose de son propre espace de données. Aucune donnée ne passe d’une société à l’autre.</p></li>
+        <li><svg width="28" height="28" aria-hidden="true"><use href="#i-roles"/></svg><h3>Des rôles bornés</h3><p>Administrateur, dispatcher, comptable, marchand, livreur : chacun ne voit et ne fait que ce que son rôle permet, à l’écran comme dans l’API.</p></li>
+        <li><svg width="28" height="28" aria-hidden="true"><use href="#i-journal"/></svg><h3>Un journal d’audit</h3><p>Les actions sensibles sont tracées : qui a fait quoi, et quand.</p></li>
+        <li><svg width="28" height="28" aria-hidden="true"><use href="#i-cadenas"/></svg><h3>Consentement et données personnelles</h3><p>Aucun SMS ni WhatsApp sans accord du destinataire. Données personnelles exportables et anonymisables ; la position du domicile n’est jamais exposée par le suivi public.</p></li>
+        <li><svg width="28" height="28" aria-hidden="true"><use href="#i-langues"/></svg><h3>Français et arabe</h3><p>Interfaces bilingues, avec une mise en page entièrement inversée en arabe — pas une simple traduction.</p></li>
+        <li><svg width="28" height="28" aria-hidden="true"><use href="#i-balance"/></svg><h3>La machine propose, vous décidez</h3><p>Elle suggère un livreur, signale un risque, bloque un envoi non consenti. Elle ne sanctionne personne et n’affecte rien à votre place.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================================================================ offres === -->
+  <section class="section section--douce" id="offres" aria-labelledby="offres-titre">
+    <div class="conteneur">
+      <div class="section__entete section__entete--centre" data-revele>
+        <p class="sur-titre">Offres</p>
+        <h2 class="section__titre" id="offres-titre">Une formule à la mesure de votre volume</h2>
+        <p class="section__chapo">Pas de grille publique : le tarif dépend de votre volume et de vos besoins. Commencez par l’essai, nous ajustons ensuite.</p>
+      </div>
+      <ul class="offres">
+        <li class="offre" data-revele>
+          <h3>Essai gratuit</h3>
+          <p class="offre__volume">14 jours<span class="offre__unite">sur votre propre espace</span></p>
+          <p class="offre__texte">Pour juger sur pièce, avec vos livreurs, vos marchands et vos courses.</p>
+          <p class="offre__tarif">Gratuit, sans engagement</p>
+          <a class="bouton bouton--contour bouton--bloc" href="#demo">Commencer l’essai</a>
+        </li>
+        <li class="offre" data-revele>
+          <h3>TPE Coursier</h3>
+          <p class="offre__volume">≈ 500<span class="offre__unite">commandes par mois</span></p>
+          <p class="offre__texte">Pour un coursier qui démarre : une équipe resserrée, une ville.</p>
+          <p class="offre__tarif">Tarif selon votre volume</p>
+          <a class="bouton bouton--contour bouton--bloc" href="#demo">Demander une démo</a>
+        </li>
+        <li class="offre offre--accent" data-revele>
+          <h3>Transporteur</h3>
+          <p class="offre__volume">≈ 5 000<span class="offre__unite">commandes par mois</span></p>
+          <p class="offre__texte">Pour une exploitation installée : plusieurs zones, une flotte, un dispatch à plusieurs.</p>
+          <p class="offre__tarif">Tarif selon votre volume</p>
+          <a class="bouton bouton--principal bouton--bloc" href="#demo">Demander une démo</a>
+        </li>
+        <li class="offre" data-revele>
+          <h3>Entreprise</h3>
+          <p class="offre__volume">Illimité<span class="offre__unite">commandes par mois</span></p>
+          <p class="offre__texte">Pour les réseaux étendus : volume sans limite, conditions sur mesure.</p>
+          <p class="offre__tarif">Tarif selon votre volume</p>
+          <a class="bouton bouton--contour bouton--bloc" href="#demo">Demander une démo</a>
+        </li>
+      </ul>
+      <p class="offres__note">Volumes indicatifs. Le devis est établi après la démonstration, sur vos chiffres.</p>
+    </div>
+  </section>
+
+  <!-- =================================================================== FAQ === -->
+  <section class="section" id="faq" aria-labelledby="faq-titre">
+    <div class="conteneur faq-grille">
+      <div class="section__entete">
+        <p class="sur-titre">Questions fréquentes</p>
+        <h2 class="section__titre" id="faq-titre">Ce que l’on nous demande</h2>
+        <p class="section__chapo">Une autre question ? <a href="#demo">Écrivez-nous</a>, nous répondons sous deux jours ouvrés.</p>
+      </div>
+      <div class="faq" data-faq>
+        <details>
+          <summary>Portrail convient-il à une société de quelle taille ?</summary>
+          <p class="faq__reponse">De quelques livreurs à plusieurs dizaines, sur une ou plusieurs villes. Chaque société cliente dispose de son propre espace de données, et le déploiement se fait ville par ville plutôt que d’un coup.</p>
+        </details>
+        <details>
+          <summary>L’application livreur fonctionne-t-elle sans réseau ?</summary>
+          <p class="faq__reponse">Oui. Changement de statut, preuve de livraison et encaissement se font hors connexion, se mettent en file et se rejouent au retour du réseau, sans jamais produire deux fois le même effet.</p>
+        </details>
+        <details>
+          <summary>Comment l’argent encaissé à la livraison est-il suivi ?</summary>
+          <p class="faq__reponse">De bout en bout : encaissement chez le client, caisse du livreur alimentée course par course, déclaration du livreur, dépôt en agence, écart motivé, puis reversement au marchand net de commission.</p>
+        </details>
+        <details>
+          <summary>Comment localiser un client qui n’a pas d’adresse précise ?</summary>
+          <p class="faq__reponse">Collez le lien de position que le client a partagé — Google Maps, WhatsApp, Waze, Plans ou OpenStreetMap — ou posez une épingle sur la carte. Le lien d’origine est transmis au livreur, qui ouvre le point exact d’un geste dans son application de navigation.</p>
+        </details>
+        <details>
+          <summary>Le logiciel est-il disponible en arabe ?</summary>
+          <p class="faq__reponse">Oui, en français et en arabe, avec inversion complète de la mise en page en arabe.</p>
+        </details>
+        <details>
+          <summary>Nos données sont-elles séparées de celles des autres transporteurs ?</summary>
+          <p class="faq__reponse">Oui. Chaque société dispose de son propre espace de données, cloisonné des autres. Les rôles limitent ce que chacun voit et fait, et les actions sensibles sont journalisées.</p>
+        </details>
+        <details>
+          <summary>Comment nos marchands créent-ils leurs commandes ?</summary>
+          <p class="faq__reponse">Depuis leur portail, en une minute : ils collent même le lien de localisation envoyé par leur client, puis suivent chaque commande en temps réel.</p>
+        </details>
+        <details>
+          <summary>Peut-on exploiter Portrail sous notre propre marque ?</summary>
+          <p class="faq__reponse">Oui, en marque blanche : vos marchands et vos clients travaillent avec votre nom.</p>
+        </details>
+        <details>
+          <summary>Combien coûte Portrail ?</summary>
+          <p class="faq__reponse">Le tarif dépend de votre volume mensuel de commandes et de vos besoins. Quatre formules, de l’essai gratuit de 14 jours à l’offre Entreprise sans limite de volume, et un devis établi après la démonstration.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================== contact === -->
+  <section class="section sombre contact" id="demo" aria-labelledby="demo-titre">
     <div class="conteneur contact__grille">
-      <div>
-        <span class="sur-titre">Parlons-en</span>
-        <h2 class="section__titre" id="contact-titre">Sur vos courses, pas sur une démo générique</h2>
+      <div data-revele>
+        <p class="sur-titre">Parlons-en</p>
+        <h2 class="section__titre" id="demo-titre">Sur vos courses, pas sur une démo générique</h2>
         <p class="section__chapo">
           Donnez-nous une journée type — un volume, deux ou trois zones, vos conditions
           marchands — et nous la rejouons dans un espace d’essai à votre nom. Vous verrez vos
@@ -428,23 +783,29 @@
         </p>
         <dl class="contact__infos">
           <div><dt>Réponse</dt><dd>Sous deux jours ouvrés, par la personne qui suivra votre dossier</dd></div>
-          <div><dt>Langues</dt><dd>Français et arabe</dd></div>
+          <div><dt>Essai</dt><dd>14 jours gratuits sur votre propre espace</dd></div>
+          <div><dt>Interfaces</dt><dd>Français et arabe</dd></div>
         </dl>
+        <figure class="contact__casting">
+          <img src="/medias/casting.webp" srcset="/medias/casting-800.webp 800w, /medias/casting.webp 1376w" sizes="(max-width: 959px) calc(100vw - 40px), 560px" width="1376" height="768" loading="lazy" decoding="async"
+               alt="Illustration 3D : les quatre personnages de Portrail côte à côte — le livreur, la dispatcheuse, la commerçante et le comptable.">
+        </figure>
       </div>
 
-      <form class="formulaire" id="form-contact" novalidate>
+      <form class="formulaire" id="form-contact" novalidate data-revele>
         <h3 class="formulaire__titre">Demander une démonstration</h3>
+        <p class="formulaire__intro">Trois champs obligatoires, le reste nous aide à préparer l’échange.</p>
         <div class="champ"><label for="f-societe">Société de transport</label><input id="f-societe" name="societe" type="text" autocomplete="organization" required></div>
         <div class="champ"><label for="f-nom">Votre nom</label><input id="f-nom" name="nom" type="text" autocomplete="name" required></div>
         <div class="champ champ--duo">
-          <div><label for="f-email">E-mail</label><input id="f-email" name="email" type="email" autocomplete="email" required></div>
-          <div><label for="f-telephone">Téléphone <span class="facultatif">(facultatif)</span></label><input id="f-telephone" name="telephone" type="tel" autocomplete="tel" placeholder="+212 6 00 00 00 00"></div>
+          <div><label for="f-email">E-mail professionnel</label><input id="f-email" name="email" type="email" autocomplete="email" required></div>
+          <div><label for="f-telephone">Téléphone <span class="facultatif">(facultatif)</span></label><input id="f-telephone" name="telephone" type="tel" autocomplete="tel" placeholder="Avec l’indicatif du pays"></div>
         </div>
         <div class="champ champ--duo">
-          <div><label for="f-villes">Villes couvertes</label><input id="f-villes" name="villes" type="text" placeholder="Casablanca, Rabat"></div>
-          <div><label for="f-livreurs">Livreurs</label><input id="f-livreurs" name="livreurs" type="number" min="1" inputmode="numeric" placeholder="12"></div>
+          <div><label for="f-villes">Villes couvertes <span class="facultatif">(facultatif)</span></label><input id="f-villes" name="villes" type="text"></div>
+          <div><label for="f-livreurs">Nombre de livreurs <span class="facultatif">(facultatif)</span></label><input id="f-livreurs" name="livreurs" type="number" min="1" inputmode="numeric"></div>
         </div>
-        <div class="champ"><label for="f-message">Ce que vous cherchez à régler</label><textarea id="f-message" name="message" rows="3" placeholder="Le cash qui rentre mal, les litiges sans preuve, les marchands qui appellent…"></textarea></div>
+        <div class="champ"><label for="f-message">Ce que vous cherchez à régler <span class="facultatif">(facultatif)</span></label><textarea id="f-message" name="message" rows="3" placeholder="Le cash qui rentre mal, les litiges sans preuve, les marchands qui appellent…"></textarea></div>
         <button class="bouton bouton--principal bouton--grand bouton--bloc" type="submit">Envoyer ma demande</button>
         <p class="formulaire__note" id="form-note" role="status">
           Votre demande nous parvient directement. Nous conservons ce que vous écrivez ici
@@ -457,21 +818,54 @@
 </main>
 
 <footer class="pied">
-  <div class="conteneur pied__barre">
-    <p class="pied__marque">Transpo</p>
-    <p class="pied__mention">
-      Logiciel d’exploitation pour les sociétés de transport et de livraison au Maroc.
-      Montants en dirhams. Interfaces en français et en arabe.
-    </p>
-    <nav class="pied__liens" aria-label="Pied de page">
-      <a href="#etapes">Comment ça marche</a>
-      <a href="#console">La console</a>
-      <a href="#terrain">L’app livreur</a>
-      <a href="#tarifs">Tarifs</a>
-    </nav>
+  <div class="conteneur">
+    <div class="pied__grille">
+      <div class="pied__marque">
+        <a class="marque" href="/" aria-label="Portrail, accueil"><img src="/medias/symbole.svg" width="34" height="34" alt=""><span>Portrail</span></a>
+        <p class="pied__devise">Votre exploitation, sur les rails. Le logiciel d’exploitation des sociétés de livraison last‑mile.</p>
+      </div>
+      <nav aria-labelledby="pied-produit">
+        <h2 id="pied-produit">Produit</h2>
+        <ul>
+          <li><a href="#produit">La console</a></li>
+          <li><a href="#terrain">L’app livreur</a></li>
+          <li><a href="#encaissements">Encaissements</a></li>
+          <li><a href="#localisation">Localisation par lien</a></li>
+        </ul>
+      </nav>
+      <nav aria-labelledby="pied-decouvrir">
+        <h2 id="pied-decouvrir">Découvrir</h2>
+        <ul>
+          <li><a href="#fonctionnement">Fonctionnement</a></li>
+          <li><a href="#video">La vidéo</a></li>
+          <li><a href="#offres">Offres</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </nav>
+      <nav aria-labelledby="pied-langue">
+        <h2 id="pied-langue">Langue</h2>
+        <ul>
+          <li><a href="/" hreflang="fr" aria-current="page">Français</a></li>
+          <li><a href="/en/" hreflang="en" lang="en">English</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="pied__bas">
+      <p>© 2026 Portrail</p>
+      <p><a href="#demo">Demander une démo</a></p>
+    </div>
   </div>
 </footer>
 
-<script src="scene.js" defer></script>
+<dialog class="fenetre-video" id="fenetre-video" aria-label="Vidéo de présentation de Portrail">
+  <button class="fenetre-video__fermer" type="button" data-video-fermer>
+    <svg width="18" height="18" aria-hidden="true"><use href="#i-fermer"/></svg>Fermer
+  </button>
+  <video controls preload="none" playsinline width="1920" height="1080" poster="/medias/presentation-affiche.webp">
+    <source src="/medias/portrail-presentation.mp4" type="video/mp4">
+  </video>
+</dialog>
+
+<script src="/scene.js" defer></script>
 </body>
 </html>

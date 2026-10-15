@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /api/
 
-Sitemap: https://transpo.wedowonders.com/sitemap.xml
+Sitemap: __SITE__/sitemap.xml
