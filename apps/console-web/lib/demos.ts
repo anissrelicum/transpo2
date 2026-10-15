@@ -30,7 +30,7 @@ export const FIL_ROUGE = {
   devise: 'Une course, quatre mains, un seul dossier.',
 };
 
-export const VIDEO_COMPLETE = { id: 'transpo-demo-complete', duree: 1464 };
+export const VIDEO_COMPLETE = { id: 'transpo-demo-complete', duree: 1489 };
 
 export const CHAPITRES: ChapitreDemo[] = [
   {
@@ -109,24 +109,24 @@ export const CHAPITRES: ChapitreDemo[] = [
     id: '03-marchand',
     numero: 3,
     titre: 'Le marchand dépose',
-    accroche: 'Une livraison créée en une minute, suivie jusqu’à l’encaissement.',
+    accroche: 'Une livraison créée en une minute, localisée par un simple lien.',
     acteur: 'Leila Berrada, gérante de Maison Argane (marchand)',
     surface: 'Portail marchand',
-    duree: 174,
+    duree: 199,
     resume:
-      'Maison Argane confie ses livraisons à Atlas Express. Sa gérante consulte son tableau de bord, crée une livraison en trois étapes (retrait, livraison, colis) avec un contre-remboursement de 420 DH et une preuve par signature, voit le prix calculé en direct, puis retrouve la commande et son code de suivi. Le portefeuille montre l’argent encaissé pour elle.',
+      'Maison Argane confie ses livraisons à Atlas Express. Sa gérante consulte son tableau de bord, puis crée une livraison sans taper d’adresse : elle colle le lien Google Maps de sa boutique, puis le message WhatsApp où la cliente a partagé sa position. Les épingles se placent, les adresses se remplissent, le lien est conservé pour le livreur, et le prix se calcule sur la vraie distance. La commande apparaît avec son code de suivi ; le portefeuille montre l’argent encaissé pour elle.',
     deroule: [
       { t: 11, titre: 'Tableau de bord marchand', texte: 'Commandes, livrées, en route, COD à encaisser et taux de réussite du transporteur.' },
-      { t: 44, titre: 'Retrait', texte: 'La boutique, rue Ahmed El Mokri, Maârif, avec une consigne pour le livreur.' },
-      { t: 64, titre: 'Livraison', texte: 'La cliente Nadia Tahiri, boulevard Al Massira ; ville prise dans le référentiel.' },
-      { t: 83, titre: 'Colis et preuve', texte: 'Format, contenu, niveau de preuve exigé, 420 DH à encaisser.' },
-      { t: 106, titre: 'Prix en direct', texte: 'Le moteur de tarification applique la cascade du transporteur.' },
-      { t: 120, titre: 'Commande créée', texte: 'Statut « Nouvelle », référence et code de suivi pour la cliente.' },
-      { t: 141, titre: 'Portefeuille', texte: 'COD encaissé, commission retenue et net à reverser, commande par commande.' },
+      { t: 52, titre: 'Retrait par lien', texte: 'Le lien Google Maps de la boutique est collé : épingle placée, adresse retrouvée.' },
+      { t: 75, titre: 'Livraison par WhatsApp', texte: 'Le message de la cliente est collé tel quel ; le lien est reconnu et conservé pour le livreur.' },
+      { t: 96, titre: 'Distance réelle', texte: 'Ville reconnue d’elle-même ; le prix suit la distance entre les deux épingles.' },
+      { t: 108, titre: 'Colis et preuve', texte: 'Format, contenu, niveau de preuve exigé, 420 DH à encaisser.' },
+      { t: 145, titre: 'Commande créée', texte: 'Statut « Nouvelle », référence et code de suivi pour la cliente.' },
+      { t: 166, titre: 'Portefeuille', texte: 'COD encaissé, commission retenue et net à reverser, commande par commande.' },
     ],
     aRetenir: [
-      'Le niveau de preuve choisi par le marchand est imposé au livreur dans l’application.',
-      'Le code de suivi permet à la cliente de suivre son colis sans compte.',
+      'Un lien Google Maps, Waze, Apple Plans ou un message WhatsApp suffit : plus d’adresse à recopier.',
+      'Le lien d’origine est transmis au livreur, qui l’ouvre pour naviguer jusqu’à la porte.',
       'Cette commande est celle que le dispatch affecte au chapitre 4 et que Youssef livre au chapitre 5.',
     ],
   },

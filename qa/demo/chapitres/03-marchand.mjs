@@ -80,10 +80,30 @@ await t.dire('Une cliente vient de commander un coffret sur la boutique en ligne
   await p.waitForTimeout(600);
 });
 
-await t.dire('D’abord, le point de retrait : la boutique, rue Ahmed El Mokri, dans le Maârif.', async () => {
+// Collage réel (évènement `paste`), comme un Ctrl+V : c'est ce que fait le marchand.
+async function coller(id, texte) {
+  const champ = p.getByTestId(id);
+  await t.cliquer(champ);
+  await p.waitForTimeout(300);
+  await champ.evaluate((el, v) => {
+    const dt = new DataTransfer();
+    dt.setData('text/plain', v);
+    el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+  }, texte);
+}
+const LIEN_BOUTIQUE = 'https://maps.google.com/?q=33.58690,-7.63380';
+const MESSAGE_CLIENTE = '📍 Voici ma position : https://maps.google.com/?q=33.58125,-7.63902';
+
+await t.dire('D’abord, le point de retrait : sa boutique, dans le Maârif. Plutôt que de taper l’adresse, Leila colle le lien Google Maps de la boutique.', async () => {
   await t.taper(p.getByPlaceholder('Nom du contact'), RETRAIT.contact, 35);
   await t.taper(p.getByPlaceholder('+212 6 00 00 00 00'), RETRAIT.tel, 30);
-  await t.taper(p.getByPlaceholder('N°, rue, quartier'), RETRAIT.adresse, 25);
+  await coller('loc-retrait-input', LIEN_BOUTIQUE);
+  await p.getByTestId('loc-retrait-kept').waitFor({ timeout: 30_000 });
+});
+await t.dire('L’épingle se place sur la carte, et l’adresse est retrouvée toute seule. Si besoin, il suffit de faire glisser l’épingle pour l’ajuster.', async () => {
+  await t.survoler(p.getByTestId('loc-retrait-block').locator('.leaflet-marker-icon').first());
+  await p.waitForTimeout(1500);
+  await t.survoler(p.getByPlaceholder('N°, rue, quartier'));
 });
 await t.dire('Elle ajoute une consigne pour le livreur, puis continue.', async () => {
   await t.taper(p.getByPlaceholder('Instructions d’accès, étage, code…'), RETRAIT.notes, 22);
@@ -91,18 +111,25 @@ await t.dire('Elle ajoute une consigne pour le livreur, puis continue.', async (
   await p.getByRole('heading', { name: 'Point de livraison' }).waitFor();
 });
 
-await t.dire('Ensuite, le point de livraison : la cliente, Nadia Tahiri, boulevard Al Massira, toujours dans le Maârif.', async () => {
+await t.dire('Pour la livraison, la cliente, Nadia Tahiri, lui a envoyé sa position sur WhatsApp. Leila colle simplement le message.', async () => {
   await t.taper(p.getByPlaceholder('Nom du contact'), LIVRAISON.contact, 35);
   await t.taper(p.getByPlaceholder('+212 6 00 00 00 00'), LIVRAISON.tel, 30);
-  await t.taper(p.getByPlaceholder('N°, rue, quartier'), LIVRAISON.adresse, 22);
+  await coller('loc-livraison-input', MESSAGE_CLIENTE);
+  await p.getByTestId('loc-livraison-kept').waitFor({ timeout: 30_000 });
+});
+await t.dire('Le lien est reconnu, la position placée, l’adresse remplie. Et ce lien est conservé : le livreur l’ouvrira d’un geste pour être guidé jusqu’à la porte.', async () => {
+  await t.survoler(p.getByTestId('loc-livraison-block').locator('.leaflet-marker-icon').first());
+  await p.waitForTimeout(1300);
+  await t.survoler(p.getByTestId('loc-livraison-kept'));
 });
 
 // L'estimation n'apparaît que si l'API accepte le devis pour un compte marchand.
 const estimation = p.getByText('Total TTC');
-await t.dire('La ville se choisit dans le référentiel des villes, qui sert aussi au calcul de la distance.', async () => {
-  await choisir(t, p.getByRole('combobox').first(), 'Casablanca');
-  await p.waitForTimeout(900);
-  await t.survoler(p.getByText(/Casablanca → Casablanca/));
+await t.dire('La ville est reconnue d’elle-même. Et comme les deux points sont sur la carte, le prix se calcule sur la vraie distance de la course.', async () => {
+  await t.survoler(p.getByRole('combobox').first());
+  await p.waitForTimeout(1000);
+  const distance = p.getByText(/distance estimée/);
+  if (await distance.isVisible()) await t.survoler(distance);
 });
 await t.dire('Une dernière consigne pour l’accès, et l’on passe au colis.', async () => {
   await t.taper(p.getByPlaceholder('Instructions d’accès, étage, code…'), LIVRAISON.notes, 22);
