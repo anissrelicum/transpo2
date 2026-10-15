@@ -11,9 +11,17 @@ import {
   ChevronRightIcon, ArrowLeftIcon, DownloadIcon, InfoCircledIcon,
 } from '@radix-ui/react-icons';
 import { money } from '@transpo/ui-web';
-import { CITIES_WITH_COORDS, cityDistanceKm, PARCEL_SIZES, PROOF_LEVELS } from '@transpo/domain';
+import { CITIES_WITH_COORDS, cityDistanceKm, roadDistanceKm, PARCEL_SIZES, PROOF_LEVELS } from '@transpo/domain';
 import type { QuoteResult } from '@transpo/api-client';
+import type { Lang } from '@transpo/i18n';
 import { PageHeader } from './ui';
+import { LocalisationPoint, type Localisation } from './LocalisationPoint';
+
+/** Libellés introduits avec la localisation (le reste de l'assistant reste à traduire). */
+const TW = {
+  fr: { realDistance: 'distance estimée entre les deux épingles', cityDistance: 'distance de ville à ville' },
+  ar: { realDistance: 'المسافة التقديرية بين الدبوسين', cityDistance: 'المسافة بين المدينتين' },
+} as const;
 
 const VEHICLES = ['Moto', 'Voiture', 'Fourgon', 'Fourgon frigorifique'];
 const APPLIED_LABEL: Record<string, string> = { grille: 'Grille standard', remise: 'Remise contractuelle', fixe_marchand: 'Prix marchand' };
@@ -42,9 +50,9 @@ function Field({ label, hint, required, children }: { label: string; hint?: stri
   );
 }
 
-/** Coordonnées d'un point de la course. */
-type Point = { contact: string; phone: string; address: string; notes: string };
-const POINT_VIDE: Point = { contact: '', phone: '', address: '', notes: '' };
+/** Coordonnées d'un point de la course (+ localisation précise, facultative). */
+type Point = { contact: string; phone: string; address: string; notes: string; loc: Localisation | null };
+const POINT_VIDE: Point = { contact: '', phone: '', address: '', notes: '', loc: null };
 function PriceRow({ label, value }: { label: string; value: string }) {
   return <Flex justify="between" align="center"><Text size="2" color="gray">{label}</Text><Text size="2" weight="medium">{value}</Text></Flex>;
 }
@@ -55,9 +63,9 @@ function PriceRow({ label, value }: { label: string; value: string }) {
  * Deux écrans entiers de saisie — contact, téléphone, adresse, notes — partaient à la
  * poubelle à chaque commande, alors même qu'ils portent la mention « requis ».
  */
-function AddressForm({ which, city, onCity, point, onPoint }: {
+function AddressForm({ which, city, onCity, point, onPoint, lang }: {
   which: 'retrait' | 'livraison'; city: string; onCity: (v: string) => void;
-  point: Point; onPoint: (p: Partial<Point>) => void;
+  point: Point; onPoint: (p: Partial<Point>) => void; lang: Lang;
 }) {
   const isRet = which === 'retrait';
   return (
@@ -71,9 +79,17 @@ function AddressForm({ which, city, onCity, point, onPoint }: {
           <TextField.Root value={point.phone} onChange={(e) => onPoint({ phone: e.target.value })} placeholder="+212 6 00 00 00 00" size="2" />
         </Field>
       </Grid>
-      <Field label="Adresse" required>
-        <TextField.Root value={point.address} onChange={(e) => onPoint({ address: e.target.value })} placeholder="N°, rue, quartier" size="2" />
+      <Field label="Adresse" required hint={point.loc ? undefined : 'Ou collez le lien de localisation ci-dessous : l’adresse détectée remplira ce champ.'}>
+        <TextField.Root data-testid={`wizard-${which}-address`} value={point.address} onChange={(e) => onPoint({ address: e.target.value })} placeholder="N°, rue, quartier" size="2" />
       </Field>
+      {/* Localisation précise : lien collé (WhatsApp…) ou épingle. Le lien d'origine est
+          conservé et transmis au livreur, qui navigue d'un geste. */}
+      <LocalisationPoint
+        which={which} lang={lang} city={city}
+        value={point.loc} onChange={(loc) => onPoint({ loc })}
+        address={point.address} onAddress={(address) => onPoint({ address })}
+        onCity={onCity}
+      />
       <Field label="Ville" required>
         <Select.Root value={city} onValueChange={onCity} size="2">
           <Select.Trigger style={{ width: '100%' }} />
@@ -92,7 +108,8 @@ function AddressForm({ which, city, onCity, point, onPoint }: {
  * En espace marchand, le champ Marchand disparaît (l'API force celui du compte) et le
  * retour se fait vers les commandes du portail.
  */
-export function CreateWizard({ merchants, espace = 'console' }: { merchants: string[]; espace?: 'console' | 'marchand' }) {
+export function CreateWizard({ merchants, espace = 'console', lang = 'fr' }: { merchants: string[]; espace?: 'console' | 'marchand'; lang?: Lang }) {
+  const tw = TW[lang === 'ar' ? 'ar' : 'fr'];
   const marchandConnecte = espace === 'marchand';
   const retour = marchandConnecte ? '/portail/commandes' : '/orders';
   const router = useRouter();
@@ -114,7 +131,13 @@ export function CreateWizard({ merchants, espace = 'console' }: { merchants: str
   const [error, setError] = React.useState<string | null>(null);
 
   // Devis calculé par l'API (moteur réel) — recalculé à chaque changement.
-  const distanceKm = cityDistanceKm(fromCity, toCity);
+  // Deux épingles posées : distance réelle estimée (vol d'oiseau × facteur route, cf.
+  // ROAD_FACTOR dans @transpo/domain) plutôt que la distance forfaitaire de ville à ville,
+  // qui facturait 6 km une course Maârif → Aïn Diab comme une course Maârif → Sidi Maârouf.
+  const deuxPoints = !!(retrait.loc && livraison.loc);
+  const distanceKm = retrait.loc && livraison.loc
+    ? roadDistanceKm(retrait.loc, livraison.loc)
+    : cityDistanceKm(fromCity, toCity);
   const [q, setQ] = React.useState<QuoteResult | null>(null);
   const [quoting, setQuoting] = React.useState(false);
   React.useEffect(() => {
@@ -141,6 +164,9 @@ export function CreateWizard({ merchants, espace = 'console' }: { merchants: str
         pickupAddress: retrait.address, pickupNotes: retrait.notes,
         dropContact: livraison.contact, dropPhone: livraison.phone,
         dropAddress: livraison.address, dropNotes: livraison.notes,
+        // Lien d'origine conservé ; `null` (épingle posée à la main) → l'API génère un lien.
+        pickupLat: retrait.loc?.lat ?? null, pickupLng: retrait.loc?.lng ?? null, pickupMapUrl: retrait.loc?.mapUrl ?? null,
+        dropLat: livraison.loc?.lat ?? null, dropLng: livraison.loc?.lng ?? null, dropMapUrl: livraison.loc?.mapUrl ?? null,
         description, vehicleType,
       }),
     });
@@ -189,8 +215,11 @@ export function CreateWizard({ merchants, espace = 'console' }: { merchants: str
         <Box style={{ gridColumn: 'span 2' }}>
           <Card size="3">
             {error && <Callout.Root color="red" size="1" mb="3" role="alert"><Callout.Text>{error}</Callout.Text></Callout.Root>}
-            {step === 1 && <AddressForm which="retrait" city={fromCity} onCity={setFromCity} point={retrait} onPoint={(p) => setRetrait({ ...retrait, ...p })} />}
-            {step === 2 && <AddressForm which="livraison" city={toCity} onCity={setToCity} point={livraison} onPoint={(p) => setLivraison({ ...livraison, ...p })} />}
+            {/* Mise à jour fonctionnelle : la résolution d'un lien est asynchrone et remplit
+                plusieurs champs (localisation, adresse, ville) — une copie figée de l'état
+                en écraserait une partie. */}
+            {step === 1 && <AddressForm lang={lang} which="retrait" city={fromCity} onCity={setFromCity} point={retrait} onPoint={(p) => setRetrait((cur) => ({ ...cur, ...p }))} />}
+            {step === 2 && <AddressForm lang={lang} which="livraison" city={toCity} onCity={setToCity} point={livraison} onPoint={(p) => setLivraison((cur) => ({ ...cur, ...p }))} />}
             {step === 3 && (
               <Flex direction="column" gap="4">
                 <Heading size="4">Colis & options</Heading>
@@ -264,14 +293,16 @@ export function CreateWizard({ merchants, espace = 'console' }: { merchants: str
               <Heading size="4">Estimation du prix</Heading>
               {quoting && <Spinner />}
             </Flex>
-            <Text as="div" size="1" color="gray" mb="3">{fromCity} → {toCity} · {distanceKm} km</Text>
+            <Text as="div" size="1" color="gray" mb="3" data-testid="wizard-distance">
+              {fromCity} → {toCity} · {distanceKm.toLocaleString('fr-FR')} km · {deuxPoints ? tw.realDistance : tw.cityDistance}
+            </Text>
             {q ? (
               <Flex direction="column" gap="2">
                 <Flex justify="between" align="center">
                   <Text size="1" color="gray">Tarification</Text>
                   <Badge color="gray" variant="soft">{APPLIED_LABEL[q.applied] ?? q.applied}</Badge>
                 </Flex>
-                <PriceRow label={`Base · ${distanceKm} km`} value={money(q.base)} />
+                <PriceRow label={`Base · ${distanceKm.toLocaleString('fr-FR')} km`} value={money(q.base)} />
                 {q.surcharges > 0 && <PriceRow label="Suppléments (fragile/programmé)" value={money(q.surcharges)} />}
                 <PriceRow label="HT" value={money(q.ht)} />
                 <PriceRow label="TVA 20 %" value={money(q.tva)} />

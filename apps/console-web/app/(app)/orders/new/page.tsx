@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { serverClient } from '../../../../lib/server';
 import { CreateWizard } from '../../../../components/CreateWizard';
+import { currentLang } from '../../../../lib/i18n';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,5 +18,5 @@ export default async function NewOrderPage() {
     merchants = [...new Set(orders.map((o) => o.merchant).filter(Boolean) as string[])].sort();
   } catch { /* liste vide → champ texte libre */ }
 
-  return <CreateWizard merchants={merchants} />;
+  return <CreateWizard merchants={merchants} lang={currentLang()} />;
 }

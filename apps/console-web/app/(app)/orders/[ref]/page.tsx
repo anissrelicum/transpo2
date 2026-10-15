@@ -5,6 +5,7 @@ import type { Order } from '@transpo/domain';
 import { serverClient } from '../../../../lib/server';
 import { ApiError, type DeliveryProof } from '@transpo/api-client';
 import { OrderDetailClient, type OrderEvent } from '../../../../components/OrderDetailClient';
+import { currentLang } from '../../../../lib/i18n';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,5 +41,5 @@ export default async function OrderDetailPage({ params }: { params: { ref: strin
     redirect('/login');
   }
 
-  return <OrderDetailClient order={order} drivers={driverNames} proof={proof} events={events} canWrite={canWrite} commissionRate={commissionRate} vatRate={vatRate} />;
+  return <OrderDetailClient order={order} drivers={driverNames} proof={proof} events={events} canWrite={canWrite} commissionRate={commissionRate} vatRate={vatRate} lang={currentLang()} />;
 }

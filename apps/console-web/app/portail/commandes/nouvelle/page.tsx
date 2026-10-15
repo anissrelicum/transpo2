@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { CreateWizard } from '../../../../components/CreateWizard';
+import { currentLang } from '../../../../lib/i18n';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,5 +15,5 @@ export const dynamic = 'force-dynamic';
  * valeur envoyée.
  */
 export default function MerchantNewOrderPage() {
-  return <CreateWizard merchants={[]} espace="marchand" />;
+  return <CreateWizard merchants={[]} espace="marchand" lang={currentLang()} />;
 }

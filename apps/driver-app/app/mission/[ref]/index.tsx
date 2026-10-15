@@ -1,10 +1,11 @@
 // Détail de mission — cf. maquette `MissionDetail`/`StepCard`/`ContactSheet`/`ContactBtn`.
-// Pas de lat/lng dans `Order` (cf. plan §1 ligne 4) : carte remplacée par un
-// placeholder explicite, jamais de coordonnées inventées. Idem pour le nom et
-// le téléphone du destinataire, absents de l'API : la fiche contact est signalée
-// comme non alimentée (cf. plan §1 ligne 5).
+// Localisation : quand la commande porte des coordonnées (lien collé par le marchand ou
+// épingle posée à la création — migration 0027), deux boutons « Itinéraire » ouvrent le
+// lien de carte d'origine dans l'app de navigation du téléphone. Sans coordonnées, un
+// placeholder explicite : jamais de position inventée. Le téléphone du destinataire,
+// absent de l'API (règle de confidentialité), reste non exposé.
 import * as React from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView, Modal, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ScrollView, Modal, ActivityIndicator, Linking, Platform, Alert } from 'react-native';
 import { useLocalSearchParams, router, Stack } from 'expo-router';
 import type { Order } from '@transpo/domain';
 import { STATUS_META, money } from '@transpo/domain';
@@ -26,6 +27,9 @@ const T = {
     parcel: 'Colis', codToCollect: 'COD à encaisser', codPaid: 'COD encaissé', codNone: 'Prépayé',
     proof: 'Preuve', proofNone: 'Aucune preuve exigée',
     mapTitle: 'Carte indisponible', mapSub: 'Aucune coordonnée GPS pour cette commande dans l’API.',
+    routeTitle: 'Navigation', routePickup: 'Itinéraire vers le retrait', routeDrop: 'Itinéraire vers la livraison',
+    routeMissing: 'Point non localisé — adresse texte uniquement.',
+    routeFailTitle: 'Navigation impossible', routeFailBody: 'Aucune application de carte n’a pu ouvrir ce lien.', ok: 'OK',
     contactDemoTitle: 'Contact non alimenté',
     contactDemoBody: 'L’API ne fournit pas de numéro client : cette fiche est une démonstration visuelle, sans appel ni SMS réel.',
     contact: 'Contacter', close: 'Fermer', navigate: 'Naviguer',
@@ -39,6 +43,9 @@ const T = {
     parcel: 'الطرد', codToCollect: 'للتحصيل', codPaid: 'محصَّل', codNone: 'مدفوع مسبقاً',
     proof: 'الإثبات', proofNone: 'لا يُطلب إثبات',
     mapTitle: 'الخريطة غير متوفرة', mapSub: 'لا توجد إحداثيات GPS لهذه الشحنة في الواجهة البرمجية.',
+    routeTitle: 'التنقل', routePickup: 'المسار إلى نقطة الاستلام', routeDrop: 'المسار إلى نقطة التسليم',
+    routeMissing: 'النقطة غير محددة الموقع — العنوان النصي فقط.',
+    routeFailTitle: 'تعذّر التنقل', routeFailBody: 'لم يتمكن أي تطبيق خرائط من فتح هذا الرابط.', ok: 'حسناً',
     contactDemoTitle: 'الاتصال غير مفعّل',
     contactDemoBody: 'لا توفر الواجهة البرمجية رقم هاتف العميل: هذه الشاشة عرض توضيحي بدون اتصال أو رسالة حقيقية.',
     contact: 'الاتصال', close: 'إغلاق', navigate: 'التنقل',
@@ -47,6 +54,26 @@ const T = {
     demo: 'عرض',
   },
 } as const;
+
+/**
+ * Ouvre la navigation vers un point. Ordre : le lien d'ORIGINE (celui que le client a
+ * envoyé — il peut désigner un lieu nommé, une entrée précise), puis le schéma natif
+ * `geo:` (Android) / Plans (iOS), puis Google Maps web. Une app absente ne bloque jamais.
+ */
+async function ouvrirItineraire(lat: number, lng: number, mapUrl: string | null | undefined): Promise<boolean> {
+  const candidats = [
+    mapUrl && /^https?:\/\//i.test(mapUrl) ? mapUrl : null,
+    Platform.OS === 'android' ? `geo:${lat},${lng}?q=${lat},${lng}` : `https://maps.apple.com/?daddr=${lat},${lng}`,
+    `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`,
+  ].filter((u): u is string => !!u);
+  for (const u of candidats) {
+    try {
+      await Linking.openURL(u);
+      return true;
+    } catch { /* candidat suivant */ }
+  }
+  return false;
+}
 
 const PROOF_LABEL = { photo: { fr: 'photo', ar: 'صورة' }, signature: { fr: 'signature', ar: 'توقيع' } };
 
@@ -101,6 +128,11 @@ export default function MissionDetail() {
   const codLabel = order.cod <= 0 ? t.codNone : order.codPaid ? t.codPaid : t.codToCollect;
   const codColor = order.cod <= 0 ? 'gray' : order.codPaid ? 'green' : 'amber';
   const proofLabels = proofRequirementsLabels(order.proofLevel, lang);
+  const aRetrait = order.pickupLat != null && order.pickupLng != null;
+  const aLivraison = order.dropLat != null && order.dropLng != null;
+  const naviguer = async (lat: number, lng: number, url?: string | null) => {
+    if (!(await ouvrirItineraire(lat, lng, url))) Alert.alert(t.routeFailTitle, t.routeFailBody, [{ text: t.ok }]);
+  };
 
   return (
     <View style={[s.wrap, { backgroundColor: colors.bg }]}>
@@ -119,11 +151,28 @@ export default function MissionDetail() {
         }
       />
 
-      {/* Pas de lat/lng réel dans `Order` (cf. plan) : placeholder explicite plutôt qu'une carte inventée. */}
-      <View style={[s.mapPlaceholder, { backgroundColor: colors.panel, borderColor: colors.border }]}>
-        <Text style={[s.mapTitle, { color: colors.muted }]}>{t.mapTitle}</Text>
-        <Text style={[s.mapSub, { color: colors.muted }]}>{t.mapSub}</Text>
-      </View>
+      {aRetrait || aLivraison ? (
+        // Coordonnées connues : un bouton par point, qui ouvre la navigation du téléphone.
+        <View style={[s.routePanel, { backgroundColor: colors.panel, borderColor: colors.border }]}>
+          <Text style={[s.mapTitle, { color: colors.muted, textAlign: rtl ? 'right' : 'left' }]}>{t.routeTitle}</Text>
+          <RouteBtn
+            testID="route-pickup" label={t.routePickup} missing={t.routeMissing} rtl={rtl} colors={colors}
+            tone={resolveColor('slate', 9, mode)}
+            onPress={aRetrait ? () => naviguer(order.pickupLat!, order.pickupLng!, order.pickupMapUrl) : undefined}
+          />
+          <RouteBtn
+            testID="route-drop" label={t.routeDrop} missing={t.routeMissing} rtl={rtl} colors={colors}
+            tone={colors.indigo9}
+            onPress={aLivraison ? () => naviguer(order.dropLat!, order.dropLng!, order.dropMapUrl) : undefined}
+          />
+        </View>
+      ) : (
+        // Aucune coordonnée (commande saisie en texte seul) : placeholder explicite plutôt qu'une carte inventée.
+        <View style={[s.mapPlaceholder, { backgroundColor: colors.panel, borderColor: colors.border }]}>
+          <Text style={[s.mapTitle, { color: colors.muted }]}>{t.mapTitle}</Text>
+          <Text style={[s.mapSub, { color: colors.muted }]}>{t.mapSub}</Text>
+        </View>
+      )}
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={s.content}>
         {/* Contact et adresse RÉELS de la course. Ils étaient jusqu'ici remplacés par la
@@ -240,6 +289,29 @@ function StepCard({
   );
 }
 
+/** Bouton d'itinéraire vers un point ; grisé (sans action) si le point n'est pas localisé. */
+function RouteBtn({ label, missing, onPress, tone, rtl, colors, testID }: {
+  label: string; missing: string; onPress?: () => void; tone: string; rtl: boolean;
+  colors: ReturnType<typeof useTheme>['colors']; testID: string;
+}) {
+  if (!onPress) {
+    return <Text style={[s.mapSub, { color: colors.muted, textAlign: rtl ? 'right' : 'left' }]}>{missing}</Text>;
+  }
+  return (
+    <Pressable
+      testID={testID}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={({ pressed }) => [s.routeBtn, { borderColor: tone, backgroundColor: colors.bg, opacity: pressed ? 0.7 : 1, flexDirection: rtl ? 'row-reverse' : 'row' }]}
+    >
+      <View style={[s.stepDotCore, { backgroundColor: tone }]} />
+      <Text style={[s.routeTxt, { color: colors.text }]}>{label}</Text>
+      <Text style={[s.routeTxt, { color: tone }]}>{rtl ? '←' : '→'}</Text>
+    </Pressable>
+  );
+}
+
 function Chip({ label, color, mode }: { label: string; color: 'gray' | 'amber' | 'green'; mode: 'light' | 'dark' }) {
   const bg = resolveColor(color === 'gray' ? 'slate' : color, 3, mode);
   const fg = resolveColor(color === 'gray' ? 'slate' : color, 11, mode);
@@ -282,6 +354,9 @@ const s = StyleSheet.create({
   badgeTxt: { fontSize: 12, fontWeight: '700' },
   mapPlaceholder: { height: 120, flex: 0, borderBottomWidth: 1, alignItems: 'center', justifyContent: 'center', gap: 4, paddingHorizontal: 24 },
   mapTitle: { fontSize: 13, fontWeight: '600' },
+  routePanel: { borderBottomWidth: 1, paddingHorizontal: space[4], paddingVertical: space[3], gap: 8 },
+  routeBtn: { minHeight: touch.min, borderWidth: 1.5, borderRadius: radius[3], alignItems: 'center', gap: 10, paddingHorizontal: 14 },
+  routeTxt: { flex: 0, fontSize: 15, fontWeight: '700' },
   mapSub: { fontSize: 12, textAlign: 'center' },
   content: { padding: space[4], paddingBottom: 100, gap: space[3] },
   card: { borderRadius: radius[5], borderWidth: 1, padding: space[4], gap: 6 },

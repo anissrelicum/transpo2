@@ -1,6 +1,6 @@
-import { Controller, Get, Post, Body, Param, Query, Req, UseGuards, Inject, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, Query, Req, UseGuards, Inject, HttpCode } from '@nestjs/common';
 import type { OrderStatus } from '@transpo/domain';
-import { OrdersService, type CreateOrderInput } from './orders.service.js';
+import { OrdersService, type CreateOrderInput, type UpdateLocationsInput } from './orders.service.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { TenantGuard } from '../tenant/tenant.guard.js';
 import { RolesGuard } from '../auth/roles.guard.js';
@@ -47,6 +47,13 @@ export class OrdersController {
       ? { ...body, merchant: req.user?.merchant ?? body.merchant }
       : body;
     return this.orders.create(req.tenantSchema, input, req.user?.sub);
+  }
+
+  /** Correction de la localisation (épingle / lien) d'un ou des deux points. */
+  @Patch(':ref/locations')
+  @Roles('ADMIN', 'DISPATCHER')
+  updateLocations(@Req() req: any, @Param('ref') ref: string, @Body() body: UpdateLocationsInput) {
+    return this.orders.updateLocations(req.tenantSchema, ref, body, req.user?.sub);
   }
 
   @Post(':ref/advance')

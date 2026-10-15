@@ -8,6 +8,8 @@ import { useAppTheme } from './theme-provider';
 export type MapMarker = {
   id: string; lat: number; lng: number; kind: 'driver' | 'order' | 'stop';
   label: string; sub?: string; color?: string; ini?: string;
+  /** Épingle déplaçable à la souris / au doigt ; `onDragEnd` reçoit la nouvelle position. */
+  draggable?: boolean; onDragEnd?: (lat: number, lng: number) => void;
 };
 export type MapCircle = { id: string; lat: number; lng: number; radiusM: number; color: string; label?: string; selected?: boolean };
 export type MapPolygon = { id: string; latlngs: [number, number][]; color: string; label?: string; selected?: boolean; onClick?: () => void };
@@ -66,6 +68,30 @@ function ZoomExpose({ onMap }: { onMap: (m: L.Map) => void }) {
   return null;
 }
 
+/**
+ * Recadre la carte quand `focus` change (épingle posée depuis un lien collé) ou l'ajuste
+ * pour contenir tous les points de `fit` (fiche commande : retrait + livraison).
+ * `MapContainer` ignore les changements de `center` après le montage : sans ce composant,
+ * l'épingle tomberait hors de l'écran.
+ */
+function Recadrer({ focus, focusZoom, fit }: { focus?: [number, number] | null; focusZoom?: number; fit?: [number, number][] }) {
+  const map = useMap();
+  const cleFocus = focus ? focus.join(',') : '';
+  const cleFit = fit ? fit.map((p) => p.join(',')).join(';') : '';
+  React.useEffect(() => {
+    if (!focus) return;
+    // Vue de détail (≥ 15) : on ne dézoome pas un utilisateur qui s'est rapproché pour
+    // ajuster l'épingle. Vue d'ensemble (ville) : le zoom demandé s'applique tel quel.
+    const z = focusZoom ?? map.getZoom();
+    map.setView(focus, z >= 15 ? Math.max(z, map.getZoom()) : z);
+  }, [cleFocus]); // eslint-disable-line react-hooks/exhaustive-deps
+  React.useEffect(() => {
+    if (fit && fit.length > 1) map.fitBounds(L.latLngBounds(fit), { padding: [36, 36], maxZoom: 16 });
+    else if (fit && fit.length === 1) map.setView(fit[0], 16);
+  }, [cleFit]); // eslint-disable-line react-hooks/exhaustive-deps
+  return null;
+}
+
 function ClickCapture({ onClick }: { onClick: (lat: number, lng: number) => void }) {
   useMapEvents({ click(e) { onClick(e.latlng.lat, e.latlng.lng); } });
   return null;
@@ -73,9 +99,11 @@ function ClickCapture({ onClick }: { onClick: (lat: number, lng: number) => void
 
 export default function LeafletMap({
   center, zoom = 12, markers = [], circles = [], polygons = [], polylines = [], interactive = true, onMap, onMapClick,
+  focus, focusZoom, fit,
 }: {
   center: [number, number]; zoom?: number; markers?: MapMarker[]; circles?: MapCircle[]; polygons?: MapPolygon[]; polylines?: MapPolyline[];
   interactive?: boolean; onMap?: (m: L.Map) => void; onMapClick?: (lat: number, lng: number) => void;
+  focus?: [number, number] | null; focusZoom?: number; fit?: [number, number][];
 }) {
   return (
     <MapContainer
@@ -86,6 +114,7 @@ export default function LeafletMap({
       <TileByTheme />
       {onMap && <ZoomExpose onMap={onMap} />}
       {onMapClick && <ClickCapture onClick={onMapClick} />}
+      {(focus !== undefined || fit) && <Recadrer focus={focus} focusZoom={focusZoom} fit={fit} />}
       {polylines.map((pl) => (
         <Polyline key={pl.id} positions={pl.latlngs}
           pathOptions={{ color: `var(--${pl.color}-9)`, weight: 4, opacity: 0.75, dashArray: pl.dashArray, lineJoin: 'round' }} />
@@ -104,7 +133,13 @@ export default function LeafletMap({
         </Circle>
       ))}
       {markers.map((m) => (
-        <Marker key={m.id} position={[m.lat, m.lng]} icon={makeIcon(m)}>
+        <Marker
+          key={m.id} position={[m.lat, m.lng]} icon={makeIcon(m)}
+          draggable={!!m.draggable}
+          eventHandlers={m.onDragEnd ? {
+            dragend: (e) => { const p = (e.target as L.Marker).getLatLng(); m.onDragEnd!(p.lat, p.lng); },
+          } : undefined}
+        >
           <Popup>
             <div style={{ fontWeight: 600, fontSize: 13 }}>{m.label}</div>
             {m.sub && <div style={{ color: 'var(--gray-11)', fontSize: 12, marginTop: 2 }}>{m.sub}</div>}

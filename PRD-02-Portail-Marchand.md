@@ -22,7 +22,7 @@ Salutation personnalisée + 4 tuiles stat (commandes du mois, solde portefeuille
 
 ## 4. Nouvelle commande (`create`, assistant 3 étapes)
 
-Version marchand du même assistant que côté admin (voir [PRD-01](PRD-01-Console-Admin-Dispatcher.md) § 2.2), avec une différence clé : **l'adresse de retrait est pré-remplie** avec l'adresse de la boutique du marchand (callout explicite), le marchand ne saisit que la destination et les infos colis. Récapitulatif de prix live incluant **« Payé via portefeuille »** avec le solde disponible affiché en badge.
+Version marchand du même assistant que côté admin (voir [PRD-01](PRD-01-Console-Admin-Dispatcher.md) § 2.2), avec une différence clé : **l'adresse de retrait est pré-remplie** avec l'adresse de la boutique du marchand (callout explicite), le marchand ne saisit que la destination et les infos colis. Récapitulatif de prix live incluant **« Payé via portefeuille »** avec le solde disponible affiché en badge. Le bloc **Localisation** (lien WhatsApp collé ou épingle, cf. PRD-01 § 2.2) est identique : c'est le cas d'usage principal du marchand, qui reçoit la position de son client par WhatsApp.
 
 ## 5. Mes commandes (`orders` → détail)
 

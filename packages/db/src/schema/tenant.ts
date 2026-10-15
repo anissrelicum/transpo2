@@ -27,6 +27,14 @@ export const orders = pgTable('orders', {
   dropPhone: text('drop_phone'),
   dropAddress: text('drop_address'),
   dropNotes: text('drop_notes'),
+  // Localisation des deux points (cf. migration 0027) : coordonnées WGS84 + lien de carte
+  // d'origine (Google Maps, Waze, Plans…) transmis tel quel au livreur pour naviguer.
+  pickupLat: doublePrecision('pickup_lat'),
+  pickupLng: doublePrecision('pickup_lng'),
+  pickupMapUrl: text('pickup_map_url'),
+  dropLat: doublePrecision('drop_lat'),
+  dropLng: doublePrecision('drop_lng'),
+  dropMapUrl: text('drop_map_url'),
   description: text('description'),
   vehicleType: text('vehicle_type'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

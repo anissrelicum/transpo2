@@ -4,6 +4,7 @@ import { LIFECYCLE, canTransition, PARCEL_SIZES, PROOF_LEVELS } from '@transpo/d
 import { withTenantDb, orders as ordersTable, orderEvents as orderEventsTable, deliveryProofs } from '@transpo/db';
 import { desc, eq } from 'drizzle-orm';
 import { NotificationsService } from '../notifications/notifications.service.js';
+import { normaliserLocalisation } from './localisation.js';
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 function rndCode(): string {
@@ -27,7 +28,19 @@ export interface CreateOrderInput {
   pickupContact?: string; pickupPhone?: string; pickupAddress?: string; pickupNotes?: string;
   dropContact?: string; dropPhone?: string; dropAddress?: string; dropNotes?: string;
   description?: string; vehicleType?: string;
+  // Localisation précise (épingle ou lien collé) — cf. migration 0027 et localisation.ts.
+  pickupLat?: number | null; pickupLng?: number | null; pickupMapUrl?: string | null;
+  dropLat?: number | null; dropLng?: number | null; dropMapUrl?: string | null;
 }
+
+/** Corps de `PATCH /v1/orders/:ref/locations` : un point absent du corps reste inchangé. */
+export interface UpdateLocationsInput {
+  pickupLat?: number | null; pickupLng?: number | null; pickupMapUrl?: string | null;
+  dropLat?: number | null; dropLng?: number | null; dropMapUrl?: string | null;
+}
+
+/** Statuts où la course est close : la localisation n'a plus à bouger. */
+const CLOS = ['LIVREE', 'ANNULEE', 'RETOUR'];
 
 // 9 à 15 CHIFFRES, espaces et tirets de présentation ignorés : « +212 6 00 00 00 00 », le
 // format montré en exemple dans les formulaires, comptait 18 caractères et était refusé.
@@ -92,6 +105,8 @@ export class OrdersService {
         throw new BadRequestException(`Téléphone invalide (${champ === 'pickupPhone' ? 'retrait' : 'livraison'}).`);
       }
     }
+    const retraitLoc = normaliserLocalisation('retrait', input.pickupLat, input.pickupLng, input.pickupMapUrl);
+    const livraisonLoc = normaliserLocalisation('livraison', input.dropLat, input.dropLng, input.dropMapUrl);
     return withTenantDb(schema, async (db) => {
       const row = {
         ref: nextRef(), code: rndCode(),
@@ -107,6 +122,8 @@ export class OrdersService {
         dropContact: texte(input.dropContact), dropPhone: texte(input.dropPhone),
         dropAddress: texte(input.dropAddress), dropNotes: texte(input.dropNotes),
         description: texte(input.description), vehicleType: texte(input.vehicleType),
+        pickupLat: retraitLoc.lat, pickupLng: retraitLoc.lng, pickupMapUrl: retraitLoc.mapUrl,
+        dropLat: livraisonLoc.lat, dropLng: livraisonLoc.lng, dropMapUrl: livraisonLoc.mapUrl,
       };
       const [r] = await db.insert(ordersTable).values(row).returning();
       await journaliser(db, r.ref, r.status, actor, 'Commande créée');
@@ -119,6 +136,35 @@ export class OrdersService {
         recipient: creee.dropPhone, vars: { code: creee.code },
       });
       return creee;
+    });
+  }
+
+  /**
+   * Corrige la localisation d'un ou des deux points (épingle déplacée, nouveau lien du
+   * client). Un point dont aucun champ n'est fourni reste tel quel ; `null` partout
+   * l'efface. Refusé sur une course close : la position fait foi pour la preuve.
+   */
+  updateLocations(schema: string, ref: string, input: UpdateLocationsInput, actor?: string): Promise<Order> {
+    const body = input ?? {};
+    const touche = (k: 'pickup' | 'drop') =>
+      [`${k}Lat`, `${k}Lng`, `${k}MapUrl`].some((c) => Object.prototype.hasOwnProperty.call(body, c));
+    if (!touche('pickup') && !touche('drop')) throw new BadRequestException('Aucune localisation à mettre à jour.');
+    const set: Record<string, unknown> = {};
+    if (touche('pickup')) {
+      const l = normaliserLocalisation('retrait', body.pickupLat, body.pickupLng, body.pickupMapUrl);
+      Object.assign(set, { pickupLat: l.lat, pickupLng: l.lng, pickupMapUrl: l.mapUrl });
+    }
+    if (touche('drop')) {
+      const l = normaliserLocalisation('livraison', body.dropLat, body.dropLng, body.dropMapUrl);
+      Object.assign(set, { dropLat: l.lat, dropLng: l.lng, dropMapUrl: l.mapUrl });
+    }
+    return withTenantDb(schema, async (db) => {
+      const [cur] = await db.select().from(ordersTable).where(eq(ordersTable.ref, ref));
+      if (!cur) throw new NotFoundException(`Commande introuvable : ${ref}`);
+      if (CLOS.includes(cur.status)) throw new BadRequestException('Course close : localisation figée.');
+      const [r] = await db.update(ordersTable).set(set).where(eq(ordersTable.ref, ref)).returning();
+      await journaliser(db, ref, r.status, actor, 'Localisation mise à jour');
+      return rowToOrder(r);
     });
   }
 

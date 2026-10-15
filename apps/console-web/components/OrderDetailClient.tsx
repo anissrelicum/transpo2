@@ -14,7 +14,62 @@ import { StatusBadge, CodChip, money } from '@transpo/ui-web';
 import { LIFECYCLE, STATUS_META, proofRequirements } from '@transpo/domain';
 import type { Order, OrderStatus } from '@transpo/domain';
 import type { DeliveryProof } from '@transpo/api-client';
+import type { Lang } from '@transpo/i18n';
 import { OrderActions } from './OrderActions';
+import { Map } from './Map';
+
+/** Libellés de la carte des deux points (le reste de la fiche reste à traduire). */
+const TL = {
+  fr: {
+    title: 'Localisation', retrait: 'Retrait', livraison: 'Livraison',
+    open: 'Ouvrir dans Maps', missing: 'Non localisé', approxNote: 'Lien transmis au livreur pour la navigation.',
+  },
+  ar: {
+    title: 'الموقع', retrait: 'الاستلام', livraison: 'التسليم',
+    open: 'فتح في الخرائط', missing: 'غير محدد الموقع', approxNote: 'الرابط مُرسل إلى السائق للتنقل.',
+  },
+} as const;
+
+/** Carte des deux points de la course + liens « Ouvrir dans Maps » (liens d'origine). */
+function LocalisationCard({ order, lang }: { order: Order; lang: Lang }) {
+  const t = TL[lang === 'ar' ? 'ar' : 'fr'];
+  const points = ([
+    ['retrait', order.pickupLat, order.pickupLng, order.pickupMapUrl, 'orange'],
+    ['livraison', order.dropLat, order.dropLng, order.dropMapUrl, 'indigo'],
+  ] as const).map(([k, lat, lng, url, color]) => ({ k, lat, lng, url, color, ok: lat != null && lng != null }));
+  const situes = points.filter((p) => p.ok);
+  if (situes.length === 0) return null;
+  const fit = situes.map((p) => [p.lat as number, p.lng as number] as [number, number]);
+  return (
+    <Box mt="5" data-testid="order-locations">
+      <Heading size="4" mb="3">{t.title}</Heading>
+      <Box style={{ position: 'relative', height: 280, borderRadius: 'var(--radius-3)', overflow: 'hidden', border: '1px solid var(--gray-a5)' }}>
+        <Map
+          center={fit[0]} zoom={14} fit={fit}
+          markers={situes.map((p) => ({
+            id: p.k, kind: 'order' as const, lat: p.lat as number, lng: p.lng as number, color: p.color,
+            label: t[p.k], sub: `${(p.lat as number).toFixed(5)}, ${(p.lng as number).toFixed(5)}`,
+          }))}
+          polylines={fit.length === 2 ? [{ id: 'trajet', latlngs: fit, color: 'gray', dashArray: '6 8' }] : []}
+        />
+      </Box>
+      <Flex gap="3" mt="3" wrap="wrap">
+        {points.map((p) => (
+          <Flex key={p.k} align="center" gap="2">
+            <Box style={{ width: 10, height: 10, borderRadius: '50%', background: `var(--${p.color}-9)` }} />
+            <Text size="2" weight="medium">{t[p.k]}</Text>
+            {p.ok && p.url ? (
+              <Button asChild size="1" variant="soft" data-testid={`open-maps-${p.k}`}>
+                <a href={p.url} target="_blank" rel="noopener noreferrer"><SewingPinFilledIcon /> {t.open}</a>
+              </Button>
+            ) : <Text size="1" color="gray">{t.missing}</Text>}
+          </Flex>
+        ))}
+      </Flex>
+      <Text as="p" size="1" color="gray" mt="2">{t.approxNote}</Text>
+    </Box>
+  );
+}
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -84,7 +139,7 @@ function horodatage(iso: string): string {
   return `${d.toLocaleDateString('fr-FR')} · ${d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
 }
 
-export function OrderDetailClient({ order, drivers, proof, events, canWrite, commissionRate, vatRate }: { order: Order; drivers: string[]; proof: DeliveryProof | null; events: OrderEvent[]; canWrite: boolean; commissionRate: number; vatRate: number }) {
+export function OrderDetailClient({ order, drivers, proof, events, canWrite, commissionRate, vatRate, lang = 'fr' }: { order: Order; drivers: string[]; proof: DeliveryProof | null; events: OrderEvent[]; canWrite: boolean; commissionRate: number; vatRate: number; lang?: Lang }) {
   const [copied, setCopied] = React.useState(false);
   const [copyError, setCopyError] = React.useState(false);
   const idx = LIFECYCLE.indexOf(order.status as OrderStatus);
@@ -207,6 +262,7 @@ export function OrderDetailClient({ order, drivers, proof, events, canWrite, com
                     />
                     <InfoBlock icon={<DownloadIcon />} title="Encaissement (COD)" lines={[<CodChip key="c" amount={order.cod} paid={order.codPaid} />, order.codPaid ? 'À reverser au marchand' : 'En attente d’encaissement']} />
                   </Grid>
+                  <LocalisationCard order={order} lang={lang} />
                 </Tabs.Content>
 
                 <Tabs.Content value="proof">

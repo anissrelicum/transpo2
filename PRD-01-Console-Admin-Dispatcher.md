@@ -24,6 +24,7 @@ Recherche libre (réf/code/marchand/téléphone), filtres Statut/Ville/Marchand/
 ### 2.2 Création (assistant 3 étapes)
 1. **Point de retrait** : contact, téléphone, adresse, ville, position GPS, notes livreur.
 2. **Point de livraison** : idem côté destinataire + créneau souhaité.
+   - **Localisation (les deux points)** : coller le lien de position envoyé par le client (Google Maps y compris liens courts `maps.app.goo.gl`, Waze, Plans, OpenStreetMap, coordonnées brutes) → épingle placée, adresse détectée proposée (« Utiliser cette adresse », remplie d'office si le champ est vide), lien **conservé et transmis au livreur** ; ou clic / glisser de l'épingle sur la carte (un lien Google Maps est alors généré). Erreurs explicites : lien non reconnu, refusé (service non pris en charge), expiré, injoignable. Deux épingles → devis sur la distance réelle estimée (vol d'oiseau × 1,3). Cf. `docs/adr/0002-localisation-par-lien.md`.
 3. **Colis & options** : taille (Petit/Moyen/Grand/Très grand — détermine le tarif de base), description, type de véhicule requis, **niveau de preuve exigé** (aucune/photo/signature/photo+signature — propagé jusqu'à l'app livreur), option fragile (+15 DH), livraison programmée (date+créneau), montant COD.
 
 Panneau de droite : **récapitulatif de prix en temps réel** (base taille + distance×4,50 DH/km + option fragile), callout COD si applicable.

@@ -26,7 +26,8 @@ async function forward(req: NextRequest, path: string[], method: 'GET' | 'POST' 
     cache: 'no-store',
   });
   const data = await res.json().catch(() => null);
-  if (!res.ok) return NextResponse.json({ error: data?.message ?? 'Action impossible' }, { status: res.status });
+  // Le `code` d'erreur stable (ex. LIEN_EXPIRE) suit : c'est lui que l'interface traduit.
+  if (!res.ok) return NextResponse.json({ error: data?.message ?? 'Action impossible', code: data?.code }, { status: res.status });
   return NextResponse.json(data ?? { ok: true });
 }
 

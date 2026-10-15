@@ -53,3 +53,6 @@ docs/adr/         # décisions d'architecture                                 �
 Livré au **niveau squelette** (voir `DEFINITION-OF-DONE.md` → niveaux) : structure, Docker, Postgres schema-per-tenant seedé, package `domain` réel, API NestJS minimale (tenant middleware + `GET /v1/orders` isolé par schéma). **Non encore vérifié par `docker compose up` sur cette machine** — à valider au premier run.
 
 **Prochaines tranches** : Drizzle + migrations multi-schémas, auth/RBAC (`transpo-auth-security`), packages `design-tokens`/`i18n`/`api-client`, consoles Next.js (Radix), apps Expo (Tamagui), tests E2E (Playwright/Maestro), pipeline CI complet.
+
+## Localisation par lien (commandes)
+Les points de retrait et de livraison se localisent en collant le lien envoyé par le client (Google Maps, WhatsApp, Waze, Plans, OSM) ou en posant une épingle ; le lien d'origine est transmis au livreur. Endpoint `POST /v1/geo/resolve-link`, correction `PATCH /v1/orders/:ref/locations`. Sécurité (liste blanche anti-SSRF) et politique Nominatim : [`docs/adr/0002-localisation-par-lien.md`](docs/adr/0002-localisation-par-lien.md). Variables : `NOMINATIM_URL`, `NOMINATIM_USER_AGENT`, `NOMINATIM_EMAIL` (`.env.example`).

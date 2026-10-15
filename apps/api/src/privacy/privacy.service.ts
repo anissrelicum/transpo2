@@ -36,6 +36,10 @@ export class PrivacyService {
           pickupAddress: o.pickupAddress, pickupNotes: o.pickupNotes,
           dropContact: o.dropContact, dropPhone: o.dropPhone,
           dropAddress: o.dropAddress, dropNotes: o.dropNotes,
+          // Une position précise (souvent le domicile) est une donnée personnelle au même
+          // titre que l'adresse : elle figure dans l'export.
+          pickupLat: o.pickupLat, pickupLng: o.pickupLng, pickupMapUrl: o.pickupMapUrl,
+          dropLat: o.dropLat, dropLng: o.dropLng, dropMapUrl: o.dropMapUrl,
         })),
         exportedAt: new Date().toISOString(),
       };
@@ -56,11 +60,19 @@ export class PrivacyService {
       // les instructions d'accès restaient lisibles sur chaque fiche, et le suivi client
       // continuait de les servir. On ANONYMISE sans supprimer : la commande reste due,
       // facturée et comptée ; c'est la personne qui disparaît, pas l'écriture comptable.
-      const anonCourse = { dropContact: 'Personne anonymisée', dropPhone: null, dropAddress: null, dropNotes: null };
+      // La position et le lien de carte suivent l'adresse : effacer le texte en laissant
+      // l'épingle sur le domicile n'anonymiserait rien.
+      const anonCourse = {
+        dropContact: 'Personne anonymisée', dropPhone: null, dropAddress: null, dropNotes: null,
+        dropLat: null, dropLng: null, dropMapUrl: null,
+      };
       const livraisons = await db.update(ordersTable).set(anonCourse)
         .where(eq(ordersTable.dropPhone, subject)).returning();
       const retraits = await db.update(ordersTable)
-        .set({ pickupContact: 'Personne anonymisée', pickupPhone: null, pickupAddress: null, pickupNotes: null })
+        .set({
+          pickupContact: 'Personne anonymisée', pickupPhone: null, pickupAddress: null, pickupNotes: null,
+          pickupLat: null, pickupLng: null, pickupMapUrl: null,
+        })
         .where(eq(ordersTable.pickupPhone, subject)).returning();
 
       return {

@@ -14,6 +14,7 @@ export type { MapMarker, MapCircle, MapPolygon, MapPolyline };
 export function Map(props: {
   center: [number, number]; zoom?: number; markers?: MapMarker[]; circles?: MapCircle[]; polygons?: MapPolygon[]; polylines?: MapPolyline[];
   interactive?: boolean; onMap?: (m: any) => void; onMapClick?: (lat: number, lng: number) => void;
+  focus?: [number, number] | null; focusZoom?: number; fit?: [number, number][];
 }) {
   return <LeafletMap {...props} />;
 }

@@ -172,6 +172,27 @@ export interface Invoice {
   status: InvoiceStatus; color: string; disputeAmount: number | null; disputeNote: string | null;
 }
 export interface BillingMode { merchant: string; mode: 'prepaid' | 'postpaid' }
+/** Réponse de `POST /v1/geo/resolve-link` : position lue dans un lien de localisation. */
+export interface ResolvedMapLink {
+  lat: number;
+  lng: number;
+  /** Lien d'origine tel que collé (ou lien Google Maps généré pour des coordonnées brutes). */
+  url: string;
+  source: 'google' | 'apple' | 'waze' | 'osm' | 'coordonnees' | 'autre';
+  /** exacte = lieu désigné ; point = point explicite ; vue = centre de la carte partagée. */
+  precision: 'exacte' | 'point' | 'vue';
+  via: 'texte' | 'lien' | 'redirection' | 'page' | 'geocodage';
+  /** Adresse détectée (Nominatim, best-effort). */
+  adresse?: string;
+}
+/** Codes d'erreur stables de `resolve-link` (le message, lui, est en français). */
+export type MapLinkErrorCode = 'LIEN_VIDE' | 'LIEN_NON_RECONNU' | 'HOTE_REFUSE' | 'LIEN_EXPIRE' | 'INJOIGNABLE' | 'SANS_COORDONNEES';
+/** Localisation d'un ou des deux points (création / correction d'une commande). */
+export interface OrderLocationsInput {
+  pickupLat?: number | null; pickupLng?: number | null; pickupMapUrl?: string | null;
+  dropLat?: number | null; dropLng?: number | null; dropMapUrl?: string | null;
+}
+
 export interface QuoteResult { applied: 'grille' | 'remise' | 'fixe_marchand'; base: number; surcharges: number; ht: number; tva: number; ttc: number }
 export interface PriceTier { from: number; to: number | null; base?: number; perKm?: number }
 export interface PriceConfig { tiers: PriceTier[]; fragileSurcharge: number; scheduledSurcharge: number; discountRate: number; commissionRate: number; vatRate: number }
@@ -258,8 +279,16 @@ export class TranspoClient {
     pickupContact?: string; pickupPhone?: string; pickupAddress?: string; pickupNotes?: string;
     dropContact?: string; dropPhone?: string; dropAddress?: string; dropNotes?: string;
     description?: string; vehicleType?: string;
-  }): Promise<Order> {
+  } & OrderLocationsInput): Promise<Order> {
     return this.req('/v1/orders', { method: 'POST', body: input });
+  }
+  /** Corrige la localisation (épingle / lien) d'un ou des deux points. ADMIN/DISPATCHER. */
+  updateOrderLocations(ref: string, input: OrderLocationsInput): Promise<Order> {
+    return this.req(`/v1/orders/${encodeURIComponent(ref)}/locations`, { method: 'PATCH', body: input });
+  }
+  /** Lien de localisation collé (Google Maps, WhatsApp, Waze…) ou coordonnées → position. */
+  resolveMapLink(url: string, lang: 'fr' | 'ar' = 'fr'): Promise<ResolvedMapLink> {
+    return this.req('/v1/geo/resolve-link', { method: 'POST', body: { url, lang } });
   }
 
   // --- Analytics ---

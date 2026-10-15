@@ -80,6 +80,7 @@ Contraintes UI transverses : cibles tactiles **≥ 44–48px**, thème clair/som
 
 ### 5.4 Détail de mission (`detail`)
 - Carte (Leaflet, non interactive) avec marqueur chauffeur + marqueur destination.
+- **Itinéraire** : boutons « Itinéraire vers le retrait » / « Itinéraire vers la livraison » quand le point est localisé — ouvrent le lien de carte d'origine envoyé par le client (sinon `geo:` / Plans / Google Maps). Sans coordonnées : mention « Carte indisponible ». Le numéro du destinataire n'est jamais transmis à l'app (cf. ADR 0002).
 - Étape **Retrait** (adresse marchand, contact) marquée « Fait » une fois passée.
 - Étape **Livraison** (nom client, adresse, contact).
 - Bloc colis : description, taille, fragilité, badge COD à encaisser, badge niveau de preuve requis.

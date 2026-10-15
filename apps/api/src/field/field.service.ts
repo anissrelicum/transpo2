@@ -114,7 +114,13 @@ export class FieldService {
       const parRef = new Map(orders.map((o) => [o.ref, o]));
       return {
         id: sienne.id, day: sienne.day, status: sienne.status, zone: sienne.zone,
-        stops: sienne.stops.map((ref) => parRef.get(ref)).filter(Boolean),
+        // Même règle que `/v1/driver/missions` : le numéro du destinataire ne descend pas
+        // sur le téléphone du livreur. La position et le lien de carte, eux, si : c'est
+        // ce qui lui permet de lancer sa navigation.
+        stops: sienne.stops
+          .map((ref) => parRef.get(ref))
+          .filter(Boolean)
+          .map(({ dropPhone: _client, ...arret }: any) => arret),
       };
     });
   }

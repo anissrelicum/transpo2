@@ -473,6 +473,46 @@ export function requiresConsent(event: string): boolean {
   return !(NOTIF_TEMPLATES[event]?.transactional ?? false);
 }
 
+/* ====================== Localisation d'un point de course ====================== */
+/**
+ * Facteur route / vol d'oiseau. La distance à vol d'oiseau (haversine) sous-estime le trajet
+ * réel : le réseau urbain marocain (sens uniques, médinas, rocades) donne en pratique un
+ * détour de 25 à 40 %. 1,3 est la valeur usuelle des études de « circuity » urbaines ; c'est
+ * une ESTIMATION de devis, pas un calcul d'itinéraire (cf. transpo-maps-geo : le routing
+ * réel viendra d'OSRM/Mapbox). Le prix final reste celui du moteur de tarification.
+ */
+export const ROAD_FACTOR = 1.3;
+/** Longueur maximale d'un lien de carte conservé (au-delà : refusé, jamais tronqué). */
+export const MAP_URL_MAX = 2048;
+
+export interface LatLng { lat: number; lng: number }
+
+export function isLatitude(n: unknown): n is number {
+  return typeof n === 'number' && Number.isFinite(n) && n >= -90 && n <= 90;
+}
+export function isLongitude(n: unknown): n is number {
+  return typeof n === 'number' && Number.isFinite(n) && n >= -180 && n <= 180;
+}
+
+/**
+ * Distance routière ESTIMÉE (km, 1 décimale) entre deux points précis :
+ * haversine × ROAD_FACTOR, plancher à 1 km (une course n'est jamais facturée « 0 km »).
+ */
+export function roadDistanceKm(a: LatLng, b: LatLng): number {
+  const km = (haversineMeters(a.lat, a.lng, b.lat, b.lng) / 1000) * ROAD_FACTOR;
+  return Math.max(1, Math.round(km * 10) / 10);
+}
+
+/**
+ * Lien de carte partageable pour des coordonnées, quand aucun lien d'origine n'existe
+ * (épingle posée à la main). Format « Maps URLs » de Google : ouvert par l'app Google Maps
+ * sur Android/iOS, par le navigateur ailleurs — sans clé d'API.
+ */
+export function shareableMapUrl(lat: number, lng: number): string {
+  const f = (n: number) => String(Math.round(n * 1e6) / 1e6);
+  return `https://www.google.com/maps/search/?api=1&query=${f(lat)},${f(lng)}`;
+}
+
 export interface PriceTier { from: number; to: number | null; base?: number; perKm?: number }
 
 /** Prix grille pour une distance selon une grille de paliers (défaut : PRICE_TIERS). */
@@ -561,6 +601,14 @@ export interface Order {
   dropPhone?: string | null;
   dropAddress?: string | null;
   dropNotes?: string | null;
+  // Localisation précise (WGS84) et lien de carte d'origine, transmis au livreur pour
+  // naviguer. Absents quand le point n'a été saisi qu'en texte (cf. migration 0027).
+  pickupLat?: number | null;
+  pickupLng?: number | null;
+  pickupMapUrl?: string | null;
+  dropLat?: number | null;
+  dropLng?: number | null;
+  dropMapUrl?: string | null;
   description?: string | null;
   vehicleType?: string | null;
   createdAt: string;
