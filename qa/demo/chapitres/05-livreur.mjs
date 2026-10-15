@@ -11,12 +11,15 @@ const { tenant } = jeu();
 const livreur = compte((c) => c.role === 'DRIVER' && c.driver === 'Youssef Amrani');
 
 // Missions de Youssef, lues à l'API : l'ordre et les montants viennent du décor réel.
-async function missions() {
+async function lireApi(chemin) {
   const co = await fetch(`${API}/v1/auth/login`, { method: 'POST',
     headers: { 'content-type': 'application/json', 'x-tenant-slug': tenant },
     body: JSON.stringify({ email: livreur.email, password: livreur.password }) }).then((r) => r.json());
-  const r = await fetch(`${API}/v1/driver/missions`, {
+  return fetch(`${API}${chemin}`, {
     headers: { authorization: `Bearer ${co.token}`, 'x-tenant-slug': tenant } }).then((r) => r.json());
+}
+async function missions() {
+  const r = await lireApi('/v1/driver/missions');
   return (Array.isArray(r) ? r : r.items ?? []).filter((o) => o.status === 'ASSIGNEE');
 }
 // Preuve par signature seule : la prise de photo reste bloquée sur l'émulateur (voir rapport).
@@ -44,7 +47,12 @@ async function signer() {
 }
 
 async function avancer(action) {
-  await toucher(action);
+  // L'appui part parfois pendant que l'écran se re-rend après l'étape précédente : on
+  // réappuie tant que la confirmation ne s'ouvre pas.
+  for (let essai = 0; essai < 3; essai++) {
+    await toucher(action);
+    try { await attendre('Confirmer', 8_000); break; } catch { if (essai === 2) throw new Error(`« ${action} » n’ouvre pas de confirmation`); }
+  }
   await toucher('Confirmer');
   await pause(1800);
 }
@@ -97,7 +105,7 @@ await t.dire('Ses missions du jour sont là, affectées par le dispatch : le mar
   glisser([540, 1100], [540, 1700], 700);
 });
 
-const [m1, m2] = aLivrer;
+const [m1] = aLivrer;
 t.etapeCourante('Mission');
 await t.dire(`Youssef ouvre sa première mission : ${enDirhams(m1.cod)} à encaisser, et une signature exigée à la remise.`, async () => {
   await toucher(m1.ref);
@@ -111,7 +119,9 @@ await t.dire('Il suit sa progression étape par étape. Chaque changement de sta
 await t.dire('Colis récupéré chez le marchand, puis départ en livraison. Sans réseau, l’action est gardée sur le téléphone et transmise dès le retour de la connexion.', async () => {
   await avancer('Colis récupéré');
   await avancer('Démarrer la livraison');
-  if (await visible('Confirmer la livraison')) await toucher('Confirmer la livraison');
+  // La dernière étape mène à la preuve par « Confirmer la livraison », pas par un avancement.
+  await attendre('Confirmer la livraison', 30_000);
+  await toucher('Confirmer la livraison');
   await attendre('Signature du destinataire', 30_000);
 });
 
@@ -137,10 +147,25 @@ await t.dire('Il confirme l’encaissement. La livraison est clôturée, et le m
 });
 
 t.etapeCourante('Mission suivante');
-await t.dire(`Mission suivante : ${enDirhams(m2.cod)} à encaisser. Le geste est le même, sans jamais avoir à deviner ce que l’application attend.`, async () => {
-  if (await visible('Mission suivante')) await toucher('Mission suivante');
-  else { await toucher('Retour aux missions'); await toucher(m2.ref); }
+// La mission suivante est celle que l'app propose (ordre de la tournée) : on la lit à l'écran.
+// Selon l'état de la tournée, « Mission suivante » ouvre la mission ou ramène à la liste :
+// dans ce cas, on ouvre la première mission encore « Assignée » à livrer contre signature.
+await toucher('Mission suivante');
+const restantes = await missions();
+let m2;
+try {
+  await attendre('Naviguer', 8_000);
+  const ref = (await ecran()).map((n) => n.texte).find((x) => /^CMD-/.test(x));
+  m2 = restantes.find((o) => o.ref === ref);
+} catch { /* sur la liste */ }
+if (!m2) {
+  const liste = (await ecran()).map((n) => n.texte).filter((x) => /^CMD-/.test(x));
+  m2 = liste.map((r) => restantes.find((o) => o.ref === r && o.proofLevel === 'signature')).find(Boolean)
+    ?? restantes.find((o) => o.proofLevel === 'signature');
+  await toucher(m2.ref);
   await attendre('Naviguer', 30_000);
+}
+await t.dire(`Mission suivante : ${enDirhams(m2.cod)} à encaisser. Le geste est le même, sans jamais avoir à deviner ce que l’application attend.`, async () => {
   await toucher('Naviguer');
   await attendre('Progression', 30_000);
   await avancer('Démarrer vers le retrait');
@@ -148,6 +173,8 @@ await t.dire(`Mission suivante : ${enDirhams(m2.cod)} à encaisser. Le geste est
   await avancer('Démarrer la livraison');
 });
 await t.dire('Signature, encaissement, livraison clôturée.', async () => {
+  await attendre('Confirmer la livraison', 30_000);
+  await toucher('Confirmer la livraison');
   await attendre('Signature du destinataire', 30_000);
   await signer();
   await toucher('Valider la preuve');
@@ -160,10 +187,15 @@ await t.dire('Signature, encaissement, livraison clôturée.', async () => {
   await attendre('Livraison réussie', 40_000);
 });
 
-const total = m1.cod + m2.cod;
+// Ce que la caisse attend : toute la journée de Youssef, livraisons du matin comprises.
+const total = Number((await lireApi('/v1/driver/cash'))?.theorique ?? m1.cod + m2.cod);
 t.etapeCourante('Ma caisse du jour');
-await t.dire('En fin de tournée, Youssef ouvre le récapitulatif de sa journée et sa caisse : le montant attendu correspond aux encaissements enregistrés.', async () => {
-  await toucher('Retour aux missions').catch(() => {});
+await t.dire('En fin de tournée, Youssef ouvre le récapitulatif de sa journée et sa caisse : le montant attendu reprend tous les encaissements de sa journée.', async () => {
+  // L'écran de succès n'a pas d'onglets : on remonte jusqu'à la barre d'onglets.
+  for (let i = 0; i < 4 && !(await visible('Profil')); i++) {
+    if (await visible('Mission suivante')) await toucher('Mission suivante');
+    else { adb('shell', 'input', 'keyevent', 'KEYCODE_BACK'); await pause(1200); }
+  }
   await toucher('Profil');
   await toucher('Récap du jour');
   await attendre('Ma caisse du jour', 30_000);

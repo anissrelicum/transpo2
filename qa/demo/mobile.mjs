@@ -165,7 +165,7 @@ export class TournageMobile {
     adb('pull', distant, local);
     const png = path.join(this.dossier, `fond-${i}.png`);
     await fond(cadre(this.chapitre, this.titre, this.etape), png);
-    this.segments.push({ clip: local, fond: png, audio: v.fichier, texte, d });
+    this.segments.push({ clip: local, fond: png, audio: v.fichier, texte, d, parole: v.duree + 0.6 });
   }
 
   /** Carton plein écran (sans téléphone), parlé. */
@@ -185,6 +185,7 @@ h1{margin:14px 0 0;font-size:76px;line-height:1.05;font-weight:800;letter-spacin
   }
 
   fermer() {
+    fs.writeFileSync(path.join(this.dossier, 'segments.json'), JSON.stringify(this.segments, null, 2));
     const tmp = path.join(this.dossier, 'segments');
     fs.mkdirSync(tmp, { recursive: true });
     const liste = [];
@@ -194,12 +195,20 @@ h1{margin:14px 0 0;font-size:76px;line-height:1.05;font-weight:800;letter-spacin
       return `${p(Math.floor(ms / 3600000))}:${p(Math.floor(ms / 60000) % 60)}:${p(Math.floor(ms / 1000) % 60)},${p(ms % 1000, 3)}`; };
     this.segments.forEach((s, i) => {
       const out = path.join(tmp, `${String(i).padStart(3, '0')}.mp4`);
-      const d = s.d.toFixed(3);
+      // Sur l'émulateur, les gestes durent plus longtemps que la phrase : ils sont accélérés
+      // (jusqu'à ×6) pour tenir dans la narration, comme un accéléré de démonstration.
+      const vitesse = s.clip && s.d > s.parole ? Math.min(6, s.d / s.parole) : 1;
+      const duree = s.d / vitesse;
+      s.dureeMontee = duree;
+      const d = duree.toFixed(3);
       const entrees = ['-loop', '1', '-framerate', '30', '-t', d, '-i', s.fond];
       let filtre;
       if (s.clip) {
-        entrees.push('-ss', String(AMORCE), '-i', s.clip, '-i', s.audio);
-        filtre = '[1:v]fps=30,scale=388:-2[tel];[0:v][tel]overlay=888:(H-h)/2:shortest=0,format=yuv420p,fade=t=in:st=0:d=0.25[v];' +
+        entrees.push('-i', s.clip, '-i', s.audio);
+        // Cadence normalisée AVANT la coupe de l'amorce : screenrecord n'émet d'image qu'au
+        // changement, et couper l'entrée laissait le téléphone noir jusqu'au rendu suivant.
+        filtre = `[1:v]fps=30,trim=start=${AMORCE}:duration=${s.d.toFixed(3)},setpts=(PTS-STARTPTS)/${vitesse.toFixed(4)},` +
+          'scale=388:-2[tel];[0:v][tel]overlay=888:(H-h)/2:shortest=0:eof_action=repeat,format=yuv420p,fade=t=in:st=0:d=0.25[v];' +
           '[2:a]aresample=48000,aformat=channel_layouts=stereo,adelay=150|150,apad[a]';
       } else {
         entrees.push('-i', s.audio);
@@ -209,8 +218,8 @@ h1{margin:14px 0 0;font-size:76px;line-height:1.05;font-weight:800;letter-spacin
         '-map', '[v]', '-map', '[a]', '-t', d, '-c:v', 'libx264', '-preset', 'medium', '-crf', '20',
         '-r', '30', '-c:a', 'aac', '-b:a', '160k', out]);
       liste.push(`file '${out}'`);
-      srt.push(`${i + 1}\n${ts(t + 0.15)} --> ${ts(t + s.d - 0.3)}\n${s.texte}\n`);
-      t += s.d;
+      srt.push(`${i + 1}\n${ts(t + 0.15)} --> ${ts(t + (s.dureeMontee ?? s.d) - 0.3)}\n${s.texte}\n`);
+      t += s.dureeMontee ?? s.d;
     });
     fs.writeFileSync(path.join(tmp, 'liste.txt'), liste.join('\n'));
     const final = path.join(SORTIE, `${this.nom}.mp4`);
