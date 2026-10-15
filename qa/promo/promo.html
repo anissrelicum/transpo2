@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Portrail — vidéo promotionnelle (30 s)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=block" rel="stylesheet">
+<style>
+  :root { --navy:#0B1537; --indigo:#3E5BDB; --amber:#F5A524; --vert:#1FA971; --creme:#FFF8EC; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { width:1920px; height:1080px; overflow:hidden; background:#000; font-family:Inter, system-ui, sans-serif; }
+  .scene { position:absolute; inset:0; overflow:hidden; opacity:0; }
+  .scene > img.fond { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transform-origin:50% 50%; will-change:transform; }
+  .voile { position:absolute; inset:0; pointer-events:none;
+    background: radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(5,10,30,.45) 100%),
+                linear-gradient(to top, rgba(6,12,38,.78) 0%, rgba(6,12,38,.35) 32%, transparent 55%); }
+  .titre { position:absolute; left:120px; bottom:118px; max-width:1050px; color:#fff; }
+  .titre .kicker { font-size:22px; font-weight:700; letter-spacing:.22em; text-transform:uppercase; color:var(--amber); }
+  .titre h2 { margin-top:14px; font-size:78px; line-height:1.02; font-weight:800; letter-spacing:-.03em; text-shadow:0 6px 30px rgba(0,0,0,.35); }
+  .carte { position:absolute; right:120px; top:150px; width:540px; padding:28px 30px; border-radius:24px; color:var(--navy);
+    background:rgba(255,255,255,.95); box-shadow:0 40px 90px rgba(6,12,38,.38), 0 0 0 1px rgba(255,255,255,.6) inset; }
+  .carte .entete { display:flex; align-items:center; gap:16px; }
+  .icone { width:54px; height:54px; border-radius:15px; display:grid; place-items:center; flex-shrink:0; }
+  .carte .t1 { font-size:24px; font-weight:800; letter-spacing:-.01em; }
+  .carte .t2 { font-size:18px; color:#5B6478; margin-top:3px; font-weight:500; }
+  .ligne { display:flex; justify-content:space-between; align-items:center; font-size:19px; padding:13px 0; border-top:1px solid #EEF0F5; }
+  .ligne span:first-child { color:#5B6478; font-weight:500; }
+  .ligne b { font-weight:700; }
+  .puce { display:inline-flex; align-items:center; gap:8px; padding:9px 16px; border-radius:999px; font-size:17px; font-weight:700; }
+  .barre { height:10px; border-radius:6px; background:#EEF0F5; overflow:hidden; }
+  .barre i { display:block; height:100%; border-radius:6px; background:linear-gradient(90deg,#5B76F2,#3E5BDB); width:0; }
+  .marque { position:absolute; right:56px; bottom:44px; display:flex; align-items:center; gap:12px; color:#fff; opacity:.9;
+    font-size:28px; font-weight:800; letter-spacing:-.03em; }
+  .marque img { width:38px; height:38px; }
+  #finale { background:radial-gradient(90% 90% at 50% 45%, #18265F 0%, #0B1537 60%, #070D26 100%); }
+  .tuile { position:absolute; width:760px; height:428px; border-radius:22px; overflow:hidden; box-shadow:0 30px 70px rgba(0,0,0,.45); }
+  .tuile img { width:100%; height:100%; object-fit:cover; }
+  .tuile span { position:absolute; z-index:2; left:22px; bottom:20px; color:#fff; font-size:26px; font-weight:800; letter-spacing:-.01em;
+    text-shadow:0 3px 14px rgba(0,0,0,.5); }
+  .tuile::after { content:""; position:absolute; inset:0; background:linear-gradient(to top, rgba(6,12,38,.7), transparent 50%); }
+  #logo { position:absolute; left:50%; top:430px; display:flex; align-items:center; gap:30px; transform:translateX(-50%); }
+  #logo img { width:150px; height:150px; }
+  #logo .mot { font-size:150px; font-weight:800; letter-spacing:-.05em; color:#fff; line-height:1; }
+  #signature { position:absolute; left:0; right:0; top:640px; text-align:center; color:#E8ECFF; font-size:46px; font-weight:600; letter-spacing:-.01em; }
+  #cta { position:absolute; left:50%; top:740px; transform:translateX(-50%); padding:18px 34px; border-radius:999px;
+    background:var(--amber); color:var(--navy); font-size:28px; font-weight:800; }
+  #rideau { position:absolute; inset:0; background:#000; opacity:0; pointer-events:none; }
+</style>
+</head>
+<body>
+
+<!-- 1 · La ville -->
+<section class="scene" id="s1">
+  <img class="fond" src="medias/ville.jpg" alt="">
+  <div class="voile"></div>
+  <div class="carte" id="s1c" style="top:auto;bottom:126px;width:auto;padding:20px 26px">
+    <div class="entete">
+      <div class="icone" style="background:#FFF3DB"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C77D00" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg></div>
+      <div><div class="t2" style="margin:0">Colis en route aujourd’hui</div><div class="t1" style="font-size:40px" id="s1n">0</div></div>
+    </div>
+  </div>
+  <div class="titre" id="s1t"><div class="kicker">Le dernier kilomètre</div><h2>Des milliers de colis.<br>Chaque jour.</h2></div>
+</section>
+
+<!-- 2 · Le marchand -->
+<section class="scene" id="s2">
+  <img class="fond" src="medias/marchand.jpg" alt="">
+  <div class="voile"></div>
+  <div class="carte" id="s2c2" style="top:196px;right:96px;width:540px;height:200px;background:rgba(255,255,255,.55)"></div>
+  <div class="carte" id="s2c">
+    <div class="entete">
+      <div class="icone" style="background:#EEF1FF"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3E5BDB" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2l-3 4v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg></div>
+      <div><div class="t1">Nouvelle commande</div><div class="t2">Boutique Nova · #CMD-2481</div></div>
+    </div>
+    <div style="margin-top:18px">
+      <div class="ligne"><span>Retrait</span><b>Atelier, centre-ville</b></div>
+      <div class="ligne"><span>Livraison</span><b>12, rue des Lilas</b></div>
+      <div class="ligne"><span>Preuve</span><b>Signature</b></div>
+    </div>
+    <div style="margin-top:14px"><span class="puce" style="background:#FFF3DB;color:#9A5B00">Paiement à la livraison</span></div>
+  </div>
+  <div class="titre" id="s2t"><div class="kicker">01 · Le marchand dépose</div><h2>Les commandes arrivent<br>en un instant.</h2></div>
+</section>
+
+<!-- 3 · Le dispatch -->
+<section class="scene" id="s3">
+  <img class="fond" src="medias/dispatch.jpg" alt="">
+  <div class="voile"></div>
+  <div class="carte" id="s3c">
+    <div class="t1">Livreur suggéré</div><div class="t2">Zone, disponibilité et charge, sur 100</div>
+    <div style="margin-top:18px;display:grid;gap:18px">
+      <div class="cand" data-score="98"><div class="ligne" style="border:0;padding:0 0 8px"><b>Youssef A.</b><b class="sc">0</b></div><div class="barre"><i></i></div></div>
+      <div class="cand" data-score="84"><div class="ligne" style="border:0;padding:0 0 8px"><b>Imane C.</b><b class="sc">0</b></div><div class="barre"><i></i></div></div>
+      <div class="cand" data-score="71"><div class="ligne" style="border:0;padding:0 0 8px"><b>Karim B.</b><b class="sc">0</b></div><div class="barre"><i></i></div></div>
+    </div>
+    <div id="s3b" style="margin-top:22px;height:58px;border-radius:14px;display:grid;place-items:center;font-size:21px;font-weight:800;color:#fff;background:var(--indigo)">Affecter</div>
+  </div>
+  <div class="titre" id="s3t"><div class="kicker">02 · Le dispatch affecte</div><h2>Le bon livreur,<br>au bon moment.</h2></div>
+</section>
+
+<!-- 4 · Le terrain -->
+<section class="scene" id="s4">
+  <img class="fond" src="medias/terrain.jpg" alt="">
+  <div class="voile"></div>
+  <div class="carte" id="s4c">
+    <div class="t1">Tournée du jour</div><div class="t2">4 arrêts · ordre optimisé</div>
+    <div style="margin:20px 0 10px" class="barre"><i id="s4p" style="background:linear-gradient(90deg,#F5A524,#E68A00)"></i></div>
+    <div class="ligne"><span>Arrêt 1 · Boutique Nova</span><b style="color:var(--vert)">Récupéré ✓</b></div>
+    <div class="ligne"><span>Arrêt 2 · Rue des Lilas</span><b id="s4a2" style="color:#5B6478">En route…</b></div>
+    <div style="margin-top:16px"><span class="puce" id="s4s" style="background:#FFF3DB;color:#9A5B00">Hors ligne · 2 actions en attente</span></div>
+  </div>
+  <div class="titre" id="s4t"><div class="kicker">03 · Le livreur exécute</div><h2>Guidé à chaque course,<br>même sans réseau.</h2></div>
+</section>
+
+<!-- 5 · La remise -->
+<section class="scene" id="s5">
+  <img class="fond" src="medias/remise.jpg" alt="">
+  <div class="voile"></div>
+  <div class="carte" id="s5c">
+    <div class="t1">Preuve de livraison</div><div class="t2">Signature du destinataire</div>
+    <div style="margin-top:16px;height:170px;border-radius:16px;background:#F6F7FB;border:2px dashed #D9DEEA;display:grid;place-items:center">
+      <svg width="400" height="130" viewBox="0 0 400 130"><path id="s5sig" d="M20 92 C 50 30, 70 30, 80 80 S 110 120, 130 70 S 160 20, 175 75 C 185 105, 200 100, 215 60 C 225 35, 240 40, 245 70 C 250 95, 265 95, 285 55 L 300 40 C 310 70, 330 85, 380 50" fill="none" stroke="#0B1537" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap">
+      <span class="puce" id="s5b1" style="background:#E3F6EE;color:#12784F">Livré · 18:42 ✓</span>
+      <span class="puce" id="s5b2" style="background:#E3F6EE;color:#12784F">Paiement encaissé ✓</span>
+    </div>
+  </div>
+  <div class="titre" id="s5t"><div class="kicker">La remise</div><h2>Livré. Prouvé.<br>Encaissé.</h2></div>
+</section>
+
+<!-- 6 · La comptabilité -->
+<section class="scene" id="s6">
+  <img class="fond" src="medias/compta.jpg" alt="">
+  <div class="voile"></div>
+  <div class="carte" id="s6c">
+    <div class="t1">Rapprochement de caisse</div><div class="t2">Tournée de Youssef A.</div>
+    <div style="margin-top:16px">
+      <div class="ligne"><span>Attendu</span><b id="s6a">0,00</b></div>
+      <div class="ligne"><span>Déclaré</span><b id="s6d">0,00</b></div>
+      <div class="ligne"><span>Écart</span><b id="s6e" style="color:var(--vert)">—</b></div>
+    </div>
+    <div style="margin-top:16px"><span class="puce" id="s6b" style="background:#E3F6EE;color:#12784F">Rapproché · reversement prêt ✓</span></div>
+  </div>
+  <div class="titre" id="s6t"><div class="kicker">04 · La compta rapproche</div><h2>Chaque montant,<br>rapproché.</h2></div>
+</section>
+
+<!-- 7 · Finale -->
+<section class="scene" id="finale">
+  <svg id="rails" width="1920" height="1080" style="position:absolute;inset:0">
+    <path id="r1" d="M330 1080 L 760 870" stroke="#F5A524" stroke-width="6" stroke-linecap="round" fill="none" opacity=".75"/>
+    <path id="r2" d="M1590 1080 L 1160 870" stroke="#F5A524" stroke-width="6" stroke-linecap="round" fill="none" opacity=".5"/>
+  </svg>
+  <div class="tuile" id="q1"><img src="medias/marchand.jpg" alt=""><span>Le marchand dépose</span></div>
+  <div class="tuile" id="q2"><img src="medias/dispatch.jpg" alt=""><span>Le dispatch affecte</span></div>
+  <div class="tuile" id="q3"><img src="medias/remise.jpg" alt=""><span>Le livreur exécute</span></div>
+  <div class="tuile" id="q4"><img src="medias/compta.jpg" alt=""><span>La compta rapproche</span></div>
+  <div id="logo"><img src="logo-portrail.svg" alt=""><div class="mot">portrail</div></div>
+  <div id="signature">Votre exploitation, sur les rails.</div>
+  <div id="cta">Demandez votre démo</div>
+</section>
+
+<div class="marque" id="marque"><img src="logo-portrail.svg" alt="">portrail</div>
+<div id="rideau"></div>
+
+<script>
+// Animation pilotée par le temps : rendu(t) dessine l'image exacte de l'instant t (secondes).
+// Le moteur de rendu l'appelle image par image : aucune animation CSS, rien ne dépend de la
+// vitesse de la machine.
+const $ = (s) => document.querySelector(s);
+const clamp = (x) => Math.min(1, Math.max(0, x));
+const p = (t, a, b) => clamp((t - a) / (b - a));
+const E = {
+  out: (x) => 1 - Math.pow(1 - x, 3),
+  inout: (x) => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2),
+  back: (x) => { const c1 = 1.5, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); },
+};
+const lerp = (a, b, x) => a + (b - a) * x;
+const fmt = (n) => n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function style(el, { o, x = 0, y = 0, s = 1 }) {
+  if (o !== undefined) el.style.opacity = o;
+  el.style.transform = `translate(${x}px, ${y}px) scale(${s})`;
+}
+/** Entrée glissée + sortie en fondu, sur [a, b]. */
+function entree(el, t, a, b, { dy = 40, dx = 0, d = .6, sortie = .35, rebond = false } = {}) {
+  const k = (rebond ? E.back : E.out)(p(t, a, a + d));
+  const o = Math.min(p(t, a, a + d * .7), 1 - p(t, b - sortie, b));
+  style(el, { o, x: dx * (1 - k), y: dy * (1 - k), s: lerp(.96, 1, k) });
+}
+
+// Plans : début, fin, cadrage de départ et d'arrivée (échelle, décalage en px).
+const PLANS = [
+  { id: 's1', a: 0.0, b: 4.3, c0: [1.18, 0, 30], c1: [1.04, 0, -20] },
+  { id: 's2', a: 4.3, b: 8.4, c0: [1.05, 40, 0], c1: [1.14, -30, -10] },
+  { id: 's3', a: 8.4, b: 13.0, c0: [1.14, -40, 0], c1: [1.04, 30, 0] },
+  { id: 's4', a: 13.0, b: 17.4, c0: [1.06, 60, 0], c1: [1.16, -60, -10] },
+  { id: 's5', a: 17.4, b: 21.0, c0: [1.16, 0, 20], c1: [1.05, 0, -10] },
+  { id: 's6', a: 21.0, b: 25.6, c0: [1.05, -30, 0], c1: [1.14, 20, -10] },
+  { id: 'finale', a: 25.6, b: 31.6 },
+];
+const FONDU = 0.5;
+const DUREE = 31.6;
+
+function plans(t) {
+  for (const pl of PLANS) {
+    const el = $('#' + pl.id);
+    const visible = t >= pl.a - FONDU / 2 && t <= pl.b + FONDU / 2;
+    const o = pl.a === 0 ? clamp(t / .4) : p(t, pl.a - FONDU / 2, pl.a + FONDU / 2);
+    el.style.opacity = visible ? o : 0;
+    el.style.zIndex = PLANS.indexOf(pl);
+    if (pl.c0) {
+      const k = E.inout(p(t, pl.a - FONDU / 2, pl.b + FONDU / 2));
+      const [s0, x0, y0] = pl.c0, [s1, x1, y1] = pl.c1;
+      el.querySelector('img.fond').style.transform =
+        `translate(${lerp(x0, x1, k)}px, ${lerp(y0, y1, k)}px) scale(${lerp(s0, s1, k)})`;
+    }
+  }
+}
+
+function titres(t) {
+  for (const pl of PLANS.slice(0, 6)) entree($('#' + pl.id + 't'), t, pl.a + .3, pl.b + .15, { dy: 50, d: .7 });
+}
+
+function scene1(t) {
+  entree($('#s1c'), t, 1.1, 4.45, { dx: 0, dy: 30, rebond: true });
+  $('#s1c').style.left = 'auto'; $('#s1c').style.right = '120px';
+  $('#s1n').textContent = Math.round(12480 * E.out(p(t, 1.2, 3.4))).toLocaleString('fr-FR');
+}
+function scene2(t) {
+  entree($('#s2c'), t, 5.0, 8.55, { dx: 120, dy: 0, rebond: true });
+  entree($('#s2c2'), t, 5.25, 8.55, { dx: 120, dy: 0 });
+  $('#s2c2').style.opacity = Math.min(+$('#s2c2').style.opacity, .9);
+}
+function scene3(t) {
+  entree($('#s3c'), t, 9.0, 13.15, { dx: 120, dy: 0, rebond: true });
+  document.querySelectorAll('#s3 .cand').forEach((c, i) => {
+    const k = E.out(p(t, 9.6 + i * .25, 10.8 + i * .25));
+    const sc = +c.dataset.score;
+    c.querySelector('i').style.width = `${sc * k}%`;
+    c.querySelector('.sc').textContent = Math.round(sc * k);
+    c.style.opacity = i === 0 ? 1 : lerp(1, .55, p(t, 11.2, 11.6));
+  });
+  const b = $('#s3b'), ok = t >= 11.7;
+  b.textContent = ok ? 'Affecté à Youssef A. ✓' : 'Affecter';
+  b.style.background = ok ? '#1FA971' : '#3E5BDB';
+  const press = t >= 11.45 && t < 11.7 ? .96 : 1;
+  b.style.transform = `scale(${ok ? lerp(1.04, 1, p(t, 11.7, 12.0)) : press})`;
+}
+function scene4(t) {
+  entree($('#s4c'), t, 13.6, 17.55, { dx: 120, dy: 0, rebond: true });
+  $('#s4p').style.width = `${lerp(18, 64, E.inout(p(t, 13.9, 16.6)))}%`;
+  const sync = t >= 15.6, s = $('#s4s');
+  s.textContent = sync ? 'Synchronisé ✓' : 'Hors ligne · 2 actions en attente';
+  s.style.background = sync ? '#E3F6EE' : '#FFF3DB';
+  s.style.color = sync ? '#12784F' : '#9A5B00';
+  s.style.transform = `scale(${sync ? lerp(1.08, 1, p(t, 15.6, 15.9)) : 1})`;
+  const a2 = $('#s4a2'); a2.textContent = t >= 16.2 ? 'Arrivé ✓' : 'En route…';
+  a2.style.color = t >= 16.2 ? '#1FA971' : '#5B6478';
+}
+function scene5(t) {
+  entree($('#s5c'), t, 17.9, 21.15, { dx: 120, dy: 0, rebond: true });
+  const sig = $('#s5sig'), L = sig.getTotalLength();
+  sig.style.strokeDasharray = L;
+  sig.style.strokeDashoffset = L * (1 - E.inout(p(t, 18.4, 19.7)));
+  entree($('#s5b1'), t, 19.8, 21.15, { dy: 16, d: .4, rebond: true });
+  entree($('#s5b2'), t, 20.1, 21.15, { dy: 16, d: .4, rebond: true });
+}
+function scene6(t) {
+  entree($('#s6c'), t, 21.6, 25.75, { dx: 120, dy: 0, rebond: true });
+  $('#s6a').textContent = fmt(1250 * E.out(p(t, 22.0, 23.0)));
+  $('#s6d').textContent = fmt(1250 * E.out(p(t, 22.4, 23.6)));
+  $('#s6e').textContent = t >= 23.7 ? '0,00 ✓' : '—';
+  entree($('#s6b'), t, 23.9, 25.75, { dy: 16, d: .45, rebond: true });
+}
+
+// Finale : les quatre mains se rassemblent, puis se fondent dans le logo.
+const TUILES = [['#q1', -1, -1], ['#q2', 1, -1], ['#q3', -1, 1], ['#q4', 1, 1]];
+function finale(t) {
+  const conv = E.inout(p(t, 27.0, 27.75));
+  TUILES.forEach(([sel, gx, gy], i) => {
+    const el = $(sel);
+    const kin = E.back(p(t, 25.65 + i * .1, 26.35 + i * .1));
+    const cx = 960 + gx * 392 - 380, cy = 540 + gy * 226 - 214;
+    const x = lerp(cx, 960 - 380, conv), y = lerp(cy, 540 - 214, conv);
+    el.style.left = x + 'px'; el.style.top = y + 'px';
+    el.style.transform = `scale(${lerp(.82, 1, kin) * lerp(1, .12, conv)})`;
+    el.style.opacity = Math.min(p(t, 25.65 + i * .1, 26.05 + i * .1), 1 - p(t, 27.35, 27.75));
+  });
+  for (const r of ['#r1', '#r2']) {
+    const el = $(r), L = el.getTotalLength();
+    el.style.strokeDasharray = L;
+    el.style.strokeDashoffset = L * (1 - E.out(p(t, 27.2, 28.1)));
+  }
+  const lg = $('#logo');
+  lg.style.opacity = p(t, 27.45, 27.75);
+  const ks = E.back(p(t, 27.45, 28.05));
+  lg.style.transform = `translateX(-50%) scale(${lerp(.6, 1, ks)})`;
+  entree($('#signature'), t, 28.25, 40, { dy: 24, d: .6 });
+  entree($('#cta'), t, 28.9, 40, { dy: 20, d: .55, rebond: true });
+  $('#cta').style.transform += ' translateX(-50%)';
+  $('#cta').style.left = '50%';
+}
+
+window.rendu = (t) => {
+  plans(t); titres(t);
+  scene1(t); scene2(t); scene3(t); scene4(t); scene5(t); scene6(t); finale(t);
+  // Signature de marque pendant les plans, absente de la finale qui porte le grand logo.
+  $('#marque').style.opacity = .9 * Math.min(p(t, .6, 1.2), 1 - p(t, 25.2, 25.7));
+  $('#marque').style.zIndex = 50;
+  $('#rideau').style.opacity = p(t, DUREE - .5, DUREE);
+  $('#rideau').style.zIndex = 60;
+};
+window.DUREE = DUREE;
+window.pret = Promise.all([document.fonts.ready,
+  ...[...document.images].map((i) => i.decode().catch(() => {}))]);
+rendu(0);
+</script>
+</body>
+</html>

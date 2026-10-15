@@ -43,3 +43,8 @@ apps/driver-app/ios/
 qa/demo/sortie/
 # Vidéos de démo publiées dans la console (produites par qa/demo/, poussées par qa/demo/publier.mjs).
 apps/console-web/demos/
+# Aperçus temporaires partagés par lien (copiés à la main dans les pods, jamais versionnés).
+apps/site-vitrine/apercu/
+# Rendus de la vidéo promotionnelle (images, voix, musique et vidéo finale) : régénérables, non versionnés.
+qa/promo/medias/
+qa/promo/sortie/
