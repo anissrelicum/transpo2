@@ -142,7 +142,7 @@ export function SaasDemandesView({ demandes }: { demandes: DemoRequest[] }) {
                   </Box>
                   <Flex gap="2" wrap="wrap">
                     <Button asChild variant="soft">
-                      <a href={`mailto:${d.email}?subject=${encodeURIComponent(`Démonstration Transpo — ${d.societe}`)}`}>
+                      <a href={`mailto:${d.email}?subject=${encodeURIComponent(`Démonstration Portrail — ${d.societe}`)}`}>
                         <EnvelopeClosedIcon /> Répondre
                       </a>
                     </Button>

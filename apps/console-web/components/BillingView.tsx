@@ -66,7 +66,7 @@ export function BillingView({ invoices, modes }: { invoices: Invoice[]; modes: B
         <tr><td style="padding:8px 0;color:#666">TVA 20 %</td><td style="text-align:right;color:#666">${money(inv.tva)}</td></tr>
         <tr style="border-top:2px solid #111"><td style="padding:12px 0;font-size:18px"><b>Total TTC</b></td><td style="text-align:right;font-size:18px"><b>${money(inv.ttc)}</b></td></tr>
       </table>
-      <p style="margin-top:32px;color:#888;font-size:13px">Transpo · Facturation du service de livraison · Statut : ${STATUS_LABEL[inv.status]}</p>
+      <p style="margin-top:32px;color:#888;font-size:13px">Portrail · Facturation du service de livraison · Statut : ${STATUS_LABEL[inv.status]}</p>
       <script>print()</script></body>`;
     const w = window.open('', '_blank');
     if (w) { w.document.write(html); w.document.close(); }

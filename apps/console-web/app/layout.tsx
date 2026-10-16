@@ -3,7 +3,14 @@ import * as React from 'react';
 import { AppThemeProvider } from '../components/theme-provider';
 import { i18n } from '../lib/i18n';
 
-export const metadata = { title: 'Transpo — Console transport' };
+export const metadata = {
+  title: 'Portrail — Console',
+  icons: { icon: '/favicon.svg', apple: '/apple-touch-icon.png' },
+};
+
+// Sans viewport, les téléphones affichaient la console comme une page de bureau réduite :
+// texte minuscule à la connexion (constaté sur Android, 16/10).
+export const viewport = { width: 'device-width', initialScale: 1, themeColor: '#0B1537' };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   // `lang` et `dir` sont posés au rendu serveur : la page sort déjà dans la

@@ -214,7 +214,7 @@ export function SaasDemosView({ disponibles }: { disponibles: string[] }) {
       <style>{`.tp-etape-demo:hover:not(:disabled){background:var(--gray-a3)}.tp-etape-demo:focus-visible{outline:2px solid var(--indigo-8);outline-offset:2px}`}</style>
       <PageHeader
         title="Démo produit"
-        subtitle="La démonstration narrée de Transpo, chapitre par chapitre — pour présenter le produit, former une équipe ou préparer un rendez-vous."
+        subtitle="La démonstration narrée de Portrail, chapitre par chapitre — pour présenter le produit, former une équipe ou préparer un rendez-vous."
       />
 
       <Grid columns={{ initial: '1', lg: '260px 1fr' }} gap="7" align="start">

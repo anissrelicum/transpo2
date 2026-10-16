@@ -10,12 +10,13 @@ import {
   DashboardIcon, ArchiveIcon, BarChartIcon, LockClosedIcon, SewingPinFilledIcon,
   TargetIcon, StackIcon, GlobeIcon, LayersIcon, ResetIcon, CubeIcon, IdCardIcon,
   TokensIcon, FileTextIcon, CardStackIcon, ArrowRightIcon, PersonIcon, BellIcon,
-  PaperPlaneIcon, GearIcon, StarIcon, RocketIcon, MagnifyingGlassIcon, SunIcon, ReaderIcon,
+  PaperPlaneIcon, GearIcon, StarIcon, MagnifyingGlassIcon, SunIcon, ReaderIcon,
   MoonIcon, ChevronDownIcon, ExitIcon, Cross2Icon,
 } from '@radix-ui/react-icons';
 import { useAppTheme } from './theme-provider';
 import { LangSwitch } from './LangSwitch';
 import { t, type Lang, type Key, type Translate } from '@transpo/i18n';
+import { Marque } from './Marque';
 
 type Item = { id: string; key: Key; icon: React.ComponentType<any>; href?: string };
 type Group = { key: Key; items: Item[] };
@@ -90,15 +91,9 @@ function Sidebar({ active, tr }: { active: string; tr: Translate }) {
         alignSelf: 'flex-start', height: '100vh', overflowY: 'auto',
       }}
     >
-      <Flex align="center" gap="2" px="2" py="2" mb="3">
-        <Flex align="center" justify="center" style={{ width: 30, height: 30, borderRadius: 'var(--radius-3)', background: 'var(--indigo-9)', color: 'white' }}>
-          <RocketIcon width={17} height={17} />
-        </Flex>
-        <Box>
-          <Text as="div" weight="bold" size="3">Transpo</Text>
-          <Text as="div" size="1" color="gray">{tr('login.subtitle')}</Text>
-        </Box>
-      </Flex>
+      <Box px="2" py="2" mb="3">
+        <Marque taille={32} sousTitre={tr('login.subtitle')} />
+      </Box>
       {NAV.map((grp) => (
         <Box key={grp.key} mb="4">
           <Text as="div" size="1" color="gray" weight="medium" ml="2" mb="1"

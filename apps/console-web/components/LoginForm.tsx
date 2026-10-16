@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { Flex, Box, Card, Heading, Text, TextField, Button, Callout, Badge } from '@radix-ui/themes';
 import { t, type Lang } from '@transpo/i18n';
+import { Marque } from './Marque';
 
 // Miroir client de tenantFromHost (lib/server) — pour l'affichage seulement.
 function orgFromHost(host: string): string | null {
@@ -65,9 +66,9 @@ export function LoginForm({ lang }: { lang: Lang }) {
 
   return (
     <Flex align="center" justify="center" style={{ minHeight: '100vh', background: 'var(--gray-2)' }}>
-      <Box style={{ width: 380 }}>
+      <Box style={{ width: '100%', maxWidth: 380, padding: '0 16px', boxSizing: 'border-box' }}>
         <Flex direction="column" align="center" gap="2" mb="4">
-          <Heading size="6">Transpo</Heading>
+          <Marque taille={52} nomTaille="7" />
           <Text size="2" color="gray">{tr(superAdmin ? 'login.saasSubtitle' : 'login.subtitle')}</Text>
         </Flex>
         <Card size="4">

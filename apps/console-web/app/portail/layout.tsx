@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import { Box, Flex, Heading, Badge, Text } from '@radix-ui/themes';
+import { Box, Flex, Badge, Text } from '@radix-ui/themes';
 import { MerchantNav } from '../../components/MerchantNav';
+import { Marque } from '../../components/Marque';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,7 +24,7 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
       <Box style={{ borderBottom: '1px solid var(--gray-a5)', background: 'var(--color-panel-solid)' }}>
         <Flex align="center" justify="between" gap="4" px="5" py="3" wrap="wrap" style={{ maxWidth: 1200, margin: '0 auto' }}>
           <Flex align="center" gap="3">
-            <Heading size="4">Transpo</Heading>
+            <Marque taille={30} />
             <Badge color="indigo" variant="soft">Espace marchand</Badge>
             {boutique ? <Text size="2" color="gray">· {boutique}</Text> : null}
           </Flex>
