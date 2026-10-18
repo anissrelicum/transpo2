@@ -48,3 +48,4 @@ apps/site-vitrine/apercu/
 # Rendus de la vidéo promotionnelle (images, voix, musique et vidéo finale) : régénérables, non versionnés.
 qa/promo/medias/
 qa/promo/sortie/
+qa/recette/sortie/

@@ -172,12 +172,12 @@ export default function Scanner() {
           <View style={[row, s.segment]}>
             {(['retrait', 'livraison'] as const).map((p) => (
               <Pressable key={p} onPress={() => { setPhase(p); setScannes([]); setRetour(null); }} accessibilityRole="tab"
-                accessibilityState={{ selected: phase === p }} style={[s.segBtn, phase === p && { backgroundColor: 'rgba(255,255,255,0.25)' }]}>
-                <Text style={{ color: '#fff', fontWeight: '700' }}>{p === 'retrait' ? t.retrait : t.livraison}</Text>
+                accessibilityState={{ selected: phase === p }} style={[s.segBtn, phase === p && { backgroundColor: MARQUE.amber }]}>
+                <Text style={{ color: phase === p ? MARQUE.navy : '#fff', fontWeight: '700' }}>{p === 'retrait' ? t.retrait : t.livraison}</Text>
               </Pressable>
             ))}
           </View>
-          <Pressable onPress={() => setLampe((v) => !v)} accessibilityRole="button" style={[s.segBtn, { backgroundColor: lampe ? MARQUE.amber : 'rgba(255,255,255,0.14)' }]}>
+          <Pressable onPress={() => setLampe((v) => !v)} accessibilityRole="button" style={[s.segBtn, { backgroundColor: lampe ? MARQUE.amber : 'rgba(11,21,55,0.6)' }]}>
             <Text style={{ color: lampe ? MARQUE.navy : '#fff', fontWeight: '700' }}>⚡ {t.lampe}</Text>
           </Pressable>
         </View>
@@ -247,7 +247,7 @@ const s = StyleSheet.create({
   camera: { height: '46%', overflow: 'hidden' },
   sansCamera: { alignItems: 'center', justifyContent: 'center', padding: 24, backgroundColor: '#14171e' },
   barreHaut: { position: 'absolute', left: 12, right: 12, justifyContent: 'space-between', alignItems: 'center' },
-  segment: { backgroundColor: 'rgba(255,255,255,0.14)', borderRadius: 999, padding: 3 },
+  segment: { backgroundColor: 'rgba(11,21,55,0.6)', borderRadius: 999, padding: 3 },
   segBtn: { paddingHorizontal: 14, minHeight: 40, borderRadius: 999, justifyContent: 'center' },
   cadre: { position: 'absolute', left: '15%', right: '15%', top: '34%', height: '38%', borderWidth: 3, borderColor: MARQUE.amber, borderRadius: 18 },
   viser: { position: 'absolute', bottom: 34, left: 0, right: 0, textAlign: 'center', color: '#fff', fontWeight: '600' },

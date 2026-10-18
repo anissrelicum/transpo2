@@ -92,7 +92,9 @@ export function useService(): { etat: EtatService; pret: boolean } {
   const [, tic] = React.useReducer((n: number) => n + 1, 0);
   React.useEffect(() => {
     abonnes.add(setE);
-    chargerService().then((x) => { setE(x); setPret(true); });
+    // L'état COURANT, pas la valeur figée au premier chargement : un écran monté après
+    // « Démarrer ma journée » relisait sinon « hors service ».
+    chargerService().then(() => { setE(etat); setPret(true); });
     return () => { abonnes.delete(setE); };
   }, []);
   // Le compteur de conduite avance : rafraîchir l'affichage chaque minute.
