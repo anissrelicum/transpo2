@@ -1,0 +1,41 @@
+# Simulation d'une flotte de 10 livreurs sur la société de démonstration « portraildemo »,
+# pour le PC flotte de la console (positions toutes les 4 s, livraisons, encaissements, échecs).
+#
+#   kubectl -n transpo create configmap simulation-flotte --from-file=flotte.mjs=qa/simulation/flotte.mjs \
+#     --dry-run=client -o yaml | kubectl apply -f -
+#   kubectl -n transpo create secret generic simulation-flotte --from-literal=ADMIN_MDP=… \
+#     --dry-run=client -o yaml | kubectl apply -f -
+#   kubectl apply -f deploy/homelab/simulation-flotte.yaml
+#
+# Arrêter : kubectl -n transpo scale deploy/simulation-flotte --replicas=0
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simulation-flotte
+  namespace: transpo
+  labels: { app: simulation-flotte }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: simulation-flotte } }
+  template:
+    metadata: { labels: { app: simulation-flotte } }
+    spec:
+      securityContext: { runAsNonRoot: true, runAsUser: 1000, seccompProfile: { type: RuntimeDefault } }
+      containers:
+        - name: simulation
+          image: node:20-alpine
+          command: ["node", "/app/flotte.mjs"]
+          env:
+            - { name: API, value: "http://transpo-api:3000" }
+            - { name: TENANT, value: "portraildemo" }
+            - { name: ACCEL, value: "1.5" }
+            - name: ADMIN_MDP
+              valueFrom: { secretKeyRef: { name: simulation-flotte, key: ADMIN_MDP } }
+          volumeMounts: [{ name: script, mountPath: /app }]
+          resources:
+            requests: { cpu: 20m, memory: 64Mi }
+            limits: { cpu: 200m, memory: 192Mi }
+          securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: ["ALL"] } }
+      volumes:
+        - name: script
+          configMap: { name: simulation-flotte }

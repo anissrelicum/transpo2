@@ -1012,3 +1012,61 @@ export interface Merchant extends MerchantPricing {
   createdAt: string;
   updatedAt: string;
 }
+
+/* ====================== Suivi de flotte (PC flotte) ====================== */
+
+/**
+ * Distance (m) d'un point à un polygone `[lat, lng]` : 0 à l'intérieur, sinon distance au
+ * bord le plus proche. Projection locale équirectangulaire : précise au mètre près à
+ * l'échelle d'une ville, sans dépendance géographique.
+ */
+export function distanceToPolygonM(point: LatLng, polygon: number[][]): number {
+  if (!Array.isArray(polygon) || polygon.length < 3) return Infinity;
+  if (pointInPolygon(point, polygon)) return 0;
+  const k = Math.cos((point.lat * Math.PI) / 180);
+  const xy = (lat: number, lng: number) => [(lng - point.lng) * k * 111_320, (lat - point.lat) * 110_540] as const;
+  let best = Infinity;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const [ax, ay] = xy(polygon[j]![0]!, polygon[j]![1]!);
+    const [bx, by] = xy(polygon[i]![0]!, polygon[i]![1]!);
+    const dx = bx - ax, dy = by - ay;
+    const t = dx || dy ? Math.max(0, Math.min(1, -(ax * dx + ay * dy) / (dx * dx + dy * dy))) : 0;
+    best = Math.min(best, Math.hypot(ax + t * dx, ay + t * dy));
+  }
+  return best;
+}
+
+/**
+ * Situation d'un livreur vis-à-vis de SES zones (celles qui le citent). Hors zone = hors de
+ * toutes ; `distanceM` = écart à la plus proche. Sans zone dessinée : rien à signaler.
+ */
+export function zoneStatus(point: LatLng, zones: { nameFr: string; polygon: number[][] | null }[]):
+  { zone: string | null; outOfZone: boolean; distanceM: number | null } {
+  const dessinees = zones.filter((z) => Array.isArray(z.polygon) && z.polygon.length >= 3);
+  if (!dessinees.length) return { zone: zones[0]?.nameFr ?? null, outOfZone: false, distanceM: null };
+  let plus = dessinees[0]!, dMin = Infinity;
+  for (const z of dessinees) {
+    const d = distanceToPolygonM(point, z.polygon!);
+    if (d < dMin) { dMin = d; plus = z; }
+  }
+  return { zone: plus.nameFr, outOfZone: dMin > 0, distanceM: Math.round(dMin) };
+}
+
+/** Longueur (m) d'une trace ordonnée. Les sauts aberrants (> 2 km entre deux points) sont ignorés. */
+export function pathLengthM(points: { lat: number; lng: number }[]): number {
+  let d = 0;
+  for (let i = 1; i < points.length; i++) {
+    const s = haversineMeters(points[i - 1]!.lat, points[i - 1]!.lng, points[i]!.lat, points[i]!.lng);
+    if (s < 2000) d += s;
+  }
+  return d;
+}
+
+/** Vitesse instantanée (km/h) entre les deux dernières positions horodatées ; `null` si incalculable. */
+export function speedKmh(points: { lat: number; lng: number; at: string | Date }[]): number | null {
+  if (points.length < 2) return null;
+  const a = points[points.length - 2]!, b = points[points.length - 1]!;
+  const dt = (new Date(b.at).getTime() - new Date(a.at).getTime()) / 3_600_000;
+  if (dt <= 0) return null;
+  return Math.round(haversineMeters(a.lat, a.lng, b.lat, b.lng) / 1000 / dt);
+}

@@ -10,10 +10,26 @@ export type MapMarker = {
   label: string; sub?: string; color?: string; ini?: string;
   /** Épingle déplaçable à la souris / au doigt ; `onDragEnd` reçoit la nouvelle position. */
   draggable?: boolean; onDragEnd?: (lat: number, lng: number) => void;
+  /** Clic sur le marqueur (PC flotte : ouvrir la fiche du livreur). Sans lui, une bulle s'ouvre. */
+  onClick?: () => void;
+  /** Glisse vers sa nouvelle position au lieu de sauter (livreurs suivis en direct). */
+  anime?: boolean;
+  /** Mis en avant (livreur sélectionné) : au-dessus des autres. */
+  selected?: boolean;
 };
 export type MapCircle = { id: string; lat: number; lng: number; radiusM: number; color: string; label?: string; selected?: boolean };
 export type MapPolygon = { id: string; latlngs: [number, number][]; color: string; label?: string; selected?: boolean; onClick?: () => void };
-export type MapPolyline = { id: string; latlngs: [number, number][]; color: string; dashArray?: string };
+export type MapPolyline = { id: string; latlngs: [number, number][]; color: string; dashArray?: string; weight?: number; opacity?: number };
+
+// Les icônes sont mises en cache : une icône recréée à chaque rendu force Leaflet à
+// remplacer l'élément du marqueur, ce qui casse l'animation de déplacement.
+const icones = new Map<string, L.DivIcon>();
+function iconFor(m: MapMarker): L.DivIcon {
+  const cle = [m.kind, m.color, m.ini, m.anime ? 1 : 0, m.selected ? 1 : 0].join('|');
+  let i = icones.get(cle);
+  if (!i) { i = makeIcon(m); icones.set(cle, i); }
+  return i;
+}
 
 // Icône livreur (pastille avec initiales) ou commande (goutte).
 function makeIcon(m: MapMarker): L.DivIcon {
@@ -23,11 +39,11 @@ function makeIcon(m: MapMarker): L.DivIcon {
     return L.divIcon({ html, className: 'tp-marker', iconSize: [28, 28], iconAnchor: [14, 14] });
   }
   const html = m.kind === 'driver'
-    ? `<div style="width:38px;height:38px;border-radius:50%;background:var(--color-panel-solid,#fff);box-shadow:0 2px 8px rgba(0,0,0,.25);border:2.5px solid var(--${color}-9);display:flex;align-items:center;justify-content:center;font:600 12px system-ui;color:var(--${color}-11)">${m.ini || ''}</div>`
+    ? `<div style="width:38px;height:38px;border-radius:50%;background:${m.selected ? `var(--${color}-9)` : 'var(--color-panel-solid,#fff)'};box-shadow:0 2px 8px rgba(0,0,0,.25)${m.selected ? `,0 0 0 6px var(--${color}-a5)` : ''};border:2.5px solid var(--${color}-9);display:flex;align-items:center;justify-content:center;font:600 12px system-ui;color:${m.selected ? '#fff' : `var(--${color}-11)`}">${m.ini || ''}</div>`
     : `<div style="width:20px;height:20px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--${color}-9);box-shadow:0 2px 6px rgba(0,0,0,.3);border:2px solid var(--color-panel-solid,#fff)"></div>`;
   const size = m.kind === 'driver' ? 38 : 20;
   return L.divIcon({
-    html, className: 'tp-marker',
+    html, className: m.anime ? 'tp-marker tp-anime' : 'tp-marker',
     iconSize: [size, size],
     iconAnchor: m.kind === 'driver' ? [size / 2, size / 2] : [size / 2, size],
   });
@@ -92,6 +108,18 @@ function Recadrer({ focus, focusZoom, fit }: { focus?: [number, number] | null; 
   return null;
 }
 
+/**
+ * Coupe l'animation de déplacement le temps d'un zoom : après un zoom, Leaflet repositionne
+ * chaque marqueur, et la transition le ferait glisser pendant 4 s vers sa nouvelle place.
+ */
+function GardeZoom() {
+  const map = useMapEvents({
+    zoomstart() { map.getContainer().classList.add('tp-zoom'); },
+    zoomend() { setTimeout(() => map.getContainer().classList.remove('tp-zoom'), 80); },
+  });
+  return null;
+}
+
 function ClickCapture({ onClick }: { onClick: (lat: number, lng: number) => void }) {
   useMapEvents({ click(e) { onClick(e.latlng.lat, e.latlng.lng); } });
   return null;
@@ -106,18 +134,22 @@ export default function LeafletMap({
   focus?: [number, number] | null; focusZoom?: number; fit?: [number, number][];
 }) {
   return (
+    <>
+    {/* Déplacement fluide entre deux relevés ; coupé pendant un zoom, sinon les marqueurs traînent. */}
+    <style>{'.tp-anime{transition:transform 4s linear}.leaflet-zoom-anim .tp-anime,.tp-zoom .tp-anime{transition:none}'}</style>
     <MapContainer
       center={center} zoom={zoom} zoomControl={false} attributionControl={false}
       dragging={interactive} scrollWheelZoom={interactive} doubleClickZoom={interactive}
       style={{ position: 'absolute', inset: 0, zIndex: 0 }}
     >
       <TileByTheme />
+      <GardeZoom />
       {onMap && <ZoomExpose onMap={onMap} />}
       {onMapClick && <ClickCapture onClick={onMapClick} />}
       {(focus !== undefined || fit) && <Recadrer focus={focus} focusZoom={focusZoom} fit={fit} />}
       {polylines.map((pl) => (
         <Polyline key={pl.id} positions={pl.latlngs}
-          pathOptions={{ color: `var(--${pl.color}-9)`, weight: 4, opacity: 0.75, dashArray: pl.dashArray, lineJoin: 'round' }} />
+          pathOptions={{ color: `var(--${pl.color}-9)`, weight: pl.weight ?? 4, opacity: pl.opacity ?? 0.75, dashArray: pl.dashArray, lineJoin: 'round' }} />
       ))}
       {polygons.map((p) => (
         <Polygon key={p.id} positions={p.latlngs}
@@ -134,18 +166,21 @@ export default function LeafletMap({
       ))}
       {markers.map((m) => (
         <Marker
-          key={m.id} position={[m.lat, m.lng]} icon={makeIcon(m)}
-          draggable={!!m.draggable}
+          key={m.id} position={[m.lat, m.lng]} icon={iconFor(m)}
+          draggable={!!m.draggable} zIndexOffset={m.selected ? 1000 : 0}
           eventHandlers={m.onDragEnd ? {
             dragend: (e) => { const p = (e.target as L.Marker).getLatLng(); m.onDragEnd!(p.lat, p.lng); },
-          } : undefined}
+          } : m.onClick ? { click: m.onClick } : undefined}
         >
-          <Popup>
-            <div style={{ fontWeight: 600, fontSize: 13 }}>{m.label}</div>
-            {m.sub && <div style={{ color: 'var(--gray-11)', fontSize: 12, marginTop: 2 }}>{m.sub}</div>}
-          </Popup>
+          {!m.onClick && (
+            <Popup>
+              <div style={{ fontWeight: 600, fontSize: 13 }}>{m.label}</div>
+              {m.sub && <div style={{ color: 'var(--gray-11)', fontSize: 12, marginTop: 2 }}>{m.sub}</div>}
+            </Popup>
+          )}
         </Marker>
       ))}
     </MapContainer>
+    </>
   );
 }

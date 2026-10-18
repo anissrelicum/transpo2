@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Req, UseGuards, Inject, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Body, Req, UseGuards, Inject, HttpCode, Param } from '@nestjs/common';
 import { TrackingService } from './tracking.service.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { TenantGuard } from '../tenant/tenant.guard.js';
@@ -22,6 +22,11 @@ export class TrackingController {
   @Get('live')
   @Roles('ADMIN', 'DISPATCHER')
   live(@Req() req: any) { return this.svc.live(req.tenantSchema); }
+
+  /** Fiche d'un livreur : missions, itinéraire conseillé, trace et indicateurs du jour. */
+  @Get('drivers/:name')
+  @Roles('ADMIN', 'DISPATCHER')
+  driver(@Req() req: any, @Param('name') name: string) { return this.svc.driverDetail(req.tenantSchema, name); }
 
   @Get('alerts')
   @Roles('ADMIN', 'DISPATCHER')

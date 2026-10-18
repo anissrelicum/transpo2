@@ -290,7 +290,31 @@ export interface Reversement {
   id: string; merchant: string; period: string; orders: number; cod: number;
   status: ReversementStatus; method: string | null; reference: string | null; paidAt: string | null;
 }
-export interface FleetLive { driver: string; lat: number; lng: number; at: string; zone: string | null; distanceM: number | null; outOfZone: boolean }
+export interface FleetLive {
+  driver: string; lat: number; lng: number; at: string; zone: string | null; distanceM: number | null; outOfZone: boolean;
+  /** Trace des 15 dernières minutes, `[lat, lng]`. */
+  trail?: [number, number][]; speedKmh?: number | null;
+  /** Ce que fait le livreur ; `inactif` = aucune position depuis 5 min. */
+  activite?: 'livraison' | 'retrait' | 'mission' | 'libre' | 'inactif';
+  vehicle?: string | null; available?: boolean | null;
+  missions?: number; livrees?: number; echecs?: number; codJour?: number;
+}
+export interface FleetStop {
+  ref: string; code: string; status: string; type: 'retrait' | 'livraison'; contact: string | null; adresse: string;
+  lat: number | null; lng: number | null; cod: number; codPaid: boolean; size: string;
+}
+/** Fiche livreur du PC flotte : missions dans l'ordre conseillé, trace et indicateurs du jour. */
+export interface FleetDriverDetail {
+  driver: string; vehicle: string | null; available: boolean | null; phone: string | null;
+  position: { lat: number; lng: number; at: string } | null;
+  trace: [number, number][];
+  arrets: FleetStop[];
+  faites: { ref: string; status: string; contact: string | null; adresse: string; cod: number; codPaid: boolean; at: string }[];
+  indicateurs: {
+    livrees: number; echecs: number; tauxReussite: number | null; codEncaisse: number;
+    kmParcourus: number; kmRestants: number; livraisonsParHeure: number | null; kmParLivraison: number | null;
+  };
+}
 export interface TrackStep { status: string; label: string; done: boolean }
 export interface TrackResult {
   code: string; status: string; statusLabel: string; color: string;
@@ -445,6 +469,7 @@ export class TranspoClient {
   }
   getFleetLive(): Promise<FleetLive[]> { return this.req('/v1/tracking/live'); }
   getFleetAlerts(): Promise<FleetLive[]> { return this.req('/v1/tracking/alerts'); }
+  getFleetDriver(name: string): Promise<FleetDriverDetail> { return this.req(`/v1/tracking/drivers/${encodeURIComponent(name)}`); }
 
   // --- Argent ---
   getCashSessions(): Promise<CashSession[]> { return this.req('/v1/cash/sessions'); }
