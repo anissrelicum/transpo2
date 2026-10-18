@@ -6,7 +6,7 @@ import type pg from 'pg';
 import { pool, withTenantDb } from '@transpo/db';
 import {
   AUTO_DISPATCH_DEFAULTS, DAILY_CAPACITY_BOUNDS, DISPATCH_EXCEPTION_META, OFFER_TIMEOUT_BOUNDS,
-  planAutoDispatch, dayInTimeZone,
+  planAutoDispatch, dayInTimeZone, isUrgent,
   type AutoDispatchSettings, type DispatchCandidate, type DispatchException, type DispatchZone, type Order,
 } from '@transpo/domain';
 import { NotificationsService } from '../notifications/notifications.service.js';
@@ -22,6 +22,8 @@ export interface DriverOffer {
   id: string; ref: string; status: string; offeredAt: string; expiresAt: string; serverNow: string;
   order: Pick<Order, 'ref' | 'code' | 'fromCity' | 'toCity' | 'cod' | 'size' | 'merchant'> & {
     pickupAddress: string | null; dropAddress: string | null; distanceKm: number | null; fragile: boolean;
+    /** Délai de livraison (ADR 0006) : le livreur sait s'il s'engage sur une course urgente. */
+    delayMode: string; delayMinutes: number | null; delayHeure: string | null; dueAt: string | null; pickupDueAt: string | null;
   };
 }
 
@@ -162,7 +164,9 @@ export class AutoDispatchService implements OnModuleInit, OnModuleDestroy {
           `SELECT o.ref FROM orders o
             WHERE o.status = 'NOUVELLE' AND o.driver IS NULL AND o.dispatch_exception IS NULL
               AND NOT EXISTS (SELECT 1 FROM order_offers f WHERE f.ref = o.ref AND f.status = 'PROPOSEE')
-            ORDER BY o.created_at
+            -- Les échéances les plus proches d'abord : un plat ou un pli urgent ne patiente
+            -- pas derrière les colis du jour.
+            ORDER BY LEAST(o.due_at, o.pickup_due_at) NULLS LAST, o.created_at
             LIMIT ${BALAYAGE_MAX}`,
         );
         return rows.map((r) => r.ref);
@@ -255,7 +259,8 @@ export class AutoDispatchService implements OnModuleInit, OnModuleDestroy {
 
           const { rows: cmd } = await client.query(
             `SELECT ref, code, status, driver, from_city, to_city, pickup_lat, pickup_lng,
-                    dispatch_exception, dispatch_round
+                    dispatch_exception, dispatch_round,
+                    delay_mode, delay_minutes, delay_heure, retrait_minutes, due_at, pickup_due_at
                FROM orders WHERE ref = $1 FOR UPDATE`, [ref],
           );
           const o = cmd[0];
@@ -300,6 +305,10 @@ export class AutoDispatchService implements OnModuleInit, OnModuleDestroy {
             drivers: candidats, zones,
             alreadyAsked: sollicites.map((x) => x.driver),
             today: dayInTimeZone(new Date(), tz),
+            urgent: isUrgent({
+              policy: { mode: o.delay_mode, minutes: o.delay_minutes, heure: o.delay_heure, retraitMinutes: o.retrait_minutes },
+              dueAt: o.due_at, pickupDueAt: o.pickup_due_at, now: new Date(),
+            }),
           });
 
           if (plan.kind === 'exception') {
@@ -397,7 +406,8 @@ export class AutoDispatchService implements OnModuleInit, OnModuleDestroy {
       const { rows } = await client.query(
         `SELECT f.id, f.ref, f.status, f.offered_at, f.expires_at, now() AS server_now,
                 o.code, o.from_city, o.to_city, o.cod, o.size, o.merchant,
-                o.pickup_address, o.drop_address, o.distance_km, o.fragile
+                o.pickup_address, o.drop_address, o.distance_km, o.fragile,
+                o.delay_mode, o.delay_minutes, o.delay_heure, o.due_at, o.pickup_due_at
            FROM order_offers f JOIN orders o ON o.ref = f.ref
           WHERE f.driver = $1 AND f.status = 'PROPOSEE' AND f.expires_at > now()
           ORDER BY f.expires_at`,
@@ -412,6 +422,8 @@ export class AutoDispatchService implements OnModuleInit, OnModuleDestroy {
           ref: r.ref, code: r.code, fromCity: r.from_city, toCity: r.to_city, cod: r.cod, size: r.size,
           merchant: r.merchant, pickupAddress: r.pickup_address, dropAddress: r.drop_address,
           distanceKm: r.distance_km, fragile: r.fragile,
+          delayMode: r.delay_mode, delayMinutes: r.delay_minutes, delayHeure: r.delay_heure,
+          dueAt: r.due_at ? iso(r.due_at) : null, pickupDueAt: r.pickup_due_at ? iso(r.pickup_due_at) : null,
         },
       }));
     });

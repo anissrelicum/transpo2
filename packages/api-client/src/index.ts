@@ -1,6 +1,7 @@
 // @transpo/api-client — client HTTP typé, partagé par les fronts (Next.js + Expo).
 // S'appuie sur les types de @transpo/domain. Gère token JWT + tenant. Cf. skill transpo-api.
-import type { Order, Role, AutoDispatchSettings, DispatchException, OfferStatus } from '@transpo/domain';
+import type { Order, Role, AutoDispatchSettings, DispatchException, OfferStatus, DeliveryTerms, DelayPolicy } from '@transpo/domain';
+export type { DeliveryTerms, DelayPolicy };
 
 export interface ClientOptions {
   baseUrl: string;
@@ -92,6 +93,7 @@ export interface DriverOffer {
     ref: string; code: string; fromCity: string; toCity: string; cod: number; size: string;
     merchant: string | null; pickupAddress: string | null; dropAddress: string | null;
     distanceKm: number | null; fragile: boolean;
+    delayMode?: string; delayMinutes?: number | null; delayHeure?: string | null; dueAt?: string | null; pickupDueAt?: string | null;
   };
 }
 export interface Vehicle {
@@ -210,6 +212,8 @@ export type InvoiceStatus = 'BROUILLON' | 'ENVOYEE' | 'PAYEE' | 'LITIGE';
 export interface Invoice {
   id: string; ref: string; merchant: string; period: string; orders: number;
   deliveries: number; codCollected: number; commission: number; netHt: number; tva: number; ttc: number;
+  /** Remises pour livraisons en retard, déjà déduites du montant des livraisons (ADR 0006). */
+  latePenalties?: number;
   status: InvoiceStatus; color: string; disputeAmount: number | null; disputeNote: string | null;
 }
 export interface BillingMode { merchant: string; mode: 'prepaid' | 'postpaid' }
@@ -242,6 +246,8 @@ export interface QuoteResult {
   base: number; surcharges: number; ht: number; tva: number; ttc: number;
   /** Marchand dont les conditions ont été appliquées, s'il est connu. */
   merchant?: string | null;
+  /** Délai par défaut du marchand (devis aux conditions d'un marchand). */
+  deliveryTerms?: DeliveryTerms;
 }
 
 /* ---------- Fiches marchand et conditions tarifaires (cf. docs/adr/0003) ---------- */
@@ -257,6 +263,8 @@ export interface MerchantRecord {
   /** Commission réellement appliquée. */
   effectiveCommissionRate: number;
   active: boolean; createdAt: string; updatedAt: string;
+  /** Délai par défaut, suppléments express et pénalité de retard (ADR 0006). */
+  deliveryTerms: DeliveryTerms;
   accounts: MerchantAccount[];
 }
 export interface MerchantInput {
@@ -265,12 +273,14 @@ export interface MerchantInput {
   phone?: string | null; address?: string | null; taxId?: string | null;
   mode?: PricingMode; discountRate?: number | null; flatPrice?: number | null;
   commissionRate?: number | null; active?: boolean;
+  deliveryTerms?: Partial<DeliveryTerms>;
 }
 /** Conditions du marchand connecté (portail, lecture seule). */
 export interface MerchantConditions {
   name: string; mode: PricingMode; discountRate: number | null; flatPrice: number | null;
   commissionRate: number; commissionNegotiated: boolean;
   fragileSurcharge: number; scheduledSurcharge: number; vatRate: number;
+  deliveryTerms: DeliveryTerms;
   examples: { km: number; ht: number; ttc: number }[];
 }
 export interface PriceTier { from: number; to: number | null; base?: number; perKm?: number }
@@ -298,10 +308,13 @@ export interface FleetLive {
   activite?: 'livraison' | 'retrait' | 'mission' | 'libre' | 'inactif';
   vehicle?: string | null; available?: boolean | null;
   missions?: number; livrees?: number; echecs?: number; codJour?: number;
+  /** Missions en cours dont l'échéance est dépassée. */
+  retards?: number;
 }
 export interface FleetStop {
   ref: string; code: string; status: string; type: 'retrait' | 'livraison'; contact: string | null; adresse: string;
   lat: number | null; lng: number | null; cod: number; codPaid: boolean; size: string;
+  delayMode?: string; delayMinutes?: number | null; delayHeure?: string | null; dueAt?: string | null; pickupDueAt?: string | null;
 }
 /** Fiche livreur du PC flotte : missions dans l'ordre conseillé, trace et indicateurs du jour. */
 export interface FleetDriverDetail {

@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { withTenantDb, orders as ordersTable, invoices as invoicesTable, merchantBilling, pricingConfig, merchants as merchantsTable } from '@transpo/db';
 import {
-  quote, cityDistanceKm, effectiveCommissionRate,
+  quote, cityDistanceKm, effectiveCommissionRate, delaySurcharge, isDelayMode, DEFAULT_DELIVERY_TERMS,
   type QuoteInput, type Quote, type PriceTier, type MerchantPricing, type PricingMode, type Merchant,
+  type DeliveryTerms, type DelayMode,
   PRICE_TIERS, FRAGILE_SURCHARGE, SCHEDULED_SURCHARGE, COMMISSION_RATE, VAT_RATE,
 } from '@transpo/domain';
 import { eq, asc } from 'drizzle-orm';
@@ -12,13 +13,24 @@ const STATUS_COLOR: Record<string, string> = {
   BROUILLON: 'gray', ENVOYEE: 'blue', PAYEE: 'green', LITIGE: 'red',
 };
 
+/** Conditions de délai stockées (jsonb) → contrat `DeliveryTerms`, valeurs par défaut comprises. */
+export function termsOf(v: unknown): DeliveryTerms {
+  const t = (v && typeof v === 'object' ? v : {}) as Partial<DeliveryTerms>;
+  const delai = t.delai && isDelayMode(t.delai.mode) ? t.delai : DEFAULT_DELIVERY_TERMS.delai;
+  return {
+    delai,
+    supplements: t.supplements && typeof t.supplements === 'object' ? t.supplements : {},
+    penaliteRetard: typeof t.penaliteRetard === 'number' ? t.penaliteRetard : 0,
+  };
+}
+
 /** Ligne `merchants` → contrat partagé `Merchant`. */
 export function rowToMerchant(r: typeof merchantsTable.$inferSelect): Merchant {
   return {
     id: r.id, name: r.name, legalName: r.legalName, contactName: r.contactName,
     email: r.email, phone: r.phone, address: r.address, taxId: r.taxId,
     mode: r.pricingMode as PricingMode, discountRate: r.discountRate, flatPrice: r.flatPrice,
-    commissionRate: r.commissionRate, active: r.active,
+    commissionRate: r.commissionRate, active: r.active, deliveryTerms: termsOf(r.deliveryTerms),
     createdAt: r.createdAt.toISOString(), updatedAt: r.updatedAt.toISOString(),
   };
 }
@@ -43,8 +55,8 @@ export async function ensureMerchant(db: NodePgDatabase, name: string): Promise<
   return (await findMerchantByName(db, name))!;
 }
 
-/** Prix d'une course, prêt à être figé sur la commande. */
-export interface CoursePrice extends Quote { distanceKm: number }
+/** Prix d'une course, prêt à être figé sur la commande, et les conditions de délai du marchand. */
+export interface CoursePrice extends Quote { distanceKm: number; terms: DeliveryTerms }
 
 @Injectable()
 export class BillingService {
@@ -113,11 +125,18 @@ export class BillingService {
   async quoteForMerchant(
     schema: string,
     merchant: string | null | undefined,
-    input: Omit<QuoteInput, 'merchant' | 'merchantFixedPrice' | 'discountRate'>,
-  ): Promise<Quote & { merchant: string | null }> {
+    input: Omit<QuoteInput, 'merchant' | 'merchantFixedPrice' | 'discountRate' | 'delaySurcharge'> & { delayMode?: DelayMode },
+  ): Promise<Quote & { merchant: string | null; deliveryTerms: DeliveryTerms }> {
     const fiche = merchant ? await withTenantDb(schema, (db) => findMerchantByName(db, merchant)) : null;
-    const q = await this.quote(schema, { ...input, merchant: fiche ? pricingOf(fiche) : { mode: 'standard' } });
-    return { ...q, merchant: fiche?.name ?? null };
+    const terms = fiche?.deliveryTerms ?? DEFAULT_DELIVERY_TERMS;
+    const { delayMode, ...reste } = input;
+    const q = await this.quote(schema, {
+      ...reste, merchant: fiche ? pricingOf(fiche) : { mode: 'standard' },
+      delaySurcharge: delaySurcharge(terms, delayMode ?? terms.delai.mode),
+    });
+    // Le délai par défaut du marchand accompagne le devis : l'assistant de commande le
+    // propose sans requête de plus.
+    return { ...q, merchant: fiche?.name ?? null, deliveryTerms: terms };
   }
 
   /**
@@ -127,18 +146,22 @@ export class BillingService {
    */
   async priceCourse(
     schema: string,
-    input: { merchant: string | null; distanceKm: number; fragile: boolean; scheduled: boolean },
+    input: { merchant: string | null; distanceKm: number; fragile: boolean; scheduled: boolean; delayMode?: DelayMode | null },
   ): Promise<CoursePrice> {
     let conditions: MerchantPricing = { mode: 'standard' };
+    let terms: DeliveryTerms = DEFAULT_DELIVERY_TERMS;
     if (input.merchant) {
       const fiche = await withTenantDb(schema, (db) => ensureMerchant(db, input.merchant!));
       if (!fiche.active) throw new BadRequestException(`Marchand désactivé : ${fiche.name}.`);
       conditions = pricingOf(fiche);
+      terms = fiche.deliveryTerms;
     }
     const q = await this.quote(schema, {
       distanceKm: input.distanceKm, fragile: input.fragile, scheduled: input.scheduled, merchant: conditions,
+      // Supplément express : celui du délai RETENU pour la commande (défaut du marchand ou choix).
+      delaySurcharge: delaySurcharge(terms, input.delayMode ?? terms.delai.mode),
     });
-    return { ...q, distanceKm: input.distanceKm };
+    return { ...q, distanceKm: input.distanceKm, terms };
   }
 
   /**
@@ -169,6 +192,7 @@ export class BillingService {
           deliveries: i.deliveriesAmount,
           codCollected: i.codCollected,
           commission: i.commission,
+          latePenalties: i.latePenalties,
           netHt: i.netHt,
           tva: i.tva,
           ttc: i.netHt + i.tva,
@@ -215,14 +239,18 @@ export class BillingService {
       const existing = await db.select().from(invoicesTable);
       const already = new Set(existing.filter((i) => i.period === period).map((i) => i.merchant));
       const rows = await db.select().from(ordersTable);
-      const agg = new Map<string, { deliveries: number; cod: number; orders: number }>();
+      const agg = new Map<string, { deliveries: number; cod: number; orders: number; penalites: number }>();
       for (const o of rows) {
         if (!o.merchant || o.status !== 'LIVREE' || already.has(o.merchant)) continue;
         const ht = o.priceHt ?? quote({
           distanceKm: cityDistanceKm(o.fromCity, o.toCity), tiers: cfg.tiers, merchant: { mode: 'standard' },
         }).ht;
-        const e = agg.get(o.merchant) ?? { deliveries: 0, cod: 0, orders: 0 };
-        e.deliveries += ht;
+        const e = agg.get(o.merchant) ?? { deliveries: 0, cod: 0, orders: 0, penalites: 0 };
+        // Une livraison en retard est facturée moins cher : la remise négociée (pénalité de
+        // retard du marchand), figée sur la commande à la livraison.
+        const penalite = Math.min(ht, o.latePenalty ?? 0);
+        e.deliveries += ht - penalite;
+        e.penalites += penalite;
         e.cod += o.codPaid ? o.cod : 0;
         e.orders += 1;
         agg.set(o.merchant, e);
@@ -238,7 +266,7 @@ export class BillingService {
         const ref = `FCT-${yr}-${mo}-${String(seq++).padStart(4, '0')}`;
         await db.insert(invoicesTable).values({
           ref, merchant, period, ordersCount: e.orders, deliveriesAmount: deliveries,
-          codCollected: e.cod, commission, netHt, tva, status: 'BROUILLON',
+          codCollected: e.cod, commission, netHt, tva, status: 'BROUILLON', latePenalties: Math.round(e.penalites),
         });
         created.push(ref);
       }

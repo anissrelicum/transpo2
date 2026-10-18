@@ -4,7 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  pointInPolygon, zoneCovers, planAutoDispatch, compareCandidates, dayInTimeZone, normalizePlace,
+  pointInPolygon, zoneCovers, planAutoDispatch, compareCandidates, compareUrgentCandidates, dayInTimeZone, normalizePlace,
   type DispatchCandidate, type DispatchZone,
 } from './index.ts';
 
@@ -170,4 +170,11 @@ test('journée de capacité : fuseau de Casablanca, pas UTC', () => {
   // 23h30 UTC le 17 = 00h30 le 18 à Casablanca (UTC+1).
   assert.equal(dayInTimeZone(new Date('2026-10-17T23:30:00Z'), 'Africa/Casablanca'), '2026-10-18');
   assert.equal(dayInTimeZone(new Date('2026-10-17T22:30:00Z'), 'Africa/Casablanca'), '2026-10-17');
+});
+
+test('urgent : le plus proche du retrait l’emporte sur le moins chargé', () => {
+  const pres = { name: 'Proche', load: 8, capacity: 10, ratio: 0.8, distanceKm: 0.6 };
+  const loin = { name: 'Loin', load: 1, capacity: 10, ratio: 0.1, distanceKm: 6.2 };
+  assert.equal([pres, loin].sort(compareCandidates)[0]!.name, 'Loin', 'équité hors urgence');
+  assert.equal([pres, loin].sort(compareUrgentCandidates)[0]!.name, 'Proche', 'urgence : la distance d’abord');
 });

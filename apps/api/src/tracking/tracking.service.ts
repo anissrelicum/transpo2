@@ -47,7 +47,9 @@ export class TrackingService {
       const { rows: zones } = await client.query(`SELECT name_fr, polygon, drivers FROM zones`);
       const { rows: fiches } = await client.query(`SELECT name, vehicle, available FROM drivers`);
       const { rows: actives } = await client.query(
-        `SELECT driver, status, count(*)::int AS n FROM orders
+        `SELECT driver, status, count(*)::int AS n,
+                count(*) FILTER (WHERE now() > LEAST(due_at, CASE WHEN picked_at IS NULL THEN pickup_due_at END))::int AS retards
+           FROM orders
           WHERE driver IS NOT NULL AND status IN ('ASSIGNEE','RETRAIT','RECUPEREE','LIVRAISON')
           GROUP BY driver, status`,
       );
@@ -80,6 +82,7 @@ export class TrackingService {
         const at = p.at instanceof Date ? p.at.toISOString() : p.at;
         const par = (st: string) => actives.find((a: any) => a.driver === p.driver && a.status === st)?.n ?? 0;
         const enCours = par('ASSIGNEE') + par('RETRAIT') + par('RECUPEREE') + par('LIVRAISON');
+        const retards = actives.filter((a: any) => a.driver === p.driver).reduce((n: number, a: any) => n + (a.retards ?? 0), 0);
         const j = jour.find((x: any) => x.driver === p.driver);
         const fiche = fiches.find((d: any) => d.name === p.driver);
         // Ce que le livreur fait : sans position depuis 5 min, on ne sait plus — « inactif ».
@@ -90,7 +93,7 @@ export class TrackingService {
           trail: trace.map((t: any) => [t.lat, t.lng] as [number, number]),
           speedKmh: speedKmh(trace.slice(-2).map((t: any) => ({ lat: t.lat, lng: t.lng, at: t.at }))),
           activite, vehicle: fiche?.vehicle ?? null, available: fiche?.available ?? null,
-          missions: enCours, livrees: j?.livrees ?? 0, echecs: j?.echecs ?? 0, codJour: j?.cod ?? 0,
+          missions: enCours, retards, livrees: j?.livrees ?? 0, echecs: j?.echecs ?? 0, codJour: j?.cod ?? 0,
         };
       });
     });
@@ -110,7 +113,8 @@ export class TrackingService {
       const { rows: missions } = await client.query(
         `SELECT ref, code, status, merchant, cod, cod_paid, size, proof_level,
                 pickup_contact, pickup_address, pickup_lat, pickup_lng, from_city,
-                drop_contact, drop_address, drop_lat, drop_lng, to_city
+                drop_contact, drop_address, drop_lat, drop_lng, to_city,
+                delay_mode, delay_minutes, delay_heure, due_at, pickup_due_at
            FROM orders
           WHERE driver = $1 AND status IN ('ASSIGNEE','RETRAIT','RECUPEREE','LIVRAISON')
           ORDER BY created_at`, [driver],
@@ -125,6 +129,7 @@ export class TrackingService {
         `SELECT name, vehicle, available, phone, city FROM drivers WHERE name = $1`, [driver],
       );
       const pos = trace.length ? trace[trace.length - 1] : null;
+      let cur0: { lat: number; lng: number } | null = null;
       // Le point à atteindre : le retrait tant que le colis n'est pas en main, puis la livraison.
       const arrets = missions.map((m: any) => {
         const retrait = m.status === 'ASSIGNEE' || m.status === 'RETRAIT';
@@ -135,12 +140,24 @@ export class TrackingService {
           contact: retrait ? (m.pickup_contact || m.merchant) : m.drop_contact,
           adresse: [retrait ? m.pickup_address : m.drop_address, retrait ? m.from_city : m.to_city].filter(Boolean).join(', '),
           lat: lat ?? null, lng: lng ?? null, cod: Number(m.cod) || 0, codPaid: m.cod_paid, size: m.size,
+          delayMode: m.delay_mode, delayMinutes: m.delay_minutes, delayHeure: m.delay_heure,
+          dueAt: m.due_at ? new Date(m.due_at).toISOString() : null,
+          pickupDueAt: !retrait || !m.pickup_due_at ? null : new Date(m.pickup_due_at).toISOString(),
         };
       });
-      // Ordre conseillé : plus proche voisin depuis la position actuelle (points localisés d'abord).
-      const ordonnes: typeof arrets = [];
-      const reste = arrets.filter((a) => a.lat != null);
-      let cur = pos ? { lat: pos.lat, lng: pos.lng } : reste[0] ? { lat: reste[0].lat!, lng: reste[0].lng! } : null;
+      // Ordre conseillé : d'abord les arrêts dont l'échéance tombe dans l'heure (la plus proche
+      // d'abord), puis le plus proche voisin depuis la position actuelle.
+      const echeance = (a: (typeof arrets)[number]) => Math.min(...[a.dueAt, a.pickupDueAt].filter(Boolean).map((d) => new Date(d!).getTime()), Infinity);
+      const dansLHeure = Date.now() + 60 * 60_000;
+      const urgents = arrets.filter((a) => a.lat != null && echeance(a) <= dansLHeure).sort((x, y) => echeance(x) - echeance(y));
+      const ordonnes: typeof arrets = [...urgents];
+      const reste = arrets.filter((a) => a.lat != null && !urgents.includes(a));
+      if (urgents.length) {
+        const dernier = urgents[urgents.length - 1]!;
+        // Le plus proche voisin repart du dernier arrêt urgent.
+        cur0 = { lat: dernier.lat!, lng: dernier.lng! };
+      }
+      let cur = cur0 ?? (pos ? { lat: pos.lat, lng: pos.lng } : reste[0] ? { lat: reste[0].lat!, lng: reste[0].lng! } : null);
       while (reste.length && cur) {
         let i = 0, best = Infinity;
         reste.forEach((a, k) => { const d = haversineMeters(cur!.lat, cur!.lng, a.lat!, a.lng!); if (d < best) { best = d; i = k; } });

@@ -13,6 +13,7 @@ import { useLanguage } from '../../lib/i18n';
 import { useJournee, definirOrdreManuel } from '../../lib/useJournee';
 import { distanceKm, distanceTournee, formatDistance, minutesEstimees } from '../../lib/journee';
 import { Carte, Pastille, Bandeau, useTon } from '../../components/ui';
+import { Echeance } from '../../components/Echeance';
 
 const T = {
   fr: {
@@ -103,6 +104,7 @@ export default function Tournee() {
                 <Text style={[{ color: colors.muted, fontSize: 13 }, align]} numberOfLines={1}>
                   {a.adresse}{plus ? ` · ${t.plus(plus)}` : ''}
                 </Text>
+                {a.echeance ? <View style={{ marginTop: 4 }}><Echeance echeance={a.echeance} lang={lang} /></View> : null}
               </View>
               {a.type === 'livraison' ? (
                 a.order.cod > 0 && !a.order.codPaid ? <Pastille ton="ambre">{money(a.order.cod)}</Pastille> : <Pastille ton="gris">{t.prepaye}</Pastille>

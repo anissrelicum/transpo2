@@ -30,6 +30,10 @@ export default async function AnalyticsPage() {
 
   // Agrégats par ville (destination), livreur, marchand — dérivés des commandes.
   const isDelivered = (o: Order) => o.status === 'LIVREE';
+  // Ponctualité : parmi les livraisons qui avaient une échéance, celles faites à l'heure.
+  const aEcheance = (o: Order) => isDelivered(o) && !!o.dueAt;
+  const aLHeure = (o: Order) => aEcheance(o) && !o.lateMinutes;
+  const ponctualite = (os: Order[]) => { const n = os.filter(aEcheance).length; return n ? pct(os.filter(aLHeure).length, n) : null; };
   const isClosed = (o: Order) => ['LIVREE', 'ECHOUEE', 'RETOUR', 'ANNULEE', 'RENDU'].includes(o.status);
 
   const cityMap = new Map<string, { volume: number; delivered: number; closed: number }>();
@@ -50,7 +54,7 @@ export default async function AnalyticsPage() {
     drvMap.set(o.driver, e);
   }
   const byDriver: DriverRow[] = [...drvMap.entries()]
-    .map(([driver, v]) => ({ driver, deliveries: v.deliveries, total: v.total, success: pct(v.deliveries, v.closed || v.total) }))
+    .map(([driver, v]) => ({ driver, deliveries: v.deliveries, total: v.total, success: pct(v.deliveries, v.closed || v.total), onTime: ponctualite(orders.filter((o) => o.driver === driver)) }))
     .sort((a, b) => b.deliveries - a.deliveries);
 
   const mrcMap = new Map<string, { deliveries: number; closed: number; total: number; revenue: number }>();
@@ -62,7 +66,7 @@ export default async function AnalyticsPage() {
     mrcMap.set(o.merchant, e);
   }
   const byMerchant: MerchantRow[] = [...mrcMap.entries()]
-    .map(([merchant, v]) => ({ merchant, deliveries: v.deliveries, success: pct(v.deliveries, v.closed || v.total), revenue: v.revenue }))
+    .map(([merchant, v]) => ({ merchant, deliveries: v.deliveries, success: pct(v.deliveries, v.closed || v.total), revenue: v.revenue, onTime: ponctualite(orders.filter((o) => o.merchant === merchant)) }))
     .sort((a, b) => b.deliveries - a.deliveries);
 
   // Répartition par statut (réel).
@@ -79,7 +83,8 @@ export default async function AnalyticsPage() {
         actions={<Badge color="gray" variant="soft"><DownloadIcon /> Toutes périodes</Badge>}
       />
 
-      <Grid columns={{ initial: '2', md: '4' }} gap="3" mb="4">
+      <Grid columns={{ initial: '2', md: '5' }} gap="3" mb="4">
+        <KPI label="Livrées à l’heure" value={ponctualite(orders) == null ? '—' : `${ponctualite(orders)} %`} delta="commandes à échéance" deltaColor="indigo" icon={<CheckCircledIcon width="15" />} accent="cyan" />
         <KPI label="Taux de réussite" value={`${summary.successRate} %`} delta="livrées / clôturées" deltaColor="green" icon={<CheckCircledIcon width="15" />} accent="green" />
         <KPI label="Livrées" value={String(summary.delivered)} delta="cumul" deltaColor="gray" icon={<ArchiveIcon width="15" />} accent="indigo" />
         <KPI label="Échecs" value={String(summary.failed)} delta="échouées + retours" deltaColor="red" icon={<CrossCircledIcon width="15" />} accent="red" />

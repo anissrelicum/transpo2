@@ -1,5 +1,7 @@
 'use client';
 import * as React from 'react';
+import { EcheanceBadge } from './EcheanceBadge';
+import { describeDelay } from '@transpo/domain';
 import Link from 'next/link';
 import { copyText } from '../lib/clipboard';
 import {
@@ -259,6 +261,17 @@ export function OrderDetailClient({ order, drivers, proof, events, canWrite, com
                         `Preuve : ${order.proofLevel}`,
                         ...(order.vehicleType ? [`Véhicule : ${order.vehicleType}`] : []),
                         ...(order.description ? [order.description] : []),
+                      ]}
+                    />
+                    <InfoBlock
+                      icon={<ClockIcon />} title="Délai de livraison"
+                      lines={[
+                        order.delayMode && order.delayMode !== 'aucun'
+                          ? describeDelay({ mode: order.delayMode, minutes: order.delayMinutes, heure: order.delayHeure })
+                          : 'Sans contrainte (dans la journée)',
+                        ...(order.retraitMinutes ? [`Retrait sous ${order.retraitMinutes} min après la commande`] : []),
+                        <EcheanceBadge key="e" o={order} />,
+                        ...(order.latePenalty ? [`Pénalité de retard : ${money(order.latePenalty)} HT remis au marchand`] : []),
                       ]}
                     />
                     <InfoBlock icon={<DownloadIcon />} title="Encaissement (COD)" lines={[<CodChip key="c" amount={order.cod} paid={order.codPaid} />, order.codPaid ? 'À reverser au marchand' : 'En attente d’encaissement']} />

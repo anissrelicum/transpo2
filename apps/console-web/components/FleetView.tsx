@@ -20,6 +20,7 @@ import type { Zone, FleetLive, Driver, FleetDriverDetail } from '@transpo/api-cl
 import { money } from '@transpo/domain';
 import { Map, type MapMarker, type MapPolygon, type MapPolyline } from './Map';
 import { KPI } from './ui';
+import { EcheanceBadge } from './EcheanceBadge';
 
 const RELECTURE_MS = 4000;
 
@@ -98,6 +99,7 @@ export function FleetView({ live: initial, zones, drivers, center }: {
   const enRoute = live.filter((l) => l.activite === 'livraison' || l.activite === 'retrait' || l.activite === 'mission');
   const livreesJour = live.reduce((s, l) => s + (l.livrees ?? 0), 0);
   const codJour = live.reduce((s, l) => s + (l.codJour ?? 0), 0);
+  const enRetard = live.reduce((s, l) => s + (l.retards ?? 0), 0);
 
   const liste = live
     .filter((l) => filtre === 'tous' || (filtre === 'hors' && l.outOfZone) || (filtre === 'inactif' && l.activite === 'inactif')
@@ -206,7 +208,10 @@ export function FleetView({ live: initial, zones, drivers, center }: {
                   <Box style={{ flex: 1, minWidth: 0 }}>
                     <Flex align="center" justify="between" gap="2">
                       <Text size="2" weight="medium" truncate>{l.driver}</Text>
-                      {l.outOfZone ? <Badge color="red" variant="solid" radius="full">Hors zone</Badge> : <Badge color={a.color as any} variant="soft" radius="full">{a.label}</Badge>}
+                      <Flex gap="1">
+                        {l.retards ? <Badge color="red" variant="solid" radius="full">{l.retards} en retard</Badge> : null}
+                        {l.outOfZone ? <Badge color="red" variant="solid" radius="full">Hors zone</Badge> : <Badge color={a.color as any} variant="soft" radius="full">{a.label}</Badge>}
+                      </Flex>
                     </Flex>
                     <Text as="div" size="1" color="gray" truncate>
                       {vehOf(l)} · {l.speedKmh != null && l.activite !== 'inactif' ? `${l.speedKmh} km/h · ` : ''}{l.missions ?? 0} en cours · {l.livrees ?? 0} livrée(s){l.echecs ? ` · ${l.echecs} échec(s)` : ''}
@@ -241,10 +246,11 @@ export function FleetView({ live: initial, zones, drivers, center }: {
           <Text size="2" color="gray">Vos livreurs en direct : où ils sont, ce qu’ils font, comment se passe leur journée.</Text>
         </Box>
       </Flex>
-      <Grid columns={{ initial: '2', md: '5' }} gap="3" mb="3">
+      <Grid columns={{ initial: '2', md: '6' }} gap="3" mb="3">
         <KPI label="En service" value={`${enService.length} / ${live.length}`} accent="green" />
         <KPI label="En route" value={String(enRoute.length)} accent="indigo" />
         <KPI label="Hors zone" value={String(horsZone.length)} delta={horsZone.length ? 'à vérifier' : undefined} deltaColor="red" icon={<ExclamationTriangleIcon width="15" />} accent="red" />
+        <KPI label="Commandes en retard" value={String(enRetard)} delta={enRetard ? 'échéance dépassée' : undefined} deltaColor="red" accent="red" />
         <KPI label="Livrées aujourd’hui" value={String(livreesJour)} accent="cyan" />
         <KPI label="COD encaissé aujourd’hui" value={money(codJour)} accent="amber" />
       </Grid>
@@ -325,6 +331,7 @@ function FicheLivreur({ l, fiche, vehicule, suivre, onSuivre, onFermer }: {
                     <Link href={`/orders/${encodeURIComponent(s.ref)}`}><Badge variant="outline" color="gray">{s.ref}</Badge></Link>
                     {s.type === 'livraison' && s.cod > 0 && !s.codPaid ? <Badge color="amber" variant="soft">COD {money(s.cod)}</Badge> : null}
                     {s.lat == null ? <Badge color="gray" variant="soft">sans GPS</Badge> : null}
+                    <EcheanceBadge o={{ status: s.status, delayMode: s.delayMode, delayMinutes: s.delayMinutes, delayHeure: s.delayHeure, dueAt: s.dueAt, pickupDueAt: s.pickupDueAt }} />
                   </Flex>
                 </Box>
               </Flex>

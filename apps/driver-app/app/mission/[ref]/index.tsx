@@ -20,6 +20,7 @@ import { useJournee } from '../../../lib/useJournee';
 import { distanceKm, estArrive, formatDistance, minutesEstimees } from '../../../lib/journee';
 import { avancer, ouvrirItineraire, partirEnRoute, appeler } from '../../../lib/etapes';
 import { CarteJournee } from '../../../components/CarteJournee';
+import { Echeance } from '../../../components/Echeance';
 import { Bouton, Carte, Libelle, Pastille, Bandeau } from '../../../components/ui';
 import { IcNaviguer, IcTel, IcPin, IcRetour, IcAlerte } from '../../../components/icones';
 
@@ -186,6 +187,7 @@ export default function ArretScreen() {
         ) : null}
 
         <View style={[row, s.puces]}>
+          <Echeance echeance={a.echeance} delayMode={o.delayMode} delayMinutes={o.delayMinutes} lang={lang} />
           {nb === 1 ? <Pastille ton="gris">{`${t.colis} · ${o.size}`}</Pastille> : null}
           {nb === 1 && o.fragile ? <Pastille ton="rouge">{t.fragile}</Pastille> : null}
           {a.type === 'livraison' && preuve ? <Pastille ton="gris">{preuve}</Pastille> : null}

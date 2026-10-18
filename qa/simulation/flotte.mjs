@@ -27,6 +27,7 @@ const ZONES = [
   { nameFr: 'Casa Est', nameAr: 'الدار البيضاء الشرقية', color: 'cyan', commune: 'Roches Noires', poly: [[33.615, -7.585], [33.615, -7.535], [33.565, -7.535], [33.565, -7.585]] },
 ];
 const LIVREURS = [
+  // `tours` : compteur de relevés, pour lire les propositions toutes les 3 passes.
   { name: 'Yassine Alaoui', vehicle: 'Moto', zone: 0, kmh: 32 },
   { name: 'Salma Bennis', vehicle: 'Moto', zone: 0, kmh: 30 },
   { name: 'Hamza Ouazzani', vehicle: 'Moto', zone: 0, kmh: 34, fugueur: true },
@@ -138,6 +139,18 @@ async function installer() {
   console.log(`installé : ${LIVREURS.length} livreurs, ${ZONES.length} zones`);
 }
 
+function delaiAuHasard() {
+  const x = Math.random();
+  if (x < 0.15) return { delai: { mode: 'apres_retrait', minutes: 25 } };            // restaurant
+  if (x < 0.35) return { delai: { mode: 'apres_commande', minutes: 45 } };           // express
+  if (x < 0.45) {                                                                     // documents
+    const h = new Date(Date.now() + 90 * 60_000);
+    const hhmm = h.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Casablanca' });
+    return { delai: { mode: 'heure_limite', heure: hhmm } };
+  }
+  return {};
+}
+
 async function nouvelleCommande(l) {
   const z = ZONES[l.zone].poly;
   const p = dans(z); const d = dans(z);
@@ -147,6 +160,8 @@ async function nouvelleCommande(l) {
     pickupContact: hasard(MARCHANDS), pickupAddress: `${10 + Math.floor(Math.random() * 90)} ${hasard(RUES)}`, pickupLat: p[0], pickupLng: p[1],
     dropContact: hasard(CLIENTS), dropAddress: `${1 + Math.floor(Math.random() * 120)} ${hasard(RUES)}`, dropLat: d[0], dropLng: d[1],
     dropPhone: '+212600000000', cod, proofLevel: Math.random() < 0.3 ? 'signature' : 'aucune',
+    // Une part des commandes porte un délai (ADR 0006) : de quoi voir l'urgence et les retards.
+    ...delaiAuHasard(),
   } });
   await A(`/v1/orders/${o.ref}/assign`, { method: 'POST', body: { driver: l.name } });
 }
@@ -168,6 +183,16 @@ function cibleDe(o) {
 }
 
 async function etape(l) {
+  // Missions proposées par l'affectation automatique : acceptées après quelques secondes
+  // (9 fois sur 10), comme un livreur qui regarde son téléphone au feu rouge.
+  if (++l.tours % 3 === 0) {
+    const offres = await terrain(l, '/v1/driver/offers').catch(() => []);
+    for (const f of offres) {
+      const decision = Math.random() < 0.9 ? 'accept' : 'refuse';
+      await terrain(l, `/v1/driver/offers/${f.id}/${decision}`, { method: 'POST', body: {}, idem: `${f.id}:sim:${decision}` }).catch(() => null);
+      if (decision === 'accept') l.rafraichir = true;
+    }
+  }
   if (!l.missions || l.rafraichir) {
     l.missions = (await terrain(l, '/v1/driver/missions')).filter((o) => o.pickupLat != null && o.dropLat != null);
     l.rafraichir = false;
@@ -222,6 +247,7 @@ async function etape(l) {
 
 await installer();
 let tour = 0;
+for (const l of LIVREURS) l.tours = 0;
 for (;;) {
   const debut = Date.now();
   await Promise.all(LIVREURS.map((l) => etape(l).catch((e) => { console.warn(`${l.name} : ${e.message}`); l.rafraichir = true; })));

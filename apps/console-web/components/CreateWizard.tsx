@@ -1,5 +1,7 @@
 'use client';
 import * as React from 'react';
+import type { DelayPolicy } from '@transpo/domain';
+import { DelaiChoix, lireDelai } from './DelaiChoix';
 import { useRouter } from 'next/navigation';
 import { useSafeRefresh } from '../lib/safe-refresh';
 import {
@@ -129,6 +131,8 @@ export function CreateWizard({ merchants, espace = 'console', lang = 'fr' }: { m
   const [proof, setProof] = React.useState<string>('photo_signature');
   const [fragile, setFragile] = React.useState(false);
   const [scheduled, setScheduled] = React.useState(false);
+  // Délai de livraison : celui du marchand tant qu'on n'y touche pas (ADR 0006).
+  const [delaiChoisi, setDelaiChoisi] = React.useState<DelayPolicy | null>(null);
   const [cod, setCod] = React.useState('');
   const [retrait, setRetrait] = React.useState<Point>(POINT_VIDE);
   const [livraison, setLivraison] = React.useState<Point>(POINT_VIDE);
@@ -153,15 +157,20 @@ export function CreateWizard({ merchants, espace = 'console', lang = 'fr' }: { m
     fetch('/api/proxy/v1/pricing/quote', {
       method: 'POST', headers: { 'content-type': 'application/json' },
       // Conditions du marchand choisi (console). Au portail, l'API impose celles du compte.
-      body: JSON.stringify({ distanceKm, fragile, scheduled, merchant: merchant || undefined }),
+      body: JSON.stringify({ distanceKm, fragile, scheduled, merchant: merchant || undefined, delayMode: delaiChoisi?.mode }),
     })
       .then((r) => r.ok ? r.json() : null)
       .then((data) => { if (!cancelled) { setQ(data); setQuoting(false); } })
       .catch(() => { if (!cancelled) setQuoting(false); });
     return () => { cancelled = true; };
-  }, [distanceKm, fragile, scheduled, merchant]);
+  }, [distanceKm, fragile, scheduled, merchant, delaiChoisi?.mode]);
+  const delaiAffiche: DelayPolicy = delaiChoisi ?? q?.deliveryTerms?.delai ?? { mode: 'aucun' };
 
   async function submit() {
+    if (delaiChoisi) {
+      const d = lireDelai(delaiChoisi);
+      if (!d.ok) { setError(d.error); return; }
+    }
     setBusy(true); setError(null);
     const res = await fetch('/api/orders', {
       method: 'POST', headers: { 'content-type': 'application/json' },
@@ -176,6 +185,8 @@ export function CreateWizard({ merchants, espace = 'console', lang = 'fr' }: { m
         pickupLat: retrait.loc?.lat ?? null, pickupLng: retrait.loc?.lng ?? null, pickupMapUrl: retrait.loc?.mapUrl ?? null,
         dropLat: livraison.loc?.lat ?? null, dropLng: livraison.loc?.lng ?? null, dropMapUrl: livraison.loc?.mapUrl ?? null,
         description, vehicleType,
+        // Absent = délai par défaut du marchand, appliqué par le serveur.
+        ...(delaiChoisi ? { delai: delaiChoisi } : {}),
       }),
     });
     if (res.ok) {
@@ -276,6 +287,9 @@ export function CreateWizard({ merchants, espace = 'console', lang = 'fr' }: { m
                   <Box><Text as="div" size="2" weight="medium">Livraison programmée</Text><Text as="div" size="1" color="gray">Planifier un créneau plutôt qu’immédiat</Text></Box>
                   <Switch checked={scheduled} onCheckedChange={setScheduled} />
                 </Flex>
+                <Field label="Délai de livraison" hint={delaiChoisi ? 'Choisi pour cette commande' : 'Délai par défaut du marchand — modifiable pour cette commande'}>
+                  <DelaiChoix value={delaiAffiche} onChange={setDelaiChoisi} testId="wizard-delai" />
+                </Field>
                 <Field label="Montant à encaisser (COD)" hint="Laisser vide si prépayé">
                   <TextField.Root value={cod} onChange={(e) => setCod(e.target.value.replace(/[^0-9]/g, ''))} placeholder="0" size="2">
                     <TextField.Slot side="right"><Text size="2" color="gray">DH</Text></TextField.Slot>
@@ -311,7 +325,7 @@ export function CreateWizard({ merchants, espace = 'console', lang = 'fr' }: { m
                   <Badge color={q.mode && q.mode !== 'standard' ? 'indigo' : 'gray'} variant="soft">{libelleMode(q)}</Badge>
                 </Flex>
                 <PriceRow label={q.mode === 'forfait' ? 'Forfait par livraison' : `Base · ${distanceKm.toLocaleString('fr-FR')} km`} value={money(q.base)} />
-                {q.surcharges > 0 && <PriceRow label="Suppléments (fragile/programmé)" value={money(q.surcharges)} />}
+                {q.surcharges > 0 && <PriceRow label="Suppléments (fragile, programmé, express)" value={money(q.surcharges)} />}
                 <PriceRow label="HT" value={money(q.ht)} />
                 <PriceRow label="TVA 20 %" value={money(q.tva)} />
                 <Separator size="4" />

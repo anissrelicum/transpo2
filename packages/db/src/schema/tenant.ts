@@ -52,6 +52,19 @@ export const orders = pgTable('orders', {
   dispatchException: text('dispatch_exception'),
   dispatchExceptionAt: timestamp('dispatch_exception_at', { withTimezone: true }),
   dispatchRound: integer('dispatch_round').notNull().default(0),
+  // Délais de livraison (cf. migration 0030, ADR 0006).
+  delayMode: text('delay_mode').notNull().default('aucun'),
+  delayMinutes: integer('delay_minutes'),
+  delayHeure: text('delay_heure'),
+  retraitMinutes: integer('retrait_minutes'),
+  dueAt: timestamp('due_at', { withTimezone: true }),
+  pickupDueAt: timestamp('pickup_due_at', { withTimezone: true }),
+  pickedAt: timestamp('picked_at', { withTimezone: true }),
+  deliveredAt: timestamp('delivered_at', { withTimezone: true }),
+  lateMinutes: integer('late_minutes'),
+  latePenalty: doublePrecision('late_penalty'),
+  riskAlertedAt: timestamp('risk_alerted_at', { withTimezone: true }),
+  lateAlertedAt: timestamp('late_alerted_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -89,6 +102,8 @@ export const merchants = pgTable('merchants', {
   flatPrice: doublePrecision('flat_price'),
   commissionRate: doublePrecision('commission_rate'),
   active: boolean('active').notNull().default(true),
+  // Délai par défaut, suppléments express, pénalité de retard (cf. migration 0030).
+  deliveryTerms: jsonb('delivery_terms').notNull().default({ delai: { mode: 'aucun' }, supplements: {}, penaliteRetard: 0 }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
@@ -309,6 +324,7 @@ export const invoices = pgTable('invoices', {
   netHt: integer('net_ht').notNull().default(0),
   tva: integer('tva').notNull().default(0),
   status: text('status').notNull().default('BROUILLON'),
+  latePenalties: integer('late_penalties').notNull().default(0),
   disputeAmount: integer('dispute_amount'),
   disputeNote: text('dispute_note'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

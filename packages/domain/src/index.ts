@@ -455,6 +455,11 @@ export const NOTIF_TEMPLATES: Record<string, { fr: string; ar: string; transacti
   'driver.offer': { fr: 'Course proposée {code} — {ville}. Acceptez sous {delai} min.', ar: 'رحلة مقترحة {code} — {ville}. اقبلها خلال {delai} دقيقة.', transactional: true },
   // Alerte interne à l'exploitation : une commande que l'automate n'a pas pu placer.
   'dispatch.exception': { fr: 'Commande {ref} à affecter à la main : {motif}.', ar: 'الطلب {ref} يحتاج إسناداً يدوياً: {motif}.', transactional: true },
+  // Délais de livraison (ADR 0006). Alertes internes, client et marchand.
+  'delay.risk': { fr: 'Commande {ref} à risque : arrivée estimée {eta}, échéance {echeance} ({livreur}).', ar: 'الطلب {ref} في خطر: الوصول المتوقع {eta}، الموعد {echeance} ({livreur}).', transactional: true },
+  'delay.late': { fr: 'Commande {ref} en retard : échéance {echeance} dépassée ({livreur}).', ar: 'الطلب {ref} متأخر: تجاوز الموعد {echeance} ({livreur}).', transactional: true },
+  'order.delayed': { fr: 'Votre colis {code} aura environ {retard} min de retard. Merci de votre patience.', ar: 'سيتأخر طردكم {code} حوالي {retard} دقيقة. شكراً على صبركم.', transactional: true },
+  'merchant.delay': { fr: 'Commande {ref} ({client}) : retard estimé de {retard} min sur l’échéance de {echeance}.', ar: 'الطلب {ref} ({client}): تأخير متوقع {retard} دقيقة عن موعد {echeance}.', transactional: true },
 };
 export type NotifEvent = keyof typeof NOTIF_TEMPLATES;
 
@@ -619,6 +624,8 @@ export interface QuoteInput {
   tiers?: PriceTier[];                // grille configurée par tenant (défaut : PRICE_TIERS)
   fragileSurcharge?: number;          // supplément fragile configuré
   scheduledSurcharge?: number;        // supplément programmé configuré
+  /** Supplément express du délai de livraison (DH HT), cf. `delaySurcharge`. */
+  delaySurcharge?: number;
   vatRate?: number;                   // TVA configurée par tenant (défaut : VAT_RATE)
 }
 export interface Quote {
@@ -650,7 +657,7 @@ const MODE_OF_APPLIED: Record<Quote['applied'], PricingMode> = { fixe_marchand: 
 export function quote(input: QuoteInput): Quote {
   const fragileS = input.fragileSurcharge ?? FRAGILE_SURCHARGE;
   const scheduledS = input.scheduledSurcharge ?? SCHEDULED_SURCHARGE;
-  const surcharges = (input.fragile ? fragileS : 0) + (input.scheduled ? scheduledS : 0);
+  const surcharges = (input.fragile ? fragileS : 0) + (input.scheduled ? scheduledS : 0) + Math.max(0, input.delaySurcharge ?? 0);
   const gp = gridPriceFor(input.distanceKm, input.tiers ?? PRICE_TIERS);
 
   let fixed: number | null = null;
@@ -753,6 +760,9 @@ export const DISPATCH_EVENT_META: Record<string, { fr: string; ar: string }> = {
   OFFRE_ANNULEE: { fr: 'Proposition annulée', ar: 'أُلغي العرض' },
   EXCEPTION_DISPATCH: { fr: 'Exception de dispatch', ar: 'استثناء في التوزيع' },
   RELANCE_DISPATCH: { fr: 'Affectation automatique relancée', ar: 'أُعيد إطلاق التوزيع التلقائي' },
+  // Veille des délais (ADR 0006).
+  ECHEANCE_A_RISQUE: { fr: 'Échéance à risque', ar: 'الموعد في خطر' },
+  ECHEANCE_DEPASSEE: { fr: 'Échéance dépassée', ar: 'تجاوز الموعد' },
 };
 
 /**
@@ -862,6 +872,19 @@ export function compareCandidates(a: RankedCandidate, b: RankedCandidate): numbe
 }
 
 /**
+ * Classement d'une commande URGENTE (échéance dans l'heure, cf. ADR 0006) : le plus proche
+ * du retrait d'abord — chaque minute compte —, la charge seulement pour départager.
+ * La zone et la capacité restent exigées en amont, comme pour toute commande.
+ */
+export function compareUrgentCandidates(a: RankedCandidate, b: RankedCandidate): number {
+  if (a.distanceKm != null && b.distanceKm != null && a.distanceKm !== b.distanceKm) return a.distanceKm - b.distanceKm;
+  if (a.distanceKm != null && b.distanceKm == null) return -1;
+  if (a.distanceKm == null && b.distanceKm != null) return 1;
+  if (a.ratio !== b.ratio) return a.ratio - b.ratio;
+  return a.name.localeCompare(b.name, 'fr');
+}
+
+/**
  * Décide à qui proposer une commande — ou pourquoi personne.
  *
  * Éligible = la zone du livreur couvre le retrait, ET il est disponible, doté d'un compte
@@ -884,6 +907,8 @@ export function planAutoDispatch(input: {
   /** Livreurs déjà sollicités pour cette commande dans le tour courant (refus, expiration). */
   alreadyAsked: string[];
   today: string;
+  /** Commande urgente : le plus proche plutôt que le moins chargé (cf. `compareUrgentCandidates`). */
+  urgent?: boolean;
 }): DispatchPlan {
   const excluded: Record<string, CandidateExclusion> = {};
   const covering = new Set<string>();
@@ -925,7 +950,7 @@ export function planAutoDispatch(input: {
     distanceKm: d.lastPosition && input.pickup.point
       ? Math.round(haversineMeters(d.lastPosition.lat, d.lastPosition.lng, input.pickup.point.lat, input.pickup.point.lng) / 100) / 10
       : null,
-  })).sort(compareCandidates);
+  })).sort(input.urgent ? compareUrgentCandidates : compareCandidates);
   return { kind: 'offer', driver: ranking[0]!, ranking, excluded };
 }
 
@@ -987,6 +1012,18 @@ export interface Order {
   dispatchException?: DispatchException | null;
   dispatchExceptionAt?: string | null;
   dispatchRound?: number;
+  // Délai de livraison (ADR 0006) : règle figée à la création (défaut du marchand ou choix de
+  // la commande) et échéances calculées par le serveur. `dueAt` d'un délai « après retrait »
+  // n'est connu qu'au retrait.
+  delayMode?: DelayMode | null;
+  delayMinutes?: number | null;
+  delayHeure?: string | null;
+  retraitMinutes?: number | null;
+  dueAt?: string | null;
+  pickupDueAt?: string | null;
+  deliveredAt?: string | null;
+  lateMinutes?: number | null;
+  latePenalty?: number | null;
   createdAt: string;
 }
 
@@ -1009,6 +1046,8 @@ export interface Merchant extends MerchantPricing {
   /** Commission COD négociée (fraction) ; `null` = taux de l'entreprise. */
   commissionRate: number | null;
   active: boolean;
+  /** Délai par défaut, suppléments express et pénalité de retard (cf. ADR 0006). */
+  deliveryTerms: DeliveryTerms;
   createdAt: string;
   updatedAt: string;
 }
@@ -1069,4 +1108,171 @@ export function speedKmh(points: { lat: number; lng: number; at: string | Date }
   const dt = (new Date(b.at).getTime() - new Date(a.at).getTime()) / 3_600_000;
   if (dt <= 0) return null;
   return Math.round(haversineMeters(a.lat, a.lng, b.lat, b.lng) / 1000 / dt);
+}
+
+/* ====================== Délais de livraison ====================== */
+// Une commande peut porter une contrainte de temps : restaurant (30 min après le retrait),
+// express (1 h après la commande), documents (avant midi)… ou aucune (colis du jour).
+// Défaut par marchand, modifiable à chaque commande. Le serveur calcule les échéances ;
+// les écrans les affichent (cf. docs/adr/0006).
+
+export const DELAY_MODES = ['aucun', 'apres_retrait', 'apres_commande', 'heure_limite'] as const;
+export type DelayMode = typeof DELAY_MODES[number];
+export const isDelayMode = (v: unknown): v is DelayMode => DELAY_MODES.includes(v as DelayMode);
+
+export const DELAY_LABELS: Record<DelayMode, { fr: string; ar: string }> = {
+  aucun: { fr: 'Sans contrainte (dans la journée)', ar: 'بدون قيد (خلال اليوم)' },
+  apres_retrait: { fr: 'Délai après la prise en charge', ar: 'مهلة بعد الاستلام' },
+  apres_commande: { fr: 'Délai après la commande', ar: 'مهلة بعد الطلب' },
+  heure_limite: { fr: 'Heure limite', ar: 'ساعة محددة' },
+};
+
+/** Règle de délai : la valeur par défaut d'un marchand, ou celle d'une commande. */
+export interface DelayPolicy {
+  mode: DelayMode;
+  /** Minutes : après le retrait (`apres_retrait`) ou après la commande (`apres_commande`). */
+  minutes?: number | null;
+  /** « HH:MM », heure locale de l'entreprise (`heure_limite`). */
+  heure?: string | null;
+  /**
+   * Retrait limite, en minutes après la commande, pour TOUS les modes : le temps perdu
+   * avant la prise en charge compte aussi (un plat attend, un pli doit partir).
+   */
+  retraitMinutes?: number | null;
+}
+
+/** Conditions de délai d'un marchand : défaut, suppléments express, pénalité de retard. */
+export interface DeliveryTerms {
+  delai: DelayPolicy;
+  /** Supplément HT (DH) par type de délai, ajouté au prix de la course. */
+  supplements: Partial<Record<Exclude<DelayMode, 'aucun'>, number>>;
+  /** Pénalité en cas de retard : fraction du prix HT de la course remise au marchand (0..1). */
+  penaliteRetard: number;
+}
+
+export const DEFAULT_DELIVERY_TERMS: DeliveryTerms = { delai: { mode: 'aucun' }, supplements: {}, penaliteRetard: 0 };
+
+/** Seuil d'urgence : une échéance à moins d'une heure fait passer au livreur le plus proche. */
+export const URGENT_WITHIN_MIN = 60;
+
+const HEURE_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+/** Message d'erreur si la règle est incohérente, `null` sinon. */
+export function validateDelayPolicy(p: DelayPolicy): string | null {
+  if (!isDelayMode(p.mode)) return 'Type de délai invalide.';
+  const entier = (n: unknown) => typeof n === 'number' && Number.isInteger(n);
+  if (p.mode === 'apres_retrait' || p.mode === 'apres_commande') {
+    if (!entier(p.minutes) || p.minutes! < 5 || p.minutes! > 24 * 60) return 'Délai : un nombre de minutes entre 5 et 1440.';
+  }
+  if (p.mode === 'heure_limite' && !(typeof p.heure === 'string' && HEURE_RE.test(p.heure))) return 'Heure limite au format HH:MM.';
+  if (p.retraitMinutes != null && (!entier(p.retraitMinutes) || p.retraitMinutes < 5 || p.retraitMinutes > 24 * 60)) {
+    return 'Retrait limite : un nombre de minutes entre 5 et 1440.';
+  }
+  return null;
+}
+
+/** Règle normalisée : seuls les champs propres au mode sont gardés. */
+export function normalizeDelayPolicy(p: DelayPolicy): DelayPolicy {
+  return {
+    mode: p.mode,
+    minutes: p.mode === 'apres_retrait' || p.mode === 'apres_commande' ? p.minutes ?? null : null,
+    heure: p.mode === 'heure_limite' ? p.heure ?? null : null,
+    retraitMinutes: p.retraitMinutes ?? null,
+  };
+}
+
+/**
+ * Instant UTC correspondant à une date (AAAA-MM-JJ) et une heure (HH:MM) LOCALES d'un fuseau.
+ * Sans bibliothèque : on corrige l'écart que le fuseau applique à une première estimation.
+ */
+export function zonedTime(ymd: string, hhmm: string, timeZone: string): Date {
+  const [y, mo, d] = ymd.split('-').map(Number);
+  const [h, mi] = hhmm.split(':').map(Number);
+  const estimation = Date.UTC(y!, mo! - 1, d!, h!, mi!);
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+  }).formatToParts(new Date(estimation));
+  const v = (t: string) => Number(parts.find((p) => p.type === t)!.value);
+  const local = Date.UTC(v('year'), v('month') - 1, v('day'), v('hour'), v('minute'));
+  return new Date(estimation - (local - estimation));
+}
+
+/**
+ * Échéances connues à la création : livraison (`apres_commande`, `heure_limite`) et retrait
+ * limite. Une heure limite déjà passée au moment de la commande vise le lendemain (« avant
+ * midi » commandé à 14 h = demain midi). `apres_retrait` ne se calcule qu'au retrait.
+ */
+export function initialDeadlines(p: DelayPolicy, createdAt: Date, timeZone = 'Africa/Casablanca'):
+  { dueAt: Date | null; pickupDueAt: Date | null } {
+  const plus = (min: number) => new Date(createdAt.getTime() + min * 60_000);
+  let dueAt: Date | null = null;
+  if (p.mode === 'apres_commande' && p.minutes) dueAt = plus(p.minutes);
+  if (p.mode === 'heure_limite' && p.heure) {
+    dueAt = zonedTime(dayInTimeZone(createdAt, timeZone), p.heure, timeZone);
+    if (dueAt.getTime() <= createdAt.getTime()) {
+      dueAt = zonedTime(dayInTimeZone(new Date(createdAt.getTime() + 24 * 3_600_000), timeZone), p.heure, timeZone);
+    }
+  }
+  const pickupDueAt = p.retraitMinutes ? plus(p.retraitMinutes) : null;
+  // Un retrait limite postérieur à l'échéance de livraison n'a pas de sens : on le ramène.
+  return { dueAt, pickupDueAt: pickupDueAt && dueAt && pickupDueAt > dueAt ? dueAt : pickupDueAt };
+}
+
+/** Échéance de livraison fixée au retrait (`apres_retrait`) ; `null` pour les autres modes. */
+export function dueAtAfterPickup(p: DelayPolicy, pickedAt: Date): Date | null {
+  return p.mode === 'apres_retrait' && p.minutes ? new Date(pickedAt.getTime() + p.minutes * 60_000) : null;
+}
+
+export type DeadlineState = 'sans' | 'ok' | 'a_risque' | 'en_retard';
+
+/**
+ * Situation d'une commande face à ses échéances. `a_risque` : l'arrivée estimée (maintenant +
+ * `etaMin`) dépasse l'échéance — on prévient AVANT que le retard soit consommé. Le retrait
+ * limite ne compte que tant que le colis n'est pas en main.
+ */
+export function deadlineState(input: {
+  dueAt: Date | string | null; pickupDueAt?: Date | string | null; pickedUp: boolean; now: Date; etaMin?: number | null;
+}): DeadlineState {
+  const t = (d: Date | string | null | undefined) => (d ? new Date(d).getTime() : null);
+  const echeances = [t(input.dueAt), input.pickedUp ? null : t(input.pickupDueAt)].filter((x): x is number => x != null);
+  if (!echeances.length) return 'sans';
+  const now = input.now.getTime();
+  const proche = Math.min(...echeances);
+  if (now > proche) return 'en_retard';
+  if (input.etaMin != null && now + input.etaMin * 60_000 > proche) return 'a_risque';
+  return 'ok';
+}
+
+/** Minutes de retard à la livraison (0 si à l'heure ou sans échéance). */
+export function lateMinutes(dueAt: Date | string | null, deliveredAt: Date | string): number {
+  if (!dueAt) return 0;
+  return Math.max(0, Math.ceil((new Date(deliveredAt).getTime() - new Date(dueAt).getTime()) / 60_000));
+}
+
+/** Urgente : une échéance (livraison ou retrait) tombe dans l'heure, ou un délai court après retrait. */
+export function isUrgent(input: { policy: DelayPolicy; dueAt?: Date | string | null; pickupDueAt?: Date | string | null; now: Date }): boolean {
+  const limite = input.now.getTime() + URGENT_WITHIN_MIN * 60_000;
+  const proches = [input.dueAt, input.pickupDueAt].filter(Boolean).some((d) => new Date(d!).getTime() <= limite);
+  return proches || (input.policy.mode === 'apres_retrait' && (input.policy.minutes ?? Infinity) <= URGENT_WITHIN_MIN);
+}
+
+/** Supplément express (DH HT) du type de délai, selon les conditions du marchand. */
+export function delaySurcharge(terms: DeliveryTerms | null | undefined, mode: DelayMode): number {
+  if (!terms || mode === 'aucun') return 0;
+  const s = terms.supplements?.[mode];
+  return typeof s === 'number' && s > 0 ? Math.round(s * 100) / 100 : 0;
+}
+
+/** Pénalité de retard (DH HT) : fraction du prix HT de la course, si et seulement si en retard. */
+export function latePenalty(priceHt: number | null | undefined, rate: number | null | undefined, lateMin: number): number {
+  if (!lateMin || !priceHt || !rate || rate <= 0) return 0;
+  return Math.round(priceHt * Math.min(1, rate) * 100) / 100;
+}
+
+/** Libellé court d'une échéance pour les écrans : « avant 12:00 », « 30 min après retrait »… */
+export function describeDelay(p: DelayPolicy, lang: 'fr' | 'ar' = 'fr'): string {
+  if (p.mode === 'apres_retrait') return lang === 'ar' ? `${p.minutes} د بعد الاستلام` : `${p.minutes} min après la prise en charge`;
+  if (p.mode === 'apres_commande') return lang === 'ar' ? `${p.minutes} د بعد الطلب` : `${p.minutes} min après la commande`;
+  if (p.mode === 'heure_limite') return lang === 'ar' ? `قبل ${p.heure}` : `avant ${p.heure}`;
+  return DELAY_LABELS.aucun[lang];
 }

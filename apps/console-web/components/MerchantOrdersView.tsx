@@ -1,5 +1,6 @@
 'use client';
 import * as React from 'react';
+import { EcheanceBadge } from './EcheanceBadge';
 import { Card, Flex, Box, Text, Table, Select, TextField } from '@radix-ui/themes';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { StatusBadge, CodChip } from '@transpo/ui-web';
@@ -64,7 +65,7 @@ export function MerchantOrdersView({ orders }: { orders: Order[] }) {
                 </Table.RowHeaderCell>
                 <Table.Cell><Text size="2">{o.fromCity} → {o.toCity}</Text></Table.Cell>
                 <Table.Cell><CodChip amount={o.cod} paid={o.codPaid} /></Table.Cell>
-                <Table.Cell><StatusBadge status={o.status} /></Table.Cell>
+                <Table.Cell><Flex gap="1" wrap="wrap"><StatusBadge status={o.status} /><EcheanceBadge o={o} /></Flex></Table.Cell>
                 <Table.Cell><Text size="1" color="gray">{when(o.createdAt)}</Text></Table.Cell>
               </Table.Row>
             ))}

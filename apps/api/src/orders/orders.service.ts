@@ -7,6 +7,8 @@ import { NotificationsService } from '../notifications/notifications.service.js'
 import { BillingService } from '../billing/billing.service.js';
 import { AutoDispatchService } from '../dispatch/auto-dispatch.service.js';
 import { normaliserLocalisation } from './localisation.js';
+import { fuseauEntreprise, delaiDemande, surTransition } from './delais.js';
+import { initialDeadlines, type DelayPolicy } from '@transpo/domain';
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 function rndCode(): string {
@@ -25,6 +27,8 @@ function nextRef(): string {
 export interface CreateOrderInput {
   merchant?: string; fromCity: string; toCity: string;
   cod?: number; size?: ParcelSize; proofLevel?: ProofLevel; scheduled?: boolean;
+  /** Délai de livraison de CETTE commande ; absent = délai par défaut du marchand. */
+  delai?: DelayPolicy | null;
   // Supplément fragile : l'assistant le proposait et l'affichait dans le devis, mais la
   // création l'ignorait. Il entre désormais dans le prix figé de la commande.
   fragile?: boolean;
@@ -126,8 +130,13 @@ export class OrdersService {
       pickup: retraitLoc.lat != null && retraitLoc.lng != null ? { lat: retraitLoc.lat, lng: retraitLoc.lng } : null,
       drop: livraisonLoc.lat != null && livraisonLoc.lng != null ? { lat: livraisonLoc.lat, lng: livraisonLoc.lng } : null,
     });
-    const prix = await this.billing.priceCourse(schema, { merchant, distanceKm: km, fragile, scheduled });
-    return withTenantDb(schema, async (db) => {
+    const demande = delaiDemande(input.delai);
+    const prix = await this.billing.priceCourse(schema, { merchant, distanceKm: km, fragile, scheduled, delayMode: demande?.mode });
+    // Délai retenu : celui demandé pour la commande, sinon le défaut du marchand. Il est FIGÉ
+    // sur la commande : changer plus tard les conditions du marchand ne le réécrit pas.
+    const delai: DelayPolicy = demande ?? prix.terms.delai;
+    return withTenantDb(schema, async (db, client) => {
+      const echeances = initialDeadlines(delai, new Date(), await fuseauEntreprise(client));
       const row = {
         ref: nextRef(), code: rndCode(),
         status: (scheduled ? 'PROGRAMMEE' : 'NOUVELLE') as OrderStatus,
@@ -148,6 +157,8 @@ export class OrdersService {
         pricingMode: prix.mode, distanceKm: prix.distanceKm,
         priceBase: prix.base, priceSurcharges: prix.surcharges,
         priceHt: prix.ht, priceVat: prix.tva, priceTtc: prix.ttc,
+        delayMode: delai.mode, delayMinutes: delai.minutes ?? null, delayHeure: delai.heure ?? null,
+        retraitMinutes: delai.retraitMinutes ?? null, dueAt: echeances.dueAt, pickupDueAt: echeances.pickupDueAt,
       };
       const [r] = await db.insert(ordersTable).values(row).returning();
       await journaliser(db, r.ref, r.status, actor, 'Commande créée');
@@ -210,7 +221,7 @@ export class OrdersService {
       if (next === 'LIVREE') {
         throw new BadRequestException('La livraison se clôture par la preuve, depuis l’app livreur.');
       }
-      const [r] = await db.update(ordersTable).set({ status: next }).where(eq(ordersTable.ref, ref)).returning();
+      const [r] = await db.update(ordersTable).set({ status: next, ...surTransition(cur, next) }).where(eq(ordersTable.ref, ref)).returning();
       await journaliser(db, ref, next, actor);
       return rowToOrder(r);
     }).then(async (avancee) => {

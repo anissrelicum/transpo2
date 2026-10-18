@@ -75,3 +75,21 @@ test('estimations lisibles', () => {
   assert.equal(formatDistance(0.45, 'fr'), '450 m');
   assert.equal(formatDistance(3.42, 'fr'), '3,4 km');
 });
+
+test('une échéance dans l’heure passe devant le plus proche voisin', () => {
+  const now = new Date('2026-10-18T10:00:00Z').getTime();
+  const pres = cmd('PRES', { status: 'RECUPEREE', dropLat: 33.5833, dropLng: -7.6385 });
+  const urgentLoin = cmd('URGENT', { status: 'RECUPEREE', dropLat: 33.547, dropLng: -7.623, dueAt: '2026-10-18T10:30:00Z', delayMode: 'apres_commande' });
+  const tardive = cmd('TARD', { status: 'RECUPEREE', dropLat: 33.59, dropLng: -7.64, dueAt: '2026-10-18T16:00:00Z', delayMode: 'heure_limite' });
+  const r = ordonnerArrets([pres, tardive, urgentLoin], { tournee: null, ordreManuel: null, moi: { lat: 33.585, lng: -7.64 }, now });
+  assert.equal(r[0]!.order.ref, 'URGENT');
+  assert.equal(r[0]!.echeance, '2026-10-18T10:30:00.000Z');
+});
+
+test('au retrait, le retrait limite compte ; un arrêt groupé prend l’échéance la plus proche', () => {
+  const a = cmd('A', { pickupDueAt: '2026-10-18T10:20:00Z', dueAt: '2026-10-18T11:00:00Z' });
+  const b = cmd('B', { dueAt: '2026-10-18T10:10:00Z' });
+  assert.equal(arretDe(a).echeance, '2026-10-18T10:20:00.000Z');
+  const [g] = grouper([a, b].map(arretDe));
+  assert.equal(g!.echeance, '2026-10-18T10:10:00.000Z');
+});

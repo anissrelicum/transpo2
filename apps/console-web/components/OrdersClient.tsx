@@ -1,5 +1,6 @@
 'use client';
 import * as React from 'react';
+import { EcheanceBadge } from './EcheanceBadge';
 import Link from 'next/link';
 import { useSafeRefresh } from '../lib/safe-refresh';
 import {
@@ -126,6 +127,7 @@ export function OrdersClient({ orders, drivers, cities, merchants, canWrite, ini
                 <Table.ColumnHeaderCell>Marchand</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Trajet</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Statut</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Échéance</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Livreur</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell align="right">COD</Table.ColumnHeaderCell>
                 {canWrite && <Table.ColumnHeaderCell style={{ width: 44 }}></Table.ColumnHeaderCell>}
@@ -142,6 +144,7 @@ export function OrdersClient({ orders, drivers, cities, merchants, canWrite, ini
                   <Table.Cell><Text size="2">{o.merchant}</Text></Table.Cell>
                   <Table.Cell><Text size="2" color="gray">{o.fromCity} → {o.toCity}</Text></Table.Cell>
                   <Table.Cell><StatusBadge status={o.status} /></Table.Cell>
+                  <Table.Cell><EcheanceBadge o={o} /></Table.Cell>
                   <Table.Cell>{o.driver ? <Flex align="center" gap="1"><Avatar size="1" radius="full" fallback={initials(o.driver)} color="gray" /><Text size="2">{o.driver}</Text></Flex> : <Badge color="blue" variant="surface">— à affecter</Badge>}</Table.Cell>
                   <Table.Cell align="right"><CodChip amount={o.cod} paid={o.codPaid} /></Table.Cell>
                   {canWrite && (

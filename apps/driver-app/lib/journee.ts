@@ -28,6 +28,24 @@ export interface Arret {
   telephone: string | null;
   consigne: string | null;
   lienCarte: string | null;
+  /**
+   * Échéance la plus proche de l'arrêt (ADR 0006) : au retrait, le retrait limite ou la
+   * livraison limite ; à la livraison, la livraison limite. `null` = sans contrainte.
+   */
+  echeance: string | null;
+}
+
+/** Échéance pertinente d'une commande pour l'arrêt où elle se trouve. */
+export function echeanceDe(o: Order, type: TypeArret): string | null {
+  const candidats = type === 'retrait' ? [o.pickupDueAt, o.dueAt] : [o.dueAt];
+  const t = candidats.filter((d): d is string => !!d).map((d) => new Date(d).getTime());
+  return t.length ? new Date(Math.min(...t)).toISOString() : null;
+}
+
+/** Une échéance dans l'heure fait passer l'arrêt devant le reste de la tournée. */
+export const URGENT_MS = 60 * 60_000;
+export function estUrgent(a: Arret, now = Date.now()): boolean {
+  return !!a.echeance && new Date(a.echeance).getTime() - now <= URGENT_MS;
 }
 
 /** Statuts qui ne représentent plus un arrêt à visiter. */
@@ -47,6 +65,7 @@ export function arretDe(o: Order): Arret {
       telephone: o.pickupPhone || null,
       consigne: o.pickupNotes || null,
       lienCarte: o.pickupMapUrl || null,
+      echeance: echeanceDe(o, 'retrait'),
     };
   }
   return {
@@ -58,6 +77,7 @@ export function arretDe(o: Order): Arret {
     telephone: null,
     consigne: o.dropNotes || null,
     lienCarte: o.dropMapUrl || null,
+    echeance: echeanceDe(o, 'livraison'),
   };
 }
 
@@ -105,8 +125,11 @@ export function grouper(arrets: Arret[]): Arret[] {
   const out: Arret[] = [];
   for (const a of arrets) {
     const g = a.type === 'retrait' ? out.find((x) => memeLieu(x, a)) : undefined;
-    if (g) g.commandes.push(a.order);
-    else out.push({ ...a, commandes: [a.order] });
+    if (g) {
+      g.commandes.push(a.order);
+      // L'arrêt groupé hérite de l'échéance la plus proche de ses colis.
+      if (a.echeance && (!g.echeance || a.echeance < g.echeance)) g.echeance = a.echeance;
+    } else out.push({ ...a, commandes: [a.order] });
   }
   return out;
 }
@@ -136,7 +159,7 @@ function plusProcheVoisin(depart: LatLng | null, arrets: Arret[]): Arret[] {
  */
 export function ordonnerArrets(
   missions: Order[],
-  opts: { tournee: string[] | null; ordreManuel: string[] | null; moi: LatLng | null },
+  opts: { tournee: string[] | null; ordreManuel: string[] | null; moi: LatLng | null; now?: number },
 ): Arret[] {
   const arrets = grouper(missions.filter((o) => !TERMINAUX.includes(o.status)).map(arretDe));
   // Rang d'un arrêt dans un ordre donné : celui de la première de ses commandes qui y figure.
@@ -155,9 +178,16 @@ export function ordonnerArrets(
     const nouveaux = arrets.filter((a) => rang(a, opts.ordreManuel!) === Infinity);
     return [...connus, ...plusProcheVoisin(connus[connus.length - 1]?.pos ?? opts.moi, nouveaux)];
   }
-  const localises = arrets.filter((a) => a.pos);
-  const sansPos = arrets.filter((a) => !a.pos);
-  return [...plusProcheVoisin(opts.moi, localises), ...sansPos];
+  // Ordre calculé : les échéances dans l'heure d'abord (la plus proche en tête), puis le
+  // plus proche voisin depuis le dernier arrêt urgent. Un plat ne patiente pas derrière
+  // les colis du jour.
+  const now = opts.now ?? Date.now();
+  const urgents = arrets.filter((a) => estUrgent(a, now)).sort((x, y) => x.echeance!.localeCompare(y.echeance!));
+  const reste = arrets.filter((a) => !urgents.includes(a));
+  const depart = [...urgents].reverse().find((a) => a.pos)?.pos ?? opts.moi;
+  const localises = reste.filter((a) => a.pos);
+  const sansPos = reste.filter((a) => !a.pos);
+  return [...urgents, ...plusProcheVoisin(depart, localises), ...sansPos];
 }
 
 /** Distance totale (km) d'un trajet partant de `depart` et passant par les arrêts localisés. */

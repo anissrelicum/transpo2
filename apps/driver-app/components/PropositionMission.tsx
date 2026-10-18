@@ -10,6 +10,7 @@ import { money } from '@transpo/domain';
 import { useTheme } from '../lib/theme';
 import { Bouton, Libelle, Pastille, MARQUE, useTon } from './ui';
 import { IcCheck } from './icones';
+import { Echeance } from './Echeance';
 
 const L = {
   fr: {
@@ -90,6 +91,7 @@ export function PropositionMission({ offre, decalage, lang, rtl, enAttente, onRe
             <Pastille ton={o.cod > 0 ? 'ambre' : 'gris'}>{o.cod > 0 ? t.cod(money(o.cod)) : t.prepaye}</Pastille>
             <Pastille ton="gris">{o.size}</Pastille>
             {o.fragile ? <Pastille ton="rouge">{t.fragile}</Pastille> : null}
+            <Echeance echeance={o.pickupDueAt ?? o.dueAt ?? null} delayMode={o.delayMode} delayMinutes={o.delayMinutes} lang={lang} />
           </View>
 
           {enAttente ? (

@@ -18,6 +18,7 @@ import { distanceKm, distanceTournee, estArrive, formatDistance, minutesEstimees
 import { ouvrirItineraire, partirEnRoute, appeler } from '../../lib/etapes';
 import { CarteJournee, type CarteJourneeRef, type PointCarte } from '../../components/CarteJournee';
 import { PropositionMission } from '../../components/PropositionMission';
+import { Echeance } from '../../components/Echeance';
 import { Bouton, Carte, Libelle, Pastille, Bandeau } from '../../components/ui';
 import { IcNaviguer, IcTel, IcPin, IcHorsReseau, IcCentrer, IcCheck } from '../../components/icones';
 
@@ -213,6 +214,7 @@ export default function Journee() {
                 {arrive ? <Pastille ton="vert" point>{t.arrive}</Pastille>
                   : dist != null ? <Pastille ton="indigo">{`~${minutesEstimees(dist)} min · ${formatDistance(dist, lang)}`}</Pastille>
                   : !prochain.pos ? <Pastille ton="gris">{t.sansPos}</Pastille> : null}
+                <Echeance echeance={prochain.echeance} delayMode={prochain.order.delayMode} delayMinutes={prochain.order.delayMinutes} lang={lang} />
                 {prochain.commandes.length > 1 ? <Pastille ton="indigo">{t.colisN(prochain.commandes.length)}</Pastille> : null}
                 {prochain.type === 'livraison' && preuve ? <Pastille ton="gris">{preuve}</Pastille> : null}
                 <Pastille ton="gris">{lang === 'ar' ? STATUS_META[prochain.order.status].ar : STATUS_META[prochain.order.status].fr}</Pastille>

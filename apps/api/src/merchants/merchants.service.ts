@@ -1,8 +1,8 @@
 import { Injectable, BadRequestException, NotFoundException, ConflictException, ForbiddenException, Inject } from '@nestjs/common';
 import { withTenantDb, merchants as merchantsTable, users as usersTable } from '@transpo/db';
 import {
-  isPricingMode, validateMerchantPricing, effectiveCommissionRate,
-  type Merchant, type MerchantPricing, type PricingMode,
+  isPricingMode, validateMerchantPricing, effectiveCommissionRate, validateDelayPolicy, normalizeDelayPolicy,
+  DELAY_MODES, type Merchant, type MerchantPricing, type PricingMode, type DeliveryTerms, type DelayPolicy,
 } from '@transpo/domain';
 import { and, asc, eq } from 'drizzle-orm';
 import { AuditService } from '../audit/audit.service.js';
@@ -23,6 +23,8 @@ export interface MerchantInput {
   phone?: string | null; address?: string | null; taxId?: string | null;
   mode?: PricingMode; discountRate?: number | null; flatPrice?: number | null;
   commissionRate?: number | null; active?: boolean;
+  /** Délai par défaut, suppléments express (DH HT) et pénalité de retard (fraction). */
+  deliveryTerms?: Partial<DeliveryTerms>;
 }
 
 const IDENTITY = ['legalName', 'contactName', 'email', 'phone', 'address', 'taxId'] as const;
@@ -47,6 +49,30 @@ function identite(body: MerchantInput): Partial<Record<(typeof IDENTITY)[number]
   return out;
 }
 
+/**
+ * Conditions de délai validées. Champs absents = valeur actuelle (`cur`) ; un supplément
+ * négatif, une pénalité hors 0..100 % ou un délai incohérent sont refusés.
+ */
+function conditionsDelai(v: Partial<DeliveryTerms> | undefined, cur: DeliveryTerms): DeliveryTerms {
+  if (v === undefined) return cur;
+  if (!v || typeof v !== 'object') throw new BadRequestException('Conditions de délai invalides.');
+  const delai: DelayPolicy = v.delai ? normalizeDelayPolicy(v.delai as DelayPolicy) : cur.delai;
+  const err = validateDelayPolicy(delai);
+  if (err) throw new BadRequestException(err);
+  const supplements: DeliveryTerms['supplements'] = {};
+  const source = v.supplements ?? cur.supplements;
+  for (const mode of DELAY_MODES) {
+    if (mode === 'aucun') continue;
+    const n = nombre((source as Record<string, unknown>)[mode], `Supplément ${mode}`);
+    if (n === null || n === 0) continue;
+    if (n < 0 || n > 10_000) throw new BadRequestException('Supplément express : montant entre 0 et 10 000 DH.');
+    supplements[mode] = Math.round(n * 100) / 100;
+  }
+  const penaliteRetard = v.penaliteRetard === undefined ? cur.penaliteRetard : nombre(v.penaliteRetard, 'Pénalité de retard') ?? 0;
+  if (penaliteRetard < 0 || penaliteRetard > 1) throw new BadRequestException('Pénalité de retard : taux entre 0 et 100 %.');
+  return { delai, supplements, penaliteRetard };
+}
+
 /** Comptes du portail rattachés à un marchand (jamais le hash du mot de passe). */
 export interface MerchantAccount { id: string; name: string; email: string; active: boolean }
 export interface MerchantView extends Merchant {
@@ -63,6 +89,7 @@ export interface MerchantConditions extends MerchantPricing {
   fragileSurcharge: number;
   scheduledSurcharge: number;
   vatRate: number;
+  deliveryTerms: DeliveryTerms;
   examples: { km: number; ht: number; ttc: number }[];
 }
 
@@ -128,6 +155,7 @@ export class MerchantsService {
       fragileSurcharge: cfg.fragileSurcharge,
       scheduledSurcharge: cfg.scheduledSurcharge,
       vatRate: cfg.vatRate,
+      deliveryTerms: fiche?.deliveryTerms ?? { delai: { mode: 'aucun' }, supplements: {}, penaliteRetard: 0 },
       examples,
     };
   }
@@ -140,10 +168,11 @@ export class MerchantsService {
     const mode = b.mode ?? 'standard';
     const pricing = this.pricing({ mode, discountRate: b.discountRate, flatPrice: b.flatPrice });
     const commissionRate = this.commission(b.commissionRate);
+    const deliveryTerms = conditionsDelai(b.deliveryTerms, { delai: { mode: 'aucun' }, supplements: {}, penaliteRetard: 0 });
     const values = {
       name, ...identite(b), pricingMode: pricing.mode,
       discountRate: pricing.discountRate ?? null, flatPrice: pricing.flatPrice ?? null,
-      commissionRate, active: b.active === undefined ? true : !!b.active,
+      commissionRate, active: b.active === undefined ? true : !!b.active, deliveryTerms,
     };
     const created = await withTenantDb(schema, async (db) => {
       const [dup] = await db.select().from(merchantsTable).where(eq(merchantsTable.name, name));
@@ -182,6 +211,7 @@ export class MerchantsService {
         discountRate: pricing.discountRate ?? null,
         flatPrice: pricing.flatPrice ?? null,
         commissionRate: has(b, 'commissionRate') ? this.commission(b.commissionRate) : cur.commissionRate,
+        deliveryTerms: conditionsDelai(b.deliveryTerms, cur.deliveryTerms),
         ...(has(b, 'active') ? { active: !!b.active } : {}),
         updatedAt: new Date(),
       };
@@ -195,6 +225,10 @@ export class MerchantsService {
     const apres = Object.fromEntries(PRICING_FIELDS.map((k) => [k, after[k]]));
     if (JSON.stringify(avant) !== JSON.stringify(apres)) {
       await this.audit.record(actor, 'merchant.pricing_change', { tenant, target: id, detail: { name: after.name, from: avant, to: apres } });
+    }
+    // Le délai promis, le prix de l'express et la pénalité engagent l'entreprise : tracés.
+    if (JSON.stringify(before.deliveryTerms) !== JSON.stringify(after.deliveryTerms)) {
+      await this.audit.record(actor, 'merchant.delivery_terms_change', { tenant, target: id, detail: { name: after.name, from: before.deliveryTerms, to: after.deliveryTerms } });
     }
     if (before.active !== after.active) {
       await this.audit.record(actor, after.active ? 'merchant.reactivate' : 'merchant.deactivate', { tenant, target: id, detail: { name: after.name } });

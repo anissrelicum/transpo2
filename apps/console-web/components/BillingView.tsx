@@ -61,6 +61,7 @@ export function BillingView({ invoices, modes }: { invoices: Invoice[]; modes: B
       <table style="width:100%;border-collapse:collapse;margin-top:24px">
         <tr><td style="padding:8px 0">Montant livraisons</td><td style="text-align:right">${money(inv.deliveries)}</td></tr>
         <tr><td style="padding:8px 0;color:#666">COD collecté (reversé)</td><td style="text-align:right;color:#666">${money(inv.codCollected)}</td></tr>
+        ${inv.latePenalties ? `<tr><td style="padding:8px 0">Dont remises pour retard</td><td style="text-align:right">−${money(inv.latePenalties)}</td></tr>` : ''}
         <tr><td style="padding:8px 0">Commission (15 %)</td><td style="text-align:right">−${money(inv.commission)}</td></tr>
         <tr style="border-top:1px solid #ddd"><td style="padding:8px 0"><b>Net HT</b></td><td style="text-align:right"><b>${money(inv.netHt)}</b></td></tr>
         <tr><td style="padding:8px 0;color:#666">TVA 20 %</td><td style="text-align:right;color:#666">${money(inv.tva)}</td></tr>
@@ -131,6 +132,7 @@ export function BillingView({ invoices, modes }: { invoices: Invoice[]; modes: B
               <Flex direction="column" gap="2">
                 <Row label="Montant livraisons" value={money(sel.deliveries)} />
                 <Row label="COD collecté" value={money(sel.codCollected)} muted />
+                {sel.latePenalties ? <Row label="Dont remises pour retard" value={'−' + money(sel.latePenalties)} /> : null}
                 <Row label="Commission (15 %)" value={'−' + money(sel.commission)} />
                 <Separator size="4" />
                 <Flex justify="between"><Text size="2" weight="medium">Net HT</Text><Text size="2" weight="medium">{money(sel.netHt)}</Text></Flex>

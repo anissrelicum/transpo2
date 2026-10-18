@@ -6,8 +6,9 @@ import { Tabs } from '@radix-ui/themes';
 import { money } from '@transpo/ui-web';
 
 export type CityRow = { city: string; volume: number; success: number };
-export type DriverRow = { driver: string; deliveries: number; total: number; success: number };
-export type MerchantRow = { merchant: string; deliveries: number; success: number; revenue: number };
+/** `onTime` : % des livraisons À ÉCHÉANCE faites à l'heure ; `null` sans livraison à échéance. */
+export type DriverRow = { driver: string; deliveries: number; total: number; success: number; onTime: number | null };
+export type MerchantRow = { merchant: string; deliveries: number; success: number; revenue: number; onTime: number | null };
 
 const slaColor = (v: number) => (v >= 90 ? 'green' : v >= 85 ? 'amber' : 'red') as 'green' | 'amber' | 'red';
 const initials = (n: string) => n.split(' ').map((x) => x[0]).join('').slice(0, 2).toUpperCase();
@@ -54,15 +55,17 @@ export function AnalyticsTables({ byCity, byDriver, byMerchant }: {
                 <Table.ColumnHeaderCell align="right">Livraisons</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell align="right">Assignées</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell align="right">Taux de réussite</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell align="right">À l’heure</Table.ColumnHeaderCell>
               </Table.Row></Table.Header>
               <Table.Body>
-                {byDriver.length === 0 && <Table.Row><Table.Cell colSpan={4}><Text size="2" color="gray">Aucune donnée.</Text></Table.Cell></Table.Row>}
+                {byDriver.length === 0 && <Table.Row><Table.Cell colSpan={5}><Text size="2" color="gray">Aucune donnée.</Text></Table.Cell></Table.Row>}
                 {byDriver.map((d) => (
                   <Table.Row key={d.driver} align="center">
                     <Table.RowHeaderCell><Flex align="center" gap="2"><Avatar size="1" radius="full" fallback={initials(d.driver)} color="indigo" /><Text size="2" weight="medium">{d.driver}</Text></Flex></Table.RowHeaderCell>
                     <Table.Cell align="right"><Text size="2">{d.deliveries}</Text></Table.Cell>
                     <Table.Cell align="right"><Text size="2" color="gray">{d.total}</Text></Table.Cell>
                     <Table.Cell align="right"><Badge color={slaColor(d.success)} variant="soft" radius="full">{d.success} %</Badge></Table.Cell>
+                    <Table.Cell align="right">{d.onTime == null ? <Text size="2" color="gray">—</Text> : <Badge color={slaColor(d.onTime)} variant="soft" radius="full">{d.onTime} %</Badge>}</Table.Cell>
                   </Table.Row>
                 ))}
               </Table.Body>
@@ -77,15 +80,17 @@ export function AnalyticsTables({ byCity, byDriver, byMerchant }: {
                 <Table.ColumnHeaderCell>Marchand</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell align="right">Livraisons</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Taux de réussite</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell align="right">À l’heure</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell align="right">COD généré</Table.ColumnHeaderCell>
               </Table.Row></Table.Header>
               <Table.Body>
-                {byMerchant.length === 0 && <Table.Row><Table.Cell colSpan={4}><Text size="2" color="gray">Aucune donnée.</Text></Table.Cell></Table.Row>}
+                {byMerchant.length === 0 && <Table.Row><Table.Cell colSpan={5}><Text size="2" color="gray">Aucune donnée.</Text></Table.Cell></Table.Row>}
                 {byMerchant.map((m) => (
                   <Table.Row key={m.merchant} align="center">
                     <Table.RowHeaderCell><Text size="2" weight="medium">{m.merchant}</Text></Table.RowHeaderCell>
                     <Table.Cell align="right"><Text size="2">{m.deliveries}</Text></Table.Cell>
                     <Table.Cell><Flex align="center" gap="2" style={{ minWidth: 140 }}><Box style={{ flex: 1 }}><Progress value={m.success} color={slaColor(m.success)} /></Box><Badge color={slaColor(m.success)} variant="soft" radius="full">{m.success} %</Badge></Flex></Table.Cell>
+                    <Table.Cell align="right">{m.onTime == null ? <Text size="2" color="gray">—</Text> : <Badge color={slaColor(m.onTime)} variant="soft" radius="full">{m.onTime} %</Badge>}</Table.Cell>
                     <Table.Cell align="right"><Text size="2" weight="medium">{money(m.revenue)}</Text></Table.Cell>
                   </Table.Row>
                 ))}

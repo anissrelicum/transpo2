@@ -1,5 +1,7 @@
 'use client';
 import * as React from 'react';
+import type { DelayPolicy } from '@transpo/domain';
+import { DelaiChoix, lireDelai } from './DelaiChoix';
 import { useSafeRefresh } from '../lib/safe-refresh';
 import {
   Card, Flex, Box, Grid, Text, Badge, Button, Table, Callout, Dialog, Separator,
@@ -128,6 +130,15 @@ function FicheMarchand({ fiche, companyCommission, canEdit, onClose, onSaved }: 
   const [forfait, setForfait] = React.useState(fiche?.flatPrice != null ? String(fiche.flatPrice) : '');
   const [commission, setCommission] = React.useState(pct(fiche?.commissionRate));
   const [active, setActive] = React.useState(fiche?.active ?? true);
+  // Délai par défaut, suppléments express (DH HT) et pénalité de retard (cf. ADR 0006).
+  const termes = fiche?.deliveryTerms;
+  const [delai, setDelai] = React.useState<DelayPolicy>(termes?.delai ?? { mode: 'aucun' });
+  const [supplements, setSupplements] = React.useState<Record<string, string>>({
+    apres_retrait: termes?.supplements?.apres_retrait != null ? String(termes.supplements.apres_retrait) : '',
+    apres_commande: termes?.supplements?.apres_commande != null ? String(termes.supplements.apres_commande) : '',
+    heure_limite: termes?.supplements?.heure_limite != null ? String(termes.supplements.heure_limite) : '',
+  });
+  const [penalite, setPenalite] = React.useState(pct(termes?.penaliteRetard || null));
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [exemples, setExemples] = React.useState<{ km: number; ttc: number; ht: number }[] | null>(null);
@@ -164,11 +175,17 @@ function FicheMarchand({ fiche, companyCommission, canEdit, onClose, onSaved }: 
     if (!conditions) { setError(mode === 'forfait' ? 'Indiquez le montant du forfait.' : 'Indiquez une remise entre 0 et 100 %.'); return; }
     const c = commission.trim() === '' ? null : Number(commission.replace(',', '.')) / 100;
     if (c != null && (!Number.isFinite(c) || c < 0 || c > 1)) { setError('Commission : un taux entre 0 et 100 %.'); return; }
+    const d = lireDelai(delai);
+    if (!d.ok) { setError(d.error); return; }
+    const pen = penalite.trim() === '' ? 0 : Number(penalite.replace(',', '.')) / 100;
+    if (!Number.isFinite(pen) || pen < 0 || pen > 1) { setError('Pénalité de retard : un taux entre 0 et 100 %.'); return; }
+    const sup = Object.fromEntries(Object.entries(supplements).filter(([, v]) => v.trim() !== '').map(([k, v]) => [k, Number(v.replace(',', '.'))]));
     const body: MerchantInput = {
       ...(fiche ? {} : { name: name.trim() }),
       legalName, contactName, email, phone, address, taxId,
       mode, discountRate: conditions.discountRate, flatPrice: conditions.flatPrice,
       commissionRate: c, active,
+      deliveryTerms: { delai: d.policy, supplements: sup, penaliteRetard: pen },
     };
     setBusy(true);
     const res = await fetch(`/api/proxy/v1/merchants${fiche ? `/${fiche.id}` : ''}`, {
@@ -238,6 +255,23 @@ function FicheMarchand({ fiche, companyCommission, canEdit, onClose, onSaved }: 
             ))}
           </Flex>
         </Card>
+
+        <Separator size="4" my="4" />
+        <Text as="div" size="2" weight="bold" mb="1">Délai de livraison</Text>
+        <Text as="p" size="1" color="gray" mb="2">
+          Le délai par défaut de ses commandes (modifiable à chaque commande). Une commande à rendre dans l’heure part au livreur le plus proche ;
+          le dispatcher, le client et le marchand sont prévenus dès qu’un retard se dessine.
+        </Text>
+        <DelaiChoix value={delai} onChange={setDelai} disabled={!canEdit} testId="delai-marchand" />
+        <Grid columns={{ initial: '1', sm: '4' }} gap="3" mt="3">
+          {champ('Supplément après retrait (DH HT)', supplements.apres_retrait!, (v) => setSupplements((x) => ({ ...x, apres_retrait: v })), { type: 'number', min: 0, placeholder: '0' })}
+          {champ('Supplément express (DH HT)', supplements.apres_commande!, (v) => setSupplements((x) => ({ ...x, apres_commande: v })), { type: 'number', min: 0, placeholder: '0' })}
+          {champ('Supplément heure limite (DH HT)', supplements.heure_limite!, (v) => setSupplements((x) => ({ ...x, heure_limite: v })), { type: 'number', min: 0, placeholder: '0' })}
+          {champ('Pénalité de retard (% du prix)', penalite, setPenalite, { type: 'number', min: 0, max: 100, placeholder: '0' })}
+        </Grid>
+        <Text as="p" size="1" color="gray" mt="1">
+          Le supplément s’ajoute au prix de la course selon le délai retenu. En cas de retard, la pénalité est remise au marchand sur sa facture.
+        </Text>
 
         {fiche && (
           <>

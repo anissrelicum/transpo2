@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { OrdersController } from './orders.controller.js';
+import { VeilleDelaisService } from './veille-delais.service.js';
 import { OrdersService } from './orders.service.js';
 import { TenantGuard } from '../tenant/tenant.guard.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
@@ -11,6 +12,6 @@ import { DispatchModule } from '../dispatch/dispatch.module.js';
 @Module({
   imports: [NotificationsModule, BillingModule, DispatchModule],
   controllers: [OrdersController],
-  providers: [OrdersService, TenantGuard, JwtAuthGuard, RolesGuard],
+  providers: [OrdersService, VeilleDelaisService, TenantGuard, JwtAuthGuard, RolesGuard],
 })
 export class OrdersModule {}

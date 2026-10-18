@@ -7,6 +7,9 @@ import { withTenantDb, orders as ordersTable, orderEvents as orderEventsTable, i
   deliveryProofs, cashSessions, cashMovements } from '@transpo/db';
 import { and, desc, eq, inArray, ne } from 'drizzle-orm';
 import { LIFECYCLE, missingProof, type Order, type OrderStatus, type ProofLevel } from '@transpo/domain';
+import { surTransition, surLivraison } from '../orders/delais.js';
+import { termsOf } from '../billing/billing.service.js';
+import { merchants as merchantsTable } from '@transpo/db';
 
 const ACTIVE: OrderStatus[] = ['ASSIGNEE', 'RETRAIT', 'RECUPEREE', 'LIVRAISON'];
 // ~700 Ko de data URI ≈ 500 Ko binaire : large pour une photo compressée par l'app,
@@ -106,7 +109,7 @@ export class DriverService {
       }
       const next = LIFECYCLE[i + 1];
       return withTenantDb(schema, async (db) => {
-        const [r] = await db.update(ordersTable).set({ status: next }).where(eq(ordersTable.ref, ref)).returning();
+        const [r] = await db.update(ordersTable).set({ status: next, ...surTransition(cur as any, next) }).where(eq(ordersTable.ref, ref)).returning();
         // Le terrain écrit au même journal que l'exploitation : un litige se tranche sur
         // une seule suite de faits, pas sur deux versions.
         await db.insert(orderEventsTable).values({ ref, status: next, actor: d });
@@ -225,8 +228,11 @@ export class DriverService {
               set: { photo: photo ?? null, signature: signature ?? null, capturedBy: d, capturedAt: new Date() },
             });
         }
+        // Ponctualité : minutes de retard et pénalité négociée avec le marchand, figées ici.
+        const [fiche] = cur.merchant ? await db.select().from(merchantsTable).where(eq(merchantsTable.name, cur.merchant)) : [];
+        const ponctualite = surLivraison(cur as any, termsOf(fiche?.deliveryTerms).penaliteRetard);
         const [r] = await db.update(ordersTable)
-          .set({ status: 'LIVREE', codPaid })
+          .set({ status: 'LIVREE', codPaid, ...ponctualite })
           .where(eq(ordersTable.ref, ref)).returning();
         await db.insert(orderEventsTable).values({
           ref, status: 'LIVREE', actor: d,

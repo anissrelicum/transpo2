@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Param, Body, Req, UseGuards, Inject, HttpCode, ForbiddenException, BadRequestException } from '@nestjs/common';
-import { validateMerchantPricing } from '@transpo/domain';
+import { validateMerchantPricing, isDelayMode } from '@transpo/domain';
 import { BillingService } from './billing.service.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { TenantGuard } from '../tenant/tenant.guard.js';
@@ -32,6 +32,8 @@ export class BillingController {
       distanceKm: Math.max(0, Number(body?.distanceKm) || 0),
       fragile: !!body?.fragile,
       scheduled: !!body?.scheduled,
+      // Délai retenu pour la commande : son supplément express entre dans le devis.
+      delayMode: isDelayMode(body?.delayMode) ? body.delayMode : undefined,
     };
     if (req.user?.role === 'MERCHANT') {
       if (!req.user?.merchant) throw new ForbiddenException('Compte marchand non rattaché à un marchand.');
