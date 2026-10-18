@@ -63,3 +63,17 @@ test('SaaS : provisioning d’un tenant par le super-admin', async () => {
   const list = await api('/v1/saas/tenants', { token: sa });
   assert.ok(list.json.some((t) => t.slug === slug));
 });
+
+test('login sans société : déduite de l’adresse, réponse identique pour un compte inconnu', async () => {
+  const ok = await api('/v1/auth/login', { method: 'POST', body: { email: 'admin@e2e.ma', password: 'transpo' } });
+  assert.equal(ok.status, 200);
+  assert.equal(ok.json.tenant, 'e2e');
+  // Même casse ou pas : c'est la même boîte.
+  const maj = await api('/v1/auth/login', { method: 'POST', body: { email: 'Admin@E2E.ma', password: 'transpo' } });
+  assert.equal(maj.status, 200);
+  const faux = await api('/v1/auth/login', { method: 'POST', body: { email: 'admin@e2e.ma', password: 'faux' } });
+  const inconnu = await api('/v1/auth/login', { method: 'POST', body: { email: 'personne@nulle-part.ma', password: 'faux' } });
+  assert.equal(faux.status, 401);
+  assert.equal(inconnu.status, 401);
+  assert.equal(faux.json.message, inconnu.json.message, 'aucune énumération des comptes');
+});

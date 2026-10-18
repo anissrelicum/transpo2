@@ -54,6 +54,7 @@ const FR = {
   login: {
     subtitle: 'Console transport', saasSubtitle: 'Console SaaS — plateforme',
     organisation: 'Organisation', realm: 'Realm', platform: 'plateforme',
+    chooseCompany: 'Votre compte existe dans plusieurs sociétés. Laquelle ouvrir ?',
     signingIn: 'Connexion…', failed: 'Échec de connexion',
     suspended: 'Espace suspendu — contactez la plateforme.',
     hostHint: 'L’organisation est déterminée par l’adresse (sous-domaine).',
@@ -108,6 +109,7 @@ const AR: Dict = {
   login: {
     subtitle: 'كونسول النقل', saasSubtitle: 'كونسول المنصة',
     organisation: 'المؤسسة', realm: 'النطاق', platform: 'المنصة',
+    chooseCompany: 'حسابك موجود في أكثر من شركة. أيّها تريد فتح؟',
     signingIn: 'جارٍ الاتصال…', failed: 'فشل تسجيل الدخول',
     suspended: 'المساحة موقوفة — تواصلوا مع المنصة.',
     hostHint: 'تُحدَّد المؤسسة من العنوان (النطاق الفرعي).',

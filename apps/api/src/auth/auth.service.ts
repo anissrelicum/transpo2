@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, BadRequestException, ForbiddenException, HttpException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, ForbiddenException, HttpException, ConflictException } from '@nestjs/common';
 import { pool, withTenantDb, verifyPassword } from '@transpo/db';
 import type { Role } from '@transpo/domain';
 import { signToken } from './jwt.js';
@@ -66,7 +66,10 @@ export class AuthService {
    * l'ancien « Tenant inconnu : <slug> » permettait d'énumérer les clients de la plateforme
    * en comparant les messages (constat OBS-01). Le détail reste côté serveur.
    */
-  async loginTenant(slug: string | undefined, email: string, password: string, ip?: string): Promise<{ token: string; role: Role; name: string; merchant?: string }> {
+  async loginTenant(slug: string | undefined, email: string, password: string, ip?: string): Promise<{ token: string; role: Role; name: string; merchant?: string; tenant: string }> {
+    email = email.trim();
+    // Sans société désignée, elle se déduit de l'adresse : l'utilisateur ne la saisit pas.
+    if (!slug) slug = await this.societeDuCompte(email, password, ip);
     if (!slug) throw new BadRequestException('Tenant manquant.');
     const cleCompte = `u:${slug}:${email}`;
     const cles = [
@@ -85,7 +88,8 @@ export class AuthService {
 
     const user = await withTenantDb(`tenant_${slug}`, async (_db, client) => {
       const r = await client.query(
-        'SELECT email, password_hash, name, role, active, merchant, driver FROM users WHERE email = $1',
+        // Insensible à la casse : « Youssef@… » et « youssef@… » sont la même boîte.
+        'SELECT email, password_hash, name, role, active, merchant, driver FROM users WHERE lower(email) = lower($1)',
         [email],
       );
       return r.rows[0];
@@ -108,7 +112,40 @@ export class AuthService {
       // afficher l'enseigne au nom de laquelle il agit. C'est son propre périmètre, pas une
       // donnée d'un tiers.
       ...(user.merchant ? { merchant: user.merchant as string } : {}),
+      tenant: slug,
     };
+  }
+
+  /**
+   * Société d'un compte, retrouvée par son adresse dans les schémas de toutes les sociétés
+   * actives (une seule requête). Cas rares mais réels :
+   *  · aucune  → même refus qu'un mot de passe faux (pas d'énumération des comptes) ;
+   *  · une     → c'est elle ; la suite du login vérifie le mot de passe ;
+   *  · plusieurs (un livreur qui travaille pour deux sociétés) → on ne garde que celles où
+   *    le mot de passe est bon ; s'il en reste plusieurs, on renvoie la liste à choisir —
+   *    seulement APRÈS un mot de passe vérifié, pour ne rien révéler à un inconnu.
+   */
+  private async societeDuCompte(email: string, password: string, ip?: string): Promise<string> {
+    const cles = [{ key: `u:*:${email.toLowerCase()}`, max: MAX_FAILS }, ...(ip ? [{ key: `ip:${ip}`, max: MAX_FAILS_IP }] : [])];
+    await this.throttleGuard(cles);
+    const { rows: societes } = await pool.query<{ slug: string; name: string }>(
+      `SELECT t.slug, t.name FROM platform.tenants t
+         JOIN pg_namespace n ON n.nspname = 'tenant_' || t.slug
+        WHERE t.status <> 'SUSPENDU' AND t.slug ~ '^[a-z0-9_]+$'
+        ORDER BY t.slug`,
+    );
+    if (!societes.length) { await this.recordFail(cles); throw new UnauthorizedException('Identifiants invalides.'); }
+    const union = societes
+      .map((t, i) => `SELECT ${i}::int AS i, password_hash FROM "tenant_${t.slug}".users WHERE lower(email) = lower($1) AND active`)
+      .join(' UNION ALL ');
+    const { rows } = await pool.query<{ i: number; password_hash: string }>(union, [email]);
+    if (rows.length === 0) { await this.recordFail(cles); throw new UnauthorizedException('Identifiants invalides.'); }
+    if (rows.length === 1) return societes[rows[0]!.i]!.slug;
+    const bonnes: { slug: string; name: string }[] = [];
+    for (const r of rows) if (await verifyPassword(r.password_hash, password)) bonnes.push(societes[r.i]!);
+    if (bonnes.length === 0) { await this.recordFail(cles); throw new UnauthorizedException('Identifiants invalides.'); }
+    if (bonnes.length === 1) return bonnes[0]!.slug;
+    throw new ConflictException({ message: 'Ce compte existe dans plusieurs sociétés : choisissez-en une.', societes: bonnes });
   }
 
   /**

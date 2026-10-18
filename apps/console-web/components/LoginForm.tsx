@@ -24,13 +24,16 @@ export function LoginForm({ lang }: { lang: Lang }) {
   const [error, setError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [superAdmin, setSuperAdmin] = React.useState(false);   // realm plateforme (console SaaS)
+  // Compte présent dans plusieurs sociétés : la liste arrive après un mot de passe vérifié.
+  const [societes, setSocietes] = React.useState<{ slug: string; name: string }[] | null>(null);
 
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const qOrg = params.get('org');
     const host = orgFromHost(window.location.host);
     setOrg(qOrg);
-    setDetected(qOrg || host || 'par défaut');
+    // Sans sous-domaine ni ?org=, la société se déduit de l'adresse e-mail (côté API).
+    setDetected(qOrg || host || '');
     if (params.get('realm') === 'saas') setSuperAdmin(true);
     // Renvoyé par /api/suspendu : le tenant a été suspendu alors que la session était ouverte.
     if (params.get('suspendu')) setError(tr('login.suspended'));
@@ -42,15 +45,15 @@ export function LoginForm({ lang }: { lang: Lang }) {
     setEmail(toSuper ? 'ops@transpo.ma' : 'admin@casaexpress.ma');
   }
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
+  async function submit(e?: React.FormEvent, societe?: string) {
+    e?.preventDefault();
     setLoading(true); setError(null);
     const res = await fetch('/api/login', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       // Le tenant est résolu par le serveur depuis le host ; on ne transmet que
       // l'override éventuel (?org=) pour le dev/test.
-      body: JSON.stringify({ email, password, tenant: org || undefined, superAdmin: superAdmin || undefined }),
+      body: JSON.stringify({ email, password, tenant: societe || org || undefined, superAdmin: superAdmin || undefined }),
     });
     if (res.ok) {
       const { role } = await res.json().catch(() => ({ role: undefined }));
@@ -61,6 +64,7 @@ export function LoginForm({ lang }: { lang: Lang }) {
     }
     setLoading(false);
     const d = await res.json().catch(() => null);
+    if (res.status === 409 && d?.societes?.length) { setSocietes(d.societes); return; }
     setError(d?.error ?? tr('login.failed'));
   }
 
@@ -78,15 +82,25 @@ export function LoginForm({ lang }: { lang: Lang }) {
               {error && (
                 <Callout.Root color="red" role="alert" size="1"><Callout.Text>{error}</Callout.Text></Callout.Root>
               )}
-              <Flex align="center" justify="between">
-                <Text size="2" color="gray">{tr(superAdmin ? 'login.realm' : 'login.organisation')}</Text>
-                <Badge color={superAdmin ? 'amber' : 'indigo'} data-testid="detected-org">
-                  {superAdmin ? tr('login.platform') : detected}
-                </Badge>
-              </Flex>
+              {(superAdmin || detected) && (
+                <Flex align="center" justify="between">
+                  <Text size="2" color="gray">{tr(superAdmin ? 'login.realm' : 'login.organisation')}</Text>
+                  <Badge color={superAdmin ? 'amber' : 'indigo'} data-testid="detected-org">
+                    {superAdmin ? tr('login.platform') : detected}
+                  </Badge>
+                </Flex>
+              )}
+              {societes && (
+                <Flex direction="column" gap="2" data-testid="choix-societe">
+                  <Text size="2">{tr('login.chooseCompany')}</Text>
+                  {societes.map((c) => (
+                    <Button key={c.slug} type="button" variant="soft" disabled={loading} onClick={() => submit(undefined, c.slug)}>{c.name}</Button>
+                  ))}
+                </Flex>
+              )}
               <Box>
                 <Text as="label" size="2" weight="medium">{tr('common.email')}</Text>
-                <TextField.Root name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} mt="1" />
+                <TextField.Root name="email" type="email" value={email} onChange={(e) => { setEmail(e.target.value); setSocietes(null); }} mt="1" />
               </Box>
               <Box>
                 <Text as="label" size="2" weight="medium">{tr('common.password')}</Text>

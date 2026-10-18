@@ -11,12 +11,12 @@ import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import { demanderLaPermission, pushDisponible, permissionDejaAccordee } from '../lib/push';
 import { publicClient, setSession, restoreSession } from '../lib/api';
+import { ApiError, type SocieteAuChoix } from '@transpo/api-client';
 import { useTheme, resolveColor } from '../lib/theme';
 import { useLanguage } from '../lib/i18n';
 import { CameraIcon, PrimaryBtn, BottomAction } from '../components/shell';
 import { Bouton, MARQUE } from '../components/ui';
 import { Logo } from '../components/Logo';
-import { readJson, writeJson } from '../lib/storage';
 import { touch, radius, space } from '@transpo/design-tokens';
 
 // -----------------------------------------------------------------------------
@@ -73,7 +73,7 @@ const L = {
   fr: {
     brand: 'Portrail',
     subtitle: 'Bonjour 👋\nPrêt pour la tournée ?',
-    org: 'Société', orgPlaceholder: 'ex. rabatexpress', email: 'E-mail', password: 'Mot de passe',
+    choisir: 'Votre compte existe dans plusieurs sociétés. Pour laquelle travaillez-vous aujourd’hui ?', email: 'E-mail', password: 'Mot de passe',
     login: 'Se connecter', forgot: 'Mot de passe oublié ?', becomeDriver: 'Devenir livreur',
     error: 'Identifiants invalides ou serveur injoignable.',
     permsTitle: 'Autorisations', permsSub: 'Trois accès sont nécessaires pour livrer.',
@@ -91,7 +91,7 @@ const L = {
   ar: {
     brand: 'Portrail',
     subtitle: 'مرحباً 👋\nمستعد للجولة؟',
-    org: 'المؤسسة', orgPlaceholder: 'مثال: rabatexpress', email: 'البريد الإلكتروني', password: 'كلمة المرور',
+    choisir: 'حسابك موجود في أكثر من شركة. لأي شركة تعمل اليوم؟', email: 'البريد الإلكتروني', password: 'كلمة المرور',
     login: 'تسجيل الدخول', forgot: 'نسيت كلمة المرور؟', becomeDriver: 'كن سائقًا',
     error: 'بيانات الدخول غير صحيحة أو الخادم غير متاح.',
     permsTitle: 'الأذونات', permsSub: 'ثلاثة أذونات ضرورية للتوصيل.',
@@ -115,10 +115,9 @@ export default function LoginScreen() {
   const t = L[lang];
 
   const [step, setStep] = React.useState<Step>('login');
-  // Champ vide et non pré-rempli : la valeur de maquette « casaexpress » ne correspondait à
-  // aucune organisation réelle. Un livreur voyait donc une organisation plausible mais
-  // fausse, et un échec de connexion qu'il attribuait à son mot de passe.
-  const [tenant, setTenant] = React.useState('');
+  // Pas de champ « société » : le serveur la déduit de l'adresse. Seul un compte présent
+  // dans plusieurs sociétés doit choisir — la liste n'arrive qu'après un mot de passe juste.
+  const [choix, setChoix] = React.useState<SocieteAuChoix[] | null>(null);
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [error, setError] = React.useState<string | null>(null);
@@ -132,18 +131,17 @@ export default function LoginScreen() {
   React.useEffect(() => {
     (async () => {
       if (await restoreSession()) { router.replace('/(tabs)/journee'); return; }
-      setTenant(await readJson<string>('transpo.societe', ''));
       setBooting(false);
     })();
   }, []);
 
-  async function submit() {
+  async function submit(societe?: string) {
     setLoading(true); setError(null);
     try {
-      const slug = tenant.trim();
-      const res = await publicClient(slug).login(email.trim(), password);
+      const res = await publicClient(societe ?? '').login(email.trim(), password);
+      const slug = res.tenant ?? societe ?? '';
+      setChoix(null);
       await setSession({ token: res.token, name: res.name, tenant: slug });
-      await writeJson('transpo.societe', slug);
       // Accès déjà accordés (réinstallation, second livreur sur le même téléphone) : rien à
       // redemander, on n'affiche pas un écran « 0/3 » qui ment.
       const deja = {
@@ -154,8 +152,10 @@ export default function LoginScreen() {
       if (deja.gps && deja.cam && deja.notif) { router.replace('/(tabs)/journee'); return; }
       setGranted(deja);
       setStep('perms');
-    } catch {
-      setError(t.error);
+    } catch (e) {
+      const corps = e instanceof ApiError ? (e.body as { societes?: SocieteAuChoix[] } | undefined) : undefined;
+      if (e instanceof ApiError && e.status === 409 && corps?.societes?.length) setChoix(corps.societes);
+      else setError(t.error);
     } finally {
       setLoading(false);
     }
@@ -251,7 +251,7 @@ export default function LoginScreen() {
     );
   }
 
-  const valid = !!(tenant.trim() && email.trim() && password);
+  const valid = !!(email.trim() && password);
   const champ = (label: string, input: React.ReactNode) => (
     <View style={[s.champ, { backgroundColor: MARQUE.navy2 }]}>
       <Text style={[s.champLib, { textAlign: rtl ? 'right' : 'left' }]}>{label}</Text>
@@ -272,24 +272,28 @@ export default function LoginScreen() {
         <Text style={[s.accroche, { textAlign: rtl ? 'right' : 'left' }]}>{t.subtitle}</Text>
         {error && <Text style={[s.error, { color: '#FF9B9B', textAlign: rtl ? 'right' : 'left' }]}>{error}</Text>}
         <View style={{ gap: 12, marginTop: 24 }}>
-          {champ(t.org, (
-            <TextInput style={[s.champInput, { textAlign: rtl ? 'right' : 'left' }]} value={tenant} onChangeText={setTenant}
-              autoCapitalize="none" autoCorrect={false} placeholder={t.orgPlaceholder} placeholderTextColor="#6F7CB0"
-              testID="login-organisation" accessibilityLabel={t.org} />
-          ))}
           {champ(t.email, (
-            <TextInput style={[s.champInput, { textAlign: rtl ? 'right' : 'left' }]} value={email} onChangeText={setEmail}
+            <TextInput style={[s.champInput, { textAlign: rtl ? 'right' : 'left' }]} value={email} onChangeText={(v) => { setEmail(v); setChoix(null); }}
               autoCapitalize="none" keyboardType="email-address" autoComplete="email"
               testID="login-email" accessibilityLabel={t.email} />
           ))}
           {champ(t.password, (
-            <TextInput style={[s.champInput, { textAlign: rtl ? 'right' : 'left' }]} value={password} onChangeText={setPassword}
+            <TextInput style={[s.champInput, { textAlign: rtl ? 'right' : 'left' }]} value={password} onChangeText={(v) => { setPassword(v); setChoix(null); }}
               secureTextEntry autoComplete="password" testID="login-mot-de-passe" accessibilityLabel={t.password} />
           ))}
         </View>
       </ScrollView>
       <View style={s.basConnexion}>
-        <Bouton testID="login-valider" variante="marque" onPress={submit} disabled={!valid} loading={loading}>{t.login}</Bouton>
+        {choix ? (
+          <View style={{ gap: 10 }}>
+            <Text style={[s.lienClair, { textAlign: rtl ? 'right' : 'left' }]}>{t.choisir}</Text>
+            {choix.map((c) => (
+              <Bouton key={c.slug} testID={`societe-${c.slug}`} variante="marque" loading={loading} onPress={() => submit(c.slug)}>{c.name}</Bouton>
+            ))}
+          </View>
+        ) : (
+          <Bouton testID="login-valider" variante="marque" onPress={() => submit()} disabled={!valid} loading={loading}>{t.login}</Bouton>
+        )}
         <View style={[s.links, { flexDirection: rtl ? 'row-reverse' : 'row' }]}>
           <Pressable onPress={() => router.push('/onboarding')} hitSlop={8}>
             <Text style={s.lienClair}>{t.becomeDriver}</Text>

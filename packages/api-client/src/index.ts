@@ -8,7 +8,10 @@ export interface ClientOptions {
   tenant?: string; // slug (dev via header ; en prod le tenant vient du JWT)
 }
 
-export interface LoginResult { token: string; role: Role; name: string }
+/** `tenant` : la société du compte, déduite de l'adresse quand elle n'était pas fournie. */
+export interface LoginResult { token: string; role: Role; name: string; tenant?: string }
+/** Refus 409 du login : le même compte existe dans plusieurs sociétés (mot de passe vérifié). */
+export interface SocieteAuChoix { slug: string; name: string }
 export interface SuperLoginResult { token: string; name: string }
 export type SubscriptionStatus = 'ESSAI' | 'ACTIF' | 'IMPAYE' | 'SUSPENDU' | 'RESILIE';
 export interface Tenant {
@@ -296,7 +299,8 @@ export interface TrackResult {
 }
 
 export class ApiError extends Error {
-  constructor(public status: number, message: string) { super(message); }
+  /** `body` : corps JSON de la réponse d'erreur, pour les refus qui portent des données. */
+  constructor(public status: number, message: string, public body?: unknown) { super(message); }
 }
 
 export class TranspoClient {
@@ -324,7 +328,7 @@ export class TranspoClient {
     });
     const json = await res.json().catch(() => null);
     if (!res.ok) {
-      throw new ApiError(res.status, (json && (json.message as string)) || res.statusText);
+      throw new ApiError(res.status, (json && (json.message as string)) || res.statusText, json);
     }
     return json as T;
   }

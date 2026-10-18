@@ -173,3 +173,13 @@ test('mauvais mot de passe → message d’erreur, reste sur /login', async ({ p
   await expect(page.getByRole('alert')).toBeVisible();
   await expect(page).toHaveURL(/\/login/);
 });
+
+test('connexion sans société : elle est déduite de l’adresse e-mail', async ({ page }) => {
+  // Aucun sous-domaine, aucun ?org= : l'utilisateur ne saisit que son adresse et son mot de passe.
+  await page.goto('/login');
+  await expect(page.getByTestId('detected-org')).toHaveCount(0);
+  await page.fill('input[name="email"]', 'admin@casaexpress.ma');
+  await page.fill('input[name="password"]', 'transpo');
+  await page.click('button[type="submit"]');
+  await expect(page).toHaveURL(/\/dashboard/);
+});
