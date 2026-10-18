@@ -22,4 +22,5 @@ html = html.replace(/<link rel="preconnect"[^>]*>\n?/, '').replace(/<link href="
 writeFileSync(new URL('app-livreur.html', dossier), html);
 writeFileSync(new URL('app-livreur.css', dossier), css);
 writeFileSync(new URL('app-livreur.js', dossier), js);
+writeFileSync(new URL('symbole.svg', dossier), readFileSync(new URL('./symbole.svg', import.meta.url)));
 console.log(`${classes.size} styles convertis`);
