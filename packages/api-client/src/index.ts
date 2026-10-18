@@ -316,6 +316,11 @@ export interface FleetStop {
   lat: number | null; lng: number | null; cod: number; codPaid: boolean; size: string;
   delayMode?: string; delayMinutes?: number | null; delayHeure?: string | null; dueAt?: string | null; pickupDueAt?: string | null;
 }
+/** Itinéraire par les rues (ADR 0007). `estimation` = moteur indisponible, lignes droites. */
+export interface Itineraire {
+  source: 'osrm' | 'estimation'; distanceM: number; durationS: number;
+  geometry: [number, number][]; legs: { distanceM: number; durationS: number }[];
+}
 /** Fiche livreur du PC flotte : missions dans l'ordre conseillé, trace et indicateurs du jour. */
 export interface FleetDriverDetail {
   driver: string; vehicle: string | null; available: boolean | null; phone: string | null;
@@ -482,6 +487,10 @@ export class TranspoClient {
   }
   getFleetLive(): Promise<FleetLive[]> { return this.req('/v1/tracking/live'); }
   getFleetAlerts(): Promise<FleetLive[]> { return this.req('/v1/tracking/alerts'); }
+  /** Itinéraire par les rues passant par les points, dans l'ordre. */
+  getRoute(points: { lat: number; lng: number }[]): Promise<Itineraire> {
+    return this.req(`/v1/routing/route?points=${points.map((p) => `${p.lat.toFixed(5)},${p.lng.toFixed(5)}`).join(';')}`);
+  }
   getFleetDriver(name: string): Promise<FleetDriverDetail> { return this.req(`/v1/tracking/drivers/${encodeURIComponent(name)}`); }
 
   // --- Argent ---

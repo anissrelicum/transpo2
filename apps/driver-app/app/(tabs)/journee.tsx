@@ -18,6 +18,7 @@ import { distanceKm, distanceTournee, estArrive, formatDistance, minutesEstimees
 import { ouvrirItineraire, partirEnRoute, appeler } from '../../lib/etapes';
 import { CarteJournee, type CarteJourneeRef, type PointCarte } from '../../components/CarteJournee';
 import { PropositionMission } from '../../components/PropositionMission';
+import { useItineraire, formatDuree } from '../../lib/itineraire';
 import { Echeance } from '../../components/Echeance';
 import { Bouton, Carte, Libelle, Pastille, Bandeau } from '../../components/ui';
 import { IcNaviguer, IcTel, IcPin, IcHorsReseau, IcCentrer, IcCheck } from '../../components/icones';
@@ -43,6 +44,7 @@ const T = {
     navKo: 'Aucune application de carte n’a pu ouvrir cet itinéraire.',
     sansPos: 'Adresse sans position GPS',
     appeler: 'Appeler', colisN: (n: number) => `${n} colis`,
+    journee: (n: number, d: string, km: string) => `Journée : ${n} arrêt(s) · ~${d} avec les arrêts · ${km}`,
   },
   ar: {
     bonjour: (n: string) => (n ? `مرحباً ${n.split(' ')[0]}` : 'مرحباً'),
@@ -64,6 +66,7 @@ const T = {
     navKo: 'لم يتمكن أي تطبيق خرائط من فتح هذا المسار.',
     sansPos: 'عنوان بدون موقع GPS',
     appeler: 'اتصال', colisN: (n: number) => `${n} طرود`,
+    journee: (n: number, d: string, km: string) => `اليوم: ${n} محطة · ~${d} مع التوقفات · ${km}`,
   },
 };
 
@@ -74,7 +77,9 @@ export function libellePreuve(level: string, t: (typeof T)['fr'] | (typeof T)['a
   return null;
 }
 
-const HAUTEUR_FEUILLE = 250;
+const HAUTEUR_FEUILLE = 272;
+/** Temps forfaitaire d'un arrêt (se garer, remettre, encaisser), ajouté à la durée de route. */
+const ARRET_S = 4 * 60;
 
 export default function Journee() {
   const { colors, mode } = useTheme();
@@ -92,9 +97,16 @@ export default function Journee() {
   const moi = j.moi ? { lat: j.moi.lat, lng: j.moi.lng } : null;
 
   const points: PointCarte[] = React.useMemo(
-    () => j.arrets.flatMap((a, i) => (a.pos ? [{ ref: a.order.ref, lat: a.pos.lat, lng: a.pos.lng, n: i + 1, etat: i === 0 ? 'prochain' as const : 'avenir' as const }] : [])),
+    () => j.arrets.flatMap((a, i) => (a.pos ? [{ ref: a.order.ref, lat: a.pos.lat, lng: a.pos.lng, n: i + 1, etat: i === 0 ? 'prochain' as const : 'avenir' as const, type: a.type }] : [])),
     [j.arrets],
   );
+
+  // Itinéraires par les rues (ADR 0007) : position → prochain arrêt, puis toute la suite.
+  const localises = j.arrets.filter((a) => a.pos).map((a) => a.pos!);
+  const versProchain = useItineraire(moi && j.arrets[0]?.pos ? [moi, j.arrets[0].pos] : null);
+  const suiteJournee = useItineraire(localises.length >= 2 ? localises : null);
+  const journeeS = (versProchain?.durationS ?? 0) + (suiteJournee?.durationS ?? 0) + j.arrets.length * ARRET_S;
+  const journeeM = (versProchain?.distanceM ?? 0) + (suiteJournee?.distanceM ?? 0);
 
   const offre = j.offres[0];
   const lireOffres = j.lireOffres;
@@ -171,6 +183,7 @@ export default function Journee() {
   return (
     <View style={[s.plein, { backgroundColor: colors.bg }]}>
       <CarteJournee ref={carte} points={points} moi={moi} sombre={mode === 'dark'} bas={HAUTEUR_FEUILLE}
+        prochain={versProchain?.geometry} suite={suiteJournee?.geometry} legende hautLegende={insets.top + 92} lang={lang}
         onArret={(ref) => router.push(`/mission/${encodeURIComponent(ref)}`)} />
 
       <View style={[s.flottant, row, { top: insets.top + 8 }]} pointerEvents="box-none">
@@ -212,6 +225,7 @@ export default function Journee() {
               <Text style={[s.adresse, { color: colors.muted }, align]} numberOfLines={1}>{prochain.adresse}</Text>
               <View style={[row, s.puces]}>
                 {arrive ? <Pastille ton="vert" point>{t.arrive}</Pastille>
+                  : versProchain ? <Pastille ton="indigo">{`${formatDuree(versProchain.durationS, lang)} · ${formatDistance(versProchain.distanceM / 1000, lang)}`}</Pastille>
                   : dist != null ? <Pastille ton="indigo">{`~${minutesEstimees(dist)} min · ${formatDistance(dist, lang)}`}</Pastille>
                   : !prochain.pos ? <Pastille ton="gris">{t.sansPos}</Pastille> : null}
                 <Echeance echeance={prochain.echeance} delayMode={prochain.order.delayMode} delayMinutes={prochain.order.delayMinutes} lang={lang} />
@@ -235,6 +249,13 @@ export default function Journee() {
                 </Bouton>
               ) : null}
             </View>
+            {versProchain || suiteJournee ? (
+              <Pressable onPress={() => router.navigate('/(tabs)/route')} accessibilityRole="button">
+                <Text style={[s.journee, { color: colors.muted }, align]} testID="resume-journee">
+                  {t.journee(j.arrets.length, formatDuree(journeeS, lang), formatDistance(journeeM / 1000, lang))}
+                </Text>
+              </Pressable>
+            ) : null}
           </>
         ) : (
           <View style={{ paddingVertical: 8, gap: 6 }}>
@@ -288,4 +309,5 @@ const s = StyleSheet.create({
   puces: { gap: 8, marginTop: 10, flexWrap: 'wrap' },
   actions: { gap: 10, marginTop: 14 },
   carre: { width: 64, paddingHorizontal: 0 },
+  journee: { fontSize: 13, marginTop: 10, textAlign: 'center' },
 });

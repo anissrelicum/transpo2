@@ -88,6 +88,23 @@ export function FleetView({ live: initial, zones, drivers, center }: {
 
   const actif = live.find((l) => l.driver === sel) ?? null;
 
+  // Itinéraire restant PAR LES RUES (ADR 0007) : recalculé quand la tournée change ou que le
+  // livreur a bougé d'une centaine de mètres. À défaut, la ligne droite reste affichée.
+  const [routeRues, setRouteRues] = React.useState<[number, number][] | null>(null);
+  const pointsRoute = actif && fiche?.driver === sel
+    ? [[actif.lat, actif.lng] as [number, number], ...fiche.arrets.filter((a) => a.lat != null).map((a) => [a.lat!, a.lng!] as [number, number])]
+    : [];
+  const cleRoute = pointsRoute.map(([la, ln]) => `${la.toFixed(3)},${ln.toFixed(3)}`).join(';');
+  React.useEffect(() => {
+    if (pointsRoute.length < 2) { setRouteRues(null); return; }
+    let vivant = true;
+    fetch(`/api/proxy/v1/routing/route?points=${pointsRoute.map(([la, ln]) => `${la.toFixed(5)},${ln.toFixed(5)}`).join(';')}`, { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (vivant) setRouteRues(d?.source === 'osrm' ? d.geometry : null); })
+      .catch(() => { if (vivant) setRouteRues(null); });
+    return () => { vivant = false; };
+  }, [cleRoute]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // « Suivre » : la carte reste centrée sur le livreur à chaque relevé.
   React.useEffect(() => {
     if (suivre && actif && mapObj) mapObj.panTo([actif.lat, actif.lng], { animate: true, duration: 1 });
@@ -135,7 +152,7 @@ export function FleetView({ live: initial, zones, drivers, center }: {
   if (fiche && fiche.driver === sel) {
     if (fiche.trace.length > 1) polylines.push({ id: 'trace-jour', latlngs: fiche.trace, color: 'gray', weight: 3, opacity: 0.5, dashArray: '4 6' });
     if (actif && arretsLocalises.length) {
-      polylines.push({ id: 'itineraire', latlngs: [[actif.lat, actif.lng], ...arretsLocalises.map((a) => [a.lat!, a.lng!] as [number, number])], color: 'indigo', weight: 5, opacity: 0.85 });
+      polylines.push({ id: 'itineraire', latlngs: routeRues ?? [[actif.lat, actif.lng], ...arretsLocalises.map((a) => [a.lat!, a.lng!] as [number, number])], color: 'indigo', weight: 5, opacity: 0.85, ...(routeRues ? {} : { dashArray: '2 10' }) });
     }
   }
   const polygons: MapPolygon[] = showZones ? zones.filter((z) => Array.isArray(z.polygon) && z.polygon!.length >= 3)

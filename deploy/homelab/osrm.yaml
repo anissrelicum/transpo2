@@ -1,0 +1,70 @@
+# Moteur d'itinéraire OSRM (routes réelles + durées) pour l'app livreur et la console.
+# Carte : extrait Maroc de Geofabrik, préparé au premier démarrage (algorithme MLD, profil
+# voiture) dans un volume persistant ; les redémarrages suivants réutilisent la préparation.
+# Mise à jour de la carte : supprimer le fichier /data/.pret puis redémarrer le déploiement.
+#
+#   kubectl apply -f deploy/homelab/osrm.yaml
+#   (service interne : http://osrm.transpo:5000 — l'API seule l'appelle)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: { name: osrm-data, namespace: transpo }
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: local-path
+  resources: { requests: { storage: 4Gi } }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: osrm, namespace: transpo, labels: { app: osrm } }
+spec:
+  replicas: 1
+  strategy: { type: Recreate }
+  selector: { matchLabels: { app: osrm } }
+  template:
+    metadata: { labels: { app: osrm } }
+    spec:
+      initContainers:
+        - name: telecharger
+          image: alpine:3.20
+          command: ["sh", "-c"]
+          args:
+            - |
+              set -e
+              [ -f /data/.pret ] && exit 0
+              apk add --no-cache wget >/dev/null
+              wget -q -O /data/maroc.osm.pbf https://download.geofabrik.de/africa/morocco-latest.osm.pbf
+          volumeMounts: [{ name: data, mountPath: /data }]
+        - name: preparer
+          image: ghcr.io/project-osrm/osrm-backend:v5.27.1
+          command: ["sh", "-c"]
+          args:
+            - |
+              set -e
+              [ -f /data/.pret ] && exit 0
+              osrm-extract -p /opt/car.lua /data/maroc.osm.pbf
+              osrm-partition /data/maroc.osrm
+              osrm-customize /data/maroc.osrm
+              rm -f /data/maroc.osm.pbf
+              touch /data/.pret
+          resources: { requests: { memory: 1Gi, cpu: 500m }, limits: { memory: 4Gi } }
+          volumeMounts: [{ name: data, mountPath: /data }]
+      containers:
+        - name: osrm
+          image: ghcr.io/project-osrm/osrm-backend:v5.27.1
+          command: ["osrm-routed", "--algorithm", "mld", "--max-viaroute-size", "120", "/data/maroc.osrm"]
+          ports: [{ containerPort: 5000 }]
+          readinessProbe:
+            httpGet: { path: "/route/v1/driving/-7.6328,33.5869;-7.6460,33.5795", port: 5000 }
+            periodSeconds: 10
+          resources: { requests: { memory: 512Mi, cpu: 100m }, limits: { memory: 2Gi } }
+          volumeMounts: [{ name: data, mountPath: /data }]
+      volumes:
+        - name: data
+          persistentVolumeClaim: { claimName: osrm-data }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: osrm, namespace: transpo }
+spec:
+  selector: { app: osrm }
+  ports: [{ port: 5000, targetPort: 5000 }]

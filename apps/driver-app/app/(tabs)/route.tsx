@@ -14,6 +14,7 @@ import { useJournee, definirOrdreManuel } from '../../lib/useJournee';
 import { distanceKm, distanceTournee, formatDistance, minutesEstimees } from '../../lib/journee';
 import { Carte, Pastille, Bandeau, useTon } from '../../components/ui';
 import { Echeance } from '../../components/Echeance';
+import { useItineraire } from '../../lib/itineraire';
 
 const T = {
   fr: {
@@ -47,6 +48,9 @@ export default function Tournee() {
   const align = { textAlign: rtl ? 'right' as const : 'left' as const };
 
   const moi = j.moi ? { lat: j.moi.lat, lng: j.moi.lng } : null;
+  // Durées par les rues (ADR 0007) : position → 1er arrêt, puis arrêt après arrêt.
+  const localises = j.arrets.filter((a) => a.pos);
+  const itineraire = useItineraire(moi && localises.length ? [moi, ...localises.map((a) => a.pos!)] : null);
   const parAgence = !!j.tournee?.length;
   const km = distanceTournee(moi, j.arrets);
 
@@ -68,7 +72,9 @@ export default function Tournee() {
         <View style={{ flex: 1 }}>
           <Text style={[s.titre, { color: colors.text }, align]}>{t.titre}</Text>
           <Text style={[{ color: colors.muted, fontSize: 13 }, align]}>
-            {t.resume(j.arrets.length, formatDistance(km, lang), j.arrets.length ? minutesEstimees(km) + j.arrets.length * 4 : 0)}
+            {itineraire
+              ? t.resume(j.arrets.length, formatDistance(itineraire.distanceM / 1000, lang), Math.round(itineraire.durationS / 60) + j.arrets.length * 4)
+              : t.resume(j.arrets.length, formatDistance(km, lang), j.arrets.length ? minutesEstimees(km) + j.arrets.length * 4 : 0)}
           </Text>
         </View>
         <Pastille ton="indigo">{parAgence ? t.agence : j.ordreManuel ? t.manuel : t.optimise}</Pastille>
@@ -89,7 +95,8 @@ export default function Tournee() {
         ListEmptyComponent={<Text style={{ color: colors.muted, textAlign: 'center', marginTop: 40 }}>{t.vide}</Text>}
         renderItem={({ item: a, index: i }) => {
           const prec = i === 0 ? moi : j.arrets[i - 1]?.pos ?? null;
-          const plus = a.pos && prec ? minutesEstimees(distanceKm(prec, a.pos)) : null;
+          const troncon = itineraire && a.pos ? itineraire.legs[localises.indexOf(a)] : undefined;
+          const plus = troncon ? Math.max(1, Math.round(troncon.durationS / 60)) : a.pos && prec ? minutesEstimees(distanceKm(prec, a.pos)) : null;
           const prochain = i === 0;
           return (
             <Carte testID={`arret-${a.order.ref}`} onPress={() => router.push(`/mission/${encodeURIComponent(a.order.ref)}`)}

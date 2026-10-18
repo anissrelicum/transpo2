@@ -21,6 +21,7 @@ import { distanceKm, estArrive, formatDistance, minutesEstimees } from '../../..
 import { avancer, ouvrirItineraire, partirEnRoute, appeler } from '../../../lib/etapes';
 import { CarteJournee } from '../../../components/CarteJournee';
 import { Echeance } from '../../../components/Echeance';
+import { useItineraire, formatDuree } from '../../../lib/itineraire';
 import { Bouton, Carte, Libelle, Pastille, Bandeau } from '../../../components/ui';
 import { IcNaviguer, IcTel, IcPin, IcRetour, IcAlerte } from '../../../components/icones';
 
@@ -30,6 +31,7 @@ const T = {
     retrait: 'Retrait', livraison: 'Livraison',
     arrive: (m: number) => `Vous êtes arrivé · ${m} m de l’adresse`,
     loin: (min: number, d: string) => `~${min} min · ${d}`,
+    trajet: (duree: string, d: string) => `${duree} de route · ${d}`,
     sansPos: 'Adresse saisie sans position GPS : la navigation cherchera l’adresse.',
     consigneClient: 'Consigne du client', consigneRetrait: 'Consigne de retrait',
     colis: 'Colis', fragile: 'Fragile', prepaye: 'Prépayée', cod: (m: string) => `COD ${m}`,
@@ -48,6 +50,7 @@ const T = {
     retrait: 'استلام', livraison: 'تسليم',
     arrive: (m: number) => `لقد وصلت · ${m} م من العنوان`,
     loin: (min: number, d: string) => `~${min} د · ${d}`,
+    trajet: (duree: string, d: string) => `${duree} من الطريق · ${d}`,
     sansPos: 'عنوان بدون موقع GPS: ستبحث الملاحة عن العنوان.',
     consigneClient: 'تعليمات الزبون', consigneRetrait: 'تعليمات الاستلام',
     colis: 'الطرد', fragile: 'قابل للكسر', prepaye: 'مدفوعة مسبقاً', cod: (m: string) => `الدفع عند الاستلام ${m}`,
@@ -77,6 +80,8 @@ export default function ArretScreen() {
 
   const index = j.arrets.findIndex((a) => a.commandes.some((c) => c.ref === refStr));
   const a = index >= 0 ? j.arrets[index]! : null;
+  // Trajet par les rues jusqu'à l'arrêt, avec sa durée (ADR 0007).
+  const trajet = useItineraire(j.moi && a?.pos ? [{ lat: j.moi.lat, lng: j.moi.lng }, a.pos] : null);
 
   if (j.chargement) {
     return <View style={[s.centre, { backgroundColor: colors.bg }]}><ActivityIndicator color={colors.indigo9} size="large" /></View>;
@@ -139,8 +144,8 @@ export default function ArretScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <View style={s.carte}>
         {a.pos ? (
-          <CarteJournee points={[{ ref: o.ref, lat: a.pos.lat, lng: a.pos.lng, n: index + 1, etat: 'prochain' }]} moi={moi}
-            sombre={mode === 'dark'} bas={70} />
+          <CarteJournee points={[{ ref: o.ref, lat: a.pos.lat, lng: a.pos.lng, n: index + 1, etat: 'prochain', type: a.type }]} moi={moi}
+            sombre={mode === 'dark'} bas={70} prochain={trajet?.geometry} lang={lang} />
         ) : (
           <View style={[s.sansCarte, { backgroundColor: colors.panel }]}>
             <IcPin size={28} color={colors.muted} />
@@ -154,6 +159,8 @@ export default function ArretScreen() {
         <View style={s.etatArrivee}>
           {arrive ? (
             <Bandeau ton="vert" rtl={rtl}>{t.arrive(Math.round((dist ?? 0) * 1000))}</Bandeau>
+          ) : trajet ? (
+            <Bandeau ton="indigo" rtl={rtl}>{t.trajet(formatDuree(trajet.durationS, lang), formatDistance(trajet.distanceM / 1000, lang))}</Bandeau>
           ) : dist != null ? (
             <Bandeau ton="indigo" rtl={rtl}>{t.loin(minutesEstimees(dist), formatDistance(dist, lang))}</Bandeau>
           ) : null}
