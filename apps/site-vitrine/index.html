@@ -41,7 +41,7 @@
 <link rel="manifest" href="/site.webmanifest">
 
 <link rel="preload" href="/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/medias/hero.webp" as="image" type="image/webp" fetchpriority="high" imagesrcset="/medias/hero-600.webp 600w, /medias/hero.webp 928w" imagesizes="(max-width: 1023px) min(440px, calc(100vw - 40px)), 480px">
+<link rel="preload" href="/medias/hero.webp?v=2" as="image" type="image/webp" fetchpriority="high" imagesrcset="/medias/hero-600.webp?v=2 600w, /medias/hero.webp?v=2 928w" imagesizes="(max-width: 1023px) min(440px, calc(100vw - 40px)), 480px">
 <link rel="stylesheet" href="/styles.css">
 
 <script type="application/ld+json">
@@ -263,8 +263,8 @@
 
         <div class="heros__visuel">
           <figure class="heros__photo">
-            <img src="/medias/hero.webp" srcset="/medias/hero-600.webp 600w, /medias/hero.webp 928w" sizes="(max-width: 1023px) min(440px, calc(100vw - 40px)), 480px" width="928" height="1152" fetchpriority="high" decoding="async"
-                 alt="Illustration 3D : un livreur en casquette remet un colis à un client sur le pas de sa porte, en fin de journée.">
+            <img src="/medias/hero.webp?v=2" srcset="/medias/hero-600.webp?v=2 600w, /medias/hero.webp?v=2 928w" sizes="(max-width: 1023px) min(440px, calc(100vw - 40px)), 480px" width="928" height="1152" fetchpriority="high" decoding="async"
+                 alt="Un livreur remet un colis en main propre.">
           </figure>
           <div class="carte-flottante carte-flottante--preuve" aria-hidden="true">
             <span class="carte-flottante__icone"><svg width="20" height="20"><use href="#i-photo"/></svg></span>
@@ -303,7 +303,10 @@
       </div>
 
       <div class="onglets" role="tablist" aria-label="Écrans du produit" data-onglets>
-        <button class="onglet" type="button" role="tab" id="onglet-tableau" aria-controls="panneau-tableau" aria-selected="true">
+        <button class="onglet" type="button" role="tab" id="onglet-flotte" aria-controls="panneau-flotte" aria-selected="true">
+          <svg width="18" height="18" aria-hidden="true"><use href="#i-cible"/></svg>PC flotte
+        </button>
+        <button class="onglet" type="button" role="tab" id="onglet-tableau" aria-controls="panneau-tableau" aria-selected="false" tabindex="-1">
           <svg width="18" height="18" aria-hidden="true"><use href="#i-tableau"/></svg>Tableau de bord
         </button>
         <button class="onglet" type="button" role="tab" id="onglet-dispatch" aria-controls="panneau-dispatch" aria-selected="false" tabindex="-1">
@@ -318,7 +321,19 @@
       </div>
 
       <div class="panneaux" data-panneaux>
-        <div class="panneau" id="panneau-tableau" role="tabpanel" aria-labelledby="onglet-tableau" data-revele>
+        <div class="panneau" id="panneau-flotte" role="tabpanel" aria-labelledby="onglet-flotte" data-revele>
+          <figure class="cadre">
+            <div class="cadre__barre" aria-hidden="true"><span class="cadre__points"><span></span><span></span><span></span></span><span class="cadre__adresse">Console transport · PC flotte</span></div>
+            <img src="/medias/ecran-flotte.webp" srcset="/medias/ecran-flotte-800.webp 800w, /medias/ecran-flotte.webp 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
+                 alt="PC flotte : la carte de la ville avec tous les livreurs en direct, les compteurs (en service, en route, hors zone, commandes en retard, encaissé du jour) et la fiche d’un livreur avec son itinéraire conseillé.">
+          </figure>
+          <div class="panneau__legende">
+            <h3>La flotte en direct</h3>
+            <p>Tous vos livreurs sur une seule carte, en mouvement : qui roule, qui attend, qui sort de sa zone, quelles commandes sont en retard. Un clic sur un livreur montre ses commandes, son itinéraire par les rues et ses indicateurs du jour.</p>
+          </div>
+        </div>
+
+        <div class="panneau" id="panneau-tableau" role="tabpanel" aria-labelledby="onglet-tableau">
           <figure class="cadre">
             <div class="cadre__barre" aria-hidden="true"><span class="cadre__points"><span></span><span></span><span></span></span><span class="cadre__adresse">Console transport · Tableau de bord</span></div>
             <img src="/medias/ecran-dashboard.webp" srcset="/medias/ecran-dashboard-800.webp 800w, /medias/ecran-dashboard.webp 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
@@ -390,7 +405,7 @@
 
       <ol class="mains">
         <li class="main" data-revele>
-          <div class="main__image"><img src="/medias/marchand.webp" srcset="/medias/marchand-800.webp 800w, /medias/marchand.webp 1376w" sizes="(max-width: 599px) calc(100vw - 40px), (max-width: 1079px) calc(50vw - 30px), 290px" width="1376" height="768" loading="lazy" decoding="async" alt="Illustration 3D : une commerçante prépare un colis dans son atelier."></div>
+          <div class="main__image"><img src="/medias/marchand.webp?v=2" srcset="/medias/marchand-800.webp?v=2 800w, /medias/marchand.webp?v=2 1376w" sizes="(max-width: 599px) calc(100vw - 40px), (max-width: 1079px) calc(50vw - 30px), 290px" width="1376" height="768" loading="lazy" decoding="async" alt="Des colis prêts à partir, empilés dans un utilitaire de livraison."></div>
           <div class="main__corps">
             <p class="main__n"><span>1</span>Marchand</p>
             <h3 class="main__titre">Le marchand dépose</h3>
@@ -398,7 +413,7 @@
           </div>
         </li>
         <li class="main" data-revele>
-          <div class="main__image"><img src="/medias/dispatch.webp" srcset="/medias/dispatch-800.webp 800w, /medias/dispatch.webp 1344w" sizes="(max-width: 599px) calc(100vw - 40px), (max-width: 1079px) calc(50vw - 30px), 290px" width="1344" height="768" loading="lazy" decoding="async" alt="Illustration 3D : une dispatcheuse, tablette en main, devant un grand écran de carte avec les trajets en cours."></div>
+          <div class="main__image"><img src="/medias/dispatch.webp?v=2" srcset="/medias/dispatch-800.webp?v=2 800w, /medias/dispatch.webp?v=2 1344w" sizes="(max-width: 599px) calc(100vw - 40px), (max-width: 1079px) calc(50vw - 30px), 290px" width="1344" height="768" loading="lazy" decoding="async" alt="Un ordinateur portable affiche un tableau de bord d’activité."></div>
           <div class="main__corps">
             <p class="main__n"><span>2</span>Dispatch</p>
             <h3 class="main__titre">Le dispatch affecte</h3>
@@ -406,7 +421,7 @@
           </div>
         </li>
         <li class="main" data-revele>
-          <div class="main__image"><img src="/medias/terrain.webp" srcset="/medias/terrain-800.webp 800w, /medias/terrain.webp 1376w" sizes="(max-width: 599px) calc(100vw - 40px), (max-width: 1079px) calc(50vw - 30px), 290px" width="1376" height="768" loading="lazy" decoding="async" alt="Illustration 3D : un livreur en scooter traverse une rue commerçante le soir, un colis à l’arrière."></div>
+          <div class="main__image"><img src="/medias/terrain.webp?v=2" srcset="/medias/terrain-800.webp?v=2 800w, /medias/terrain.webp?v=2 1376w" sizes="(max-width: 599px) calc(100vw - 40px), (max-width: 1079px) calc(50vw - 30px), 290px" width="1376" height="768" loading="lazy" decoding="async" alt="Un livreur en scooter, un colis à l’arrière, dans une rue animée le soir."></div>
           <div class="main__corps">
             <p class="main__n"><span>3</span>Livreur</p>
             <h3 class="main__titre">Le livreur exécute</h3>
@@ -414,7 +429,7 @@
           </div>
         </li>
         <li class="main" data-revele>
-          <div class="main__image"><img src="/medias/compta.webp" srcset="/medias/compta-800.webp 800w, /medias/compta.webp 1344w" sizes="(max-width: 599px) calc(100vw - 40px), (max-width: 1079px) calc(50vw - 30px), 290px" width="1344" height="768" loading="lazy" decoding="async" alt="Illustration 3D : un comptable souriant devant un ordinateur affichant une validation."></div>
+          <div class="main__image"><img src="/medias/compta.webp?v=2" srcset="/medias/compta-800.webp?v=2 800w, /medias/compta.webp?v=2 1344w" sizes="(max-width: 599px) calc(100vw - 40px), (max-width: 1079px) calc(50vw - 30px), 290px" width="1344" height="768" loading="lazy" decoding="async" alt="Un commerçant encaisse un paiement au comptoir."></div>
           <div class="main__corps">
             <p class="main__n"><span>4</span>Comptabilité</p>
             <h3 class="main__titre">La compta rapproche</h3>
@@ -452,10 +467,10 @@
     <div class="conteneur duo">
       <div class="terrain-visuel" data-revele>
         <figure class="terrain-visuel__grande">
-          <img src="/medias/terrain.webp" srcset="/medias/terrain-800.webp 800w, /medias/terrain.webp 1376w" sizes="(max-width: 959px) calc(88vw - 40px), 520px" width="1376" height="768" loading="lazy" decoding="async" alt="Illustration 3D : un livreur en scooter dans une rue animée, le soir.">
+          <img src="/medias/terrain.webp?v=2" srcset="/medias/terrain-800.webp?v=2 800w, /medias/terrain.webp?v=2 1376w" sizes="(max-width: 959px) calc(88vw - 40px), 520px" width="1376" height="768" loading="lazy" decoding="async" alt="Un livreur en scooter, un colis à l’arrière, dans une rue animée le soir.">
         </figure>
         <figure class="terrain-visuel__petite">
-          <img src="/medias/remise.webp" srcset="/medias/remise-800.webp 800w, /medias/remise.webp 1344w" sizes="(max-width: 959px) 48vw, 320px" width="1344" height="768" loading="lazy" decoding="async" alt="Illustration 3D : sur le pas de la porte, le livreur tend son téléphone à une cliente pour qu’elle signe la réception.">
+          <img src="/medias/remise.webp?v=2" srcset="/medias/remise-800.webp?v=2 800w, /medias/remise.webp?v=2 1344w" sizes="(max-width: 959px) 48vw, 320px" width="1344" height="768" loading="lazy" decoding="async" alt="Un livreur à vélo avec son sac de livraison dans une ruelle.">
         </figure>
         <span class="terrain-visuel__etiquette" aria-hidden="true"><span class="point-vivant"></span>Signature recueillie</span>
       </div>
@@ -598,12 +613,12 @@
             <h3>Tri en hub et scan</h3>
             <p>Colis scannés au retrait, au hub et à la livraison ; manifestes de transfert entre villes.</p>
           </div>
-          <img src="/medias/hub.webp" srcset="/medias/hub-800.webp 800w, /medias/hub.webp 1376w" sizes="(max-width: 599px) calc(100vw - 40px), 400px" width="1376" height="768" loading="lazy" decoding="async" alt="Illustration 3D : un livreur scanne un colis dans un entrepôt de tri.">
+          <img src="/medias/hub.webp?v=2" srcset="/medias/hub-800.webp?v=2 800w, /medias/hub.webp?v=2 1376w" sizes="(max-width: 599px) calc(100vw - 40px), 400px" width="1376" height="768" loading="lazy" decoding="async" alt="Un entrepôt de tri rempli de colis prêts à partir.">
         </li>
         <li class="tuile" data-revele>
           <span class="tuile__icone" aria-hidden="true"><svg width="22" height="22"><use href="#i-route"/></svg></span>
-          <h3>Tournées multi-arrêts</h3>
-          <p>L’ordre décidé au bureau est celui que suit le livreur.</p>
+          <h3>Tournées et délais tenus</h3>
+          <p>Itinéraires par les rues, urgences en tête, livraison express facturée et alerte avant le retard.</p>
         </li>
         <li class="tuile" data-revele>
           <span class="tuile__icone" aria-hidden="true"><svg width="22" height="22"><use href="#i-camion"/></svg></span>
@@ -653,7 +668,7 @@
       </ul>
 
       <div class="deploiement" data-revele>
-        <img src="/medias/ville.webp" srcset="/medias/ville-800.webp 800w, /medias/ville.webp 1344w" sizes="(max-width: 699px) calc(100vw - 40px), 1200px" width="1344" height="768" loading="lazy" decoding="async" alt="Illustration 3D : une ville miniature vue du ciel, parcourue de routes lumineuses et de véhicules de livraison.">
+        <img src="/medias/ville.webp?v=2" srcset="/medias/ville-800.webp?v=2 800w, /medias/ville.webp?v=2 1344w" sizes="(max-width: 699px) calc(100vw - 40px), 1200px" width="1344" height="768" loading="lazy" decoding="async" alt="Une allée d’entrepôt bordée de rayonnages de colis.">
         <div class="deploiement__texte">
           <h3>On ouvre une zone, puis la suivante</h3>
           <p>Pas de bascule générale : une ville, quelques livreurs, un marchand pilote. On élargit sur des chiffres, pas sur des impressions.</p>
@@ -793,8 +808,8 @@
           <div><dt>Interfaces</dt><dd>Français et arabe</dd></div>
         </dl>
         <figure class="contact__casting">
-          <img src="/medias/casting.webp" srcset="/medias/casting-800.webp 800w, /medias/casting.webp 1376w" sizes="(max-width: 959px) calc(100vw - 40px), 560px" width="1376" height="768" loading="lazy" decoding="async"
-               alt="Illustration 3D : les quatre personnages de Portrail côte à côte — le livreur, la dispatcheuse, la commerçante et le comptable.">
+          <img src="/medias/casting.webp?v=2" srcset="/medias/casting-800.webp?v=2 800w, /medias/casting.webp?v=2 1376w" sizes="(max-width: 959px) calc(100vw - 40px), 560px" width="1376" height="768" loading="lazy" decoding="async"
+               alt="Deux associés se tapent dans la main autour d’un ordinateur.">
         </figure>
       </div>
 
