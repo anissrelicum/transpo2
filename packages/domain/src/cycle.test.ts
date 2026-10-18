@@ -35,7 +35,7 @@ function runUntilStable(s: CycleSubscription, today: string, max = 12): string[]
 
 test('addDaysIso franchit les mois', () => {
   assert.equal(addDaysIso('2026-08-30', 7), '2026-09-06');
-  assert.equal(addDaysIso('2026-08-16', TRIAL_DAYS), '2026-08-30');
+  assert.equal(addDaysIso('2026-08-16', TRIAL_DAYS), '2026-09-15');
 });
 
 test('addDaysIso franchit les années', () => {

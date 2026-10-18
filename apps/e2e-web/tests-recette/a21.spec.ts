@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { loginSaas, shotVp, saveCredential, supprimerTenant, lireMotDePasseRevele } from './helpers';
 
 // TC-A21 — Tout tenant naît en essai daté : provisionner une organisation en choisissant
-// le plan Transporteur → abonnement « Essai — 14 j restants » (le plan choisi est la cible
+// le plan Transporteur → abonnement « Essai — 30 j restants » (le plan choisi est la cible
 // de la conversion, pas le statut). Organisation dédiée aux cas A-ter (atlasfret).
 test('TC-A21 — Tout tenant naît en essai daté', async ({ page }) => {
   test.setTimeout(180_000);
@@ -35,7 +35,7 @@ test('TC-A21 — Tout tenant naît en essai daté', async ({ page }) => {
   const row = page.getByRole('row', { name: /atlasfret/ });
   await expect(row).toBeVisible();
   await expect(row.getByText('Essai')).toBeVisible();
-  await expect(row).toContainText('14 j restants');
+  await expect(row).toContainText('30 j restants');
   await expect(row).not.toContainText('Actif');
   await expect(row).toContainText('Transporteur');
   await shotVp(page, 'TC-A21', '03-atlasfret-essai-14j-transporteur');

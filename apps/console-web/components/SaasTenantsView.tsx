@@ -524,7 +524,7 @@ function ProvisionDialog({ plans, onCreate, busy, onProvisioned }: {
             </Box>
           </Grid>
           <Text size="1" color="gray">
-            L’organisation démarre toujours par un <strong>essai de 14 jours</strong> sur le plan choisi.
+            L’organisation démarre toujours par un <strong>essai de 30 jours</strong> sur le plan choisi.
             À son terme, sans souscription, elle passe en impayé puis est suspendue.
           </Text>
         </Flex>

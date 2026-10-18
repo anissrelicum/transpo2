@@ -36,7 +36,7 @@ export async function saasToken(request: APIRequestContext): Promise<string> {
 
 export type Provisioned = { slug: string; adminEmail?: string; adminPassword?: string };
 
-/** Provisionne un tenant via l'API super-admin (essai 14 j sur le plan choisi). */
+/** Provisionne un tenant via l'API super-admin (essai 30 j sur le plan choisi). */
 export async function provisionTenant(
   request: APIRequestContext,
   token: string,

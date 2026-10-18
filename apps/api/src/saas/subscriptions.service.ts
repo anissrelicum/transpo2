@@ -167,7 +167,7 @@ export class SubscriptionsService {
   /**
    * Fait avancer le temps (spec §7). Idempotent : les transitions sont conditionnées à des
    * dates, donc deux exécutions le même jour donnent le même état. Rejouable à la main,
-   * ce qui permet de tester l'expiration d'un essai sans attendre 14 jours.
+   * ce qui permet de tester l'expiration d'un essai sans attendre la fin de l’essai.
    */
   async runCycle(actor: JwtUser | null) {
     const day = today();

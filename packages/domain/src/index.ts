@@ -237,7 +237,7 @@ export type PlatformInvoiceStatus = (typeof PLATFORM_INVOICE_STATUSES)[number];
 export const PAYMENT_METHODS = ['VIREMENT', 'CHEQUE', 'ESPECES'] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
-export const TRIAL_DAYS = 14;        // durée de l'essai (spec §5.1)
+export const TRIAL_DAYS = 30;        // durée de l'essai (spec §5.1)
 export const GRACE_DAYS = 7;         // délai de grâce avant suspension (spec §13.4)
 export const DEFAULT_VAT_RATE = 20;  // TVA plateforme, figée sur la facture à l'émission
 

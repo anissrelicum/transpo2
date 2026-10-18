@@ -17,7 +17,7 @@ test.beforeAll(async ({ request }) => {
   token = await saasToken(request);
 });
 
-test('provisioning UI : ligne Essai 14 j, mot de passe admin affiché une seule fois', async ({ page }) => {
+test('provisioning UI : ligne Essai 30 j, mot de passe admin affiché une seule fois', async ({ page }) => {
   await loginSaas(page);
 
   await page.getByRole('button', { name: 'Provisionner' }).click();
@@ -45,7 +45,7 @@ test('provisioning UI : ligne Essai 14 j, mot de passe admin affiché une seule 
   // Fermé, le mot de passe n'est plus affiché nulle part.
   await expect(page.getByText(adminPassword)).toHaveCount(0);
 
-  // La ligne apparaît : abonnement Essai (14 j), plan visé Transporteur.
+  // La ligne apparaît : abonnement Essai (30 j), plan visé Transporteur.
   const row = page.getByRole('row', { name: new RegExp(slug) });
   await expect(row).toBeVisible();
   await expect(row).toContainText('Regression Prov');
