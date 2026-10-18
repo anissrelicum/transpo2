@@ -1,53 +1,51 @@
-# Portrail — Vidéo promotionnelle : script et découpage
+# Portrail — Vidéo d'accroche : script
 
-*Version 1 — 18 octobre 2026. À valider avant tournage.*
+*Version 2 — 18 octobre 2026. Remplace la version « démonstration » de 60 s.*
 
-**Objectif** : donner envie, pas tout montrer. Le prospect (patron d'une société de livraison, 5 à 50 livreurs)
-doit se reconnaître dans les 5 premières secondes, voir son métier « tourner tout seul », et retenir
-**trois idées** : *je vois toute ma flotte*, *les courses partent seules*, *chaque dirham est suivi*.
+## Le principe
 
-**Format** : 60 secondes, 16:9 (site, e-mail, LinkedIn) **et** une déclinaison 9:16 de 30 s (WhatsApp Statut,
-Instagram, TikTok). Voix off française, sous-titres incrustés (beaucoup regardent sans le son). Version
-arabe (darija ou arabe standard) en second temps.
+**On ne montre pas le produit, on montre ce qu'il change.** Aucune capture d'écran réelle : une IA
+pourrait reconstruire l'application à partir de captures. La vidéo ne doit déclencher qu'une chose :
+l'envie d'essayer. Le produit, le prospect le découvre en démonstration ou pendant son essai.
 
-**Matière** : **uniquement les vrais écrans** de Portrail, filmés sur l'environnement de démonstration
-(société de test, 10 livreurs simulés qui roulent dans Casablanca, 20 commandes). Pas d'images de stock
-de livreurs : l'application est la star. Logo et couleurs de la marque validés (marine #0B1537, ambre #F5A524).
+**La mécanique (dans l'ordre) :**
 
----
+1. **Le miroir** — le patron se reconnaît dans sa soirée (« 21 h, vous comptez encore »). Il doit
+   penser « c'est moi » avant la 5e seconde.
+2. **La douleur précise** — trois phrases qu'il s'est déjà dites : le cash qui manque, le colis dont
+   personne ne sait qui l'a livré, le marchand qui réclame son argent. L'aversion à la perte pousse
+   plus fort que la promesse de gain.
+3. **La bascule** — une question, un silence : « Et si votre journée se gérait toute seule ? »
+4. **Le soulagement, sans le mode d'emploi** — une carte floue où des points bougent, trois
+   notifications. On montre le résultat (je vois, ça part seul, l'argent est tracé), jamais l'écran
+   qui le produit.
+5. **L'identité** — « Moins d'appels. Plus de contrôle. Et vous rentrez à l'heure. » On vend la
+   soirée retrouvée, pas un logiciel.
+6. **Le risque à zéro + la rareté** — 30 jours gratuits, on installe avec vous, sans engagement ;
+   « Offre fondateurs · 10 places » (vrai : prix bloqué pour les 10 premiers clients).
 
-## Le découpage (60 s)
+**Format** : 45 s, 16:9, sous-titres incrustés + musique (regardable sans le son, comme la plupart
+des vidéos reçues sur WhatsApp). Images : photos Unsplash et animation abstraite, aucun écran réel.
 
-| # | Temps | À l'écran | Voix off | Texte incrusté |
-|---|---|---|---|---|
-| 1 | 0–6 s | Un téléphone qui vibre de messages WhatsApp (« il est où mon colis ? », « le livreur ne répond pas », « tu me dois combien ? ») + un tableau Excel qui défile | « Vos livreurs sont dehors. Vos marchands attendent leur argent. Et vous, vous êtes au téléphone. » | **Ça vous parle ?** |
-| 2 | 6–14 s | **PC flotte** en direct : les 10 livreurs bougent sur la carte de Casablanca, l'un passe en rouge « hors zone » | « Avec Portrail, toute votre flotte est là. En direct. Qui roule, qui est arrêté, qui sort de sa zone. » | **Toute votre flotte, en direct** |
-| 3 | 14–22 s | Clic sur un livreur : sa fiche, ses commandes, son itinéraire tracé par les rues, ses indicateurs | « Un clic, et vous voyez ses commandes, son trajet, son retard éventuel. » | |
-| 4 | 22–32 s | Une commande arrive (portail marchand) → **proposition sur le téléphone du livreur** avec compte à rebours → « Accepter » → la commande apparaît sur sa carte | « Les nouvelles courses partent toutes seules au livreur le plus proche. Il accepte en un geste. S'il ne répond pas, la course passe au suivant. Sans personne au dispatch. » | **Dispatch automatique** |
-| 5 | 32–40 s | App livreur : la **journée sur une carte**, arrêts numérotés, retraits groupés, « Naviguer » ; une commande urgente « Avant 12:00 » remonte en tête | « Le livreur a sa journée sur une carte, dans le bon ordre. Les urgences passent devant. » | **Délais tenus** |
-| 6 | 40–50 s | Remise : photo de preuve → encaissement **420 DH** → **Caisse** du livreur → côté bureau : reversement au marchand, facture générée | « Livré, prouvé, encaissé. Chaque dirham est suivi, du livreur jusqu'au marchand. Vos reversements et vos factures se préparent tout seuls. » | **Chaque dirham suivi** |
-| 7 | 50–56 s | Montage rapide : français ↔ arabe, clair ↔ sombre, téléphone + ordinateur | « En français et en arabe. Sur ordinateur et sur téléphone. Prêt en un jour. » | **À partir de 299 DH / mois** *(si prix validés)* |
-| 8 | 56–60 s | Logo Portrail sur fond marine, adresse du site, bouton « Essai gratuit » | « Portrail. Votre livraison, sur les rails. » | **portrail.app — Essai gratuit 30 jours** |
+## Le découpage
 
-## La version courte 9:16 (30 s)
+| Temps | Image | Texte |
+|---|---|---|
+| 0–5 s | Livreur en scooter, la nuit | **21 h.** Vos livreurs sont rentrés. *Vous, vous comptez encore.* |
+| 5–11 s | Entrepôt, assombri | « Il manque 300 DH dans la caisse. » · « Qui a livré le colis de Mme Benali ? » · « Le marchand veut son argent demain. » |
+| 11–15 s | Noir | Et si votre journée se gérait **toute seule** ? |
+| 15–23 s | Carte floue, points qui bougent (animation, pas une capture) | Vous voyez chaque livreur. Où il est. Ce qu'il porte. S'il sort de sa zone. *Sans appeler personne.* |
+| 23–30 s | Trois notifications stylisées | Les courses partent seules. *Chaque dirham a une trace.* — « Course acceptée » · « Livré · 550 DH encaissés » · « Reversement prêt » |
+| 30–35 s | Deux associés qui se tapent dans la main | Moins d'appels. Plus de contrôle. *Et vous rentrez à l'heure.* |
+| 35–41 s | Fond marine | Essayez Portrail 30 jours. Gratuitement. On installe tout avec vous. Sans engagement. **Offre fondateurs · 10 places** |
+| 41–45 s | Logo | Votre livraison, sur les rails. **Demandez votre essai** |
 
-Scènes 1 (3 s) → 2 (6 s) → 4 (8 s) → 6 (8 s) → 8 (5 s). Le téléphone en plein cadre, la carte flotte
-recadrée verticalement.
+## Ce qu'on ne montre jamais
 
-## Ce qu'on ne dit PAS dans la vidéo
-
-- Pas de « IA » tant que l'assistant IA n'existe pas : on parle de **dispatch automatique**, de
-  **tournées optimisées** — c'est vrai aujourd'hui. Le mot « IA » viendra avec le copilote (étude
-  `docs/etudes/2026-10-18-ia-et-app-livreur.md`).
-- Pas de « Maroc » comme promesse (le produit est international) ; Casablanca et les dirhams apparaissent
-  naturellement à l'écran comme cas d'usage.
-- Pas de fonctionnalités non branchées (SMS, WhatsApp, Shopify).
-- Pas de chiffres de gain non mesurés (« −30 % de retours ») : on les ajoutera avec les premiers clients pilotes.
+- Aucune capture de la console, du portail ou de l'app livreur (ni écran, ni menu, ni libellé).
+- Aucune liste de fonctionnalités, aucun « comment » : seulement le résultat.
+- Ni l'origine du produit, ni « IA », ni de chiffres de gains non mesurés.
 
 ## Production
 
-1. Amorcer la société de démonstration : 10 livreurs simulés (déjà en place), 20 commandes, un marchand.
-2. Filmer la console (Playwright, 1920×1080) et l'app livreur (émulateur, capture d'écran vidéo).
-3. Voix off : Deepgram (voix française déjà utilisée pour les démos) ; musique libre de droits déjà dans `qa/promo/medias/`.
-4. Montage et rendu avec la chaîne existante (`qa/promo/rendu.mjs`, ffmpeg), sous-titres incrustés.
-5. Hébergement de la vidéo + vignette pour l'envoi aux prospects.
+Sources : `qa/promo-accroche/` (montage HTML rendu image par image, puis ffmpeg avec la musique).

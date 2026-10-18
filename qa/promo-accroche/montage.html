@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Portrail — vidéo d'accroche 45 s</title>
+<style>
+  @font-face { font-family: Inter; src: url(inter-latin-var.woff2) format("woff2"); font-weight: 100 900; }
+  :root { --navy:#0B1537; --amber:#F5A524; --gris:#C3CADF; --vert:#1FA971; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { width:1920px; height:1080px; overflow:hidden; background:#000; font-family:Inter, system-ui, sans-serif; color:#fff; }
+  .scene { position:absolute; inset:0; opacity:0; overflow:hidden; background:var(--navy); }
+  .fond { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transform-origin:50% 50%; }
+  .voile { position:absolute; inset:0; background:linear-gradient(90deg, rgba(5,9,26,.92) 0%, rgba(5,9,26,.7) 45%, rgba(5,9,26,.25) 100%); }
+  .voile-plein { position:absolute; inset:0; background:rgba(5,9,26,.72); }
+  .bloc { position:absolute; left:140px; top:50%; transform:translateY(-50%); width:1100px; }
+  .t { opacity:0; }
+  .xl { font-size:150px; font-weight:800; letter-spacing:-.05em; line-height:1; color:var(--amber); }
+  .l { font-size:76px; font-weight:800; letter-spacing:-.035em; line-height:1.06; }
+  .m { font-size:46px; font-weight:600; letter-spacing:-.015em; line-height:1.25; color:#E8ECFF; }
+  .pensee { display:inline-block; font-size:44px; font-weight:600; padding:22px 32px; border-radius:20px; background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.18); margin-top:22px; }
+  .centre { position:absolute; left:0; right:0; top:50%; transform:translateY(-50%); text-align:center; }
+  /* notifications stylisées (pas des écrans du produit) */
+  .notif { position:absolute; right:110px; width:640px; display:flex; gap:22px; align-items:center; padding:26px 30px; border-radius:24px;
+    background:rgba(255,255,255,.97); color:#0B1537; box-shadow:0 30px 80px rgba(0,0,0,.45); opacity:0; }
+  .notif .ic { width:64px; height:64px; border-radius:18px; display:grid; place-items:center; flex-shrink:0; }
+  .notif b { display:block; font-size:30px; font-weight:800; letter-spacing:-.01em; }
+  .notif span { font-size:23px; color:#5B6478; font-weight:500; }
+  .pilule { display:inline-block; margin-top:44px; padding:18px 34px; border-radius:999px; background:var(--amber); color:var(--navy);
+    font-size:34px; font-weight:800; opacity:0; }
+  #logo { position:absolute; left:50%; top:330px; display:flex; align-items:center; gap:34px; transform:translateX(-50%); opacity:0; }
+  #logo img { width:150px; height:150px; }
+  #logo .mot { font-size:150px; font-weight:800; letter-spacing:-.05em; line-height:1; }
+  .finale { background: radial-gradient(90% 90% at 50% 45%, #18265F 0%, #0B1537 60%, #070D26 100%); }
+</style>
+</head>
+<body>
+
+<section class="scene" id="A">
+  <img class="fond" id="Af" src="nuit.jpg" alt=""><div class="voile"></div>
+  <div class="bloc">
+    <div class="xl t" id="A1">21 h.</div>
+    <div class="l t" id="A2" style="margin-top:40px">Vos livreurs sont rentrés.</div>
+    <div class="l t" id="A3" style="margin-top:12px;color:var(--amber)">Vous, vous comptez encore.</div>
+  </div>
+</section>
+
+<section class="scene" id="B">
+  <img class="fond" id="Bf" src="entrepot.jpg" alt=""><div class="voile-plein"></div>
+  <div class="bloc" style="width:1300px">
+    <div class="t"><span class="pensee t" id="B1">« Il manque 300 DH dans la caisse. »</span></div>
+    <div class="t"><span class="pensee t" id="B2">« Qui a livré le colis de Mme Benali ? »</span></div>
+    <div class="t"><span class="pensee t" id="B3">« Le marchand veut son argent demain. »</span></div>
+  </div>
+</section>
+
+<section class="scene" id="C" style="background:#05091A">
+  <div class="centre"><div class="l t" id="C1">Et si votre journée<br>se gérait <span style="color:var(--amber)">toute seule</span> ?</div></div>
+</section>
+
+<section class="scene" id="D">
+  <img class="fond" id="Df" src="carte-floue.jpg" alt="" style="opacity:.55">
+  <svg id="Dsvg" width="1920" height="1080" style="position:absolute;inset:0"></svg>
+  <div class="voile" style="background:linear-gradient(90deg, rgba(5,9,26,.9) 0%, rgba(5,9,26,.55) 50%, rgba(5,9,26,0) 80%)"></div>
+  <div class="bloc">
+    <div class="l t" id="D1">Vous voyez chaque livreur.</div>
+    <div class="m t" id="D2" style="margin-top:26px">Où il est. Ce qu'il porte. S'il sort de sa zone.</div>
+    <div class="l t" id="D3" style="margin-top:44px;color:var(--amber)">Sans appeler personne.</div>
+  </div>
+</section>
+
+<section class="scene" id="E" style="background:radial-gradient(100% 90% at 75% 40%, #1B2B6B 0%, #0B1537 60%, #070D26 100%)">
+  <div class="bloc" style="width:960px">
+    <div class="l t" id="E1" style="font-size:64px">Les courses partent seules.</div>
+    <div class="l t" id="E2" style="margin-top:20px;color:var(--amber);font-size:64px">Chaque dirham a une trace.</div>
+  </div>
+  <div class="notif" id="N1" style="top:250px"><div class="ic" style="background:#E6F6EE"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#1FA971" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg></div><div><b>Course acceptée</b><span>Yassine · à 2 min du retrait</span></div></div>
+  <div class="notif" id="N2" style="top:440px"><div class="ic" style="background:#FFF3DB"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#C77D00" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.6"/></svg></div><div><b>Livré · 550 DH encaissés</b><span>Preuve enregistrée · 14:32</span></div></div>
+  <div class="notif" id="N3" style="top:630px"><div class="ic" style="background:#E9EDFF"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#3E5BDB" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg></div><div><b>Reversement prêt</b><span>Maison Argane · 12 commandes</span></div></div>
+</section>
+
+<section class="scene" id="F">
+  <img class="fond" id="Ff" src="soulagement.jpg" alt=""><div class="voile"></div>
+  <div class="bloc">
+    <div class="l t" id="F1">Moins d'appels.<br>Plus de contrôle.</div>
+    <div class="l t" id="F2" style="margin-top:34px;color:var(--amber)">Et vous rentrez à l'heure.</div>
+  </div>
+</section>
+
+<section class="scene finale" id="G">
+  <div class="centre">
+    <div class="l t" id="G1">Essayez Portrail 30 jours.</div>
+    <div class="m t" id="G2" style="margin-top:28px">Gratuitement. On installe tout avec vous. Sans engagement.</div>
+    <div class="pilule" id="G3">Offre fondateurs · 10 places</div>
+  </div>
+</section>
+
+<section class="scene finale" id="H">
+  <div id="logo"><img src="symbole.svg" alt=""><span class="mot">Portrail</span></div>
+  <div class="centre" style="top:610px"><div class="m t" id="H1">Votre livraison, sur les rails.</div>
+    <div class="pilule" id="H2" style="margin-top:40px">Demandez votre essai</div></div>
+</section>
+
+<script>
+const DUREE = 45; window.DUREE = DUREE;
+const $ = (s) => document.querySelector(s);
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const ease = (x) => { x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const fen = (t, a, b, f = .5) => Math.min(prog(t, a, a + f), 1 - prog(t, b - f, b));
+function app(id, t, a, d = .7, dy = 26) { const e = $(id), p = ease(prog(t, a, a + d)); e.style.opacity = p; e.style.transform = `translateY(${(1 - p) * dy}px)`; }
+
+// Carte abstraite : trajets fixes (pseudo-aléatoires), points qui avancent.
+let s = 7; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+const svg = $('#Dsvg'), NS = 'http://www.w3.org/2000/svg', trajets = [];
+for (let i = 0; i < 11; i++) {
+  let x = 900 + rnd() * 900, y = 120 + rnd() * 840, d = `M${x} ${y}`;
+  for (let k = 0; k < 6; k++) { x = clamp(x + (rnd() - .5) * 420, 820, 1860); y = clamp(y + (rnd() - .5) * 360, 80, 1000); d += ` L${x} ${y}`; }
+  const p = document.createElementNS(NS, 'path'); p.setAttribute('d', d); p.setAttribute('fill', 'none');
+  p.setAttribute('stroke', 'rgba(140,160,255,.22)'); p.setAttribute('stroke-width', '4'); svg.appendChild(p);
+  const halo = document.createElementNS(NS, 'circle'); halo.setAttribute('r', '30'); halo.setAttribute('fill', 'rgba(245,165,36,.18)'); svg.appendChild(halo);
+  const c = document.createElementNS(NS, 'circle'); c.setAttribute('r', '15'); c.setAttribute('fill', i === 3 ? '#F5A524' : '#7B93FF');
+  c.setAttribute('stroke', '#fff'); c.setAttribute('stroke-width', '4'); svg.appendChild(c);
+  trajets.push({ p, c, halo, L: p.getTotalLength(), v: .025 + rnd() * .03, o: rnd() });
+}
+
+const SCENES = [['#A', 0, 5.6], ['#B', 5.4, 11.1], ['#C', 10.9, 15.1], ['#D', 14.9, 23.1], ['#E', 22.9, 30.1], ['#F', 29.9, 35.1], ['#G', 34.9, 41.1], ['#H', 40.9, 46]];
+window.rendu = async function (t) {
+  for (const [id, a, b] of SCENES) $(id).style.opacity = fen(t, a, b, id === '#A' ? .01 : .45);
+  $('#Af').style.transform = `scale(${1.08 - .06 * prog(t, 0, 5.6)})`;
+  app('#A1', t, .3, .6); app('#A2', t, 1.6); app('#A3', t, 3.1);
+  $('#Bf').style.transform = `scale(${1 + .06 * prog(t, 5.4, 11.1)})`;
+  app('#B1', t, 5.9); app('#B2', t, 7.3); app('#B3', t, 8.7);
+  for (const id of ['#B1', '#B2', '#B3']) $(id).parentElement.style.opacity = 1;
+  app('#C1', t, 11.4, 1.2, 0); $('#C1').style.transform = `scale(${.96 + .04 * ease(prog(t, 11.4, 14))})`;
+  // carte
+  for (const r of trajets) {
+    const k = ((r.o + r.v * (t - 14.9)) % 1 + 1) % 1, pt = r.p.getPointAtLength(k * r.L);
+    r.c.setAttribute('cx', pt.x); r.c.setAttribute('cy', pt.y); r.halo.setAttribute('cx', pt.x); r.halo.setAttribute('cy', pt.y);
+    r.halo.setAttribute('r', 22 + 10 * Math.abs(Math.sin(t * 2 + r.o * 6)));
+  }
+  $('#Df').style.transform = `scale(${1.04 + .04 * prog(t, 14.9, 23.1)})`;
+  app('#D1', t, 15.6); app('#D2', t, 17.2); app('#D3', t, 19.6);
+  app('#E1', t, 23.4); app('#E2', t, 26.6);
+  [['#N1', 23.9], ['#N2', 25.3], ['#N3', 27]].forEach(([id, a]) => { const e = $(id), p = ease(prog(t, a, a + .6)); e.style.opacity = p; e.style.transform = `translateX(${(1 - p) * 120}px)`; });
+  $('#Ff').style.transform = `scale(${1.02 + .06 * prog(t, 29.9, 35.1)})`;
+  app('#F1', t, 30.4); app('#F2', t, 32.2);
+  app('#G1', t, 35.4); app('#G2', t, 36.6); app('#G3', t, 38.2, .6, 16);
+  const f = ease(prog(t, 41.2, 42.2)); $('#logo').style.opacity = f; $('#logo').style.transform = `translateX(-50%) scale(${.92 + .08 * f})`;
+  app('#H1', t, 42.2); app('#H2', t, 42.9, .6, 16);
+};
+window.pret = document.fonts.ready.then(() => Promise.all([...document.images].map((i) => i.decode().catch(() => {}))));
+</script>
+</body>
+</html>
