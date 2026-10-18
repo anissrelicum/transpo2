@@ -42,7 +42,7 @@
 
 <link rel="preload" href="/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/medias/hero.webp?v=2" as="image" type="image/webp" fetchpriority="high" imagesrcset="/medias/hero-600.webp?v=2 600w, /medias/hero.webp?v=2 928w" imagesizes="(max-width: 1023px) min(440px, calc(100vw - 40px)), 480px">
-<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/styles.css?v=2">
 
 <script type="application/ld+json">
 {
@@ -100,7 +100,7 @@
       "audience": { "@type": "BusinessAudience", "audienceType": "Sociétés de livraison et de transport last-mile" },
       "offers": {
         "@type": "Offer",
-        "name": "Essai gratuit de 14 jours",
+        "name": "Essai gratuit de 30 jours",
         "price": "0",
         "priceCurrency": "EUR",
         "availability": "https://schema.org/InStock",
@@ -144,7 +144,7 @@
         { "@type": "Question", "name": "Peut-on exploiter Portrail sous notre propre marque ?",
           "acceptedAnswer": { "@type": "Answer", "text": "Oui, en marque blanche : vos marchands et vos clients travaillent avec votre nom." } },
         { "@type": "Question", "name": "Combien coûte Portrail ?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Le tarif dépend de votre volume mensuel de commandes et de vos besoins. Quatre formules, de l’essai gratuit de 14 jours à l’offre Entreprise sans limite de volume, et un devis établi après la démonstration." } }
+          "acceptedAnswer": { "@type": "Answer", "text": "Le prix dépend du nombre de livreurs : Démarrage à 390 DH par mois jusqu’à 5 livreurs, Pro à 990 DH de 6 à 20 livreurs, Business à 2 490 DH de 21 à 60 livreurs (hors taxes), après 30 jours d’essai gratuit. Au-delà, une offre sur mesure." } }
       ]
     }
   ]
@@ -255,7 +255,7 @@
             </a>
           </div>
           <ul class="heros__points">
-            <li><svg width="18" height="18" aria-hidden="true"><use href="#i-check"/></svg>Essai gratuit de 14 jours</li>
+            <li><svg width="18" height="18" aria-hidden="true"><use href="#i-check"/></svg>Essai gratuit de 30 jours</li>
             <li><svg width="18" height="18" aria-hidden="true"><use href="#i-check"/></svg>Français et arabe</li>
             <li><svg width="18" height="18" aria-hidden="true"><use href="#i-check"/></svg>App livreur hors réseau</li>
           </ul>
@@ -701,40 +701,68 @@
     <div class="conteneur">
       <div class="section__entete section__entete--centre" data-revele>
         <p class="sur-titre">Offres</p>
-        <h2 class="section__titre" id="offres-titre">Une formule à la mesure de votre volume</h2>
-        <p class="section__chapo">Pas de grille publique : le tarif dépend de votre volume et de vos besoins. Commencez par l’essai, nous ajustons ensuite.</p>
+        <h2 class="section__titre" id="offres-titre">Une formule à la taille de votre flotte</h2>
+        <p class="section__chapo">Le prix dépend du nombre de livreurs. Toutes les formules commencent par 30 jours d’essai gratuit.</p>
       </div>
       <ul class="offres">
         <li class="offre" data-revele>
-          <h3>Essai gratuit</h3>
-          <p class="offre__volume">14 jours<span class="offre__unite">sur votre propre espace</span></p>
-          <p class="offre__texte">Pour juger sur pièce, avec vos livreurs, vos marchands et vos courses.</p>
-          <p class="offre__tarif">Gratuit, sans engagement</p>
+          <h3>Essai</h3>
+          <p class="offre__volume">0 DH<span class="offre__unite">pendant 30 jours</span></p>
+          <p class="offre__pour">Pour juger sur pièce, avec vos livreurs et vos marchands.</p>
+          <ul class="offre__liste">
+            <li>Toutes les fonctionnalités de l’offre Pro</li>
+            <li>Mise en route accompagnée</li>
+            <li>Sans engagement</li>
+          </ul>
           <a class="bouton bouton--contour bouton--bloc" href="#demo">Commencer l’essai</a>
         </li>
         <li class="offre" data-revele>
-          <h3>TPE Coursier</h3>
-          <p class="offre__volume">≈ 500<span class="offre__unite">commandes par mois</span></p>
-          <p class="offre__texte">Pour un coursier qui démarre : une équipe resserrée, une ville.</p>
-          <p class="offre__tarif">Tarif selon votre volume</p>
+          <h3>Démarrage</h3>
+          <p class="offre__volume">390 DH<span class="offre__unite">par mois, hors taxes</span></p>
+          <p class="offre__pour">Jusqu’à 5 livreurs</p>
+          <ul class="offre__liste">
+            <li>Portail marchand : commandes, suivi, factures</li>
+            <li>App livreur : journée sur une carte, navigation, preuve photo ou signature, scanner, hors réseau</li>
+            <li>Encaissement à la livraison et caisse du livreur</li>
+            <li>Reversements et factures marchands</li>
+            <li>Suivi en direct pour le client final</li>
+            <li>Tarifs par zone, français et arabe</li>
+          </ul>
           <a class="bouton bouton--contour bouton--bloc" href="#demo">Demander une démo</a>
         </li>
         <li class="offre offre--accent" data-revele>
-          <h3>Transporteur</h3>
-          <p class="offre__volume">≈ 5 000<span class="offre__unite">commandes par mois</span></p>
-          <p class="offre__texte">Pour une exploitation installée : plusieurs zones, une flotte, un dispatch à plusieurs.</p>
-          <p class="offre__tarif">Tarif selon votre volume</p>
+          <h3>Pro</h3>
+          <p class="offre__volume">990 DH<span class="offre__unite">par mois, hors taxes</span></p>
+          <p class="offre__pour">De 6 à 20 livreurs</p>
+          <ul class="offre__liste">
+            <li class="offre__plus">Tout Démarrage, plus :</li>
+            <li>PC flotte : tous vos livreurs en direct, alerte hors zone</li>
+            <li>Affectation automatique, acceptée par le livreur</li>
+            <li>Urgences confiées au livreur le plus proche</li>
+            <li>Tournées optimisées, itinéraires par les rues</li>
+            <li>Délais de livraison, express et alertes de retard</li>
+            <li>Réconciliation de caisse et détection de fraude</li>
+            <li>Analytics et API pour vos marchands</li>
+          </ul>
           <a class="bouton bouton--principal bouton--bloc" href="#demo">Demander une démo</a>
         </li>
         <li class="offre" data-revele>
-          <h3>Entreprise</h3>
-          <p class="offre__volume">Illimité<span class="offre__unite">commandes par mois</span></p>
-          <p class="offre__texte">Pour les réseaux étendus : volume sans limite, conditions sur mesure.</p>
-          <p class="offre__tarif">Tarif selon votre volume</p>
+          <h3>Business</h3>
+          <p class="offre__volume">2 490 DH<span class="offre__unite">par mois, hors taxes</span></p>
+          <p class="offre__pour">De 21 à 60 livreurs</p>
+          <ul class="offre__liste">
+            <li class="offre__plus">Tout Pro, plus :</li>
+            <li>Plusieurs agences, tri en hub et scan</li>
+            <li>Transferts entre villes et retours</li>
+            <li>Véhicules et conformité de la flotte</li>
+            <li>Rôles avancés et journal d’audit</li>
+            <li>Exports comptables</li>
+            <li>Support prioritaire</li>
+          </ul>
           <a class="bouton bouton--contour bouton--bloc" href="#demo">Demander une démo</a>
         </li>
       </ul>
-      <p class="offres__note">Volumes indicatifs. Le devis est établi après la démonstration, sur vos chiffres.</p>
+      <p class="offres__note">Plus de 60 livreurs ? Nous construisons une offre sur mesure. Paiement annuel : 2 mois offerts.</p>
     </div>
   </section>
 
@@ -785,7 +813,7 @@
         </details>
         <details>
           <summary>Combien coûte Portrail ?</summary>
-          <p class="faq__reponse">Le tarif dépend de votre volume mensuel de commandes et de vos besoins. Quatre formules, de l’essai gratuit de 14 jours à l’offre Entreprise sans limite de volume, et un devis établi après la démonstration.</p>
+          <p class="faq__reponse">Le prix dépend du nombre de livreurs : Démarrage à 390 DH par mois jusqu’à 5 livreurs, Pro à 990 DH de 6 à 20 livreurs, Business à 2 490 DH de 21 à 60 livreurs (hors taxes), après 30 jours d’essai gratuit. Au-delà, une offre sur mesure.</p>
         </details>
       </div>
     </div>
@@ -804,7 +832,7 @@
         </p>
         <dl class="contact__infos">
           <div><dt>Réponse</dt><dd>Sous deux jours ouvrés, par la personne qui suivra votre dossier</dd></div>
-          <div><dt>Essai</dt><dd>14 jours gratuits sur votre propre espace</dd></div>
+          <div><dt>Essai</dt><dd>30 jours gratuits sur votre propre espace</dd></div>
           <div><dt>Interfaces</dt><dd>Français et arabe</dd></div>
         </dl>
         <figure class="contact__casting">

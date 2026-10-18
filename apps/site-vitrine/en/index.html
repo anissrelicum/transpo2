@@ -42,7 +42,7 @@
 
 <link rel="preload" href="/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/medias/hero.webp?v=2" as="image" type="image/webp" fetchpriority="high" imagesrcset="/medias/hero-600.webp?v=2 600w, /medias/hero.webp?v=2 928w" imagesizes="(max-width: 1023px) min(440px, calc(100vw - 40px)), 480px">
-<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/styles.css?v=2">
 
 <script type="application/ld+json">
 {
@@ -100,7 +100,7 @@
       "audience": { "@type": "BusinessAudience", "audienceType": "Last-mile delivery and courier companies" },
       "offers": {
         "@type": "Offer",
-        "name": "14-day free trial",
+        "name": "30-day free trial",
         "price": "0",
         "priceCurrency": "EUR",
         "availability": "https://schema.org/InStock",
@@ -144,7 +144,7 @@
         { "@type": "Question", "name": "Can we run Portrail under our own brand?",
           "acceptedAnswer": { "@type": "Answer", "text": "Yes, as a white-label product: your merchants and customers work with your name." } },
         { "@type": "Question", "name": "How much does Portrail cost?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Pricing depends on your monthly order volume and your needs. There are four plans, from the 14-day free trial to the Enterprise plan with unlimited volume, and a quote is prepared after the demo." } }
+          "acceptedAnswer": { "@type": "Answer", "text": "Pricing depends on the number of couriers: Starter at MAD 390 per month up to 5 couriers, Pro at MAD 990 for 6 to 20 couriers, Business at MAD 2,490 for 21 to 60 couriers (excl. tax), after a 30-day free trial. Beyond that, a custom plan." } }
       ]
     }
   ]
@@ -255,7 +255,7 @@
             </a>
           </div>
           <ul class="heros__points">
-            <li><svg width="18" height="18" aria-hidden="true"><use href="#i-check"/></svg>14-day free trial</li>
+            <li><svg width="18" height="18" aria-hidden="true"><use href="#i-check"/></svg>30-day free trial</li>
             <li><svg width="18" height="18" aria-hidden="true"><use href="#i-check"/></svg>French and Arabic</li>
             <li><svg width="18" height="18" aria-hidden="true"><use href="#i-check"/></svg>Offline driver app</li>
           </ul>
@@ -700,40 +700,68 @@
     <div class="conteneur">
       <div class="section__entete section__entete--centre" data-revele>
         <p class="sur-titre">Plans</p>
-        <h2 class="section__titre" id="offres-titre">A plan sized to your volume</h2>
-        <p class="section__chapo">No public price list: pricing depends on your volume and your needs. Start with the trial, and we adjust from there.</p>
+        <h2 class="section__titre" id="offres-titre">A plan sized to your fleet</h2>
+        <p class="section__chapo">Pricing depends on the number of couriers. Every plan starts with a 30-day free trial.</p>
       </div>
       <ul class="offres">
         <li class="offre" data-revele>
-          <h3>Free trial</h3>
-          <p class="offre__volume">14 days<span class="offre__unite">on your own workspace</span></p>
-          <p class="offre__texte">See it for yourself, with your drivers, your merchants and your deliveries.</p>
-          <p class="offre__tarif">Free, no commitment</p>
+          <h3>Trial</h3>
+          <p class="offre__volume">MAD 0<span class="offre__unite">for 30 days</span></p>
+          <p class="offre__pour">Try it for real, with your couriers and merchants.</p>
+          <ul class="offre__liste">
+            <li>Every feature of the Pro plan</li>
+            <li>Guided onboarding</li>
+            <li>No commitment</li>
+          </ul>
           <a class="bouton bouton--contour bouton--bloc" href="#demo">Start the trial</a>
         </li>
         <li class="offre" data-revele>
-          <h3>Small courier</h3>
-          <p class="offre__volume">≈ 500<span class="offre__unite">orders per month</span></p>
-          <p class="offre__texte">For a courier getting started: a small team, one city.</p>
-          <p class="offre__tarif">Priced on your volume</p>
+          <h3>Starter</h3>
+          <p class="offre__volume">MAD 390<span class="offre__unite">per month, excl. tax</span></p>
+          <p class="offre__pour">Up to 5 couriers</p>
+          <ul class="offre__liste">
+            <li>Merchant portal: orders, tracking, invoices</li>
+            <li>Courier app: day on a map, navigation, photo or signature proof, scanner, offline</li>
+            <li>Cash on delivery and courier cash box</li>
+            <li>Merchant payouts and invoices</li>
+            <li>Live tracking for the end customer</li>
+            <li>Zone pricing, French and Arabic</li>
+          </ul>
           <a class="bouton bouton--contour bouton--bloc" href="#demo">Book a demo</a>
         </li>
         <li class="offre offre--accent" data-revele>
-          <h3>Carrier</h3>
-          <p class="offre__volume">≈ 5,000<span class="offre__unite">orders per month</span></p>
-          <p class="offre__texte">For an established operation: several zones, a fleet, a dispatch team.</p>
-          <p class="offre__tarif">Priced on your volume</p>
+          <h3>Pro</h3>
+          <p class="offre__volume">MAD 990<span class="offre__unite">per month, excl. tax</span></p>
+          <p class="offre__pour">6 to 20 couriers</p>
+          <ul class="offre__liste">
+            <li class="offre__plus">Everything in Starter, plus:</li>
+            <li>Live fleet: every courier on the map, out-of-zone alerts</li>
+            <li>Automatic dispatch, accepted by the courier</li>
+            <li>Urgent orders go to the nearest courier</li>
+            <li>Optimised routes, street-by-street</li>
+            <li>Delivery deadlines, express and late alerts</li>
+            <li>Cash reconciliation and fraud detection</li>
+            <li>Analytics and an API for your merchants</li>
+          </ul>
           <a class="bouton bouton--principal bouton--bloc" href="#demo">Book a demo</a>
         </li>
         <li class="offre" data-revele>
-          <h3>Enterprise</h3>
-          <p class="offre__volume">Unlimited<span class="offre__unite">orders per month</span></p>
-          <p class="offre__texte">For large networks: no volume cap, tailored terms.</p>
-          <p class="offre__tarif">Priced on your volume</p>
+          <h3>Business</h3>
+          <p class="offre__volume">MAD 2,490<span class="offre__unite">per month, excl. tax</span></p>
+          <p class="offre__pour">21 to 60 couriers</p>
+          <ul class="offre__liste">
+            <li class="offre__plus">Everything in Pro, plus:</li>
+            <li>Several branches, hub sorting and scanning</li>
+            <li>Inter-city transfers and returns</li>
+            <li>Vehicles and fleet compliance</li>
+            <li>Advanced roles and audit log</li>
+            <li>Accounting exports</li>
+            <li>Priority support</li>
+          </ul>
           <a class="bouton bouton--contour bouton--bloc" href="#demo">Book a demo</a>
         </li>
       </ul>
-      <p class="offres__note">Volumes are indicative. Your quote is prepared after the demo, on your own numbers.</p>
+      <p class="offres__note">More than 60 couriers? We build a custom plan. Annual billing: 2 months free.</p>
     </div>
   </section>
 
@@ -784,7 +812,7 @@
         </details>
         <details>
           <summary>How much does Portrail cost?</summary>
-          <p class="faq__reponse">Pricing depends on your monthly order volume and your needs. There are four plans, from the 14-day free trial to the Enterprise plan with unlimited volume, and a quote is prepared after the demo.</p>
+          <p class="faq__reponse">Pricing depends on the number of couriers: Starter at MAD 390 per month up to 5 couriers, Pro at MAD 990 for 6 to 20 couriers, Business at MAD 2,490 for 21 to 60 couriers (excl. tax), after a 30-day free trial. Beyond that, a custom plan.</p>
         </details>
       </div>
     </div>
@@ -802,7 +830,7 @@
         </p>
         <dl class="contact__infos">
           <div><dt>Reply</dt><dd>Within two business days, from the person who will follow your account</dd></div>
-          <div><dt>Trial</dt><dd>14 days free on your own workspace</dd></div>
+          <div><dt>Trial</dt><dd>30 days free on your own workspace</dd></div>
           <div><dt>Interfaces</dt><dd>French and Arabic</dd></div>
         </dl>
         <figure class="contact__casting">

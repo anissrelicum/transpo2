@@ -1338,3 +1338,13 @@ strong { color: var(--encre); font-weight: 650; }
 /* page 404 : le héros seul, plein écran */
 .page-404 { min-height: 100vh; margin-top: 0; padding-top: clamp(40px, 8vw, 96px); }
 .page-404 .heros__titre { margin-top: 56px; }
+
+/* Offres : ce que chaque formule contient. */
+.offre__pour { margin-top: 10px; font-weight: 700; color: var(--texte, inherit); }
+.offre--accent .offre__pour { color: var(--ambre); }
+.offre__liste { list-style: none; margin: 14px 0 0; padding: 14px 0 0; border-top: 1px solid var(--ligne, rgba(0,0,0,.08)); flex: 1; display: grid; gap: 8px; align-content: start; font-size: 0.92rem; color: var(--discret); }
+.offre--accent .offre__liste { border-top-color: var(--marine-ligne); color: #C3CADF; }
+.offre__liste li { position: relative; padding-inline-start: 20px; }
+.offre__liste li::before { content: ""; position: absolute; inset-inline-start: 2px; top: 0.45em; width: 9px; height: 5px; border-inline-start: 2px solid var(--ambre); border-bottom: 2px solid var(--ambre); transform: rotate(-45deg); }
+.offre__liste li.offre__plus { padding-inline-start: 0; font-weight: 700; color: inherit; }
+.offre__liste li.offre__plus::before { display: none; }
