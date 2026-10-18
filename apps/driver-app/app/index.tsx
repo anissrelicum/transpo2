@@ -9,11 +9,14 @@ import Svg, { Path, Circle } from 'react-native-svg';
 import { router, Stack } from 'expo-router';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
-import { demanderLaPermission, pushDisponible } from '../lib/push';
+import { demanderLaPermission, pushDisponible, permissionDejaAccordee } from '../lib/push';
 import { publicClient, setSession, restoreSession } from '../lib/api';
 import { useTheme, resolveColor } from '../lib/theme';
 import { useLanguage } from '../lib/i18n';
-import { PersonIcon, CameraIcon, PrimaryBtn, BottomAction } from '../components/shell';
+import { CameraIcon, PrimaryBtn, BottomAction } from '../components/shell';
+import { Bouton, MARQUE } from '../components/ui';
+import { Logo } from '../components/Logo';
+import { readJson, writeJson } from '../lib/storage';
 import { touch, radius, space } from '@transpo/design-tokens';
 
 // -----------------------------------------------------------------------------
@@ -28,24 +31,6 @@ function iconProps(size: number, color: string) {
     width: size, height: size, viewBox: '0 0 24 24', fill: 'none',
     stroke: color, strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const,
   };
-}
-function RocketIcon({ size = 32, color }: { size?: number; color: string }) {
-  return (
-    <Svg {...iconProps(size, color)}>
-      <Path d="M12 3c2.2 1.8 3.6 4.8 3.6 8 0 1.7-.5 3.1-.9 3.9l-2.7 2.6-2.7-2.6c-.4-.8-.9-2.2-.9-3.9 0-3.2 1.4-6.2 3.6-8Z" />
-      <Path d="M9.3 14.8l-2.4.9.9-2.4" />
-      <Path d="M14.7 14.8l2.4.9-.9-2.4" />
-      <Circle cx="12" cy="9.5" r="1.4" fill={color} stroke="none" />
-    </Svg>
-  );
-}
-function LockIcon({ size = 18, color }: { size?: number; color: string }) {
-  return (
-    <Svg {...iconProps(size, color)}>
-      <Path d="M6 10.5V8a6 6 0 0 1 12 0v2.5" />
-      <Path d="M5 10.5h14a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-8.5a1 1 0 0 1 1-1Z" />
-    </Svg>
-  );
 }
 function TargetIcon({ size = 22, color }: { size?: number; color: string }) {
   return (
@@ -86,37 +71,37 @@ type Step = 'login' | 'perms';
 
 const L = {
   fr: {
-    brand: 'Transpo Livreur',
-    subtitle: 'Connectez-vous pour démarrer votre journée.',
-    org: 'Organisation', orgPlaceholder: 'ex. rabatexpress', email: 'E-mail', password: 'Mot de passe',
+    brand: 'Portrail',
+    subtitle: 'Bonjour 👋\nPrêt pour la tournée ?',
+    org: 'Société', orgPlaceholder: 'ex. rabatexpress', email: 'E-mail', password: 'Mot de passe',
     login: 'Se connecter', forgot: 'Mot de passe oublié ?', becomeDriver: 'Devenir livreur',
     error: 'Identifiants invalides ou serveur injoignable.',
     permsTitle: 'Autorisations', permsSub: 'Trois accès sont nécessaires pour livrer.',
     permsInfo: 'Vous pourrez ajuster ces accès à tout moment dans les réglages du téléphone.',
-    granted: 'Accordé', allow: 'Autoriser', start: 'Commencer ma journée',
+    granted: 'Accordé', allow: 'Autoriser', start: 'Continuer',
     count: (n: number) => `${n}/3 autorisations`,
     restartTitle: 'Redémarrage nécessaire', restartBody: 'La mise en page en arabe (droite à gauche) sera appliquée au prochain lancement de l’app.',
     ok: 'OK',
     perms: {
-      gps: { title: 'Localisation', desc: 'Suivi en temps réel pendant vos courses, même en arrière-plan.' },
-      cam: { title: 'Caméra', desc: 'Photographier la preuve de livraison des colis.' },
-      notif: { title: 'Notifications', desc: 'Recevoir vos nouvelles missions et alertes de dispatch.' },
+      gps: { title: 'Localisation', desc: 'Pour vous guider et vous proposer les missions proches, pendant votre journée.' },
+      cam: { title: 'Caméra', desc: 'Pour lire les étiquettes et la preuve de livraison.' },
+      notif: { title: 'Notifications', desc: 'Pour ne rater aucune mission proposée.' },
     } as Record<PermId, { title: string; desc: string }>,
   },
   ar: {
-    brand: 'ترانسبو للسائقين',
-    subtitle: 'سجّل الدخول لبدء يومك.',
+    brand: 'Portrail',
+    subtitle: 'مرحباً 👋\nمستعد للجولة؟',
     org: 'المؤسسة', orgPlaceholder: 'مثال: rabatexpress', email: 'البريد الإلكتروني', password: 'كلمة المرور',
     login: 'تسجيل الدخول', forgot: 'نسيت كلمة المرور؟', becomeDriver: 'كن سائقًا',
     error: 'بيانات الدخول غير صحيحة أو الخادم غير متاح.',
     permsTitle: 'الأذونات', permsSub: 'ثلاثة أذونات ضرورية للتوصيل.',
     permsInfo: 'يمكنك تعديل هذه الأذونات في أي وقت من إعدادات الهاتف.',
-    granted: 'مُمنوح', allow: 'السماح', start: 'ابدأ يومي',
+    granted: 'مُمنوح', allow: 'السماح', start: 'متابعة',
     count: (n: number) => `${n}/3 أذونات`,
     restartTitle: 'إعادة تشغيل ضرورية', restartBody: 'سيُطبَّق التخطيط من اليمين إلى اليسار عند إعادة تشغيل التطبيق.',
     ok: 'حسنًا',
     perms: {
-      gps: { title: 'الموقع', desc: 'تتبع مباشر أثناء رحلاتك، حتى في الخلفية.' },
+      gps: { title: 'الموقع', desc: 'لإرشادك واقتراح المهام القريبة منك خلال يومك.' },
       cam: { title: 'الكاميرا', desc: 'تصوير إثبات تسليم الطرود.' },
       notif: { title: 'الإشعارات', desc: 'استلام مهامك الجديدة وتنبيهات التوزيع.' },
     } as Record<PermId, { title: string; desc: string }>,
@@ -146,7 +131,8 @@ export default function LoginScreen() {
   // précédente (l'OS les mémorise) — pas besoin de repasser par l'étape perms.
   React.useEffect(() => {
     (async () => {
-      if (await restoreSession()) { router.replace('/(tabs)/missions'); return; }
+      if (await restoreSession()) { router.replace('/(tabs)/journee'); return; }
+      setTenant(await readJson<string>('transpo.societe', ''));
       setBooting(false);
     })();
   }, []);
@@ -157,6 +143,16 @@ export default function LoginScreen() {
       const slug = tenant.trim();
       const res = await publicClient(slug).login(email.trim(), password);
       await setSession({ token: res.token, name: res.name, tenant: slug });
+      await writeJson('transpo.societe', slug);
+      // Accès déjà accordés (réinstallation, second livreur sur le même téléphone) : rien à
+      // redemander, on n'affiche pas un écran « 0/3 » qui ment.
+      const deja = {
+        gps: (await Location.getForegroundPermissionsAsync()).granted,
+        cam: (await ImagePicker.getCameraPermissionsAsync()).granted,
+        notif: await permissionDejaAccordee(),
+      };
+      if (deja.gps && deja.cam && deja.notif) { router.replace('/(tabs)/journee'); return; }
+      setGranted(deja);
       setStep('perms');
     } catch {
       setError(t.error);
@@ -247,7 +243,7 @@ export default function LoginScreen() {
           </View>
         </ScrollView>
         <BottomAction>
-          <PrimaryBtn disabled={!allGranted} onPress={() => router.replace('/(tabs)/missions')}>
+          <PrimaryBtn disabled={!allGranted} onPress={() => router.replace('/(tabs)/journee')}>
             {allGranted ? t.start : t.count(grantedCount)}
           </PrimaryBtn>
         </BottomAction>
@@ -256,75 +252,69 @@ export default function LoginScreen() {
   }
 
   const valid = !!(tenant.trim() && email.trim() && password);
+  const champ = (label: string, input: React.ReactNode) => (
+    <View style={[s.champ, { backgroundColor: MARQUE.navy2 }]}>
+      <Text style={[s.champLib, { textAlign: rtl ? 'right' : 'left' }]}>{label}</Text>
+      {input}
+    </View>
+  );
 
+  // Connexion (maquette validée, acte 1) : fond marine de la marque, un seul bouton ambre.
+  // La société est mémorisée après la première connexion.
   return (
-    <ScrollView
-      style={[s.flex, { backgroundColor: colors.bg }]}
-      contentContainerStyle={s.scrollWrap}
-      keyboardShouldPersistTaps="handled"
-    >
+    <View style={[s.flex, { backgroundColor: MARQUE.navy }]}>
       <Stack.Screen options={{ headerShown: false }} />
-      <Pressable onPress={onToggleLanguage} style={s.langToggle} hitSlop={8}>
-        <Text style={[s.langTxt, { color: colors.muted }]}>{lang === 'ar' ? 'FR' : 'AR'}</Text>
-      </Pressable>
-
-      <View style={s.brand}>
-        <View style={[s.logo, { backgroundColor: colors.indigo9 }]}>
-          <RocketIcon size={32} color="white" />
+      <ScrollView contentContainerStyle={s.scrollWrap} keyboardShouldPersistTaps="handled">
+        <View style={[s.marque, { flexDirection: rtl ? 'row-reverse' : 'row' }]}>
+          <Logo taille={56} />
+          <Text style={s.nomMarque}>Portrail</Text>
         </View>
-        <Text style={[s.title, { color: colors.text }]}>{t.brand}</Text>
-        <Text style={[s.sub, { color: colors.muted }]}>{t.subtitle}</Text>
-      </View>
-
-      <View style={[s.card, { backgroundColor: colors.panel, borderColor: colors.border }]}>
-        {error && <Text style={[s.error, { color: errorColor }]}>{error}</Text>}
-
-        <Text style={[s.label, { color: colors.text, textAlign: rtl ? 'right' : 'left' }]}>{t.org}</Text>
-        <TextInput
-          style={[s.input, { borderColor: colors.border, color: colors.text, textAlign: rtl ? 'right' : 'left' }]}
-          value={tenant} onChangeText={setTenant} autoCapitalize="none"
-          placeholder={t.orgPlaceholder} placeholderTextColor={colors.muted}
-          testID="login-organisation" accessibilityLabel={t.org}
-        />
-
-        <Text style={[s.label, { color: colors.text, textAlign: rtl ? 'right' : 'left' }]}>{t.email}</Text>
-        <View style={[s.inputRow, { borderColor: colors.border, flexDirection: rtl ? 'row-reverse' : 'row' }]}>
-          <PersonIcon size={16} color={colors.muted} />
-          <TextInput
-            style={[s.inputFlex, { color: colors.text, textAlign: rtl ? 'right' : 'left' }]}
-            value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" autoComplete="email"
-            testID="login-email" accessibilityLabel={t.email}
-          />
+        <Text style={[s.accroche, { textAlign: rtl ? 'right' : 'left' }]}>{t.subtitle}</Text>
+        {error && <Text style={[s.error, { color: '#FF9B9B', textAlign: rtl ? 'right' : 'left' }]}>{error}</Text>}
+        <View style={{ gap: 12, marginTop: 24 }}>
+          {champ(t.org, (
+            <TextInput style={[s.champInput, { textAlign: rtl ? 'right' : 'left' }]} value={tenant} onChangeText={setTenant}
+              autoCapitalize="none" autoCorrect={false} placeholder={t.orgPlaceholder} placeholderTextColor="#6F7CB0"
+              testID="login-organisation" accessibilityLabel={t.org} />
+          ))}
+          {champ(t.email, (
+            <TextInput style={[s.champInput, { textAlign: rtl ? 'right' : 'left' }]} value={email} onChangeText={setEmail}
+              autoCapitalize="none" keyboardType="email-address" autoComplete="email"
+              testID="login-email" accessibilityLabel={t.email} />
+          ))}
+          {champ(t.password, (
+            <TextInput style={[s.champInput, { textAlign: rtl ? 'right' : 'left' }]} value={password} onChangeText={setPassword}
+              secureTextEntry autoComplete="password" testID="login-mot-de-passe" accessibilityLabel={t.password} />
+          ))}
         </View>
-
-        <Text style={[s.label, { color: colors.text, textAlign: rtl ? 'right' : 'left' }]}>{t.password}</Text>
-        <View style={[s.inputRow, { borderColor: colors.border, flexDirection: rtl ? 'row-reverse' : 'row' }]}>
-          <LockIcon size={16} color={colors.muted} />
-          <TextInput
-            style={[s.inputFlex, { color: colors.text, textAlign: rtl ? 'right' : 'left' }]}
-            value={password} onChangeText={setPassword} secureTextEntry autoComplete="password"
-            testID="login-mot-de-passe" accessibilityLabel={t.password}
-          />
-        </View>
-
-        <View style={{ marginTop: space[5] }}>
-          <PrimaryBtn testID="login-valider" onPress={submit} disabled={!valid} loading={loading}>{t.login}</PrimaryBtn>
-        </View>
+      </ScrollView>
+      <View style={s.basConnexion}>
+        <Bouton testID="login-valider" variante="marque" onPress={submit} disabled={!valid} loading={loading}>{t.login}</Bouton>
         <View style={[s.links, { flexDirection: rtl ? 'row-reverse' : 'row' }]}>
-          <Text style={[s.linkMuted, { color: colors.muted }]}>{t.forgot}</Text>
           <Pressable onPress={() => router.push('/onboarding')} hitSlop={8}>
-            <Text style={[s.link, { color: colors.indigo9 }]}>{t.becomeDriver}</Text>
+            <Text style={s.lienClair}>{t.becomeDriver}</Text>
+          </Pressable>
+          <Pressable onPress={onToggleLanguage} hitSlop={8} accessibilityRole="button">
+            <Text style={s.lienClair}>{lang === 'ar' ? 'Français' : 'العربية'}</Text>
           </Pressable>
         </View>
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
 const s = StyleSheet.create({
   flex: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  scrollWrap: { flexGrow: 1, justifyContent: 'center', padding: space[5] },
+  scrollWrap: { flexGrow: 1, padding: 24, paddingTop: 72 },
+  marque: { alignItems: 'center', gap: 12 },
+  nomMarque: { color: '#fff', fontSize: 26, fontWeight: '800' },
+  accroche: { color: '#fff', fontSize: 30, fontWeight: '800', marginTop: 40, lineHeight: 36 },
+  champ: { borderRadius: 14, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 6 },
+  champLib: { color: '#9FB0E8', fontSize: 12, fontWeight: '700', letterSpacing: 0.7, textTransform: 'uppercase' },
+  champInput: { color: '#fff', fontSize: 17, minHeight: 40 },
+  basConnexion: { padding: 24, paddingBottom: 36, gap: 14 },
+  lienClair: { color: '#C9D1F2', fontSize: 14, fontWeight: '600' },
   langToggle: { position: 'absolute', top: space[5], right: space[5], minWidth: touch.min, minHeight: touch.min, alignItems: 'center', justifyContent: 'center' },
   langTxt: { fontSize: 13, fontWeight: '700' },
   brand: { alignItems: 'center', marginBottom: space[5] },

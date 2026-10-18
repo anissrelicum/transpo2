@@ -1,204 +1,173 @@
-// Échec de livraison — cf. maquette `Fail`. Endpoint réel déployé :
-// `driverFail(ref, reason, idemKey)` → POST /v1/driver/orders/:ref/fail, motif
-// obligatoire (400 sinon côté API), déclarable uniquement en statut LIVRAISON,
-// délègue à `ReturnsService.fail` → commande `ECHOUEE` + retour `A_TRAITER`.
-// Passe par la file hors ligne comme les deux autres actions (`kind: 'fail'`,
-// déjà porté par le tech lead dans `lib/outbox.ts` — non modifié ici).
+// Échec de livraison en deux touchers (maquette validée, acte 5) : de gros motifs au lieu
+// d'un champ texte, puis une confirmation. Endpoint : `driverFail(ref, reason, idemKey)`,
+// déclarable uniquement en statut LIVRAISON, via la file hors ligne (`kind: 'fail'`) ;
+// le serveur passe la commande en ECHOUEE et ouvre un retour que l'agence traite.
 import * as React from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView, ActivityIndicator, TextInput, Alert } from 'react-native';
 import { useLocalSearchParams, router, Stack } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Order } from '@transpo/domain';
-import { radius, space, touch } from '@transpo/design-tokens';
 import { authedClient, idemKey } from '../../../lib/api';
 import { readJson, writeJson } from '../../../lib/storage';
 import { enqueue, applyPending } from '../../../lib/outbox';
 import { useOutbox } from '../../../lib/useOutbox';
+import { CACHE_MISSIONS } from '../../../lib/useJournee';
 import { useTheme } from '../../../lib/theme';
 import { useLanguage } from '../../../lib/i18n';
-import { ScreenHead, BottomAction, PrimaryBtn } from '../../../components/shell';
+import { Bouton, Carte, Bandeau, Pastille, useTon } from '../../../components/ui';
+import { IcRetour, IcCheck } from '../../../components/icones';
 
-const CACHE_KEY = 'transpo.missions.v1';
-
-// Motifs normalisés — cf. maquette `REASONS`. Aucun enum équivalent côté
-// `@transpo/domain` (le motif est un texte libre côté API, cf. driver.service.ts) :
-// ce n'est donc pas une redéfinition de source domaine, juste une liste d'aide
-// à la saisie propre à cet écran.
-const REASONS: ReadonlyArray<{ fr: string; ar: string }> = [
-  { fr: 'Destinataire absent', ar: 'المستلم غائب' },
-  { fr: 'Adresse introuvable', ar: 'العنوان غير موجود' },
-  { fr: 'Refus du colis', ar: 'رفض الطرد' },
-  { fr: 'Téléphone injoignable', ar: 'الهاتف لا يُجاب' },
-  { fr: 'Colis endommagé', ar: 'الطرد تالف' },
-  { fr: 'Autre motif', ar: 'سبب آخر' },
+// Le motif part en français (langue de référence du back-office), quelle que soit la langue de l'app.
+const MOTIFS: ReadonlyArray<{ ic: string; fr: string; ar: string; aideFr?: string; aideAr?: string }> = [
+  { ic: '📵', fr: 'Client injoignable', ar: 'الزبون لا يجيب', aideFr: 'Appels sans réponse', aideAr: 'مكالمات بدون رد' },
+  { ic: '🏠', fr: 'Destinataire absent', ar: 'المستلم غائب' },
+  { ic: '🧭', fr: 'Adresse introuvable', ar: 'العنوان غير موجود' },
+  { ic: '✋', fr: 'Refus du colis', ar: 'رفض الطرد' },
+  { ic: '💵', fr: 'Le client n’a pas l’argent', ar: 'الزبون لا يملك المبلغ' },
+  { ic: '📦', fr: 'Colis endommagé', ar: 'الطرد تالف' },
+  { ic: '✏️', fr: 'Autre motif', ar: 'سبب آخر' },
 ];
 
 const T = {
   fr: {
-    title: 'Échec de livraison',
-    intro: 'Indiquez un motif normalisé. La commande passera en retour.',
-    reasonLabel: 'Motif', notesLabel: 'Notes complémentaires (optionnel)',
-    notesPlaceholder: 'Précisez le contexte (ex. : 2 appels sans réponse à 13h05 et 13h20)',
-    submit: 'Passer en retour',
-    confirmTitle: 'Confirmer l’échec ?',
-    confirmBody: (reason: string) => `Motif : « ${reason} ». La commande sera renvoyée vers le marchand.`,
-    cancel: 'Annuler', confirm: 'Confirmer le retour',
-    notFoundTitle: 'Commande introuvable', notFoundBody: 'Elle a peut-être déjà été traitée.',
-    backToMissions: 'Retour aux missions',
-    wrongStatus: 'L’échec ne peut être déclaré qu’en cours de livraison.',
+    titre: 'Un problème ?', confirmer: 'Confirmer l’échec', choisir: 'Choisissez un motif',
+    precision: 'Précision (facultatif)', placeholder: 'Ex. : 2 appels sans réponse à 13h05 et 13h20',
+    suite: 'Le colis passe en retour : l’agence décide de la suite (nouvelle tentative ou retour au marchand).',
+    confTitre: 'Confirmer l’échec ?', confCorps: (m: string) => `Motif : « ${m} ».`, annuler: 'Annuler', ok: 'Confirmer',
+    introuvable: 'Commande introuvable', retour: 'Retour à ma journée',
+    mauvaisStatut: 'L’échec ne peut être déclaré qu’en cours de livraison.',
   },
   ar: {
-    title: 'فشل التسليم',
-    intro: 'حدد سبباً معتمداً. ستتحول الشحنة إلى إرجاع.',
-    reasonLabel: 'السبب', notesLabel: 'ملاحظات إضافية (اختياري)',
-    notesPlaceholder: 'وضّح السياق (مثال: مكالمتان دون رد الساعة 13:05 و13:20)',
-    submit: 'تحويل إلى إرجاع',
-    confirmTitle: 'تأكيد الفشل؟',
-    confirmBody: (reason: string) => `السبب: « ${reason} ». ستُعاد الشحنة إلى التاجر.`,
-    cancel: 'إلغاء', confirm: 'تأكيد الإرجاع',
-    notFoundTitle: 'الشحنة غير موجودة', notFoundBody: 'ربما تمت معالجتها بالفعل.',
-    backToMissions: 'العودة إلى المهام',
-    wrongStatus: 'لا يمكن الإبلاغ عن الفشل إلا أثناء التسليم.',
+    titre: 'هل هناك مشكلة؟', confirmer: 'تأكيد الفشل', choisir: 'اختر سبباً',
+    precision: 'توضيح (اختياري)', placeholder: 'مثال: مكالمتان دون رد الساعة 13:05 و13:20',
+    suite: 'يتحول الطرد إلى إرجاع: الوكالة تقرر الخطوة التالية (محاولة جديدة أو إرجاع للتاجر).',
+    confTitre: 'تأكيد الفشل؟', confCorps: (m: string) => `السبب: « ${m} ».`, annuler: 'إلغاء', ok: 'تأكيد',
+    introuvable: 'الشحنة غير موجودة', retour: 'العودة إلى يومي',
+    mauvaisStatut: 'لا يمكن الإبلاغ عن الفشل إلا أثناء التسليم.',
   },
-} as const;
+};
 
-export default function Fail() {
+export default function Echec() {
   const { ref } = useLocalSearchParams<{ ref: string }>();
   const refStr = String(ref);
   const { colors } = useTheme();
   const { lang, rtl } = useLanguage();
-  const t = T[lang === 'ar' ? 'ar' : 'fr'];
+  const t = T[lang];
+  const insets = useSafeAreaInsets();
+  const indigo = useTon('indigo');
+  const row = { flexDirection: rtl ? 'row-reverse' as const : 'row' as const };
+  const align = { textAlign: rtl ? 'right' as const : 'left' as const };
 
-  const [orders, setOrders] = React.useState<Order[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [busy, setBusy] = React.useState(false);
-  const [reasonIdx, setReasonIdx] = React.useState(0);
+  const [missions, setMissions] = React.useState<Order[]>([]);
+  const [chargement, setChargement] = React.useState(true);
+  const [occupe, setOccupe] = React.useState(false);
+  const [motif, setMotif] = React.useState<number | null>(null);
   const [notes, setNotes] = React.useState('');
   const { pending, sync } = useOutbox();
 
-  const reload = React.useCallback(async () => {
-    try {
-      const fresh = await authedClient().getMissions();
-      setOrders(fresh);
-      await writeJson(CACHE_KEY, fresh);
-    } catch {
-      setOrders(await readJson<Order[]>(CACHE_KEY, []));
-    } finally {
-      setLoading(false);
-    }
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const frais = await authedClient().getMissions();
+        setMissions(frais);
+        await writeJson(CACHE_MISSIONS, frais);
+      } catch {
+        setMissions(await readJson<Order[]>(CACHE_MISSIONS, []));
+      } finally {
+        setChargement(false);
+      }
+    })();
   }, []);
 
-  React.useEffect(() => { reload(); }, [reload]);
+  const o = applyPending(missions, pending).find((x) => x.ref === refStr) ?? null;
 
-  const order = applyPending(orders, pending).find((o) => o.ref === refStr) ?? null;
-
-  async function submit() {
-    if (!order) return;
-    setBusy(true);
+  async function envoyer() {
+    if (!o || motif === null) return;
+    setOccupe(true);
     try {
-      // Le motif transmis reste en français (langue de référence de l'API/back-office),
-      // avec les notes complémentaires ajoutées si saisies.
-      const reason = notes.trim() ? `${REASONS[reasonIdx]!.fr} — ${notes.trim()}` : REASONS[reasonIdx]!.fr;
-      await enqueue({ kind: 'fail', ref: order.ref, reason, idemKey: idemKey(order.ref, 'fail') });
+      const m = MOTIFS[motif]!.fr;
+      const reason = notes.trim() ? `${m} — ${notes.trim()}` : m;
+      await enqueue({ kind: 'fail', ref: o.ref, reason, idemKey: idemKey(o.ref, 'fail') });
       await sync();
-      router.replace('/(tabs)/missions');
+      router.replace('/(tabs)/journee');
     } finally {
-      setBusy(false);
+      setOccupe(false);
     }
   }
 
-  function confirmFail() {
-    if (!order) return;
-    if (order.status !== 'LIVRAISON') {
-      Alert.alert(t.title, t.wrongStatus);
-      return;
-    }
-    const label = REASONS[reasonIdx]![lang === 'ar' ? 'ar' : 'fr'];
-    Alert.alert(t.confirmTitle, t.confirmBody(label), [
-      { text: t.cancel, style: 'cancel' },
-      { text: t.confirm, onPress: submit },
+  function confirmer() {
+    if (!o || motif === null) return;
+    if (o.status !== 'LIVRAISON') { Alert.alert(t.titre, t.mauvaisStatut); return; }
+    Alert.alert(t.confTitre, t.confCorps(MOTIFS[motif]![lang]), [
+      { text: t.annuler, style: 'cancel' },
+      { text: t.ok, style: 'destructive', onPress: () => void envoyer() },
     ]);
   }
 
-  if (loading) {
-    return (
-      <View style={[s.center, { backgroundColor: colors.bg }]}>
-        <ActivityIndicator color={colors.indigo9} size="large" />
-      </View>
-    );
+  if (chargement) {
+    return <View style={[s.centre, { backgroundColor: colors.bg }]}><ActivityIndicator color={colors.indigo9} size="large" /></View>;
   }
-
-  if (!order) {
+  if (!o) {
     return (
-      <View style={[s.center, { backgroundColor: colors.bg }]}>
-        <Text style={[s.notFoundTitle, { color: colors.text }]}>{t.notFoundTitle}</Text>
-        <Text style={[s.notFoundBody, { color: colors.muted }]}>{t.notFoundBody}</Text>
-        <PrimaryBtn onPress={() => router.replace('/(tabs)/missions')}>{t.backToMissions}</PrimaryBtn>
+      <View style={[s.centre, { backgroundColor: colors.bg, padding: 24, gap: 12 }]}>
+        <Text style={{ color: colors.text, fontSize: 18, fontWeight: '700' }}>{t.introuvable}</Text>
+        <Bouton onPress={() => router.replace('/(tabs)/journee')} style={{ alignSelf: 'stretch' }}>{t.retour}</Bouton>
       </View>
     );
   }
 
   return (
-    <View style={[s.wrap, { backgroundColor: colors.bg }]}>
+    <View style={[s.plein, { backgroundColor: colors.bg }]}>
       <Stack.Screen options={{ headerShown: false }} />
-      <ScreenHead title={t.title} sub={order.ref} onBack={() => router.back()} rtl={rtl} />
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
-        <View style={[s.callout, { backgroundColor: colors.border }]}>
-          <Text style={[s.calloutTxt, { color: colors.text, textAlign: rtl ? 'right' : 'left' }]}>{t.intro}</Text>
-        </View>
-
-        <Text style={[s.label, { color: colors.text, textAlign: rtl ? 'right' : 'left' }]}>{t.reasonLabel}</Text>
-        <View style={s.reasons}>
-          {REASONS.map((r, i) => {
-            const selected = i === reasonIdx;
-            return (
-              <Pressable
-                key={r.fr}
-                onPress={() => setReasonIdx(i)}
-                style={[
-                  s.reasonRow,
-                  { borderColor: selected ? colors.indigo9 : colors.border, flexDirection: rtl ? 'row-reverse' : 'row' },
-                ]}
-                accessibilityRole="radio"
-                accessibilityState={{ selected }}
-              >
-                <View style={[s.radio, { borderColor: selected ? colors.indigo9 : colors.muted, backgroundColor: selected ? colors.indigo9 : 'transparent' }]} />
-                <Text style={[s.reasonTxt, { color: colors.text }]}>{lang === 'ar' ? r.ar : r.fr}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        <Text style={[s.label, { color: colors.text, textAlign: rtl ? 'right' : 'left' }]}>{t.notesLabel}</Text>
-        <TextInput
-          style={[s.notes, { borderColor: colors.border, color: colors.text, textAlign: rtl ? 'right' : 'left' }]}
-          placeholder={t.notesPlaceholder}
-          placeholderTextColor={colors.muted}
-          value={notes}
-          onChangeText={setNotes}
-          multiline
-          textAlignVertical="top"
-          testID="echec-notes" accessibilityLabel={t.notesLabel}
-        />
+      <View style={[row, s.entete, { paddingTop: insets.top + 6 }]}>
+        <Pressable onPress={() => router.back()} style={s.retour} accessibilityRole="button" accessibilityLabel="Retour">
+          <View style={{ transform: [{ scaleX: rtl ? -1 : 1 }] }}><IcRetour size={24} color={colors.text} /></View>
+        </Pressable>
+        <Text style={[s.titre, { color: colors.text, flex: 1 }, align]}>{t.titre}</Text>
+        <Pastille ton="gris">{o.dropContact ?? o.ref}</Pastille>
+      </View>
+      <ScrollView contentContainerStyle={s.contenu} keyboardShouldPersistTaps="handled">
+        {MOTIFS.map((m, i) => {
+          const on = motif === i;
+          return (
+            <Carte key={m.fr} testID={`motif-${i}`} onPress={() => setMotif(i)}
+              style={[s.motif, row, on && { borderColor: colors.indigo9, borderWidth: 2, backgroundColor: indigo.doux }]}>
+              <Text style={s.emoji}>{m.ic}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={[{ color: colors.text, fontSize: 17, fontWeight: '700' }, align]}>{m[lang]}</Text>
+                {(lang === 'ar' ? m.aideAr : m.aideFr) ? <Text style={[{ color: colors.muted, fontSize: 13 }, align]}>{lang === 'ar' ? m.aideAr : m.aideFr}</Text> : null}
+              </View>
+              {on ? <IcCheck size={22} color={colors.indigo9} /> : null}
+            </Carte>
+          );
+        })}
+        {motif !== null ? (
+          <TextInput
+            value={notes} onChangeText={setNotes} placeholder={t.placeholder} placeholderTextColor={colors.muted} multiline
+            accessibilityLabel={t.precision}
+            style={[s.notes, { borderColor: colors.border, backgroundColor: colors.panel, color: colors.text }, align]}
+          />
+        ) : null}
+        <Bandeau ton="ambre" rtl={rtl}>{t.suite}</Bandeau>
       </ScrollView>
-      <BottomAction>
-        <PrimaryBtn loading={busy} onPress={confirmFail}>{t.submit}</PrimaryBtn>
-      </BottomAction>
+      <View style={[s.bas, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+        <Bouton testID="confirmer-echec" loading={occupe} disabled={motif === null} onPress={confirmer}>
+          {motif === null ? t.choisir : t.confirmer}
+        </Bouton>
+      </View>
     </View>
   );
 }
 
 const s = StyleSheet.create({
-  wrap: { flex: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 12 },
-  notFoundTitle: { fontSize: 18, fontWeight: '700' },
-  notFoundBody: { fontSize: 14, marginBottom: 8, textAlign: 'center' },
-  content: { padding: space[4], paddingBottom: 120, gap: space[3] },
-  callout: { borderRadius: radius[3], padding: space[3] },
-  calloutTxt: { fontSize: 13, lineHeight: 19 },
-  label: { fontSize: 14, fontWeight: '600', marginTop: 6 },
-  reasons: { gap: 8 },
-  reasonRow: { alignItems: 'center', gap: 10, borderWidth: 1, borderRadius: radius[3], paddingHorizontal: 12, minHeight: touch.min },
-  radio: { width: 18, height: 18, borderRadius: 9, borderWidth: 2 },
-  reasonTxt: { fontSize: 14, flexShrink: 1 },
-  notes: { minHeight: 90, borderWidth: 1, borderRadius: radius[3], padding: 12, fontSize: 14 },
+  plein: { flex: 1 },
+  centre: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  entete: { alignItems: 'center', gap: 6, paddingHorizontal: 8, paddingBottom: 8 },
+  retour: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center' },
+  titre: { fontSize: 22, fontWeight: '800' },
+  contenu: { padding: 16, gap: 10, paddingBottom: 24 },
+  motif: { alignItems: 'center', gap: 12, paddingVertical: 14 },
+  emoji: { fontSize: 24 },
+  notes: { minHeight: 70, borderWidth: 1, borderRadius: 14, padding: 12, fontSize: 15 },
+  bas: { paddingHorizontal: 16, paddingTop: 8 },
 });

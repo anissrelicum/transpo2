@@ -30,6 +30,7 @@ type ModuleOneSignal = {
   logout: () => void;
   Notifications: {
     requestPermission: (fallbackToSettings: boolean) => Promise<boolean>;
+    getPermissionAsync: () => Promise<boolean>;
     addEventListener: (nom: string, cb: (e: unknown) => void) => void;
   };
   User: { pushSubscription: { getIdAsync?: () => Promise<string | null> } };
@@ -92,7 +93,7 @@ export function initialiserLePush(): () => void {
     console.log('[push] notification ouverte', e);
     if (estUneProposition(e)) {
       signalerProposition();
-      try { router.push('/(tabs)/missions'); } catch { /* navigation pas encore montée */ }
+      try { router.push('/(tabs)/journee'); } catch { /* navigation pas encore montée */ }
     }
   };
   const surPremierPlan = (e: unknown) => {
@@ -125,6 +126,17 @@ export async function demanderLaPermission(): Promise<boolean> {
   if (!os) return false;
   try {
     return await os.Notifications.requestPermission(true);
+  } catch {
+    return false;
+  }
+}
+
+/** La permission est-elle déjà accordée ? (sans la demander). `true` là où le push n'existe pas. */
+export async function permissionDejaAccordee(): Promise<boolean> {
+  const os = moduleNatif();
+  if (!os) return true;
+  try {
+    return await os.Notifications.getPermissionAsync();
   } catch {
     return false;
   }

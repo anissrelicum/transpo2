@@ -1,378 +1,119 @@
-// Ma tournée — onglet « Tournée ». Cf. maquette `lot3-app-livreur.jsx`
-// (fonctions RouteScreen, SummaryCell) et design/PLAN-REFONTE-MOBILE.md §2 Lot C.
+// Ma tournée — la même journée que la carte, en liste (maquette validée, acte 2).
 //
-// Deux sources, dans cet ordre :
-//  1. la TOURNÉE planifiée par l'exploitation pour aujourd'hui (`getMyTour()`), dont
-//     l'ordre des arrêts fait foi — c'est lui que le dispatch a optimisé et réordonné ;
-//  2. à défaut, les missions actives du livreur, dans l'ordre qu'il choisit lui-même.
-// Jusqu'ici seule la seconde existait : le dispatch pouvait optimiser une tournée sans
-// que le livreur n'en voie jamais l'ordre — deux plans de journée concurrents.
-//
-// `Order` n'expose toujours aucune coordonnée GPS (cf. plan §1) : distance et temps
-// estimé restent calculés sur des positions FICTIVES déterministes (`pseudoLatLng`), ce
-// que le bandeau dit à l'écran. Jamais présenté comme une vraie carte.
+// L'ordre est celui de la carte : tournée planifiée par l'agence s'il y en a une (elle
+// fait foi, pas de réordonnancement), sinon l'ordre calculé au plus court depuis la
+// position du livreur, qu'il peut changer à la main s'il connaît mieux le terrain.
 import * as React from 'react';
 import { View, Text, StyleSheet, Pressable, FlatList, RefreshControl, ActivityIndicator } from 'react-native';
-import { router, useFocusEffect } from 'expo-router';
-import type { Order, OrderStatus } from '@transpo/domain';
-import { STATUS_META, money } from '@transpo/domain';
-import { space, touch, radius } from '@transpo/design-tokens';
-import { authedClient } from '../../lib/api';
-import { readJson, writeJson } from '../../lib/storage';
-import { useTheme, resolveColor } from '../../lib/theme';
+import { router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { money } from '@transpo/domain';
+import { useTheme } from '../../lib/theme';
 import { useLanguage } from '../../lib/i18n';
-import { ScreenHead } from '../../components/shell';
+import { useJournee, definirOrdreManuel } from '../../lib/useJournee';
+import { distanceKm, distanceTournee, formatDistance, minutesEstimees } from '../../lib/journee';
+import { Carte, Pastille, Bandeau, useTon } from '../../components/ui';
 
-const CACHE_KEY = 'transpo.route.cache.v1';
-
-// Statuts qui ne représentent plus un arrêt à visiter.
-const TERMINAL: OrderStatus[] = ['LIVREE', 'ANNULEE', 'ECHOUEE', 'RETOUR'];
-
-// Point de départ fictif (centre de Casablanca, cf. maquette `DEPOT`) — sert
-// uniquement de référence pour le calcul de démonstration ci-dessous.
-const DEPOT: LatLng = [33.573, -7.589];
-
-export type LatLng = readonly [number, number];
-
-/** Distance à vol d'oiseau en km (formule de Haversine). Port pur de la maquette. */
-export function haversineKm(a: LatLng, b: LatLng): number {
-  const R = 6371;
-  const dLat = ((b[0] - a[0]) * Math.PI) / 180;
-  const dLon = ((b[1] - a[1]) * Math.PI) / 180;
-  const s =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((a[0] * Math.PI) / 180) * Math.cos((b[0] * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
-}
-
-/** Distance totale d'un dépôt à travers une liste ordonnée d'arrêts. */
-export function routeDistanceKm(depot: LatLng, stops: readonly LatLng[]): number {
-  let d = 0;
-  let prev = depot;
-  for (const s of stops) {
-    d += haversineKm(prev, s);
-    prev = s;
-  }
-  return d;
-}
-
-/** Tri glouton plus-proche-voisin. Port pur de la maquette (`nearestNeighbor`). */
-export function nearestNeighborOrder<T extends { latlng: LatLng }>(depot: LatLng, items: readonly T[]): T[] {
-  const rest = items.slice();
-  const out: T[] = [];
-  let cur = depot;
-  while (rest.length) {
-    let bestIdx = 0;
-    let bestDist = Infinity;
-    rest.forEach((s, i) => {
-      const d = haversineKm(cur, s.latlng);
-      if (d < bestDist) {
-        bestDist = d;
-        bestIdx = i;
-      }
-    });
-    const [next] = rest.splice(bestIdx, 1);
-    cur = next.latlng;
-    out.push(next);
-  }
-  return out;
-}
-
-/**
- * Coordonnée déterministe (même commande ⇒ toujours le même point) dérivée
- * de sa référence — ne représente AUCUNE position réelle, uniquement de quoi
- * illustrer le tri. `Order` n'a pas de champ lat/lng côté API.
- */
-function pseudoLatLng(ref: string): LatLng {
-  let h = 0;
-  for (let i = 0; i < ref.length; i++) h = (h * 31 + ref.charCodeAt(i)) >>> 0;
-  const dLat = ((h % 1000) / 1000 - 0.5) * 0.08;
-  const dLon = (((h >> 10) % 1000) / 1000 - 0.5) * 0.08;
-  return [DEPOT[0] + dLat, DEPOT[1] + dLon];
-}
-
-const STR = {
+const T = {
   fr: {
-    title: 'Ma tournée',
-    stops: (n: number) => `${n} arrêt(s)`,
-    demoNotice:
-      'Ordre à titre indicatif : positions et distances simulées, aucune coordonnée GPS n’est encore associée aux commandes.',
-    fromDispatch: 'Ordre défini par le dispatch',
-    fromDispatchHint: 'Tournée du jour planifiée par l’exploitation — suivez cet ordre.',
-    optimize: 'Optimiser',
-    optimized: 'Optimisée ✓',
-    reset: 'Réinitialiser',
-    remaining: 'Restants',
-    distance: 'Distance',
-    eta: 'Temps est.',
-    empty: 'Aucune commande active pour le moment.',
-    open: 'Ouvrir',
-    next: 'suivant',
-    delivered: (n: number) => `${n} livrée(s) aujourd’hui`,
-    up: 'Monter',
-    down: 'Descendre',
+    titre: 'Ma tournée', agence: 'Ordre de l’agence', optimise: 'Ordre optimisé', manuel: 'Ordre manuel',
+    resume: (n: number, km: string, min: number) => `${n} arrêt(s) · ${km} · ~${min} min`,
+    agenceAide: 'Tournée planifiée par l’agence : suivez cet ordre.',
+    manuelAide: 'Vous avez changé l’ordre. ', recalculer: 'Recalculer le plus court',
+    aide: 'Flèches ↑ ↓ pour changer l’ordre si vous connaissez mieux le terrain.',
+    vide: 'Aucun arrêt pour le moment.', retrait: 'Retrait', livraison: 'Livraison',
+    plus: (m: number) => `+${m} min`, prepaye: 'Prépayée', monter: 'Monter', descendre: 'Descendre',
   },
   ar: {
-    title: 'الجولة',
-    stops: (n: number) => `${n} توقف`,
-    demoNotice: 'الترتيب إرشادي فقط: المواقع والمسافات محاكاة، لا توجد بعد إحداثيات GPS مرتبطة بالطلبات.',
-    fromDispatch: 'ترتيب محدَّد من طرف التوزيع',
-    fromDispatchHint: 'جولة اليوم كما خطّطتها العمليات — اتبع هذا الترتيب.',
-    optimize: 'تحسين الترتيب',
-    optimized: 'تم التحسين ✓',
-    reset: 'إعادة التعيين',
-    remaining: 'المتبقي',
-    distance: 'المسافة',
-    eta: 'الوقت المقدر',
-    empty: 'لا توجد طلبات نشطة حالياً.',
-    open: 'فتح',
-    next: 'التالي',
-    delivered: (n: number) => `${n} تم تسليمها اليوم`,
-    up: 'أعلى',
-    down: 'أسفل',
+    titre: 'جولتي', agence: 'ترتيب الوكالة', optimise: 'ترتيب محسَّن', manuel: 'ترتيب يدوي',
+    resume: (n: number, km: string, min: number) => `${n} محطة · ${km} · ~${min} د`,
+    agenceAide: 'جولة خطّطتها الوكالة: اتبع هذا الترتيب.',
+    manuelAide: 'لقد غيّرت الترتيب. ', recalculer: 'إعادة حساب الأقصر',
+    aide: 'استعمل الأسهم ↑ ↓ لتغيير الترتيب إن كنت تعرف الطريق أفضل.',
+    vide: 'لا توجد محطات حالياً.', retrait: 'استلام', livraison: 'تسليم',
+    plus: (m: number) => `+${m} د`, prepaye: 'مدفوعة مسبقاً', monter: 'أعلى', descendre: 'أسفل',
   },
-} as const;
+};
 
-export default function RouteScreen() {
-  const { colors, mode } = useTheme();
+export default function Tournee() {
+  const { colors } = useTheme();
   const { lang, rtl } = useLanguage();
-  const t = STR[lang === 'ar' ? 'ar' : 'fr'];
+  const t = T[lang];
+  const insets = useSafeAreaInsets();
+  const j = useJournee();
+  const ambre = useTon('ambre');
+  const row = { flexDirection: rtl ? 'row-reverse' as const : 'row' as const };
+  const align = { textAlign: rtl ? 'right' as const : 'left' as const };
 
-  const [orders, setOrders] = React.useState<Order[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [refsOrder, setRefsOrder] = React.useState<string[]>([]);
-  const [optimized, setOptimized] = React.useState(false);
-  /** Ordre imposé par la tournée du jour, s'il en existe une. */
-  const [ordreDispatch, setOrdreDispatch] = React.useState<string[] | null>(null);
+  const moi = j.moi ? { lat: j.moi.lat, lng: j.moi.lng } : null;
+  const parAgence = !!j.tournee?.length;
+  const km = distanceTournee(moi, j.arrets);
 
-  const load = React.useCallback(async () => {
-    try {
-      const fresh = await authedClient().getMissions();
-      setOrders(fresh);
-      await writeJson(CACHE_KEY, fresh);
-      const tour = await authedClient().getMyTour().catch(() => null);
-      setOrdreDispatch(tour ? tour.stops.map((o) => o.ref) : null);
-    } catch {
-      const cached = await readJson<Order[]>(CACHE_KEY, []);
-      setOrders(cached);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useFocusEffect(React.useCallback(() => { load(); }, [load]));
-
-  const pending = React.useMemo(() => orders.filter((o) => !TERMINAL.includes(o.status)), [orders]);
-  const deliveredToday = orders.length - pending.length;
-
-  // Recale l'ordre affiché quand la liste change (nouvelle commande assignée,
-  // commande livrée…) tout en préservant le tri manuel/optimisé en cours pour
-  // les arrêts qui restent — cf. maquette (le tri survit à `move`, se remet à
-  // plat seulement si la composition des arrêts change).
-  React.useEffect(() => {
-    setRefsOrder((prev) => {
-      // Une tournée planifiée fait autorité : ses arrêts d'abord, dans SON ordre, puis
-      // les éventuelles courses assignées hors tournée.
-      const base = ordreDispatch
-        ? [...ordreDispatch.filter((ref) => pending.some((o) => o.ref === ref)),
-           ...pending.map((o) => o.ref).filter((ref) => !ordreDispatch.includes(ref))]
-        : null;
-      const kept = prev.filter((ref) => pending.some((o) => o.ref === ref));
-      const added = pending.map((o) => o.ref).filter((ref) => !kept.includes(ref));
-      const next = base ?? [...kept, ...added];
-      const same = next.length === prev.length && next.every((r, i) => r === prev[i]);
-      return same ? prev : next;
-    });
-  }, [pending, ordreDispatch]);
-
-  const stops = React.useMemo(
-    () => refsOrder.map((ref) => pending.find((o) => o.ref === ref)).filter((o): o is Order => Boolean(o)),
-    [refsOrder, pending],
-  );
-  const stopsLatLng = React.useMemo(() => stops.map((o) => ({ order: o, latlng: pseudoLatLng(o.ref) })), [stops]);
-
-  const totalDistance = routeDistanceKm(DEPOT, stopsLatLng.map((s) => s.latlng));
-  const etaMin = stops.length ? Math.round((totalDistance / 22) * 60 + stops.length * 4) : 0;
-
-  function optimize() {
-    const ordered = nearestNeighborOrder(DEPOT, stopsLatLng);
-    setRefsOrder(ordered.map((s) => s.order.ref));
-    setOptimized(true);
-  }
-  function reset() {
-    setRefsOrder(pending.map((o) => o.ref));
-    setOptimized(false);
-  }
-  function move(ref: string, dir: -1 | 1) {
-    setRefsOrder((arr) => {
-      const i = arr.indexOf(ref);
-      const j = i + dir;
-      if (i < 0 || j < 0 || j >= arr.length) return arr;
-      const copy = arr.slice();
-      [copy[i], copy[j]] = [copy[j], copy[i]];
-      return copy;
-    });
-    setOptimized(false);
+  function deplacer(i: number, sens: -1 | 1) {
+    const refs = j.arrets.map((a) => a.order.ref);
+    const k = i + sens;
+    if (k < 0 || k >= refs.length) return;
+    [refs[i], refs[k]] = [refs[k]!, refs[i]!];
+    void definirOrdreManuel(refs);
   }
 
-  if (loading) {
-    return (
-      <View style={[s.center, { backgroundColor: colors.bg }]}>
-        <ActivityIndicator color={colors.indigo9} size="large" />
-      </View>
-    );
+  if (j.chargement) {
+    return <View style={[s.centre, { backgroundColor: colors.bg }]}><ActivityIndicator color={colors.indigo9} size="large" /></View>;
   }
 
   return (
-    <View style={[s.wrap, { backgroundColor: colors.bg }]}>
-      <ScreenHead title={t.title} sub={t.stops(stops.length) + ' · ' + totalDistance.toFixed(1) + ' km'} rtl={rtl} />
+    <View style={[s.plein, { backgroundColor: colors.bg, paddingTop: insets.top }]}>
+      <View style={[row, s.haut]}>
+        <View style={{ flex: 1 }}>
+          <Text style={[s.titre, { color: colors.text }, align]}>{t.titre}</Text>
+          <Text style={[{ color: colors.muted, fontSize: 13 }, align]}>
+            {t.resume(j.arrets.length, formatDistance(km, lang), j.arrets.length ? minutesEstimees(km) + j.arrets.length * 4 : 0)}
+          </Text>
+        </View>
+        <Pastille ton="indigo">{parAgence ? t.agence : j.ordreManuel ? t.manuel : t.optimise}</Pastille>
+      </View>
       <FlatList
-        data={stops}
-        keyExtractor={(o) => o.ref}
-        refreshControl={<RefreshControl refreshing={false} onRefresh={load} />}
-        contentContainerStyle={s.list}
+        data={j.arrets}
+        keyExtractor={(a) => a.order.ref}
+        contentContainerStyle={s.liste}
+        refreshControl={<RefreshControl refreshing={false} onRefresh={j.recharger} tintColor={colors.indigo9} />}
         ListHeaderComponent={
-          <View>
-            {/* Quand le dispatch a planifié la journée, le dire : l'ordre affiché n'est
-                plus une suggestion locale mais une consigne d'exploitation. */}
-            {ordreDispatch && (
-              <View style={[s.notice, { borderColor: colors.indigo9, backgroundColor: colors.panel }]}>
-                <Text style={[s.noticeTxt, { color: colors.text, fontWeight: '700', textAlign: rtl ? 'right' : 'left' }]}>
-                  {t.fromDispatch}
-                </Text>
-                <Text style={[s.noticeTxt, { color: colors.muted, textAlign: rtl ? 'right' : 'left' }]}>
-                  {t.fromDispatchHint}
-                </Text>
-              </View>
-            )}
-            <View style={[s.notice, { borderColor: colors.border, backgroundColor: colors.panel }]}>
-              <Text style={[s.noticeTxt, { color: colors.muted, textAlign: rtl ? 'right' : 'left' }]}>
-                {t.demoNotice}
-              </Text>
-            </View>
-
-            <View
-              style={[
-                s.optimizeCard,
-                { flexDirection: rtl ? 'row-reverse' : 'row', borderColor: colors.border },
-                { backgroundColor: optimized ? resolveColor('green', 3, mode) : colors.panel },
-              ]}
-            >
-              <Text style={[s.optimizeTitle, { color: colors.text, flex: 1 }]}>{optimized ? t.optimized : t.optimize}</Text>
-              <View style={{ flexDirection: rtl ? 'row-reverse' : 'row', gap: space[2] }}>
-                {optimized && (
-                  <Pressable onPress={reset} style={[s.smallBtn, { borderColor: colors.border }]}>
-                    <Text style={{ color: colors.muted, fontSize: 12, fontWeight: '600' }}>{t.reset}</Text>
-                  </Pressable>
-                )}
-                <Pressable
-                  disabled={stops.length < 2}
-                  onPress={optimize}
-                  style={[
-                    s.smallBtn,
-                    { borderColor: 'transparent', backgroundColor: stops.length < 2 ? colors.border : colors.indigo9 },
-                  ]}
-                >
-                  <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>{t.optimize}</Text>
-                </Pressable>
-              </View>
-            </View>
-
-            <View style={[s.summaryRow, { flexDirection: rtl ? 'row-reverse' : 'row' }]}>
-              <SummaryCell label={t.remaining} value={String(stops.length)} colors={colors} />
-              <SummaryCell label={t.distance} value={totalDistance.toFixed(1) + ' km'} colors={colors} />
-              <SummaryCell label={t.eta} value={etaMin + ' min'} colors={colors} />
-            </View>
-
-            {deliveredToday > 0 && (
-              <Text style={[s.deliveredTxt, { color: colors.muted, textAlign: rtl ? 'right' : 'left' }]}>
-                {t.delivered(deliveredToday)}
-              </Text>
-            )}
-
-            {stops.length === 0 && (
-              <View style={[s.empty, { borderColor: colors.border }]}>
-                <Text style={{ color: colors.muted, textAlign: 'center' }}>{t.empty}</Text>
-              </View>
-            )}
-          </View>
+          parAgence ? <Bandeau ton="indigo" rtl={rtl}>{t.agenceAide}</Bandeau>
+            : j.ordreManuel ? (
+              <Bandeau ton="ambre" rtl={rtl} onPress={() => void definirOrdreManuel(null)}>
+                {t.manuelAide}<Text style={{ textDecorationLine: 'underline' }}>{t.recalculer}</Text>
+              </Bandeau>
+            ) : j.arrets.length > 1 ? <Text style={[{ color: colors.muted, fontSize: 13 }, align]}>{t.aide}</Text> : null
         }
-        renderItem={({ item, index }) => {
-          const isCurrent = index === 0;
-          const meta = STATUS_META[item.status];
-          const statusColor = resolveColor(meta.color, 9, mode);
+        ListEmptyComponent={<Text style={{ color: colors.muted, textAlign: 'center', marginTop: 40 }}>{t.vide}</Text>}
+        renderItem={({ item: a, index: i }) => {
+          const prec = i === 0 ? moi : j.arrets[i - 1]?.pos ?? null;
+          const plus = a.pos && prec ? minutesEstimees(distanceKm(prec, a.pos)) : null;
+          const prochain = i === 0;
           return (
-            <View
-              style={[
-                s.stopCard,
-                {
-                  borderColor: isCurrent ? resolveColor('amber', 9, mode) : colors.border,
-                  backgroundColor: isCurrent ? resolveColor('amber', 3, mode) : colors.panel,
-                },
-              ]}
-            >
-              <View style={{ flexDirection: rtl ? 'row-reverse' : 'row', alignItems: 'center', gap: space[3] }}>
-                <View
-                  style={[
-                    s.badgeCircle,
-                    { backgroundColor: isCurrent ? resolveColor('amber', 9, mode) : colors.border },
-                  ]}
-                >
-                  <Text style={{ color: isCurrent ? '#fff' : colors.muted, fontWeight: '700' }}>{index + 1}</Text>
-                </View>
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <View style={{ flexDirection: rtl ? 'row-reverse' : 'row', alignItems: 'center', gap: space[2] }}>
-                    <Text style={[s.stopTitle, { color: colors.text }]} numberOfLines={1}>
-                      {item.merchant ?? item.ref}
-                    </Text>
-                    {isCurrent && (
-                      <View style={[s.pill, { backgroundColor: resolveColor('amber', 3, mode) }]}>
-                        <Text style={{ color: resolveColor('amber', 11, mode), fontSize: 11, fontWeight: '700' }}>
-                          {t.next}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                  <Text
-                    style={[s.stopMeta, { color: colors.muted, textAlign: rtl ? 'right' : 'left' }]}
-                    numberOfLines={1}
-                  >
-                    {item.ref} · {item.fromCity} → {item.toCity}
-                    {item.cod > 0 ? ' · COD ' + money(item.cod) : ''}
-                  </Text>
-                  <Text style={{ color: statusColor, fontSize: 11, fontWeight: '700', marginTop: 2 }}>
-                    {lang === 'ar' ? meta.ar : meta.fr}
-                  </Text>
-                </View>
-                <View style={{ gap: space[1] }}>
-                  <Pressable
-                    disabled={index === 0}
-                    onPress={() => move(item.ref, -1)}
-                    accessibilityLabel={t.up}
-                    style={[s.moveBtn, { borderColor: colors.border, opacity: index === 0 ? 0.3 : 1 }]}
-                  >
-                    <Text style={{ color: colors.text, fontSize: 16 }}>↑</Text>
-                  </Pressable>
-                  <Pressable
-                    disabled={index === stops.length - 1}
-                    onPress={() => move(item.ref, 1)}
-                    accessibilityLabel={t.down}
-                    style={[
-                      s.moveBtn,
-                      { borderColor: colors.border, opacity: index === stops.length - 1 ? 0.3 : 1 },
-                    ]}
-                  >
-                    <Text style={{ color: colors.text, fontSize: 16 }}>↓</Text>
-                  </Pressable>
-                </View>
+            <Carte testID={`arret-${a.order.ref}`} onPress={() => router.push(`/mission/${encodeURIComponent(a.order.ref)}`)}
+              style={[s.ligne, row, prochain && { borderColor: ambre.plein, borderWidth: 2 }]}>
+              <View style={[s.num, { backgroundColor: prochain ? ambre.doux : colors.bg }]}>
+                <Text style={{ color: prochain ? ambre.texte : colors.text, fontWeight: '800' }}>{i + 1}</Text>
               </View>
-              <Pressable
-                onPress={() => router.push(`/mission/${encodeURIComponent(item.ref)}`)}
-                style={[s.openBtn, { borderColor: colors.indigo9 }]}
-              >
-                <Text style={{ color: colors.indigo9, fontWeight: '700' }}>{t.open}</Text>
-              </Pressable>
-            </View>
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={[{ color: colors.text, fontSize: 16, fontWeight: '700' }, align]} numberOfLines={1}>
+                  {a.type === 'retrait' ? `${t.retrait} · ` : ''}{a.contact ?? a.order.ref}{a.commandes.length > 1 ? ` · ${a.commandes.length}` : ''}
+                </Text>
+                <Text style={[{ color: colors.muted, fontSize: 13 }, align]} numberOfLines={1}>
+                  {a.adresse}{plus ? ` · ${t.plus(plus)}` : ''}
+                </Text>
+              </View>
+              {a.type === 'livraison' ? (
+                a.order.cod > 0 && !a.order.codPaid ? <Pastille ton="ambre">{money(a.order.cod)}</Pastille> : <Pastille ton="gris">{t.prepaye}</Pastille>
+              ) : <Pastille ton="indigo">{t.retrait}</Pastille>}
+              {!parAgence && j.arrets.length > 1 ? (
+                <View style={{ gap: 4 }}>
+                  <Fleche label={t.monter} txt="↑" off={i === 0} onPress={() => deplacer(i, -1)} />
+                  <Fleche label={t.descendre} txt="↓" off={i === j.arrets.length - 1} onPress={() => deplacer(i, 1)} />
+                </View>
+              ) : null}
+            </Carte>
           );
         }}
       />
@@ -380,43 +121,23 @@ export default function RouteScreen() {
   );
 }
 
-function SummaryCell({
-  label,
-  value,
-  colors,
-}: {
-  label: string;
-  value: string;
-  colors: ReturnType<typeof useTheme>['colors'];
-}) {
+function Fleche({ txt, label, off, onPress }: { txt: string; label: string; off: boolean; onPress: () => void }) {
+  const { colors } = useTheme();
   return (
-    <View style={[s.summaryCell, { borderColor: colors.border, backgroundColor: colors.panel }]}>
-      <Text style={[s.summaryValue, { color: colors.text }]}>{value}</Text>
-      <Text style={[s.summaryLabel, { color: colors.muted }]}>{label}</Text>
-    </View>
+    <Pressable onPress={onPress} disabled={off} accessibilityRole="button" accessibilityLabel={label} hitSlop={4}
+      style={[s.fleche, { borderColor: colors.border, opacity: off ? 0.3 : 1 }]}>
+      <Text style={{ color: colors.text, fontSize: 16, fontWeight: '700' }}>{txt}</Text>
+    </Pressable>
   );
 }
 
 const s = StyleSheet.create({
-  wrap: { flex: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  list: { padding: space[4], paddingTop: space[3], paddingBottom: space[8], gap: space[2] },
-  notice: { borderWidth: 1, borderRadius: radius[3], padding: space[3], marginBottom: space[3] },
-  noticeTxt: { fontSize: 12, lineHeight: 17 },
-  optimizeCard: { borderWidth: 1, borderRadius: radius[3], padding: space[3], alignItems: 'center', marginBottom: space[3] },
-  optimizeTitle: { fontSize: 14, fontWeight: '700' },
-  smallBtn: { borderWidth: 1, borderRadius: radius[3], paddingHorizontal: space[3], height: touch.min, justifyContent: 'center' },
-  summaryRow: { gap: space[2], marginBottom: space[3] },
-  summaryCell: { flex: 1, borderWidth: 1, borderRadius: radius[3], alignItems: 'center', paddingVertical: space[2] },
-  summaryValue: { fontSize: 16, fontWeight: '700' },
-  summaryLabel: { fontSize: 11, marginTop: 2 },
-  deliveredTxt: { fontSize: 12, marginBottom: space[2] },
-  empty: { borderWidth: 1, borderRadius: radius[3], padding: space[5], alignItems: 'center' },
-  stopCard: { borderWidth: 1, borderRadius: radius[4], padding: space[3], gap: space[2] },
-  badgeCircle: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
-  stopTitle: { fontSize: 14, fontWeight: '600', flexShrink: 1 },
-  stopMeta: { fontSize: 12, marginTop: 2 },
-  pill: { borderRadius: radius.full, paddingHorizontal: space[2], paddingVertical: 2 },
-  moveBtn: { width: touch.min, height: touch.min, borderWidth: 1, borderRadius: radius[2], alignItems: 'center', justifyContent: 'center' },
-  openBtn: { borderWidth: 1, borderRadius: radius[3], height: touch.min, alignItems: 'center', justifyContent: 'center' },
+  plein: { flex: 1 },
+  centre: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  haut: { alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8 },
+  titre: { fontSize: 24, fontWeight: '800' },
+  liste: { padding: 16, paddingTop: 4, gap: 10 },
+  ligne: { alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 14 },
+  num: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  fleche: { width: 36, height: 30, borderRadius: 8, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
 });

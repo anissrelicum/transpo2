@@ -1,13 +1,15 @@
 {
   "expo": {
-    "name": "Transpo Livreur",
+    "name": "Portrail Livreur",
     "slug": "transpo-driver",
-    "scheme": "transpo-driver",
+    "scheme": "portrail-livreur",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "backgroundColor": "#3E63DD"
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B1537"
     },
     "ios": {
       "supportsTablet": false,
@@ -15,7 +17,9 @@
       "infoPlist": {
         "UIBackgroundModes": [
           "remote-notification"
-        ]
+        ],
+        "NSLocationWhenInUseUsageDescription": "Portrail utilise votre position pendant votre journée pour vous guider, détecter votre arrivée chez le client et vous proposer les missions proches.",
+        "NSCameraUsageDescription": "Portrail utilise l’appareil photo pour lire les étiquettes des colis et photographier la preuve de livraison."
       },
       "entitlements": {
         "aps-environment": "development"
@@ -24,7 +28,8 @@
     "android": {
       "package": "com.anissrelicum.transpodriver",
       "adaptiveIcon": {
-        "backgroundColor": "#3E63DD"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0B1537"
       }
     },
     "web": {
@@ -41,16 +46,23 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Transpo utilise votre position pendant vos tournées pour informer le PC flotte de votre avancement."
+          "locationWhenInUsePermission": "Portrail utilise votre position pendant votre journée pour vous guider, détecter votre arrivée chez le client et vous proposer les missions proches."
         }
       ],
       [
         "expo-image-picker",
         {
-          "cameraPermission": "Transpo utilise l’appareil photo pour la preuve de livraison (photo du colis remis)."
+          "cameraPermission": "Portrail utilise l’appareil photo pour la preuve de livraison (photo du colis remis)."
         }
       ],
-      "./plugins/withDedoublonnageGradle"
+      "./plugins/withDedoublonnageGradle",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Portrail utilise l’appareil photo pour lire les étiquettes des colis et photographier la preuve de livraison.",
+          "recordAudioAndroid": false
+        }
+      ]
     ],
     "extra": {
       "apiUrl": "https://transpo-api.wedowonders.com",
@@ -61,6 +73,7 @@
         "projectId": "0762a0f7-aae8-47f1-9014-e8bc02cde3f0"
       }
     },
-    "owner": "anissrelicum"
+    "owner": "anissrelicum",
+    "icon": "./assets/icon.png"
   }
 }

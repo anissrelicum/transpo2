@@ -1,65 +1,56 @@
-// Barre d'onglets basse de l'app livreur — cf. maquette `lot3-app-livreur.jsx`
-// (fonction PhoneShell) et design/lib-design-system.md. Masquée par les écrans
-// appelants sur les écrans de flux (connexion, détail, statut, preuve, COD,
-// échec), qui affichent un retour `←` via `ScreenHead` à la place.
+// Barre d'onglets basse — maquette validée (design/app-livreur/maquette.html) :
+// Journée, Tournée, Scanner, Caisse, Profil. Masquée sur les écrans de flux (détail,
+// preuve, encaissement, échec), qui ont leur propre retour.
 import React from 'react';
 import { View, Pressable, Text, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../lib/theme';
-import { ArchiveIcon, StackIcon, CameraIcon, LapTimerIcon, PersonIcon, type IconProps } from './icons';
+import { IcCarte, IcListe, IcScan, IcCaisse, IcProfil } from '../icones';
 
-export type TabId = 'missions' | 'route' | 'scan' | 'shift' | 'profil';
+export type TabId = 'journee' | 'route' | 'scan' | 'caisse' | 'profil';
 
-const TABS: ReadonlyArray<{ id: TabId; Icon: React.ComponentType<IconProps>; fr: string; ar: string }> = [
-  { id: 'missions', Icon: ArchiveIcon, fr: 'Missions', ar: 'المهام' },
-  { id: 'route', Icon: StackIcon, fr: 'Tournée', ar: 'الجولة' },
-  { id: 'scan', Icon: CameraIcon, fr: 'Scanner', ar: 'مسح' },
-  { id: 'shift', Icon: LapTimerIcon, fr: 'Shift', ar: 'الوردية' },
-  { id: 'profil', Icon: PersonIcon, fr: 'Profil', ar: 'الملف' },
+const TABS: ReadonlyArray<{ id: TabId; Icon: typeof IcCarte; fr: string; ar: string }> = [
+  { id: 'journee', Icon: IcCarte, fr: 'Journée', ar: 'يومي' },
+  { id: 'route', Icon: IcListe, fr: 'Tournée', ar: 'الجولة' },
+  { id: 'scan', Icon: IcScan, fr: 'Scanner', ar: 'مسح' },
+  { id: 'caisse', Icon: IcCaisse, fr: 'Caisse', ar: 'الصندوق' },
+  { id: 'profil', Icon: IcProfil, fr: 'Profil', ar: 'الملف' },
 ];
 
 export interface TabBarProps {
-  /** Onglet actif (couleur indigo-11, cf. maquette). */
   active: TabId;
   onChange: (id: TabId) => void;
-  /** Langue des libellés (les AR sont ceux de la maquette, pas retraduits). */
   lang?: 'fr' | 'ar';
-  /**
-   * Mise en page RTL. Par défaut déduite de `lang`, mais surchargeable : la
-   * bascule `I18nManager.forceRTL` de RN n'a d'effet complet qu'après relance
-   * de l'app (cf. lib/i18n.ts) — un prop explicite évite de dépendre de cet
-   * état global pas toujours à jour.
-   */
+  /** RTL explicite : `I18nManager.forceRTL` n'agit qu'après relance (cf. lib/i18n.ts). */
   rtl?: boolean;
 }
 
-/** Barre d'onglets basse, 64px, 5 onglets. Contrat partagé des écrans de l'app livreur. */
 export function TabBar({ active, onChange, lang = 'fr', rtl = lang === 'ar' }: TabBarProps) {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   return (
     <View
       style={[
         styles.bar,
-        { flexDirection: rtl ? 'row-reverse' : 'row', borderTopColor: colors.border, backgroundColor: colors.panel },
+        { flexDirection: rtl ? 'row-reverse' : 'row', borderTopColor: colors.border, backgroundColor: colors.panel, paddingBottom: Math.max(insets.bottom, 8) },
       ]}
     >
       {TABS.map((tab) => {
-        const isActive = tab.id === active;
-        const tint = isActive ? colors.indigo11 : colors.gray9;
+        const on = tab.id === active;
+        const tint = on ? colors.indigo9 : colors.gray9;
         const label = lang === 'ar' ? tab.ar : tab.fr;
         return (
           <Pressable
             key={tab.id}
+            testID={`onglet-${tab.id}`}
             onPress={() => onChange(tab.id)}
             style={styles.tab}
-            hitSlop={8}
             accessibilityRole="tab"
-            accessibilityState={{ selected: isActive }}
+            accessibilityState={{ selected: on }}
             accessibilityLabel={label}
           >
-            <tab.Icon size={20} color={tint} />
-            <Text style={[styles.label, { color: tint, fontWeight: isActive ? '600' : '400' }]} numberOfLines={1}>
-              {label}
-            </Text>
+            <tab.Icon size={24} color={tint} />
+            <Text style={[styles.label, { color: tint }]} numberOfLines={1}>{label}</Text>
           </Pressable>
         );
       })}
@@ -68,10 +59,7 @@ export function TabBar({ active, onChange, lang = 'fr', rtl = lang === 'ar' }: T
 }
 
 const styles = StyleSheet.create({
-  // Hauteur 64px fixe (constante structurante, cf. design/README.md).
-  bar: { height: 64, borderTopWidth: 1 },
-  // paddingBottom 6 reprend exactement le décalage de la maquette (icône+label
-  // centrés, légèrement remontés par rapport au bas de la barre).
-  tab: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4, paddingBottom: 6 },
-  label: { fontSize: 12 }, // Radix Text size="1"
+  bar: { borderTopWidth: 1, paddingTop: 8 },
+  tab: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3, minHeight: 52 },
+  label: { fontSize: 11, fontWeight: '600' },
 });

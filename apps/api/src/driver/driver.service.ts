@@ -237,7 +237,10 @@ export class DriverService {
         // démonstration : sur un tenant réel, la comptabilité voyait « Aucune session de
         // caisse aujourd'hui » alors que des milliers de dirhams circulaient en tournée,
         // et ni le dépôt ni l'écart n'avaient de support.
-        const encaisse = Math.max(0, body?.codCollected ?? 0);
+        // Plafonné au contre-remboursement : un client qui paie 420 DH avec un billet de
+        // 500 reçoit 80 DH de monnaie. Compter 500 en caisse accusait ensuite le livreur
+        // d'un écart de 80 DH à la déclaration (constaté en recette de l'app « Ma journée »).
+        const encaisse = Math.min(Math.max(0, body?.codCollected ?? 0), Math.max(0, cur.cod));
         if (encaisse > 0) await this.porterEnCaisse(db, d, ref, cur.dropContact ?? cur.merchant ?? ref, encaisse);
         return rowToOrder(r);
       }).then(async (livree) => {

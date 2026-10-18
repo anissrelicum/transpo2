@@ -26,9 +26,25 @@ async function encode(uri: string, width: number, compress: number): Promise<str
   return `data:image/jpeg;base64,${out.base64 ?? ''}`;
 }
 
-/** Ouvre l'appareil photo et renvoie un data URI JPEG sous la borne de taille. */
+/** Recompresse une photo déjà prise (fichier local) sous la borne de taille de l'API. */
+export async function compresser(source: string): Promise<PhotoResult> {
+  for (const step of STEPS) {
+    const uri = await encode(source, step.width, step.compress);
+    if (uri.length <= MAX_CHARS) return { uri };
+  }
+  return { error: 'Photo trop lourde même après compression. Reprenez-la de plus loin.' };
+}
+
+/**
+ * Ouvre l'appareil photo du TÉLÉPHONE et renvoie un data URI JPEG sous la borne de taille.
+ * N'est plus utilisé par la preuve (cf. components/PrisePhoto : l'ouverture de l'appli
+ * externe ne revenait jamais sur certains Android) ; gardé pour référence.
+ */
 export async function capturePhoto(): Promise<PhotoResult> {
-  const perm = await ImagePicker.requestCameraPermissionsAsync();
+  // Lire l'état d'abord : redemander un accès déjà accordé reste sans réponse sur certains
+  // Android (émulateur API 36) — c'était le blocage « Ouverture… » de la preuve photo.
+  let perm = await ImagePicker.getCameraPermissionsAsync();
+  if (!perm.granted && perm.canAskAgain) perm = await ImagePicker.requestCameraPermissionsAsync();
   if (!perm.granted) {
     return { error: 'Accès à l’appareil photo refusé. Autorisez-le dans les réglages du téléphone.' };
   }

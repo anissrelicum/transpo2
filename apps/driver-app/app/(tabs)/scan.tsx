@@ -1,349 +1,259 @@
-// Scanner de colis — onglet « Scanner ».
+// Scanner en série (maquette validée, acte 3) : la caméra reste ouverte, on enchaîne les
+// colis, chaque scan vibre et coche la liste. Le colis manquant se voit avant de partir.
 //
-// Le VISEUR reste simulé : lire un code-barres demande une lib native (ML Kit / ZXing),
-// hors périmètre v1 — c'est la réserve documentée au PRD §9.2, et le bandeau le dit.
-// Les DONNÉES, elles, sont réelles : la liste est « les colis de la tournée » du livreur
-// (PRD Lot 3 §5.12), pas un jeu figé. Elle l'a été : `SCAN_ITEMS` alignait cinq colis
-// `CMD-DEMO-0x` inventés, si bien qu'un livreur ne pouvait scanner aucun de SES colis et
-// que tous ses vrais codes passaient pour « hors tournée » — un écran qui répond faux sur
-// les seules données qui comptent.
+// Lecture réelle (expo-camera) d'un QR ou d'un code-barres : le contenu est accepté s'il
+// porte le code de suivi à 8 caractères ou la référence de la commande — y compris dans un
+// lien de suivi. La saisie manuelle reste là pour une étiquette abîmée.
+//
+// Les DONNÉES sont les missions du livreur (pas un jeu de démonstration). Au RETRAIT,
+// scanner un colis, c'est l'avoir en main : la mission passe « Récupérée », par la file
+// hors ligne (rejeu dédoublonné par la clé d'idempotence).
 import * as React from 'react';
-import { View, Text, StyleSheet, Pressable, TextInput, ScrollView } from 'react-native';
-import { router } from 'expo-router';
+import { View, Text, StyleSheet, Pressable, TextInput, ScrollView, Vibration } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'expo-camera';
 import type { Order } from '@transpo/domain';
-import { space, touch, radius } from '@transpo/design-tokens';
-import { useTheme, resolveColor } from '../../lib/theme';
+import { useTheme } from '../../lib/theme';
 import { useLanguage } from '../../lib/i18n';
-import { ScreenHead, PrimaryBtn, BottomAction } from '../../components/shell';
 import { authedClient, idemKey } from '../../lib/api';
 import { readJson, writeJson } from '../../lib/storage';
 import { enqueue, applyPending } from '../../lib/outbox';
 import { useOutbox } from '../../lib/useOutbox';
+import { CACHE_MISSIONS } from '../../lib/useJournee';
+import { Bouton, Pastille, MARQUE, useTon } from '../../components/ui';
+import { IcCheck } from '../../components/icones';
 
-const CACHE_KEY = 'transpo.missions.v1';
-
-// Ce que chaque phase donne à scanner : au retrait, les colis pas encore en main ;
-// à la livraison, ceux qui sont dans le véhicule.
-const PHASE_STATUTS = {
-  retrait: ['ASSIGNEE', 'RETRAIT'],
-  livraison: ['RECUPEREE', 'LIVRAISON'],
-} as const;
-
+const PHASE_STATUTS = { retrait: ['ASSIGNEE', 'RETRAIT'], livraison: ['RECUPEREE', 'LIVRAISON'] } as const;
 type Phase = 'retrait' | 'livraison';
-type Colis = { code: string; ref: string; name: string; status: string };
-type FlashKind = 'ok' | 'dup' | 'unknown' | 'done';
+type Colis = { code: string; ref: string; nom: string; taille: string; fragile: boolean };
+type Retour = { type: 'ok' | 'deja' | 'inconnu'; colis?: Colis; code: string };
 
-const STR = {
+const T = {
   fr: {
-    title: 'Scanner',
-    sub: (n: number, total: number) => `${n}/${total} colis scannés`,
-    demo: 'Viseur caméra simulé : utilisez la saisie manuelle du code à 8 caractères. Les colis listés sont vos missions du jour.',
-    retrait: 'Retrait',
-    livraison: 'Livraison',
-    viewfinder: 'Aperçu caméra (simulation)',
-    manualPlaceholder: 'Saisie manuelle (8 car.)',
-    validate: 'Valider',
-    progress: (phase: string) => `Progression du ${phase}`,
-    listTitle: 'Colis de la tournée',
-    scanned: 'scanné',
-    scanBtn: 'Scanner',
-    done: 'Terminé',
-    testUnknown: 'Simuler un colis hors tournée',
-    okTitle: 'Colis reconnu',
-    dupTitle: 'Déjà scanné',
-    unknownTitle: 'Colis hors tournée',
-    doneTitle: 'Tous les colis scannés',
-    empty: 'Aucun colis à scanner pour cette étape.',
-    pickedUp: 'Colis récupéré — la mission avance.',
-    offlineNote: 'Enregistré sur l’appareil, transmis au retour du réseau.',
+    retrait: 'Retrait', livraison: 'Dans le véhicule', viser: 'Visez l’étiquette du colis', lampe: 'Lampe',
+    scannes: (n: number, t: number) => `${n} sur ${t} scannés`, aTrouver: 'à trouver', scanne: 'scanné',
+    ok: (n: string) => `✓ ${n}`, deja: 'Déjà scanné', inconnu: (c: string) => `Colis hors tournée : ${c}`,
+    saisir: 'Saisir un code', code: 'Code à 8 caractères', valider: 'Valider', terminer: (n: number) => `Terminer (${n})`,
+    vide: 'Aucun colis à scanner pour cette étape.', manque: (n: number) => `${n} colis manquant(s) — à trouver avant de partir.`,
+    permission: 'L’appareil photo sert à lire les étiquettes.', autoriser: 'Autoriser l’appareil photo',
+    fragile: 'fragile',
   },
   ar: {
-    title: 'مسح',
-    sub: (n: number, total: number) => `${n}/${total} طرد تم مسحه`,
-    demo: 'معاينة الكاميرا محاكاة: استعمل الإدخال اليدوي للرمز المكوّن من 8 خانات. الطرود المعروضة هي مهامك اليوم.',
-    retrait: 'الاستلام',
-    livraison: 'التسليم',
-    viewfinder: 'معاينة الكاميرا (محاكاة)',
-    manualPlaceholder: 'إدخال يدوي (8 أحرف)',
-    validate: 'تأكيد',
-    progress: (phase: string) => `تقدم ${phase}`,
-    listTitle: 'طرود الجولة',
-    scanned: 'تم المسح',
-    scanBtn: 'مسح',
-    done: 'انتهى',
-    testUnknown: 'محاكاة طرد خارج الجولة',
-    okTitle: 'تم التعرف على الطرد',
-    dupTitle: 'تم مسحه من قبل',
-    unknownTitle: 'طرد خارج الجولة',
-    doneTitle: 'تم مسح جميع الطرود',
-    empty: 'لا يوجد طرد للمسح في هذه المرحلة.',
-    pickedUp: 'تم استلام الطرد — تتقدم المهمة.',
-    offlineNote: 'محفوظ على الجهاز، سيُرسل عند عودة الشبكة.',
+    retrait: 'الاستلام', livraison: 'في المركبة', viser: 'وجّه الكاميرا نحو ملصق الطرد', lampe: 'المصباح',
+    scannes: (n: number, t: number) => `${n} من ${t} تم مسحها`, aTrouver: 'للبحث', scanne: 'تم المسح',
+    ok: (n: string) => `✓ ${n}`, deja: 'تم مسحه من قبل', inconnu: (c: string) => `طرد خارج الجولة: ${c}`,
+    saisir: 'إدخال رمز', code: 'رمز من 8 خانات', valider: 'تأكيد', terminer: (n: number) => `إنهاء (${n})`,
+    vide: 'لا يوجد طرد للمسح في هذه المرحلة.', manque: (n: number) => `${n} طرد ناقص — ابحث عنه قبل الانطلاق.`,
+    permission: 'تُستعمل الكاميرا لقراءة الملصقات.', autoriser: 'السماح بالكاميرا',
+    fragile: 'قابل للكسر',
   },
-} as const;
+};
 
-export default function ScannerScreen() {
-  const { colors, mode } = useTheme();
+/** Extrait d'un contenu scanné le code de suivi ou la référence d'une commande connue. */
+export function reconnaitre(contenu: string, commandes: Pick<Order, 'code' | 'ref'>[]): string | null {
+  const brut = contenu.trim().toUpperCase();
+  for (const o of commandes) {
+    if (brut === o.code.toUpperCase() || brut === o.ref.toUpperCase()) return o.code;
+  }
+  for (const o of commandes) {
+    if (brut.includes(o.ref.toUpperCase()) || new RegExp(`(^|[^A-Z0-9])${o.code.toUpperCase()}([^A-Z0-9]|$)`).test(brut)) return o.code;
+  }
+  const seul = brut.match(/^[A-Z0-9]{8}$/);
+  return seul ? seul[0] : null;
+}
+
+export default function Scanner() {
+  const { colors } = useTheme();
   const { lang, rtl } = useLanguage();
-  const t = STR[lang === 'ar' ? 'ar' : 'fr'];
+  const t = T[lang];
+  const insets = useSafeAreaInsets();
+  const vert = useTon('vert');
+  const ambre = useTon('ambre');
+  const rouge = useTon('rouge');
+  const row = { flexDirection: rtl ? 'row-reverse' as const : 'row' as const };
+  const align = { textAlign: rtl ? 'right' as const : 'left' as const };
 
+  const [permission, demander] = useCameraPermissions();
+  const [actif, setActif] = React.useState(false);
   const [phase, setPhase] = React.useState<Phase>('retrait');
-  const [scanned, setScanned] = React.useState<string[]>([]);
-  const [flash, setFlash] = React.useState<{ kind: FlashKind; item?: Colis; code?: string } | null>(null);
-  const [manual, setManual] = React.useState('');
-  const [orders, setOrders] = React.useState<Order[]>([]);
-  const { pending, online, sync } = useOutbox();
+  const [scannes, setScannes] = React.useState<string[]>([]);
+  const [retour, setRetour] = React.useState<Retour | null>(null);
+  const [lampe, setLampe] = React.useState(false);
+  const [manuel, setManuel] = React.useState<string | null>(null);
+  const [missions, setMissions] = React.useState<Order[]>([]);
+  const dernier = React.useRef<{ code: string; at: number } | null>(null);
+  const { pending, sync } = useOutbox();
 
-  // Mêmes missions que l'onglet Missions, même cache : hors ligne, le livreur scanne
-  // toujours la tournée de son dernier chargement plutôt qu'un écran vide.
   const recharger = React.useCallback(async () => {
     try {
-      const fresh = await authedClient().getMissions();
-      setOrders(fresh);
-      await writeJson(CACHE_KEY, fresh);
+      const frais = await authedClient().getMissions();
+      setMissions(frais);
+      await writeJson(CACHE_MISSIONS, frais);
     } catch {
-      setOrders(await readJson<Order[]>(CACHE_KEY, []));
+      setMissions(await readJson<Order[]>(CACHE_MISSIONS, []));
     }
   }, []);
-  React.useEffect(() => { recharger(); }, [recharger]);
 
-  const vue = applyPending(orders, pending);
-  const items: Colis[] = vue
+  // La caméra ne tourne que sur cet onglet : ailleurs elle viderait la batterie.
+  useFocusEffect(React.useCallback(() => {
+    void recharger();
+    setActif(true);
+    return () => { setActif(false); setLampe(false); };
+  }, [recharger]));
+
+  const vue = applyPending(missions, pending);
+  const colis: Colis[] = vue
     .filter((o) => (PHASE_STATUTS[phase] as readonly string[]).includes(o.status))
-    .map((o) => ({ code: o.code, ref: o.ref, name: o.dropContact || o.merchant || o.ref, status: o.status }));
-  const total = items.length;
-  // Un colis passé à l'étape suivante par un scan sort de la liste : il compte comme fait.
-  const faits = scanned.filter((c) => !items.some((i) => i.code === c)).length;
-  const done = items.filter((i) => scanned.includes(i.code)).length + faits;
-  const allDone = total > 0 && done >= total + faits;
+    .map((o) => ({ code: o.code, ref: o.ref, nom: o.dropContact || o.merchant || o.ref, taille: o.size, fragile: !!o.fragile }));
+  // Au retrait, un colis scanné change d'étape et quitte la liste : il reste compté comme fait.
+  const sortis = scannes.filter((c) => !colis.some((i) => i.code === c));
+  const fait = colis.filter((i) => scannes.includes(i.code)).length + sortis.length;
+  const total = colis.length + sortis.length;
+  const manquants = colis.filter((i) => !scannes.includes(i.code));
 
-  // Un succès s'efface tout seul — on enchaîne les colis. Un REFUS reste à l'écran
-  // jusqu'au scan suivant : à 1,6 s, un livreur qui scanne à la chaîne rate le seul
-  // message qui lui demandait de s'arrêter.
   React.useEffect(() => {
-    if (!flash || flash.kind === 'dup' || flash.kind === 'unknown') return;
-    const id = setTimeout(() => setFlash(null), 1600);
+    if (!retour || retour.type !== 'ok') return;
+    const id = setTimeout(() => setRetour(null), 1800);
     return () => clearTimeout(id);
-  }, [flash]);
+  }, [retour]);
 
-  /**
-   * Scanner un colis au RETRAIT, c'est l'avoir en main : la mission passe « Récupérée ».
-   * L'action part par la file d'attente, comme celles de l'écran de progression — donc
-   * elle survit à une coupure réseau et son rejeu est dédoublonné (clé par statut).
-   */
-  async function enregistrerRetrait(colis: Colis) {
-    const ordre = vue.find((o) => o.ref === colis.ref);
-    if (!ordre) return;
-    const chemin: string[] = ordre.status === 'ASSIGNEE' ? ['ASSIGNEE', 'RETRAIT'] : ['RETRAIT'];
+  async function enregistrerRetrait(c: Colis) {
+    const o = vue.find((x) => x.ref === c.ref);
+    if (!o) return;
+    const chemin = o.status === 'ASSIGNEE' ? ['ASSIGNEE', 'RETRAIT'] : ['RETRAIT'];
     for (const depuis of chemin) {
-      await enqueue({
-        kind: 'advance', ref: ordre.ref, from: depuis as Order['status'],
-        idemKey: idemKey(ordre.ref, `advance-${depuis}`),
-      });
+      await enqueue({ kind: 'advance', ref: o.ref, from: depuis as Order['status'], idemKey: idemKey(o.ref, `advance-${depuis}`) });
     }
     await sync();
     await recharger();
   }
 
-  function handle(code: string) {
-    const item = items.find((i) => i.code === code);
-    if (item && !scanned.includes(code)) {
-      setScanned((s) => [code, ...s]);
-      setFlash({ kind: 'ok', item, code });
-      if (phase === 'retrait') enregistrerRetrait(item);
+  function traiter(code: string) {
+    const c = colis.find((i) => i.code === code);
+    if (c && !scannes.includes(code)) {
+      Vibration.vibrate(60);
+      setScannes((l) => [code, ...l]);
+      setRetour({ type: 'ok', colis: c, code });
+      if (phase === 'retrait') void enregistrerRetrait(c);
       return;
     }
-    // Le colis a pu QUITTER la liste de l'étape parce qu'il vient d'y être scanné :
-    // le chercher dans toute la tournée évite de traiter un colis bien à soi en
-    // « hors tournée », ce qui enverrait le livreur chercher une erreur inexistante.
-    const ailleurs = vue.find((o) => o.code === code);
-    if (item || ailleurs) {
-      const connu = item ?? { code, ref: ailleurs!.ref, name: ailleurs!.dropContact || ailleurs!.merchant || ailleurs!.ref, status: ailleurs!.status };
-      setFlash({ kind: 'dup', item: connu, code });
-      return;
-    }
-    setFlash({ kind: 'unknown', code });
+    Vibration.vibrate([0, 80, 80, 80]);
+    const connu = c ?? vue.find((o) => o.code === code);
+    setRetour(connu ? { type: 'deja', code } : { type: 'inconnu', code });
   }
 
-  function scanNext() {
-    const next = items.find((i) => !scanned.includes(i.code));
-    if (next) handle(next.code);
-    else setFlash({ kind: 'done' });
+  function lu(r: BarcodeScanningResult) {
+    const code = reconnaitre(r.data, vue);
+    if (!code) return;
+    // Le même code reste devant l'objectif plusieurs images de suite : une lecture suffit.
+    const now = Date.now();
+    if (dernier.current && dernier.current.code === code && now - dernier.current.at < 2500) return;
+    dernier.current = { code, at: now };
+    traiter(code);
   }
 
-  function submitManual() {
-    if (manual.length !== 8) return;
-    handle(manual.toUpperCase());
-    setManual('');
-  }
-
-  const flashColor = flash
-    ? flash.kind === 'ok' || flash.kind === 'done'
-      ? resolveColor('green', 9, mode)
-      : flash.kind === 'dup'
-        ? resolveColor('amber', 9, mode)
-        : resolveColor('red', 9, mode)
-    : colors.border;
+  const couleurRetour = retour?.type === 'ok' ? vert : retour?.type === 'deja' ? ambre : rouge;
 
   return (
-    <View style={[s.wrap, { backgroundColor: colors.bg }]}>
-      <ScreenHead title={t.title} sub={t.sub(done, total + faits)} rtl={rtl} />
-      <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
-        <View style={[s.notice, { borderColor: colors.border, backgroundColor: colors.panel }]}>
-          <Text style={[s.noticeTxt, { color: colors.muted, textAlign: rtl ? 'right' : 'left' }]}>{t.demo}</Text>
+    <View style={[s.plein, { backgroundColor: '#000' }]}>
+      <View style={[s.camera, { paddingTop: insets.top }]}>
+        {permission?.granted && actif ? (
+          <CameraView style={StyleSheet.absoluteFill} facing="back" enableTorch={lampe}
+            barcodeScannerSettings={{ barcodeTypes: ['qr', 'code128', 'code39', 'ean13', 'datamatrix'] }}
+            onBarcodeScanned={lu} />
+        ) : (
+          <View style={[StyleSheet.absoluteFill, s.sansCamera]}>
+            <Text style={{ color: '#fff', textAlign: 'center', marginBottom: 12 }}>{t.permission}</Text>
+            {permission && !permission.granted ? <Bouton variante="marque" petit onPress={() => void demander()}>{t.autoriser}</Bouton> : null}
+          </View>
+        )}
+        <View style={[row, s.barreHaut, { top: insets.top + 8 }]}>
+          <View style={[row, s.segment]}>
+            {(['retrait', 'livraison'] as const).map((p) => (
+              <Pressable key={p} onPress={() => { setPhase(p); setScannes([]); setRetour(null); }} accessibilityRole="tab"
+                accessibilityState={{ selected: phase === p }} style={[s.segBtn, phase === p && { backgroundColor: 'rgba(255,255,255,0.25)' }]}>
+                <Text style={{ color: '#fff', fontWeight: '700' }}>{p === 'retrait' ? t.retrait : t.livraison}</Text>
+              </Pressable>
+            ))}
+          </View>
+          <Pressable onPress={() => setLampe((v) => !v)} accessibilityRole="button" style={[s.segBtn, { backgroundColor: lampe ? MARQUE.amber : 'rgba(255,255,255,0.14)' }]}>
+            <Text style={{ color: lampe ? MARQUE.navy : '#fff', fontWeight: '700' }}>⚡ {t.lampe}</Text>
+          </Pressable>
         </View>
+        <View style={s.cadre} pointerEvents="none" />
+        <Text style={s.viser}>{t.viser}</Text>
+      </View>
 
-        <View style={[s.segment, { borderColor: colors.border, flexDirection: rtl ? 'row-reverse' : 'row' }]}>
-          {(['retrait', 'livraison'] as const).map((p) => {
-            const on = phase === p;
+      <View style={[s.panneau, { backgroundColor: colors.bg }]}>
+        <View style={[row, s.entre]}>
+          <Text style={{ color: colors.text, fontSize: 18, fontWeight: '800' }}>{t.scannes(fait, total)}</Text>
+          {retour ? (
+            <View style={[s.retour, { backgroundColor: couleurRetour.doux }]}>
+              <Text style={{ color: couleurRetour.texte, fontWeight: '700' }} numberOfLines={1}>
+                {retour.type === 'ok' ? t.ok(retour.colis?.nom ?? retour.code) : retour.type === 'deja' ? t.deja : t.inconnu(retour.code)}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+        <View style={[s.progres, { backgroundColor: colors.border }]}>
+          <View style={{ width: total ? `${(fait / total) * 100}%` : '0%', height: '100%', backgroundColor: vert.plein }} />
+        </View>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ gap: 8 }} keyboardShouldPersistTaps="handled">
+          {total === 0 ? <Text style={{ color: colors.muted, textAlign: 'center', marginTop: 12 }}>{t.vide}</Text> : null}
+          {colis.map((c) => {
+            const ok = scannes.includes(c.code);
             return (
-              <Pressable
-                key={p}
-                onPress={() => setPhase(p)}
-                style={[s.segmentItem, on && { backgroundColor: colors.indigo9 }]}
-              >
-                <Text style={[s.segmentTxt, { color: on ? '#fff' : colors.text }]}>{p === 'retrait' ? t.retrait : t.livraison}</Text>
+              <Pressable key={c.code} onPress={() => router.push(`/mission/${encodeURIComponent(c.ref)}`)} style={[row, s.entre]}>
+                <Text style={[{ color: ok ? colors.text : ambre.texte, fontWeight: ok ? '400' : '700', flex: 1, fontSize: 15 }, align]} numberOfLines={1}>
+                  {ok ? '✓' : '○'} {c.nom} · {c.taille}{c.fragile ? ` · ${t.fragile}` : ''}
+                </Text>
+                <Text style={{ color: ok ? colors.muted : ambre.texte, fontSize: 13 }}>{ok ? t.scanne : t.aTrouver}</Text>
               </Pressable>
             );
           })}
-        </View>
-
-        <View style={[s.viewfinder, { backgroundColor: colors.text, borderColor: flashColor }]}>
-          {!flash && <Text style={[s.viewfinderTxt, { color: colors.bg }]}>{t.viewfinder}</Text>}
-          {flash && flash.kind !== 'done' && (
-            <View style={s.flashBox}>
-              <View style={[s.flashDot, { backgroundColor: flashColor }]}>
-                <Text style={s.flashGlyph}>{flash.kind === 'ok' ? '✓' : flash.kind === 'dup' ? '!' : '×'}</Text>
-              </View>
-              <Text style={[s.flashTitle, { color: colors.bg }]}>
-                {flash.kind === 'ok' ? t.okTitle : flash.kind === 'dup' ? t.dupTitle : t.unknownTitle}
-              </Text>
-              {flash.item && (
-                <Text style={[s.flashMeta, { color: colors.border }]}>
-                  {flash.item.ref} · {flash.item.name}
-                </Text>
-              )}
+          {sortis.map((code) => (
+            <View key={code} style={[row, s.entre]}>
+              <Text style={[{ color: colors.text, flex: 1, fontSize: 15 }, align]}>✓ {code}</Text>
+              <IcCheck size={16} color={vert.texte} />
             </View>
-          )}
-          {flash && flash.kind === 'done' && (
-            <View style={s.flashBox}>
-              <View style={[s.flashDot, { backgroundColor: resolveColor('green', 9, mode) }]}>
-                <Text style={s.flashGlyph}>✓</Text>
-              </View>
-              <Text style={[s.flashTitle, { color: colors.bg }]}>{t.doneTitle}</Text>
-            </View>
-          )}
-        </View>
-
-        <View style={s.progressRow}>
-          <Text style={{ color: colors.muted, fontSize: 12, flex: 1 }}>{t.progress(phase === 'retrait' ? t.retrait : t.livraison)}</Text>
-          <Text style={{ color: colors.text, fontSize: 12, fontWeight: '600' }} testID="scan-compteur">{done}/{total + faits}</Text>
-        </View>
-        <View style={[s.progressTrack, { backgroundColor: colors.border }]}>
-          <View
-            style={[
-              s.progressFill,
-              { width: `${total + faits > 0 ? (done / (total + faits)) * 100 : 0}%`, backgroundColor: allDone ? resolveColor('green', 9, mode) : colors.indigo9 },
-            ]}
-          />
-        </View>
-
-        <View style={[s.manualRow, { flexDirection: rtl ? 'row-reverse' : 'row' }]}>
-          <TextInput
-            style={[s.manualInput, { borderColor: colors.border, color: colors.text, textAlign: rtl ? 'right' : 'left' }]}
-            placeholder={t.manualPlaceholder}
-            placeholderTextColor={colors.muted}
-            value={manual}
-            onChangeText={(v) => setManual(v.toUpperCase().slice(0, 8))}
-            autoCapitalize="characters"
-            maxLength={8}
-            testID="scan-code-manuel" accessibilityLabel={t.manualPlaceholder}
-          />
-          <Pressable
-            disabled={manual.length !== 8}
-            onPress={submitManual}
-            style={[s.validateBtn, { borderColor: colors.border, opacity: manual.length === 8 ? 1 : 0.5 }]}
-          >
-            <Text style={{ color: colors.text, fontWeight: '600' }}>{t.validate}</Text>
-          </Pressable>
-        </View>
-
-        <Text style={[s.listTitle, { color: colors.muted }]}>{t.listTitle}</Text>
-        {items.length === 0 && (
-          <Text style={{ color: colors.muted, fontSize: 13 }} testID="scan-liste-vide">{t.empty}</Text>
-        )}
-        {items.map((it) => {
-          const ok = scanned.includes(it.code);
-          return (
-            <Pressable
-              key={it.code}
-              onPress={() => router.push(`/mission/${it.ref}`)}
-              style={[
-                s.itemRow,
-                { flexDirection: rtl ? 'row-reverse' : 'row', borderColor: colors.border },
-                ok && { backgroundColor: resolveColor('green', 3, mode) },
-              ]}
-            >
-              <View style={[s.itemDot, { backgroundColor: ok ? resolveColor('green', 9, mode) : colors.border }]}>
-                <Text style={{ color: ok ? '#fff' : colors.muted, fontWeight: '700' }}>{ok ? '✓' : '·'}</Text>
-              </View>
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <Text style={{ color: colors.text, fontSize: 13, fontWeight: '600' }} numberOfLines={1}>{it.name}</Text>
-                <Text style={{ color: colors.muted, fontSize: 11 }} numberOfLines={1}>{it.ref} · {it.code}</Text>
-              </View>
-              {ok && (
-                <View style={[s.pill, { backgroundColor: resolveColor('green', 3, mode) }]}>
-                  <Text style={{ color: resolveColor('green', 11, mode), fontSize: 11, fontWeight: '700' }}>{t.scanned}</Text>
-                </View>
-              )}
-            </Pressable>
-          );
-        })}
-        {scanned.length > 0 && phase === 'retrait' && (
-          <Text style={{ color: colors.muted, fontSize: 12 }}>
-            {online ? t.pickedUp : t.offlineNote}
-          </Text>
-        )}
-      </ScrollView>
-
-      <BottomAction>
-        <View style={{ flexDirection: rtl ? 'row-reverse' : 'row', gap: space[2] }}>
-          <Pressable onPress={() => handle('ZZ99ZZ99')} style={[s.testBtn, { borderColor: colors.border }]} accessibilityLabel={t.testUnknown}>
-            <Text style={{ color: colors.muted, fontSize: 18 }}>?</Text>
-          </Pressable>
-          <View style={{ flex: 1 }}>
-            <PrimaryBtn onPress={scanNext} disabled={items.length === 0}>{allDone ? t.done : t.scanBtn}</PrimaryBtn>
+          ))}
+        </ScrollView>
+        {manuel !== null ? (
+          <View style={[row, { gap: 8, marginTop: 8 }]}>
+            <TextInput value={manuel} onChangeText={(v) => setManuel(v.toUpperCase().replace(/[^A-Z0-9-]/g, ''))} autoFocus
+              placeholder={t.code} placeholderTextColor={colors.muted} autoCapitalize="characters" maxLength={24}
+              style={[s.saisie, { borderColor: colors.border, color: colors.text, backgroundColor: colors.panel }]} testID="scan-saisie" />
+            <Bouton petit style={{ width: 110 }} disabled={!manuel} onPress={() => {
+              const code = reconnaitre(manuel, vue);
+              if (code) traiter(code); else setRetour({ type: 'inconnu', code: manuel });
+              setManuel(null);
+            }}>{t.valider}</Bouton>
           </View>
-        </View>
-      </BottomAction>
+        ) : (
+          <View style={[row, { gap: 10, marginTop: 10 }]}>
+            <Bouton petit variante="secondaire" style={{ flex: 1 }} onPress={() => setManuel('')}>{t.saisir}</Bouton>
+            <Bouton petit style={{ flex: 1 }} disabled={fait === 0} onPress={() => router.navigate('/(tabs)/journee')}>{t.terminer(fait)}</Bouton>
+          </View>
+        )}
+        {manquants.length > 0 && fait > 0 ? <View style={{ marginTop: 8 }}><Pastille ton="ambre">{t.manque(manquants.length)}</Pastille></View> : null}
+      </View>
     </View>
   );
 }
 
 const s = StyleSheet.create({
-  wrap: { flex: 1 },
-  content: { padding: space[4], paddingBottom: space[9] + touch.primary, gap: space[3] },
-  notice: { borderWidth: 1, borderRadius: radius[3], padding: space[3] },
-  noticeTxt: { fontSize: 12, lineHeight: 17 },
-  segment: { borderWidth: 1, borderRadius: radius[3], overflow: 'hidden' },
-  segmentItem: { flex: 1, height: touch.min, alignItems: 'center', justifyContent: 'center' },
-  segmentTxt: { fontSize: 13, fontWeight: '600' },
-  viewfinder: { aspectRatio: 4 / 3, borderRadius: radius[4], borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-  viewfinderTxt: { fontSize: 13, opacity: 0.6 },
-  flashBox: { alignItems: 'center', gap: 4 },
-  flashDot: { width: 54, height: 54, borderRadius: 27, alignItems: 'center', justifyContent: 'center' },
-  flashGlyph: { color: '#fff', fontSize: 24, fontWeight: '800' },
-  flashTitle: { fontSize: 14, fontWeight: '700' },
-  flashMeta: { fontSize: 12 },
-  progressRow: { flexDirection: 'row' },
-  progressTrack: { height: 6, borderRadius: 3, overflow: 'hidden' },
-  progressFill: { height: '100%' },
-  manualRow: { gap: space[2] },
-  manualInput: { flex: 1, borderWidth: 1, borderRadius: radius[3], paddingHorizontal: space[3], height: touch.min, fontSize: 15 },
-  validateBtn: { borderWidth: 1, borderRadius: radius[3], paddingHorizontal: space[3], height: touch.min, alignItems: 'center', justifyContent: 'center' },
-  listTitle: { fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4 },
-  itemRow: { alignItems: 'center', gap: space[3], borderWidth: 1, borderRadius: radius[3], padding: space[2] },
-  itemDot: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
-  pill: { borderRadius: radius.full, paddingHorizontal: space[2], paddingVertical: 2 },
-  testBtn: { width: touch.primary, height: touch.primary, borderWidth: 1, borderRadius: radius[3], alignItems: 'center', justifyContent: 'center' },
+  plein: { flex: 1 },
+  camera: { height: '46%', overflow: 'hidden' },
+  sansCamera: { alignItems: 'center', justifyContent: 'center', padding: 24, backgroundColor: '#14171e' },
+  barreHaut: { position: 'absolute', left: 12, right: 12, justifyContent: 'space-between', alignItems: 'center' },
+  segment: { backgroundColor: 'rgba(255,255,255,0.14)', borderRadius: 999, padding: 3 },
+  segBtn: { paddingHorizontal: 14, minHeight: 40, borderRadius: 999, justifyContent: 'center' },
+  cadre: { position: 'absolute', left: '15%', right: '15%', top: '34%', height: '38%', borderWidth: 3, borderColor: MARQUE.amber, borderRadius: 18 },
+  viser: { position: 'absolute', bottom: 34, left: 0, right: 0, textAlign: 'center', color: '#fff', fontWeight: '600' },
+  panneau: { flex: 1, marginTop: -20, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 16 },
+  entre: { justifyContent: 'space-between', alignItems: 'center', gap: 10, minHeight: 32 },
+  retour: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5, maxWidth: '55%' },
+  progres: { height: 10, borderRadius: 6, overflow: 'hidden', marginVertical: 10 },
+  saisie: { flex: 1, borderWidth: 1, borderRadius: 14, paddingHorizontal: 12, fontSize: 17, minHeight: 48 },
 });

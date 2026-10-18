@@ -23,5 +23,9 @@
     "*.ts",
     "*.tsx"
   ],
-  "extends": "expo/tsconfig.base"
+  "extends": "expo/tsconfig.base",
+  "exclude": [
+    "**/*.test.ts",
+    "node_modules"
+  ]
 }

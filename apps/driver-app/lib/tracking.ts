@@ -15,8 +15,39 @@ import { authedClient } from './api';
  * déclaration spécifique côté stores et un consentement distinct.
  */
 
-const MIN_INTERVAL_MS = 30_000;
-const MIN_DISTANCE_M = 50;
+const MIN_INTERVAL_MS = 20_000;
+const MIN_DISTANCE_M = 30;
+
+/* ---------------- Dernière position connue, partagée avec les écrans ----------------
+ * La carte de la journée, l'ordre des arrêts et la détection d'arrivée lisent la même
+ * position que celle envoyée au serveur : un seul capteur ouvert, pas deux. */
+export type Position = { lat: number; lng: number; at: number };
+let derniere: Position | null = null;
+const abonnesPosition = new Set<(p: Position) => void>();
+
+function publierPosition(lat: number, lng: number) {
+  derniere = { lat, lng, at: Date.now() };
+  for (const f of abonnesPosition) f(derniere);
+}
+
+/**
+ * Dernière position connue. Sans suivi actif (journée non démarrée), relit la position
+ * mise en cache par le système si l'autorisation est déjà accordée — sans la redemander.
+ */
+export function usePosition(): Position | null {
+  const [p, setP] = React.useState<Position | null>(derniere);
+  React.useEffect(() => {
+    abonnesPosition.add(setP);
+    if (!derniere) {
+      Location.getForegroundPermissionsAsync()
+        .then((perm) => (perm.granted ? Location.getLastKnownPositionAsync() : null))
+        .then((pos) => { if (pos && !derniere) publierPosition(pos.coords.latitude, pos.coords.longitude); })
+        .catch(() => undefined);
+    }
+    return () => { abonnesPosition.delete(setP); };
+  }, []);
+  return p;
+}
 
 export type TrackingState = 'off' | 'starting' | 'on' | 'denied' | 'error';
 
@@ -30,13 +61,18 @@ export function useTracking(enabled: boolean) {
 
     async function start() {
       setState('starting');
-      const perm = await Location.requestForegroundPermissionsAsync();
+      // Lire l'état d'abord : redemander une autorisation déjà accordée peut rester sans
+      // réponse sur certains Android (constaté sur l'émulateur API 36), et le suivi ne
+      // démarrait jamais.
+      let perm = await Location.getForegroundPermissionsAsync();
+      if (!perm.granted && perm.canAskAgain) perm = await Location.requestForegroundPermissionsAsync();
       if (cancelled) return;
       if (!perm.granted) { setState('denied'); return; }
       try {
         sub.current = await Location.watchPositionAsync(
-          { accuracy: Location.Accuracy.Balanced, timeInterval: MIN_INTERVAL_MS, distanceInterval: MIN_DISTANCE_M },
+          { accuracy: Location.Accuracy.High /* GPS : la détection d’arrivée (120 m) en dépend */, timeInterval: MIN_INTERVAL_MS, distanceInterval: MIN_DISTANCE_M },
           async (pos) => {
+            publierPosition(pos.coords.latitude, pos.coords.longitude);
             try {
               const r = await authedClient().pushDriverPosition(pos.coords.latitude, pos.coords.longitude);
               setLastAt(r.at);
@@ -47,7 +83,7 @@ export function useTracking(enabled: boolean) {
           },
         );
         if (!cancelled) setState('on');
-      } catch {
+      } catch (e) {
         if (!cancelled) setState('error');
       }
     }

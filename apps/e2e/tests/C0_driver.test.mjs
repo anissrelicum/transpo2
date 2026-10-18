@@ -94,3 +94,19 @@ test('sécurité : un livreur ne peut pas agir sur la commande d’un autre', as
   const r = await api(`/v1/driver/orders/${other.ref}/advance`, { method: 'POST', token: driver });
   assert.equal(r.status, 403);
 });
+
+test('livreur : un billet plus gros que le dû ne gonfle pas la caisse (monnaie rendue)', async () => {
+  // 420 DH dus, le client tend 500 : le livreur rend 80. La caisse doit compter 420, sinon
+  // la déclaration du soir l'accuse d'un écart de 80 DH qu'il n'a jamais eu.
+  const o = (await api('/v1/orders', { method: 'POST', token: admin, body: { fromCity: 'Casablanca', toCity: 'Casablanca', cod: 420, proofLevel: 'aucune' } })).json;
+  await api(`/v1/orders/${o.ref}/assign`, { method: 'POST', token: admin, body: { driver: DRIVER } });
+  for (const k of ['A1', 'A2', 'A3']) {
+    await api(`/v1/driver/orders/${o.ref}/advance`, { method: 'POST', token: driver, headers: { 'idempotency-key': `${o.ref}:${k}` } });
+  }
+  const p = await api(`/v1/driver/orders/${o.ref}/proof`, { method: 'POST', token: driver, body: { codCollected: 500 }, headers: { 'idempotency-key': `${o.ref}:P` } });
+  assert.equal(p.json.status, 'LIVREE');
+  assert.equal(p.json.codPaid, true);
+  const caisse = (await api('/v1/driver/cash', { token: driver })).json;
+  const mvt = caisse.moves.find((m) => m.ref === o.ref);
+  assert.equal(mvt.amount, 420);
+});
