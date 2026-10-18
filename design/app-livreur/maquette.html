@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Portrail Livreur — maquette v1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== Jetons de la maquette (marque Portrail + système de l'app) ===== */
+:root{
+  --navy:#0B1537; --navy-2:#16224F; --indigo:#3E5BDB; --indigo-2:#EEF1FF; --amber:#F5A524; --amber-2:#FFF4DE;
+  --vert:#17A06B; --vert-2:#E3F6EE; --rouge:#D93B3B; --rouge-2:#FDECEC; --cyan:#0E9BB5;
+  --fond:#F3F5FA; --carte:#FFFFFF; --texte:#0B1220; --gris:#5B6478; --ligne:#E4E7EE;
+  --r:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,system-ui,-apple-system,sans-serif;background:#E9EDF5;color:var(--texte)}
+a{color:inherit}
+
+/* ===== Page de présentation ===== */
+.entete{background:var(--navy);color:#fff;padding:40px 32px 34px}
+.entete .in{max-width:1500px;margin:0 auto}
+.entete .marque{display:flex;align-items:center;gap:12px;font-weight:800;font-size:22px}
+.entete .marque i{width:36px;height:36px;border-radius:9px;background:#0B1537;border:2px solid #F5A524;display:grid;place-items:center;font-style:normal;color:#F5A524;font-weight:800}
+.entete h1{font-size:40px;letter-spacing:-.02em;margin-top:22px}
+.entete p{color:#C9D1F2;max-width:900px;margin-top:10px;line-height:1.55}
+.principes{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.principes span{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:7px 14px;font-size:14px}
+.sommaire{max-width:1500px;margin:0 auto;padding:22px 32px 0;display:flex;flex-wrap:wrap;gap:8px}
+.sommaire a{text-decoration:none;background:#fff;border:1px solid var(--ligne);border-radius:999px;padding:7px 13px;font-size:13px;font-weight:600}
+section.acte{max-width:1500px;margin:0 auto;padding:34px 32px 10px}
+section.acte h2{font-size:24px;letter-spacing:-.01em}
+section.acte > p{color:var(--gris);margin-top:6px;max-width:900px}
+.rang{display:flex;flex-wrap:wrap;gap:34px;margin-top:22px}
+figure.ecran{width:390px}
+figure.ecran figcaption{margin-top:14px;font-size:14px;color:#2B3245;line-height:1.5}
+figure.ecran figcaption > b{display:block;font-size:16px;color:var(--texte);margin-bottom:4px}
+figure.ecran figcaption ul{margin:6px 0 0 18px;color:var(--gris)}
+
+/* ===== Cadre téléphone ===== */
+.tel{position:relative;width:390px;height:844px;border-radius:48px;background:#000;padding:12px;box-shadow:0 30px 70px rgba(11,21,55,.28)}
+.tel .app{position:relative;width:100%;height:100%;border-radius:38px;overflow:hidden;background:var(--fond);display:flex;flex-direction:column}
+.tel .ilot{position:absolute;top:22px;left:50%;transform:translateX(-50%);width:120px;height:32px;border-radius:20px;background:#000;z-index:30}
+.statut{height:54px;flex:0 0 54px;display:flex;align-items:center;justify-content:space-between;padding:8px 34px 0;font-size:15px;font-weight:600;z-index:20}
+.statut.clair{color:#fff}
+.barre-home{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:#0B1220;opacity:.85;z-index:30}
+.app.sombre .barre-home,.barre-home.clair{background:#fff}
+
+/* ===== Composants de l'app ===== */
+.haut{padding:6px 18px 12px;display:flex;align-items:center;justify-content:space-between}
+.haut h3{font-size:22px;letter-spacing:-.01em}
+.pastille{white-space:nowrap;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:6px 11px;border-radius:999px}
+.p-vert{background:var(--vert-2);color:#0E7A4F}.p-ambre{background:var(--amber-2);color:#9A5B00}.p-indigo{background:var(--indigo-2);color:#2F45C8}.p-rouge{background:var(--rouge-2);color:#B02A2A}.p-gris{background:#EEF0F5;color:#465066}
+.pastille .pt{width:8px;height:8px;border-radius:50%;background:currentColor}
+.carte{background:var(--carte);border-radius:var(--r);box-shadow:0 1px 0 rgba(11,21,55,.04),0 8px 24px rgba(11,21,55,.06)}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;height:56px;border-radius:16px;font-weight:700;font-size:17px;border:0;width:100%}
+.btn-p{background:var(--indigo);color:#fff}
+.btn-a{background:var(--amber);color:var(--navy)}
+.btn-v{background:var(--vert);color:#fff}
+.btn-s{background:#fff;color:var(--texte);border:1.5px solid var(--ligne)}
+.btn-r{background:#fff;color:var(--rouge);border:1.5px solid #F3C2C2}
+.btn-sm{height:48px;font-size:15px}
+.libelle{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gris)}
+.mont{font-variant-numeric:tabular-nums}
+.ligne{display:flex;align-items:center;justify-content:space-between}
+.sep{height:1px;background:var(--ligne);margin:12px 0}
+.ic{width:22px;height:22px;flex:0 0 22px}
+.navbas{flex:0 0 84px;background:#fff;border-top:1px solid var(--ligne);display:flex;justify-content:space-around;padding:8px 6px 22px}
+.navbas div{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:#8A93A8;width:70px}
+.navbas div.on{color:var(--indigo)}
+.navbas svg{width:24px;height:24px}
+.bandeau{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;padding:9px 14px;border-radius:12px}
+.contenu{flex:1;overflow:hidden;padding:0 16px}
+
+/* Carte (plan) stylisée */
+.plan{position:relative;flex:1;overflow:hidden;background:#EAEFE6}
+.plan svg.fond{position:absolute;left:0;top:0;width:390px;height:800px}
+.epingle{position:absolute;transform:translate(-50%,-100%);display:grid;place-items:center;width:34px;height:34px;border-radius:50% 50% 50% 0;rotate:-45deg;background:var(--indigo);box-shadow:0 4px 10px rgba(0,0,0,.25);border:3px solid #fff}
+.epingle b{rotate:45deg;color:#fff;font-size:13px}
+.epingle.faite{background:#9AA3B5}.epingle.prochain{background:var(--amber)}.epingle.prochain b{color:var(--navy)}
+.moi{position:absolute;width:22px;height:22px;border-radius:50%;background:var(--indigo);border:4px solid #fff;box-shadow:0 0 0 8px rgba(62,91,219,.22)}
+.hub{position:absolute;transform:translate(-50%,-50%);background:var(--navy);color:#fff;font-size:11px;font-weight:800;border-radius:8px;padding:5px 7px}
+
+.feuille{position:absolute;left:0;right:0;bottom:84px;background:#fff;border-radius:24px 24px 0 0;box-shadow:0 -10px 30px rgba(11,21,55,.14);padding:10px 16px 16px}
+.feuille .poignee{width:44px;height:5px;border-radius:3px;background:#D5DAE5;margin:0 auto 10px}
+.flottant{position:absolute;left:12px;right:12px;top:64px;display:flex;gap:8px;z-index:5}
+.flottant .carte{padding:10px 12px;flex:1;white-space:nowrap}
+
+.voile{position:absolute;inset:0;background:rgba(11,21,55,.55);z-index:10}
+.modale{position:absolute;left:12px;right:12px;bottom:24px;z-index:11;background:#fff;border-radius:26px;padding:18px}
+.compte{position:relative;width:64px;height:64px}
+.compte svg{width:64px;height:64px;rotate:-90deg}
+.compte b{position:absolute;inset:0;display:grid;place-items:center;font-size:15px}
+
+.clavier{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.clavier div{height:52px;border-radius:14px;background:#fff;border:1px solid var(--ligne);display:grid;place-items:center;font-size:22px;font-weight:600}
+.puces{display:flex;gap:8px;flex-wrap:wrap}
+.puces span{padding:9px 14px;border-radius:12px;background:#fff;border:1.5px solid var(--ligne);font-weight:700;font-size:15px}
+.puces span.on{border-color:var(--indigo);background:var(--indigo-2);color:#2F45C8}
+
+.rtl{direction:rtl;font-family:'Noto Sans Arabic',Inter,sans-serif}
+.app.sombre{--fond:#0A1024;--carte:#141C38;--texte:#EEF1FA;--gris:#9AA4C0;--ligne:#26304F;background:#0A1024;color:#EEF1FA}
+.app.sombre .navbas{background:#0F1630;border-color:#26304F}
+.app.sombre .feuille{background:#141C38}
+.app.sombre .btn-s{background:#141C38;color:#EEF1FA;border-color:#26304F}
+.app.sombre .plan{background:#1B2340}
+.note-legende{font-size:12px;color:var(--gris)}
+</style>
+</head>
+<body>
+
+<header class="entete"><div class="in">
+  <div class="marque"><i>P</i>Portrail Livreur — maquette v1 à valider</div>
+  <h1>Ma journée, sur une carte.</h1>
+  <p>Refonte de l'application livreur avant publication sur l'App Store et Google Play. L'app n'est plus une liste :
+  elle organise la journée — tournée dans le bon ordre, prochain arrêt en grand, une seule action à la fois — et
+  s'utilise d'une main, en plein soleil, même sans réseau. Chaque écran est accompagné de ses choix.</p>
+  <div class="principes">
+    <span>Une action principale à la fois, en bas de l'écran</span><span>Boutons de 56 px</span>
+    <span>Tout fonctionne hors réseau</span><span>Français / arabe (RTL)</span><span>Mode sombre</span>
+    <span>Le numéro du client n'est jamais affiché</span><span>Missions proposées automatiquement</span>
+  </div>
+</div></header>
+
+<nav class="sommaire">
+  <a href="#acte1">1. Démarrer</a><a href="#acte2">2. Ma journée</a><a href="#acte3">3. Retrait</a>
+  <a href="#acte4">4. Livrer</a><a href="#acte5">5. Imprévus</a><a href="#acte6">6. Caisse & profil</a><a href="#acte7">7. Arabe, sombre, hors réseau</a>
+</nav>
+
+<!-- Icônes réutilisées -->
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i-carte" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></symbol>
+  <symbol id="i-liste" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+  <symbol id="i-scan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10"/></symbol>
+  <symbol id="i-caisse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="6" width="20" height="13" rx="2"/><circle cx="12" cy="12.5" r="2.5"/><path d="M6 10h.01M18 15h.01"/></symbol>
+  <symbol id="i-profil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-nav" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 4.5 20.3l.7.7L12 18l6.8 3 .7-.7z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17l9-10"/></symbol>
+  <symbol id="i-tel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="i-colis" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8"/></symbol>
+  <symbol id="i-alerte" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></symbol>
+  <symbol id="i-nuage" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l20 20M17.5 17H7a5 5 0 0 1-1.6-9.7M9.5 5.4A7 7 0 0 1 20 11a4 4 0 0 1 1 7.6"/></symbol>
+  <symbol id="i-photo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+  <!-- Fond de plan (quartier stylisé) -->
+  <symbol id="plan" viewBox="0 0 390 800">
+    <rect width="390" height="800" fill="#EDF1E8"/><g fill="#E3E7EE"><rect x="20" y="610" width="90" height="170" rx="5"/><rect x="130" y="610" width="100" height="80" rx="5"/><rect x="260" y="610" width="110" height="170" rx="5"/></g><path d="M0 595H390" stroke="#fff" stroke-width="14"/>
+    <g fill="#DCE6D3"><rect x="20" y="40" width="90" height="70" rx="6"/><rect x="250" y="300" width="110" height="80" rx="6"/></g>
+    <g fill="#E3E7EE"><rect x="130" y="30" width="100" height="90" rx="5"/><rect x="20" y="140" width="80" height="120" rx="5"/><rect x="130" y="150" width="90" height="70" rx="5"/><rect x="250" y="20" width="120" height="110" rx="5"/><rect x="250" y="150" width="120" height="120" rx="5"/><rect x="20" y="290" width="200" height="90" rx="5"/><rect x="20" y="410" width="120" height="160" rx="5"/><rect x="160" y="410" width="90" height="70" rx="5"/><rect x="270" y="410" width="100" height="160" rx="5"/><rect x="160" y="500" width="90" height="80" rx="5"/></g>
+    <g stroke="#FFFFFF" stroke-width="14" fill="none" stroke-linecap="round"><path d="M0 130H390M0 280H390M0 395H390M115 0V800M240 0V800"/><path d="M0 590 390 470" stroke-width="18"/></g>
+    <path d="M150 0 C 180 220 330 330 390 360" stroke="#FCE7B0" stroke-width="10" fill="none"/>
+    <path d="M0 520 C 120 500 170 560 250 600" fill="none" stroke="#BFDDF2" stroke-width="16"/>
+  </symbol>
+</svg>
+
+<!-- ===================== ACTE 1 ===================== -->
+<section class="acte" id="acte1">
+  <h2>1. Démarrer la journée</h2>
+  <p>Trois écrans seulement avant de rouler : se connecter, autoriser (une seule fois), puis démarrer son service.</p>
+  <div class="rang">
+
+    <figure class="ecran"><div class="tel"><div class="ilot"></div><div class="app" style="background:var(--navy);color:#fff">
+      <div class="statut clair"><span>8:02</span><span>5G 87%</span></div>
+      <div style="padding:60px 24px 0;flex:1;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;gap:12px"><div style="width:56px;height:56px;border-radius:14px;background:#0B1537;border:2px solid var(--amber);display:grid;place-items:center;color:var(--amber);font-weight:800;font-size:26px">P</div><div style="font-size:26px;font-weight:800">Portrail</div></div>
+        <div style="font-size:30px;font-weight:800;margin-top:40px;line-height:1.15">Bonjour 👋<br>Prêt pour la tournée ?</div>
+        <div style="margin-top:28px;display:grid;gap:12px">
+          <div style="background:#16224F;border-radius:14px;padding:14px 16px"><div class="libelle" style="color:#9FB0E8">Société</div><div style="font-size:17px;margin-top:4px">atlasexpress</div></div>
+          <div style="background:#16224F;border-radius:14px;padding:14px 16px"><div class="libelle" style="color:#9FB0E8">E-mail</div><div style="font-size:17px;margin-top:4px">youssef@atlasexpress.ma</div></div>
+          <div style="background:#16224F;border-radius:14px;padding:14px 16px"><div class="libelle" style="color:#9FB0E8">Mot de passe</div><div style="font-size:17px;margin-top:4px">••••••••••</div></div>
+        </div>
+        <div style="margin-top:auto;padding-bottom:40px;display:grid;gap:12px">
+          <button class="btn btn-a">Se connecter</button>
+          <div style="display:flex;justify-content:space-between;font-size:14px;color:#C9D1F2"><span>Mot de passe oublié ?</span><span>العربية</span></div>
+        </div>
+      </div><div class="barre-home clair"></div>
+    </div></div>
+    <figcaption><b>Connexion</b>Fond marine de la marque, un seul bouton ambre. La société est mémorisée après la première connexion ; la langue se change en un geste.</figcaption></figure>
+
+    <figure class="ecran"><div class="tel"><div class="ilot"></div><div class="app">
+      <div class="statut"><span>8:03</span><span>5G 87%</span></div>
+      <div class="haut"><h3>Avant de commencer</h3></div>
+      <div class="contenu" style="display:grid;gap:12px;align-content:start">
+        <p style="color:var(--gris);font-size:15px">Trois accès, demandés une seule fois. Chacun dit pourquoi.</p>
+        <div class="carte" style="padding:16px;display:flex;gap:14px;align-items:center"><div class="pastille p-indigo" style="padding:10px"><svg class="ic"><use href="#i-pin"/></svg></div><div style="flex:1"><b>Position</b><div style="font-size:14px;color:var(--gris)">Pour vous guider et vous proposer les missions proches.</div></div><span class="pastille p-vert"><svg width="14" height="14"><use href="#i-check"/></svg>OK</span></div>
+        <div class="carte" style="padding:16px;display:flex;gap:14px;align-items:center"><div class="pastille p-indigo" style="padding:10px"><svg class="ic"><use href="#i-photo"/></svg></div><div style="flex:1"><b>Appareil photo</b><div style="font-size:14px;color:var(--gris)">Pour la preuve de livraison et le scan des colis.</div></div><span class="pastille p-vert"><svg width="14" height="14"><use href="#i-check"/></svg>OK</span></div>
+        <div class="carte" style="padding:16px;display:flex;gap:14px;align-items:center"><div class="pastille p-ambre" style="padding:10px"><svg class="ic"><use href="#i-alerte"/></svg></div><div style="flex:1"><b>Notifications</b><div style="font-size:14px;color:var(--gris)">Pour ne rater aucune mission proposée.</div></div><button class="btn btn-p btn-sm" style="width:auto;padding:0 16px">Autoriser</button></div>
+      </div>
+      <div style="padding:16px 16px 34px"><button class="btn btn-p" style="opacity:.45">Continuer</button></div>
+      <div class="barre-home"></div>
+    </div></div>
+    <figcaption><b>Autorisations</b>Écran montré une seule fois. Sans les notifications, l'affectation automatique ne peut pas vous joindre : on l'explique au lieu de bloquer.</figcaption></figure>
+
+    <figure class="ecran"><div class="tel"><div class="ilot"></div><div class="app">
+      <div class="statut"><span>8:05</span><span>5G 86%</span></div>
+      <div class="haut"><h3>Bonjour Youssef</h3><span class="pastille p-gris"><span class="pt"></span>Hors service</span></div>
+      <div class="contenu" style="display:grid;gap:12px;align-content:start">
+        <div class="carte" style="padding:16px">
+          <div class="libelle">Aujourd'hui</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px">
+            <div><div style="font-size:26px;font-weight:800">6</div><div style="font-size:13px;color:var(--gris)">missions prévues</div></div>
+            <div><div style="font-size:26px;font-weight:800">4</div><div style="font-size:13px;color:var(--gris)">colis à retirer</div></div>
+            <div><div style="font-size:26px;font-weight:800">~38 km</div><div style="font-size:13px;color:var(--gris)">estimés</div></div>
+          </div>
+        </div>
+        <div class="carte" style="padding:16px">
+          <div class="ligne"><div><div class="libelle">Véhicule</div><div style="font-weight:700;margin-top:4px">Fourgon · 48213-A-6</div></div><span class="pastille p-vert">Assurance OK</span></div>
+          <div class="sep"></div>
+          <div class="ligne"><div><div class="libelle">Capacité du jour</div><div style="font-weight:700;margin-top:4px">20 missions</div></div><span class="note-legende">fixée par l'agence</span></div>
+          <div class="sep"></div>
+          <div class="ligne"><div><div class="libelle">Caisse</div><div style="font-weight:700;margin-top:4px" class="mont">0,00 DH</div></div><span class="note-legende">démarre vide</span></div>
+        </div>
+        <div class="bandeau p-indigo"><svg class="ic"><use href="#i-pin"/></svg>Premier arrêt : Hub Casa Centre, à 2,1 km</div>
+      </div>
+      <div style="padding:16px 16px 34px"><button class="btn btn-v">Démarrer ma journée</button></div>
+      <div class="barre-home"></div>
+    </div></div>
+    <figcaption><b>Démarrer la journée</b>Ce qui attend le livreur, avant de partir. « Démarrer » le rend disponible pour l'affectation automatique, lance le partage de position et le compteur de temps de conduite.</figcaption></figure>
+
+  </div>
+</section>
+
+<!-- ===================== ACTE 2 ===================== -->
+<section class="acte" id="acte2">
+  <h2>2. Ma journée</h2>
+  <p>Le cœur de l'app : la carte, la tournée dans l'ordre optimal, et le prochain arrêt en grand. Les nouvelles missions arrivent comme des propositions à accepter.</p>
+  <div class="rang">
+
+    <figure class="ecran"><div class="tel"><div class="ilot"></div><div class="app">
+      <div class="plan"><svg class="fond"><use href="#plan"/></svg>
+        <svg class="fond" viewBox="0 0 390 800"><path d="M50 450 L115 395 L240 395 L240 330 L320 250 L320 220" fill="none" stroke="#3E5BDB" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M320 220 L240 175 L170 175" fill="none" stroke="#3E5BDB" stroke-width="5" stroke-dasharray="2 10" stroke-linecap="round"/></svg>
+        <div class="moi" style="left:39px;top:439px"></div>
+        <div class="epingle faite" style="left:115px;top:392px"><b>1</b></div>
+        <div class="epingle prochain" style="left:240px;top:327px"><b>2</b></div>
+        <div class="epingle" style="left:320px;top:217px"><b>3</b></div>
+        <div class="epingle" style="left:170px;top:172px"><b>4</b></div>
+        <div class="statut" style="position:absolute;top:0;left:0;right:0"><span>10:42</span><span>5G 74%</span></div>
+        <div class="flottant">
+          <div class="carte"><div class="libelle">Progression</div><div style="font-weight:800;font-size:17px">1 / 6 livrées</div></div>
+          <div class="carte"><div class="libelle">En caisse</div><div style="font-weight:800;font-size:17px" class="mont">420,00 DH</div></div>
+          <div class="carte" style="flex:0 0 auto;display:grid;place-items:center"><span class="pastille p-vert"><span class="pt"></span>En service</span></div>
+        </div>
+      </div>
+      <div class="feuille">
+        <div class="poignee"></div>
+        <div class="ligne"><span class="libelle">Prochain arrêt · 2 sur 6</span><span class="pastille p-ambre">COD 1 090,00 DH</span></div>
+        <div style="font-size:21px;font-weight:800;margin-top:6px">Adil C. · Livraison</div>
+        <div style="color:var(--gris);font-size:15px;margin-top:2px">Résidence Al Andalous, bd Ghandi</div>
+        <div style="display:flex;gap:8px;margin-top:10px"><span class="pastille p-indigo">9 min · 3,4 km</span><span class="pastille p-gris">Signature exigée</span><span class="pastille p-gris">Petit colis</span></div>
+        <div style="display:grid;grid-template-columns:1fr 64px;gap:10px;margin-top:14px">
+          <button class="btn btn-p"><svg class="ic"><use href="#i-nav"/></svg>Naviguer</button>
+          <button class="btn btn-s" aria-label="Appeler le client"><svg class="ic"><use href="#i-tel"/></svg></button>
+        </div>
+      </div>
+      <div class="navbas"><div class="on"><svg><use href="#i-carte"/></svg>Journée</div><div><svg><use href="#i-liste"/></svg>Tournée</div><div><svg><use href="#i-scan"/></svg>Scanner</div><div><svg><use href="#i-caisse"/></svg>Caisse</div><div><svg><use href="#i-profil"/></svg>Profil</div></div>
+      <div class="barre-home"></div>
+    </div></div>
+    <figcaption><b>Ma journée — l'écran principal</b>
+      <ul><li>La tournée sur la carte, dans l'ordre optimal calculé par le serveur ; les arrêts faits passent en gris.</li>
+      <li>En bas, <b>le prochain arrêt</b> : qui, où, combien encaisser, quelle preuve. Une seule action : <b>Naviguer</b> (ouvre Google Maps ou Waze, avec le lien envoyé par le client).</li>
+      <li>L'appel passe par un numéro masqué : le livreur ne voit jamais le numéro du client.</li></ul></figcaption></figure>
+
+    <figure class="ecran"><div class="tel"><div class="ilot"></div><div class="app">
+      <div class="plan"><svg class="fond"><use href="#plan"/></svg>
+        <div class="moi" style="left:150px;top:300px"></div>
+        <div class="statut" style="position:absolute;top:0;left:0;right:0"><span>10:51</span><span>5G 73%</span></div>
+      </div>
+      <div class="voile"></div>
+      <div class="modale">
+        <div class="ligne"><div><div class="libelle">Nouvelle mission proposée</div><div style="font-size:22px;font-weight:800;margin-top:4px">Maison Argane</div></div>
+          <div class="compte"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.5" fill="none" stroke="#EEF0F5" stroke-width="4"/><circle id="arc" cx="18" cy="18" r="15.5" fill="none" stroke="#F5A524" stroke-width="4" stroke-dasharray="97.4" stroke-dashoffset="30" stroke-linecap="round"/></svg><b id="chrono">2:18</b></div></div>
+        <div class="carte" style="margin-top:12px;padding:12px 14px;box-shadow:none;border:1px solid var(--ligne)">
+          <div style="display:flex;gap:10px;align-items:flex-start"><span class="pastille p-indigo" style="padding:6px">A</span><div><b>Retrait</b> · 14 rue Ahmed El Mokri, Maârif<div class="note-legende">à 1,2 km de vous</div></div></div>
+          <div style="width:2px;height:14px;background:var(--ligne);margin:4px 0 4px 13px"></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span class="pastille p-ambre" style="padding:6px">B</span><div><b>Livraison</b> · bd Bir Anzarane, Maârif<div class="note-legende">course de 1,4 km</div></div></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px"><span class="pastille p-ambre">COD 420,00 DH</span><span class="pastille p-gris">+8 min sur la tournée</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:10px;margin-top:16px">
+          <button class="btn btn-r">Refuser</button><button class="btn btn-v"><svg class="ic"><use href="#i-check"/></svg>Accepter</button>
+        </div>
+        <div class="note-legende" style="text-align:center;margin-top:10px">Sans réponse, la mission passe à un autre livreur.</div>
+      </div>
+      <div class="barre-home"></div>
+    </div></div>
+    <figcaption><b>Mission proposée (affectation automatique)</b>Arrive par notification, par-dessus la carte. Le livreur voit l'essentiel pour décider : distance jusqu'au retrait, ce que ça ajoute à sa tournée, le montant à encaisser. Compte à rebours fixé par l'agence (3 min par défaut).</figcaption></figure>
+
+    <figure class="ecran"><div class="tel"><div class="ilot"></div><div class="app">
+      <div class="statut"><span>10:53</span><span>5G 73%</span></div>
+      <div class="haut"><h3>Ma tournée</h3><span class="pastille p-indigo">Ordre optimisé</span></div>
+      <div class="contenu" style="display:grid;gap:10px;align-content:start">
+        <div class="bandeau p-vert"><svg class="ic"><use href="#i-check"/></svg>Mission acceptée — insérée en position 3</div>
+        <div class="carte" style="padding:12px 14px;display:flex;gap:12px;align-items:center;opacity:.55"><span class="pastille p-gris" style="padding:6px 10px">1</span><div style="flex:1"><b>Ghita B.</b><div class="note-legende">Gauthier · livrée 10:31</div></div><span class="pastille p-vert">✓ 385 DH</span></div>
+        <div class="carte" style="padding:12px 14px;display:flex;gap:12px;align-items:center;outline:2px solid var(--amber)"><span class="pastille p-ambre" style="padding:6px 10px">2</span><div style="flex:1"><b>Adil C.</b><div class="note-legende">Bd Ghandi · 9 min</div></div><span class="pastille p-ambre">1 090 DH</span></div>
+        <div class="carte" style="padding:12px 14px;display:flex;gap:12px;align-items:center"><span class="pastille p-indigo" style="padding:6px 10px">3</span><div style="flex:1"><b>Retrait · Maison Argane</b><div class="note-legende">Maârif · +6 min</div></div><span class="pastille p-gris">Nouvelle</span></div>
+        <div class="carte" style="padding:12px 14px;display:flex;gap:12px;align-items:center"><span class="pastille p-indigo" style="padding:6px 10px">4</span><div style="flex:1"><b>Nadia T.</b><div class="note-legende">Maârif · +4 min</div></div><span class="pastille p-ambre">420 DH</span></div>
+        <div class="carte" style="padding:12px 14px;display:flex;gap:12px;align-items:center"><span class="pastille p-indigo" style="padding:6px 10px">5</span><div style="flex:1"><b>Houda B.</b><div class="note-legende">Californie · +14 min</div></div><span class="pastille p-ambre">620 DH</span></div>
+        <div class="carte" style="padding:12px 14px;display:flex;gap:12px;align-items:center"><span class="pastille p-gris" style="padding:6px 10px">⌂</span><div style="flex:1"><b>Retour au hub</b><div class="note-legende">dépôt de la caisse</div></div></div>
+        <div class="note-legende" style="text-align:center">Maintenir et glisser pour changer l'ordre — l'agence est prévenue.</div>
+      </div>
+      <div class="navbas"><div><svg><use href="#i-carte"/></svg>Journée</div><div class="on"><svg><use href="#i-liste"/></svg>Tournée</div><div><svg><use href="#i-scan"/></svg>Scanner</div><div><svg><use href="#i-caisse"/></svg>Caisse</div><div><svg><use href="#i-profil"/></svg>Profil</div></div>
+      <div class="barre-home"></div>
+    </div></div>
+    <figcaption><b>La tournée en liste</b>La même journée, vue en liste. Une mission acceptée s'insère au meilleur endroit, pas en fin de liste. Le livreur peut réordonner à la main s'il connaît mieux le terrain.</figcaption></figure>
+
+  </div>
+</section>
+
+<!-- ===================== ACTE 3 ===================== -->
+<section class="acte" id="acte3">
+  <h2>3. Retirer les colis</h2>
+  <p>Au hub ou chez le marchand : scanner en série, sans rien taper.</p>
+  <div class="rang">
+    <figure class="ecran"><div class="tel"><div class="ilot"></div><div class="app" style="background:#000">
+      <div class="statut clair"><span>9:12</span><span>5G 84%</span></div>
+      <div style="position:relative;height:430px;background:linear-gradient(160deg,#2a2f3a,#14171e);margin:0 0 0">
+        <div style="position:absolute;left:55px;right:55px;top:120px;height:170px;border:3px solid var(--amber);border-radius:18px"></div>
+        <div style="position:absolute;left:70px;right:70px;top:204px;height:2px;background:var(--amber);box-shadow:0 0 14px var(--amber)"></div>
+        <div style="position:absolute;left:0;right:0;top:310px;text-align:center;color:#fff;font-weight:600">Visez l'étiquette du colis</div>
+        <div style="position:absolute;left:16px;right:16px;top:20px;display:flex;justify-content:space-between"><span class="pastille" style="background:rgba(255,255,255,.14);color:#fff">Hub Casa Centre</span><span class="pastille" style="background:rgba(255,255,255,.14);color:#fff">⚡ Lampe</span></div>
+      </div>
+      <div style="flex:1;background:var(--fond);border-radius:24px 24px 0 0;margin-top:-20px;padding:16px">
+        <div class="ligne"><b style="font-size:18px">3 sur 4 scannés</b><span class="pastille p-vert">✓ dernier : CMD-…JX1H</span></div>
+        <div style="height:10px;border-radius:6px;background:#E4E7EE;margin:10px 0 12px;overflow:hidden"><div style="width:75%;height:100%;background:var(--vert)"></div></div>
+        <div style="display:grid;gap:8px;font-size:15px">
+          <div class="ligne"><span>✓ Ghita B. · Petit</span><span class="note-legende">scanné</span></div>
+          <div class="ligne"><span>✓ Adil C. · Petit</span><span class="note-legende">scanné</span></div>
+          <div class="ligne"><span>✓ Houda B. · Moyen · fragile</span><span class="note-legende">scanné</span></div>
+          <div class="ligne" style="color:#9A5B00;font-weight:700"><span>○ Omar B. · Petit</span><span>à trouver</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px"><button class="btn btn-s btn-sm">Saisir un code</button><button class="btn btn-p btn-sm">Terminer (3)</button></div>
+      </div>
+      <div class="barre-home"></div>
+    </div></div>
+    <figcaption><b>Scan en série</b>La caméra reste ouverte : on enchaîne les colis, chaque scan vibre et coche la liste. Le colis manquant est signalé avant de partir — plus de tournée qui démarre incomplète.</figcaption></figure>
+  </div>
+</section>
+
+<!-- ===================== ACTE 4 ===================== -->
+<section class="acte" id="acte4">
+  <h2>4. Livrer</h2>
+  <p>Arrivée détectée, preuve, encaissement, et on enchaîne. Quatre écrans, chacun avec une seule action.</p>
+  <div class="rang">
+
+    <figure class="ecran"><div class="tel"><div class="ilot"></div><div class="app">
+      <div class="plan" style="flex:0 0 330px"><svg class="fond"><use href="#plan"/></svg>
+        <div class="epingle prochain" style="left:240px;top:250px"><b>2</b></div><div class="moi" style="left:226px;top:262px"></div>
+        <div class="statut" style="position:absolute;top:0;left:0;right:0"><span>11:01</span><span>5G 71%</span></div>
+        <div style="position:absolute;left:16px;right:16px;bottom:16px" class="bandeau p-vert"><svg class="ic"><use href="#i-pin"/></svg>Vous êtes arrivé · 30 m de l'adresse</div>
+      </div>
+      <div class="contenu" style="padding-top:14px;display:grid;gap:10px;align-content:start">
+        <div class="ligne"><span class="libelle">Arrêt 2 sur 6</span><span class="pastille p-ambre">COD 1 090,00 DH</span></div>
+        <div style="font-size:22px;font-weight:800">Adil C.</div>
+        <div style="color:var(--gris)">Résidence Al Andalous, bd Ghandi</div>
+        <div class="carte" style="padding:12px 14px;font-size:15px"><b>Consigne du client</b><div style="color:var(--gris);margin-top:2px">« Interphone 12, 3ᵉ étage, appelez en arrivant. »</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn btn-s btn-sm"><svg class="ic"><use href="#i-tel"/></svg>Appeler</button><button class="btn btn-r btn-sm">Problème</button></div>
+      </div>
+      <div style="padding:12px 16px 34px"><button class="btn btn-v">Remettre le colis</button></div>
+      <div class="barre-home"></div>
+    </div></div>
+    <figcaption><b>Arrivé chez le client</b>L'arrivée est détectée par la position : pas de bouton « je suis arrivé » à chercher. La consigne du client s'affiche au bon moment. « Problème » ouvre les motifs d'échec.</figcaption></figure>
+
+    <figure class="ecran"><div class="tel"><div class="ilot"></div><div class="app">
+      <div class="statut"><span>11:03</span><span>5G 71%</span></div>
+      <div class="haut"><h3>Preuve de livraison</h3><span class="pastille p-gris">1 / 2</span></div>
+      <div class="contenu" style="display:grid;gap:12px;align-content:start">
+        <div class="carte" style="padding:14px"><div class="ligne"><b>Photo du colis remis</b><span class="pastille p-vert">✓ Prise</span></div>
+          <div style="margin-top:10px;height:150px;border-radius:12px;background:linear-gradient(135deg,#c9b38f,#9c825e);display:grid;place-items:center;color:#fff;font-weight:700">[ photo ]</div></div>
+        <div class="carte" style="padding:14px"><div class="ligne"><b>Signature du destinataire</b><span class="note-legende">Effacer</span></div>
+          <div style="margin-top:10px;height:170px;border-radius:12px;border:2px dashed #CBD2E1;display:grid;place-items:center">
+            <svg width="260" height="90" viewBox="0 0 260 90"><path d="M10 60 C 30 20, 45 20, 52 55 S 75 85, 88 45 S 110 15, 120 50 C 128 72, 140 70, 150 40 C 158 22, 170 26, 175 48 C 180 66, 190 66, 205 38 L 215 28 C 222 50, 236 60, 252 34" fill="none" stroke="#0B1537" stroke-width="3.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="note-legende" style="margin-top:6px">Signé par : Adil C.</div></div>
+      </div>
+      <div style="padding:12px 16px 34px"><button class="btn btn-p">Valider la preuve</button></div>
+      <div class="barre-home"></div>
+    </div></div>
+    <figcaption><b>Preuve</b>Seules les preuves exigées par le marchand apparaissent. Le bouton reste fermé tant qu'il en manque une, et dit laquelle.</figcaption></figure>
+
+    <figure class="ecran"><div class="tel"><div class="ilot"></div><div class="app">
+      <div class="statut"><span>11:04</span><span>5G 71%</span></div>
+      <div class="haut"><h3>Encaissement</h3><span class="pastille p-gris">2 / 2</span></div>
+      <div class="contenu" style="display:grid;gap:10px;align-content:start">
+        <div class="carte" style="padding:14px;text-align:center;background:var(--amber-2)"><div class="libelle" style="color:#9A5B00">À encaisser</div><div style="font-size:36px;font-weight:800;color:#7A4700" class="mont">1 090,00 DH</div></div>
+        <div class="carte" style="padding:14px"><div class="libelle">Montant reçu</div><div style="font-size:30px;font-weight:800;margin-top:4px" class="mont">1 100 <span style="font-size:20px;color:var(--gris)">DH</span></div>
+          <div class="sep"></div><div class="ligne" style="font-size:17px"><span>Monnaie à rendre</span><b class="mont" style="color:var(--vert)">10,00 DH</b></div></div>
+        <div class="puces"><span>1 090</span><span class="on">1 100</span><span>1 200</span><span>Autre</span></div>
+        <div class="clavier"><div>1</div><div>2</div><div>3</div><div>4</div><div>5</div><div>6</div><div>7</div><div>8</div><div>9</div><div>,</div><div>0</div><div>⌫</div></div>
+      </div>
+      <div style="padding:12px 16px 34px"><button class="btn btn-v">Confirmer 1 100 DH reçus</button></div>
+      <div class="barre-home"></div>
+    </div></div>
+    <figcaption><b>Encaissement</b>Le montant attendu en grand, des montants proposés (exact, billet supérieur) pour éviter la saisie, et la monnaie à rendre calculée. Le bouton répète le montant : impossible de valider la mauvaise somme par réflexe.</figcaption></figure>
+
+    <figure class="ecran"><div class="tel"><div class="ilot"></div><div class="app" style="background:var(--vert);color:#fff">
+      <div class="statut clair"><span>11:05</span><span>5G 70%</span></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center">
+        <div style="width:96px;height:96px;border-radius:50%;background:rgba(255,255,255,.2);display:grid;place-items:center"><svg width="52" height="52"><use href="#i-check"/></svg></div>
+        <div style="font-size:28px;font-weight:800;margin-top:18px">Livraison réussie</div>
+        <div style="opacity:.9;margin-top:6px">1 090,00 DH encaissés · preuve enregistrée</div>
+        <div style="margin-top:26px;background:rgba(255,255,255,.14);border-radius:16px;padding:14px 16px;width:100%;text-align:start">
+          <div style="font-size:13px;opacity:.85;font-weight:700;letter-spacing:.06em">ENSUITE · ARRÊT 3</div>
+          <div style="font-weight:800;font-size:18px;margin-top:4px">Retrait · Maison Argane</div>
+          <div style="opacity:.9">Maârif · 6 min</div>
+        </div>
+      </div>
+      <div style="padding:12px 16px 34px"><button class="btn" style="background:#fff;color:#0E7A4F">Arrêt suivant →</button></div>
+      <div class="barre-home clair"></div>
+    </div></div>
+    <figcaption><b>Réussi, on enchaîne</b>Un écran plein et lisible d'un coup d'œil, qui montre déjà l'arrêt suivant. Un toucher et la navigation repart.</figcaption></figure>
+
+  </div>
+</section>
+
+<!-- ===================== ACTE 5 ===================== -->
+<section class="acte" id="acte5">
+  <h2>5. Quand ça ne se passe pas comme prévu</h2>
+  <div class="rang">
+    <figure class="ecran"><div class="tel"><div class="ilot"></div><div class="app">
+      <div class="statut"><span>11:20</span><span>5G 69%</span></div>
+      <div class="haut"><h3>Un problème ?</h3><span class="note-legende">Arrêt 4 · Nadia T.</span></div>
+      <div class="contenu" style="display:grid;gap:10px;align-content:start">
+        <div class="carte" style="padding:16px;display:flex;gap:12px;align-items:center;outline:2px solid var(--indigo)"><span style="font-size:24px">📵</span><div style="flex:1"><b>Client injoignable</b><div class="note-legende">2 appels sans réponse</div></div><span class="pastille p-indigo">✓</span></div>
+        <div class="carte" style="padding:16px;display:flex;gap:12px;align-items:center"><span style="font-size:24px">🏠</span><div style="flex:1"><b>Adresse introuvable</b><div class="note-legende">On demande sa position au client</div></div></div>
+        <div class="carte" style="padding:16px;display:flex;gap:12px;align-items:center"><span style="font-size:24px">✋</span><div style="flex:1"><b>Refus du colis</b></div></div>
+        <div class="carte" style="padding:16px;display:flex;gap:12px;align-items:center"><span style="font-size:24px">💵</span><div style="flex:1"><b>Le client n'a pas l'argent</b></div></div>
+        <div class="carte" style="padding:16px;display:flex;gap:12px;align-items:center"><span style="font-size:24px">📦</span><div style="flex:1"><b>Colis abîmé</b><div class="note-legende">Photo demandée</div></div></div>
+        <div class="carte" style="padding:16px;display:flex;gap:12px;align-items:center"><span style="font-size:24px">✏️</span><div style="flex:1"><b>Autre</b></div></div>
+        <div class="bandeau p-ambre"><svg class="ic"><use href="#i-alerte"/></svg>Tentative 1 sur 3 — l'agence décide de la suite</div>
+      </div>
+      <div style="padding:12px 16px 34px"><button class="btn btn-p">Confirmer l'échec</button></div>
+      <div class="barre-home"></div>
+    </div></div>
+    <figcaption><b>Échec en deux touchers</b>De gros motifs au lieu d'un champ texte. « Adresse introuvable » envoie automatiquement au client un message lui demandant sa position. Le colis repart dans la tournée ou au hub selon la décision de l'agence.</figcaption></figure>
+  </div>
+</section>
+
+<!-- ===================== ACTE 6 ===================== -->
+<section class="acte" id="acte6">
+  <h2>6. Ma caisse et mon profil</h2>
+  <div class="rang">
+    <figure class="ecran"><div class="tel"><div class="ilot"></div><div class="app">
+      <div class="statut"><span>18:40</span><span>5G 31%</span></div>
+      <div class="haut"><h3>Ma caisse</h3><span class="pastille p-ambre">À déposer</span></div>
+      <div class="contenu" style="display:grid;gap:12px;align-content:start">
+        <div class="carte" style="padding:18px;background:var(--navy);color:#fff"><div class="libelle" style="color:#9FB0E8">Encaissé aujourd'hui</div><div style="font-size:36px;font-weight:800;margin-top:4px" class="mont">2 539,00 DH</div><div style="opacity:.8;font-size:14px">5 livraisons payées à la porte</div></div>
+        <div class="carte" style="padding:14px">
+          <div class="ligne"><span>Ghita B.</span><b class="mont">385,00</b></div><div class="sep"></div>
+          <div class="ligne"><span>Adil C.</span><b class="mont">1 090,00</b></div><div class="sep"></div>
+          <div class="ligne"><span>Nadia T.</span><b class="mont">420,00</b></div><div class="sep"></div>
+          <div class="ligne"><span>Houda B.</span><b class="mont">620,00</b></div><div class="sep"></div>
+          <div class="ligne" style="color:var(--gris)"><span>+ 1 autre</span><b class="mont">24,00</b></div>
+        </div>
+        <div class="carte" style="padding:14px"><div class="libelle">Ce que j'ai en main</div><div style="font-size:26px;font-weight:800;margin-top:4px" class="mont">2 539,00 DH</div><div class="bandeau p-vert" style="margin-top:10px">✓ Compte juste</div></div>
+      </div>
+      <div style="padding:12px 16px 34px"><button class="btn btn-a">Déclarer et déposer à l'agence</button></div>
+      <div class="barre-home"></div>
+    </div></div>
+    <figcaption><b>Ma caisse</b>Le livreur suit son argent en temps réel, course par course. En fin de journée il déclare ce qu'il a en main ; un écart est signalé tout de suite, pas découvert le lendemain par la compta.</figcaption></figure>
+
+    <figure class="ecran"><div class="tel"><div class="ilot"></div><div class="app">
+      <div class="statut"><span>14:10</span><span>5G 52%</span></div>
+      <div class="haut"><h3>Profil</h3></div>
+      <div class="contenu" style="display:grid;gap:12px;align-content:start">
+        <div class="carte" style="padding:16px;display:flex;gap:14px;align-items:center"><div style="width:52px;height:52px;border-radius:50%;background:var(--indigo-2);display:grid;place-items:center;font-weight:800;color:#2F45C8">YA</div><div style="flex:1"><b style="font-size:18px">Youssef Amrani</b><div class="note-legende">Atlas Express · Fourgon 48213-A-6</div></div></div>
+        <div class="carte" style="padding:16px"><div class="ligne"><b>Disponible pour des missions</b><span style="width:52px;height:32px;border-radius:999px;background:var(--vert);position:relative;display:inline-block"><span style="position:absolute;right:4px;top:4px;width:24px;height:24px;border-radius:50%;background:#fff"></span></span></div><div class="note-legende" style="margin-top:6px">Désactivez pour une pause : plus aucune mission proposée.</div></div>
+        <div class="carte" style="padding:16px"><div class="libelle">Temps de conduite</div>
+          <div style="height:12px;border-radius:7px;background:#E4E7EE;margin:10px 0 8px;overflow:hidden"><div style="width:58%;height:100%;background:var(--indigo)"></div></div>
+          <div class="ligne" style="font-size:15px"><span>5 h 13 sur 9 h</span><span class="note-legende">pause conseillée dans 32 min</span></div></div>
+        <div class="carte" style="padding:6px 16px">
+          <div class="ligne" style="padding:12px 0"><span>Historique et gains</span><span>›</span></div><div class="sep" style="margin:0"></div>
+          <div class="ligne" style="padding:12px 0"><span>Mes documents (permis, visite)</span><span class="pastille p-vert">À jour</span></div><div class="sep" style="margin:0"></div>
+          <div class="ligne" style="padding:12px 0"><span>Langue · Thème</span><span class="note-legende">Français · Auto</span></div><div class="sep" style="margin:0"></div>
+          <div class="ligne" style="padding:12px 0"><span>Aide et support</span><span>›</span></div>
+        </div>
+        <button class="btn btn-r btn-sm">Terminer ma journée</button>
+      </div>
+      <div class="navbas"><div><svg><use href="#i-carte"/></svg>Journée</div><div><svg><use href="#i-liste"/></svg>Tournée</div><div><svg><use href="#i-scan"/></svg>Scanner</div><div><svg><use href="#i-caisse"/></svg>Caisse</div><div class="on"><svg><use href="#i-profil"/></svg>Profil</div></div>
+      <div class="barre-home"></div>
+    </div></div>
+    <figcaption><b>Profil</b>La disponibilité en un interrupteur (c'est elle que lit l'affectation automatique), le temps de conduite avec une alerte avant la limite, et les documents. Les écrans « démo » actuels (objectifs, gains d'exemple) disparaissent tant qu'ils ne sont pas branchés sur de vraies données.</figcaption></figure>
+  </div>
+</section>
+
+<!-- ===================== ACTE 7 ===================== -->
+<section class="acte" id="acte7">
+  <h2>7. En arabe, la nuit, sans réseau</h2>
+  <p>Le même écran principal dans trois situations réelles.</p>
+  <div class="rang">
+
+    <figure class="ecran"><div class="tel"><div class="ilot"></div><div class="app rtl">
+      <div class="plan"><svg class="fond"><use href="#plan"/></svg>
+        <svg class="fond" viewBox="0 0 390 800"><path d="M50 450 L115 395 L240 395 L240 330 L320 250 L320 220" fill="none" stroke="#3E5BDB" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="moi" style="left:39px;top:439px"></div><div class="epingle faite" style="left:115px;top:392px"><b>1</b></div><div class="epingle prochain" style="left:240px;top:327px"><b>2</b></div><div class="epingle" style="left:320px;top:217px"><b>3</b></div>
+        <div class="statut" style="position:absolute;top:0;left:0;right:0;direction:ltr"><span>10:42</span><span>5G 74%</span></div>
+        <div class="flottant"><div class="carte"><div class="libelle">التقدم</div><div style="font-weight:800;font-size:17px">1 / 6 تم التسليم</div></div><div class="carte"><div class="libelle">في الصندوق</div><div style="font-weight:800;font-size:17px"><bdi>420,00</bdi> درهم</div></div></div>
+      </div>
+      <div class="feuille">
+        <div class="poignee"></div>
+        <div class="ligne"><span class="libelle">المحطة التالية · 2 من 6</span><span class="pastille p-ambre"><bdi>1 090,00</bdi> درهم عند الاستلام</span></div>
+        <div style="font-size:21px;font-weight:800;margin-top:6px">عادل س. · تسليم</div>
+        <div style="color:var(--gris);font-size:15px">إقامة الأندلس، شارع غاندي</div>
+        <div style="display:grid;grid-template-columns:1fr 64px;gap:10px;margin-top:14px"><button class="btn btn-p">الملاحة</button><button class="btn btn-s"><svg class="ic"><use href="#i-tel"/></svg></button></div>
+      </div>
+      <div class="navbas"><div class="on"><svg><use href="#i-carte"/></svg>يومي</div><div><svg><use href="#i-liste"/></svg>الجولة</div><div><svg><use href="#i-scan"/></svg>مسح</div><div><svg><use href="#i-caisse"/></svg>الصندوق</div><div><svg><use href="#i-profil"/></svg>الملف</div></div>
+      <div class="barre-home"></div>
+    </div></div>
+    <figcaption><b>En arabe</b>Toute la mise en page s'inverse (de droite à gauche), y compris les onglets et les boutons. Police arabe dédiée pour la lisibilité.</figcaption></figure>
+
+    <figure class="ecran"><div class="tel"><div class="ilot"></div><div class="app sombre">
+      <div class="plan"><svg class="fond" style="filter:invert(1) hue-rotate(180deg) brightness(.75) saturate(.6)"><use href="#plan"/></svg>
+        <svg class="fond" viewBox="0 0 390 800"><path d="M50 450 L115 395 L240 395 L240 330 L320 250 L320 220" fill="none" stroke="#7B93FF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="moi" style="left:39px;top:439px"></div><div class="epingle faite" style="left:115px;top:392px"><b>1</b></div><div class="epingle prochain" style="left:240px;top:327px"><b>2</b></div><div class="epingle" style="left:320px;top:217px"><b>3</b></div>
+        <div class="statut clair" style="position:absolute;top:0;left:0;right:0"><span>21:08</span><span>5G 22%</span></div>
+      </div>
+      <div class="feuille">
+        <div class="poignee"></div>
+        <div class="ligne"><span class="libelle">Prochain arrêt · 2 sur 6</span><span class="pastille p-ambre">COD 1 090,00 DH</span></div>
+        <div style="font-size:21px;font-weight:800;margin-top:6px">Adil C. · Livraison</div>
+        <div style="color:var(--gris);font-size:15px">Résidence Al Andalous, bd Ghandi</div>
+        <div style="display:grid;grid-template-columns:1fr 64px;gap:10px;margin-top:14px"><button class="btn btn-p"><svg class="ic"><use href="#i-nav"/></svg>Naviguer</button><button class="btn btn-s"><svg class="ic"><use href="#i-tel"/></svg></button></div>
+      </div>
+      <div class="navbas"><div class="on"><svg><use href="#i-carte"/></svg>Journée</div><div><svg><use href="#i-liste"/></svg>Tournée</div><div><svg><use href="#i-scan"/></svg>Scanner</div><div><svg><use href="#i-caisse"/></svg>Caisse</div><div><svg><use href="#i-profil"/></svg>Profil</div></div>
+      <div class="barre-home clair"></div>
+    </div></div>
+    <figcaption><b>Le soir</b>Thème sombre automatique avec le réglage du téléphone : moins d'éblouissement en roulant de nuit, batterie économisée.</figcaption></figure>
+
+    <figure class="ecran"><div class="tel"><div class="ilot"></div><div class="app">
+      <div class="plan"><svg class="fond" style="filter:grayscale(.6)"><use href="#plan"/></svg>
+        <div class="moi" style="left:196px;top:384px"></div><div class="epingle prochain" style="left:240px;top:327px"><b>2</b></div>
+        <div class="statut" style="position:absolute;top:0;left:0;right:0"><span>12:30</span><span>✕ Hors réseau</span></div>
+        <div class="flottant"><div class="bandeau" style="background:var(--navy);color:#fff;flex:1"><svg class="ic"><use href="#i-nuage"/></svg>Hors réseau · 2 actions en attente — tout reste utilisable</div></div>
+      </div>
+      <div class="feuille">
+        <div class="poignee"></div>
+        <div class="ligne"><span class="libelle">Arrêt 3 sur 6</span><span class="pastille p-gris">Hors ligne</span></div>
+        <div style="font-size:21px;font-weight:800;margin-top:6px">Retrait · Maison Argane</div>
+        <div style="color:var(--gris);font-size:15px">14 rue Ahmed El Mokri, Maârif</div>
+        <div class="bandeau p-vert" style="margin-top:10px">✓ Livraison d'Adil C. enregistrée — sera envoyée au retour du réseau</div>
+        <div style="display:grid;grid-template-columns:1fr 64px;gap:10px;margin-top:12px"><button class="btn btn-p"><svg class="ic"><use href="#i-nav"/></svg>Naviguer</button><button class="btn btn-s"><svg class="ic"><use href="#i-tel"/></svg></button></div>
+      </div>
+      <div class="navbas"><div class="on"><svg><use href="#i-carte"/></svg>Journée</div><div><svg><use href="#i-liste"/></svg>Tournée</div><div><svg><use href="#i-scan"/></svg>Scanner</div><div><svg><use href="#i-caisse"/></svg>Caisse</div><div><svg><use href="#i-profil"/></svg>Profil</div></div>
+      <div class="barre-home"></div>
+    </div></div>
+    <figcaption><b>Sans réseau</b>Le bandeau rassure au lieu d'alarmer : le livreur continue de livrer, encaisser et prouver ; tout part dès que le réseau revient, sans doublon. La carte reste affichée (zones de la journée gardées en mémoire).</figcaption></figure>
+
+  </div>
+</section>
+
+<section class="acte" style="padding-bottom:60px">
+  <h2>Ce qu'il faut valider</h2>
+  <p style="max-width:1000px;line-height:1.6">1. Le principe « carte + prochain arrêt » comme écran principal. 2. Les cinq onglets (Journée, Tournée, Scanner, Caisse, Profil).
+  3. La proposition de mission par-dessus la carte. 4. L'appel au client par numéro masqué (nécessite un service téléphonique : à confirmer).
+  5. La détection automatique de l'arrivée. 6. Les couleurs : marine et ambre de la marque, indigo pour l'action principale.</p>
+</section>
+
+<script>
+// Compte à rebours de la proposition (démonstration).
+let s = 138; const tot = 180, c = document.getElementById('chrono'), arc = document.getElementById('arc');
+setInterval(() => { s = s > 0 ? s - 1 : 180; c.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; arc.setAttribute('stroke-dashoffset', 97.4 * (1 - s / tot)); }, 1000);
+</script>
+</body>
+</html>
