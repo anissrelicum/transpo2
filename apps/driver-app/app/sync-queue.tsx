@@ -41,6 +41,7 @@ const KIND_ICON: Record<Pending['kind'], { Icon: React.ComponentType<{ size?: nu
   advance: { Icon: UpdateIcon, status: 'RECUPEREE' },
   proof: { Icon: ArchiveIcon, status: 'LIVREE' },
   fail: { Icon: WarningIcon, status: 'ECHOUEE' },
+  offer: { Icon: UpdateIcon, status: 'ASSIGNEE' },
 };
 
 function actionLabel(p: Pending, lang: 'fr' | 'ar'): string {
@@ -49,6 +50,10 @@ function actionLabel(p: Pending, lang: 'fr' | 'ar'): string {
   }
   if (p.kind === 'fail') {
     return lang === 'ar' ? `فشل التسليم — ${p.reason}` : `Échec de livraison — ${p.reason}`;
+  }
+  if (p.kind === 'offer') {
+    if (lang === 'ar') return p.decision === 'accept' ? 'قبول الرحلة المقترحة' : 'رفض الرحلة المقترحة';
+    return p.decision === 'accept' ? 'Acceptation de la course proposée' : 'Refus de la course proposée';
   }
   const cod = p.codCollected > 0 ? (lang === 'ar' ? `تحصيل ${money(p.codCollected)}` : `+ encaissement ${money(p.codCollected)}`) : '';
   return lang === 'ar' ? `تسليم + إثبات ${cod}` : `Livraison + preuve ${cod}`;

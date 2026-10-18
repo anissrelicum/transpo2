@@ -14,6 +14,8 @@
 // homonymes sont refusés — cf. TC-D14) : le serveur peut donc recalculer exactement la
 // même clé pour viser un appareil, sans table de correspondance à tenir.
 import Constants from 'expo-constants';
+import { router } from 'expo-router';
+import { signalerProposition } from './offer-signal';
 
 // L'identifiant d'application OneSignal n'est PAS un secret : il est embarqué dans chaque
 // copie de l'app. Le secret, c'est la clé REST — elle vit côté serveur et n'entre jamais
@@ -82,13 +84,21 @@ export function initialiserLePush(): () => void {
   os.Debug.setLogLevel(__DEV__ ? 6 : 0);   // 6 = Verbose, 0 = None
   os.initialize(APP_ID);
 
+  // Une course proposée (affectation automatique) porte `{ type: 'offer', ref, offerId }` :
+  // la toucher ouvre l'app sur l'écran Missions, où la carte d'acceptation l'attend ; la
+  // recevoir app ouverte recharge les propositions sans attendre la relecture périodique.
   const surClic = (e: unknown) => {
     // eslint-disable-next-line no-console
     console.log('[push] notification ouverte', e);
+    if (estUneProposition(e)) {
+      signalerProposition();
+      try { router.push('/(tabs)/missions'); } catch { /* navigation pas encore montée */ }
+    }
   };
   const surPremierPlan = (e: unknown) => {
     // eslint-disable-next-line no-console
     console.log('[push] notification reçue app ouverte', e);
+    if (estUneProposition(e)) signalerProposition();
   };
   os.Notifications.addEventListener('click', surClic);
   os.Notifications.addEventListener('foregroundWillDisplay', surPremierPlan);
@@ -100,6 +110,13 @@ export function initialiserLePush(): () => void {
     m?.Notifications.removeEventListener?.('click', surClic);
     m?.Notifications.removeEventListener?.('foregroundWillDisplay', surPremierPlan);
   };
+}
+
+/** La notification porte-t-elle une proposition de course ? (données jointes par l'API) */
+function estUneProposition(e: unknown): boolean {
+  const n = (e as { notification?: { additionalData?: unknown } } | null)?.notification;
+  const data = n?.additionalData as { type?: unknown } | undefined;
+  return data?.type === 'offer';
 }
 
 /** Demande la permission système. Rend `false` si le push n'est pas disponible ici. */

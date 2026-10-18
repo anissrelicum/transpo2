@@ -435,7 +435,10 @@ export function cycleStep(s: CycleSubscription, today: string): CycleAction {
 }
 
 /* ====================== Notifications (T19) ====================== */
-export const NOTIF_CHANNELS = ['SMS', 'WHATSAPP', 'PUSH', 'EMAIL'] as const;
+// CONSOLE = notification interne, affichée dans la console (cloche + centre de notifications) :
+// c'est le canal des alertes destinées à l'équipe d'exploitation, qui n'a pas de téléphone
+// enregistré pour le push.
+export const NOTIF_CHANNELS = ['SMS', 'WHATSAPP', 'PUSH', 'EMAIL', 'CONSOLE'] as const;
 export type NotifChannel = (typeof NOTIF_CHANNELS)[number];
 
 // Modèles bilingues. {code}/{ville} sont substitués à l'envoi. Placeholder `{x}`.
@@ -448,6 +451,10 @@ export const NOTIF_TEMPLATES: Record<string, { fr: string; ar: string; transacti
   // Destiné au LIVREUR, pas au client final : c'est le seul modèle dont le destinataire
   // est un membre de l'équipe, et il part par notification push sur son téléphone.
   'driver.assigned': { fr: 'Nouvelle mission {code} — {ville}.', ar: 'مهمة جديدة {code} — {ville}.', transactional: true },
+  // Affectation automatique (ADR 0004) : proposition au livreur, à accepter dans le délai.
+  'driver.offer': { fr: 'Course proposée {code} — {ville}. Acceptez sous {delai} min.', ar: 'رحلة مقترحة {code} — {ville}. اقبلها خلال {delai} دقيقة.', transactional: true },
+  // Alerte interne à l'exploitation : une commande que l'automate n'a pas pu placer.
+  'dispatch.exception': { fr: 'Commande {ref} à affecter à la main : {motif}.', ar: 'الطلب {ref} يحتاج إسناداً يدوياً: {motif}.', transactional: true },
 };
 export type NotifEvent = keyof typeof NOTIF_TEMPLATES;
 
@@ -681,6 +688,253 @@ export function money(n: number): string {
   return `⁦${f.replace(/ | /g, ' ')} DH⁩`;
 }
 
+/* ====================== Affectation automatique (ADR 0004) ====================== */
+// Règles PURES de l'affectation automatique équitable. Le serveur les applique ; la console
+// et l'app livreur n'en recalculent rien (elles affichent ce que le serveur a décidé).
+
+/** Réglages d'entreprise de l'affectation automatique. */
+export interface AutoDispatchSettings {
+  /** Interrupteur d'entreprise. Désactivé par défaut : rien ne part sans décision explicite. */
+  autoDispatch: boolean;
+  /** Délai laissé au livreur pour accepter une proposition (minutes). */
+  offerTimeoutMin: number;
+  /** Nombre maximal de commandes affectées à un livreur par jour (défaut d'entreprise). */
+  defaultDailyCapacity: number;
+}
+export const AUTO_DISPATCH_DEFAULTS: AutoDispatchSettings = {
+  autoDispatch: false, offerTimeoutMin: 3, defaultDailyCapacity: 20,
+};
+export const OFFER_TIMEOUT_BOUNDS = { min: 1, max: 60 } as const;
+export const DAILY_CAPACITY_BOUNDS = { min: 1, max: 500 } as const;
+
+/** Statuts d'une proposition faite à un livreur. */
+export const OFFER_STATUSES = ['PROPOSEE', 'ACCEPTEE', 'REFUSEE', 'EXPIREE', 'ANNULEE'] as const;
+export type OfferStatus = (typeof OFFER_STATUSES)[number];
+
+/** Motifs pour lesquels l'automate n'a pas pu placer une commande (→ file d'exceptions). */
+export const DISPATCH_EXCEPTIONS = [
+  'AUCUN_LIVREUR_DISPONIBLE', 'ZONE_NON_COUVERTE', 'CAPACITE_ATTEINTE', 'REFUSEE_PAR_TOUS',
+] as const;
+export type DispatchException = (typeof DISPATCH_EXCEPTIONS)[number];
+
+export const DISPATCH_EXCEPTION_META: Record<DispatchException, { fr: string; ar: string; hintFr: string; hintAr: string }> = {
+  AUCUN_LIVREUR_DISPONIBLE: {
+    fr: 'Aucun livreur disponible', ar: 'لا يوجد سائق متاح',
+    hintFr: 'Des livreurs couvrent la zone, mais aucun n’est disponible, en règle et doté d’un compte actif.',
+    hintAr: 'يوجد سائقون يغطون المنطقة، لكن لا أحد منهم متاح أو وثائقه سارية أو حسابه مفعّل.',
+  },
+  ZONE_NON_COUVERTE: {
+    fr: 'Zone non couverte', ar: 'منطقة غير مغطاة',
+    hintFr: 'Aucune zone d’un livreur ne couvre le point de retrait.',
+    hintAr: 'لا توجد منطقة سائق تغطي نقطة الاستلام.',
+  },
+  CAPACITE_ATTEINTE: {
+    fr: 'Capacité atteinte', ar: 'السعة مكتملة',
+    hintFr: 'Tous les livreurs éligibles ont atteint leur capacité du jour.',
+    hintAr: 'بلغ جميع السائقين المؤهلين سعتهم اليومية.',
+  },
+  REFUSEE_PAR_TOUS: {
+    fr: 'Refusée par tous', ar: 'رفضها الجميع',
+    hintFr: 'Tous les livreurs éligibles ont refusé ou laissé expirer la proposition.',
+    hintAr: 'رفض جميع السائقين المؤهلين العرض أو تركوه ينتهي.',
+  },
+};
+
+/**
+ * Libellés des faits d'affectation automatique écrits au journal de la commande
+ * (`order_events.status`). Ce ne sont PAS des statuts de commande : la commande reste
+ * `NOUVELLE` tant qu'aucune proposition n'est acceptée.
+ */
+export const DISPATCH_EVENT_META: Record<string, { fr: string; ar: string }> = {
+  OFFRE_PROPOSEE: { fr: 'Proposée à un livreur', ar: 'عُرضت على سائق' },
+  OFFRE_ACCEPTEE: { fr: 'Proposition acceptée', ar: 'تم قبول العرض' },
+  OFFRE_REFUSEE: { fr: 'Proposition refusée', ar: 'تم رفض العرض' },
+  OFFRE_EXPIREE: { fr: 'Proposition expirée', ar: 'انتهت صلاحية العرض' },
+  OFFRE_ANNULEE: { fr: 'Proposition annulée', ar: 'أُلغي العرض' },
+  EXCEPTION_DISPATCH: { fr: 'Exception de dispatch', ar: 'استثناء في التوزيع' },
+  RELANCE_DISPATCH: { fr: 'Affectation automatique relancée', ar: 'أُعيد إطلاق التوزيع التلقائي' },
+};
+
+/**
+ * Point dans un polygone (lancer de rayon). Polygone en `[latitude, longitude]`, comme
+ * les zones du dispatch ; un point sur le bord est indifféremment dedans ou dehors (sans
+ * conséquence à l'échelle d'une zone de livraison).
+ */
+export function pointInPolygon(point: LatLng, polygon: number[][]): boolean {
+  if (!Array.isArray(polygon) || polygon.length < 3) return false;
+  let inside = false;
+  const x = point.lng, y = point.lat;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const yi = polygon[i]![0]!, xi = polygon[i]![1]!;
+    const yj = polygon[j]![0]!, xj = polygon[j]![1]!;
+    const intersect = (yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
+/** Normalise un nom de lieu pour comparaison : casse, accents, tirets, espaces. */
+export function normalizePlace(s: string | null | undefined): string {
+  return (s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+/** Zone telle que la lit l'automate. `drivers` = NOMS des livreurs rattachés. */
+export interface DispatchZone {
+  nameFr: string;
+  drivers: string[];
+  polygon: number[][] | null;
+  province: string | null;
+  commune: string | null;
+  region: string | null;
+}
+
+/** Point de retrait de la commande : coordonnées si connues, ville sinon. */
+export interface DispatchPickup { city: string; point: LatLng | null }
+
+/**
+ * Une zone couvre-t-elle le point de retrait ?
+ *  · coordonnées connues ET polygone dessiné → point dans le polygone (seul critère) ;
+ *  · sinon → correspondance de ville : la ville de retrait est la province ou la commune
+ *    de la zone, ou l'un des noms composant sa région (« Casablanca-Settat »).
+ */
+export function zoneCovers(zone: DispatchZone, pickup: DispatchPickup): boolean {
+  const poly = Array.isArray(zone.polygon) && zone.polygon.length >= 3 ? zone.polygon : null;
+  if (pickup.point && poly) return pointInPolygon(pickup.point, poly);
+  const city = normalizePlace(pickup.city);
+  if (!city) return false;
+  if (normalizePlace(zone.province) === city || normalizePlace(zone.commune) === city) return true;
+  const regionParts = (zone.region ?? '').split(/[-–]/).map(normalizePlace).filter(Boolean);
+  return regionParts.includes(city);
+}
+
+/** Livreur tel que l'évalue l'automate, avec sa charge du jour déjà comptée. */
+export interface DispatchCandidate {
+  name: string;
+  available: boolean;
+  /** Compte de l'app livreur actif. Sans compte (ou compte suspendu), personne ne peut accepter. */
+  accountActive: boolean;
+  licenseDue: string | null;  // YYYY-MM-DD
+  medicalDue: string | null;  // YYYY-MM-DD
+  /** Capacité du jour (propre au livreur, à défaut celle de l'entreprise). */
+  capacity: number;
+  /** Commandes affectées aujourd'hui + propositions en cours. */
+  load: number;
+  /** Dernière position GPS connue, si elle existe. */
+  lastPosition: LatLng | null;
+}
+
+/** Motif d'écart d'un livreur, du plus structurant au plus conjoncturel. */
+export type CandidateExclusion =
+  | 'HORS_ZONE' | 'INDISPONIBLE' | 'SANS_COMPTE' | 'PERMIS_EXPIRE' | 'VISITE_EXPIREE'
+  | 'DEJA_SOLLICITE' | 'CAPACITE_ATTEINTE';
+
+/** Un livreur classé : sa charge relative et sa distance au retrait (km, si connue). */
+export interface RankedCandidate {
+  name: string; load: number; capacity: number; ratio: number; distanceKm: number | null;
+}
+
+export type DispatchPlan =
+  | { kind: 'offer'; driver: RankedCandidate; ranking: RankedCandidate[]; excluded: Record<string, CandidateExclusion> }
+  | { kind: 'exception'; reason: DispatchException; excluded: Record<string, CandidateExclusion> };
+
+/**
+ * Écarte (ou non) un livreur pour une commande, en dehors de sa charge.
+ * `today` au format YYYY-MM-DD dans le fuseau de l'entreprise.
+ */
+function exclusionOf(d: DispatchCandidate, today: string): CandidateExclusion | null {
+  if (!d.available) return 'INDISPONIBLE';
+  if (!d.accountActive) return 'SANS_COMPTE';
+  if (d.licenseDue != null && d.licenseDue < today) return 'PERMIS_EXPIRE';
+  if (d.medicalDue != null && d.medicalDue < today) return 'VISITE_EXPIREE';
+  return null;
+}
+
+/** Classement équitable : charge relative croissante, puis distance, puis nom. */
+export function compareCandidates(a: RankedCandidate, b: RankedCandidate): number {
+  if (a.ratio !== b.ratio) return a.ratio - b.ratio;
+  // Distance connue avant distance inconnue : à charge égale, on ne parie pas sur un
+  // livreur dont on ignore la position.
+  if (a.distanceKm != null && b.distanceKm != null && a.distanceKm !== b.distanceKm) return a.distanceKm - b.distanceKm;
+  if (a.distanceKm != null && b.distanceKm == null) return -1;
+  if (a.distanceKm == null && b.distanceKm != null) return 1;
+  return a.name.localeCompare(b.name, 'fr');
+}
+
+/**
+ * Décide à qui proposer une commande — ou pourquoi personne.
+ *
+ * Éligible = la zone du livreur couvre le retrait, ET il est disponible, doté d'un compte
+ * actif, permis et visite médicale valides, ET il n'a pas déjà été sollicité pour cette
+ * commande dans le tour courant, ET sa charge du jour est sous sa capacité.
+ *
+ * ÉQUITÉ, pas « le meilleur score rafle tout » : parmi les éligibles, le MOINS CHARGÉ au
+ * regard de sa capacité (charge / capacité) ; à égalité, le plus proche du retrait (dernière
+ * position GPS) ; puis le nom, pour un résultat déterministe.
+ *
+ * Le motif d'exception suit l'entonnoir, du plus structurant au plus conjoncturel :
+ * personne ne couvre la zone → ZONE_NON_COUVERTE ; personne de disponible et en règle →
+ * AUCUN_LIVREUR_DISPONIBLE ; tous déjà sollicités → REFUSEE_PAR_TOUS ; tous pleins →
+ * CAPACITE_ATTEINTE.
+ */
+export function planAutoDispatch(input: {
+  pickup: DispatchPickup;
+  drivers: DispatchCandidate[];
+  zones: DispatchZone[];
+  /** Livreurs déjà sollicités pour cette commande dans le tour courant (refus, expiration). */
+  alreadyAsked: string[];
+  today: string;
+}): DispatchPlan {
+  const excluded: Record<string, CandidateExclusion> = {};
+  const covering = new Set<string>();
+  for (const z of input.zones) {
+    if (zoneCovers(z, input.pickup)) for (const n of z.drivers) covering.add(n);
+  }
+  const inZone = input.drivers.filter((d) => {
+    if (covering.has(d.name)) return true;
+    excluded[d.name] = 'HORS_ZONE';
+    return false;
+  });
+  if (inZone.length === 0) return { kind: 'exception', reason: 'ZONE_NON_COUVERTE', excluded };
+
+  const fit = inZone.filter((d) => {
+    const why = exclusionOf(d, input.today);
+    if (why) excluded[d.name] = why;
+    return !why;
+  });
+  if (fit.length === 0) return { kind: 'exception', reason: 'AUCUN_LIVREUR_DISPONIBLE', excluded };
+
+  const asked = new Set(input.alreadyAsked);
+  const fresh = fit.filter((d) => {
+    if (!asked.has(d.name)) return true;
+    excluded[d.name] = 'DEJA_SOLLICITE';
+    return false;
+  });
+  if (fresh.length === 0) return { kind: 'exception', reason: 'REFUSEE_PAR_TOUS', excluded };
+
+  const withRoom = fresh.filter((d) => {
+    if (d.load < d.capacity) return true;
+    excluded[d.name] = 'CAPACITE_ATTEINTE';
+    return false;
+  });
+  if (withRoom.length === 0) return { kind: 'exception', reason: 'CAPACITE_ATTEINTE', excluded };
+
+  const ranking = withRoom.map((d): RankedCandidate => ({
+    name: d.name, load: d.load, capacity: d.capacity,
+    ratio: d.capacity > 0 ? d.load / d.capacity : Number.POSITIVE_INFINITY,
+    distanceKm: d.lastPosition && input.pickup.point
+      ? Math.round(haversineMeters(d.lastPosition.lat, d.lastPosition.lng, input.pickup.point.lat, input.pickup.point.lng) / 100) / 10
+      : null,
+  })).sort(compareCandidates);
+  return { kind: 'offer', driver: ranking[0]!, ranking, excluded };
+}
+
+/** Date du jour (YYYY-MM-DD) dans un fuseau donné — la « journée » de la capacité. */
+export function dayInTimeZone(date: Date, timeZone = 'Africa/Casablanca'): string {
+  // en-CA formate en AAAA-MM-JJ.
+  return new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
+}
+
 /* ====================== Type Order (contrat partagé) ====================== */
 export interface Order {
   ref: string;
@@ -727,6 +981,12 @@ export interface Order {
   priceHt?: number | null;
   priceVat?: number | null;
   priceTtc?: number | null;
+  // Affectation automatique (ADR 0004). `dispatchException` : motif pour lequel l'automate
+  // n'a pas pu placer la commande (file d'exceptions du dispatch).
+  assignedAt?: string | null;
+  dispatchException?: DispatchException | null;
+  dispatchExceptionAt?: string | null;
+  dispatchRound?: number;
   createdAt: string;
 }
 

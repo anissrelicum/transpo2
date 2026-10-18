@@ -11,7 +11,11 @@ import {
 } from '@radix-ui/react-icons';
 import { RowMenu, useFermerMenu } from '../lib/row-menu';
 import type { Driver, Vehicle } from '@transpo/api-client';
+import type { Lang } from '@transpo/i18n';
 import { PageHeader, KPI } from './ui';
+import { dispatchT, type DispatchT } from '../lib/dispatch-i18n';
+
+const APP_COLOR = { ACTIF: 'green', SUSPENDU: 'red', AUCUN: 'gray' } as const;
 
 const CITIES = ['Casablanca', 'Rabat', 'Marrakech', 'Tanger', 'Fès', 'Agadir', 'Kénitra', 'Mohammedia'];
 const VEHICLE_TYPES = ['Moto', 'Voiture', 'Fourgon', 'Fourgon frigo', 'Camion'];
@@ -32,10 +36,13 @@ function dueBadge(due: string | null): { color: 'red' | 'amber' | 'green' | 'gra
   return { color: 'green', txt: new Date(due).toLocaleDateString('fr-FR', { month: '2-digit', year: 'numeric' }) };
 }
 
-export function DriversView({ drivers, vehicles, isAdmin, canDispatch }: {
+export function DriversView({ drivers, vehicles, isAdmin, canDispatch, defaultCapacity, lang = 'fr' }: {
   drivers: Driver[]; vehicles: Vehicle[]; isAdmin: boolean; canDispatch: boolean;
+  /** Capacité journalière par défaut de l'entreprise (affectation automatique). */
+  defaultCapacity: number; lang?: Lang;
 }) {
   const refresh = useSafeRefresh();
+  const dt = dispatchT(lang);
   const [busy, setBusy] = React.useState(false);
   const [q, setQ] = React.useState('');
   const [filter, setFilter] = React.useState('all');
@@ -118,6 +125,7 @@ export function DriversView({ drivers, vehicles, isAdmin, canDispatch }: {
             <Table.ColumnHeaderCell>Permis</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Visite médicale</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Performance</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{dt('capacityCol')}</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Disponibilité</Table.ColumnHeaderCell>
             {isAdmin && <Table.ColumnHeaderCell />}
           </Table.Row></Table.Header>
@@ -171,6 +179,20 @@ export function DriversView({ drivers, vehicles, isAdmin, canDispatch }: {
                     </Box>
                   </Table.Cell>
                   <Table.Cell>
+                    <Box>
+                      <Text as="div" size="2">
+                        {d.dailyCapacity != null
+                          ? <>{d.dailyCapacity} {dt('perDay')}</>
+                          : <Text color="gray">{dt('capacityDefault', { n: defaultCapacity })}</Text>}
+                      </Text>
+                      {d.appAccount && (
+                        <Badge size="1" variant="soft" color={APP_COLOR[d.appAccount]} title={d.appAccount === 'ACTIF' ? undefined : dt('appHint')}>
+                          {dt(`app${d.appAccount}` as const)}
+                        </Badge>
+                      )}
+                    </Box>
+                  </Table.Cell>
+                  <Table.Cell>
                     <Flex align="center" gap="2">
                       <Switch
                         checked={d.available}
@@ -183,7 +205,7 @@ export function DriversView({ drivers, vehicles, isAdmin, canDispatch }: {
                   {isAdmin && (
                     <Table.Cell>
                       <RowMenu>
-                          <EditDriverItem driver={d} onSave={(b) => call(`drivers/${d.id}`, 'PATCH', b)} />
+                          <EditDriverItem driver={d} defaultCapacity={defaultCapacity} dt={dt} onSave={(b) => call(`drivers/${d.id}`, 'PATCH', b)} />
                           <AssignVehicleItem driver={d} vehicles={vehicles} porteurs={porteurs} onAssign={(vid) => call(`drivers/${d.id}/vehicle`, 'PATCH', { vehicleId: vid })} />
                           <DropdownMenu.Separator />
                           <RenewItem driver={d} field="license" onRenew={(due) => call(`drivers/${d.id}/renew`, 'POST', { field: 'license', due })} />
@@ -301,13 +323,17 @@ function RenewItem({ driver, field, onRenew }: { driver: Driver; field: 'license
  * sans aucun moyen de le ressaisir (AN-14). Le nom n'est modifiable que tant qu'aucune
  * commande ne référence le chauffeur — l'API tranche et renvoie le motif.
  */
-function EditDriverItem({ driver, onSave }: { driver: Driver; onSave: (body: unknown) => Promise<boolean> }) {
+function EditDriverItem({ driver, defaultCapacity, dt, onSave }: {
+  driver: Driver; defaultCapacity: number; dt: DispatchT; onSave: (body: unknown) => Promise<boolean>;
+}) {
   const vide = {
     name: driver.name,
     city: driver.city ?? '',
     vehicle: driver.vehicle ?? '',
     phone: driver.phone ?? '',
     licenseNo: driver.licenseNo ?? '',
+    // Vide = capacité par défaut de l'entreprise (envoyée `null`).
+    dailyCapacity: driver.dailyCapacity != null ? String(driver.dailyCapacity) : '',
   };
   const [open, setOpen] = React.useState(false);
   const [f, setF] = React.useState(vide);
@@ -315,6 +341,8 @@ function EditDriverItem({ driver, onSave }: { driver: Driver; onSave: (body: unk
   // Fermeture programmatique : referme le dialogue ET le menu qui l'a ouvert.
   const fermer = () => { setOpen(false); fermerMenu(); };
   const phoneOk = !f.phone || PHONE_RE.test(f.phone.trim());
+  const capTxt = f.dailyCapacity.trim();
+  const capOk = capTxt === '' || (/^\d+$/.test(capTxt) && Number(capTxt) >= 1 && Number(capTxt) <= 500);
   return (
     <Dialog.Root open={open} onOpenChange={(o) => { setOpen(o); if (o) setF(vide); else fermerMenu(); }}>
       <Dialog.Trigger>
@@ -347,12 +375,26 @@ function EditDriverItem({ driver, onSave }: { driver: Driver; onSave: (body: unk
               <TextField.Root value={f.licenseNo} onChange={(e) => setF({ ...f, licenseNo: e.target.value })} placeholder="AB123456" /></Box>
           </Grid>
           {!phoneOk && <Text size="1" color="red">Numéro invalide.</Text>}
+          <Box><Text as="div" size="1" color="gray" mb="1">{dt('capacityField')}</Text>
+            <TextField.Root
+              type="number" min={1} max={500} value={f.dailyCapacity}
+              onChange={(e) => setF({ ...f, dailyCapacity: e.target.value })}
+              placeholder={dt('capacityPlaceholder', { n: defaultCapacity })}
+              color={!capOk ? 'red' : undefined}
+            >
+              <TextField.Slot side="right"><Text size="1" color="gray">{dt('perDay')}</Text></TextField.Slot>
+            </TextField.Root>
+            {!capOk && <Text size="1" color="red">{dt('capacityInvalid')}</Text>}
+          </Box>
         </Flex>
         <Flex gap="3" mt="4" justify="end">
           <Dialog.Close><Button variant="soft" color="gray">Annuler</Button></Dialog.Close>
           <Button
-            disabled={!f.name.trim() || !phoneOk}
-            onClick={async () => { if (await onSave({ ...f, name: f.name.trim() })) fermer(); }}
+            disabled={!f.name.trim() || !phoneOk || !capOk}
+            onClick={async () => {
+              const body = { ...f, name: f.name.trim(), dailyCapacity: capTxt === '' ? null : Number(capTxt) };
+              if (await onSave(body)) fermer();
+            }}
           >Enregistrer</Button>
         </Flex>
       </Dialog.Content>

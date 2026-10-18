@@ -23,7 +23,10 @@ export type PendingAction =
   // Un échec constaté hors ligne ne doit pas se perdre : il déclenche le flux de
   // retours côté serveur, et son rejeu est dédoublonné par la clé d'idempotence
   // (sans quoi le compteur de tentatives grimperait à chaque reprise réseau).
-  | { kind: 'fail'; ref: string; reason: string; idemKey: string };
+  | { kind: 'fail'; ref: string; reason: string; idemKey: string }
+  // Réponse à une course proposée par l'affectation automatique. Le serveur fait foi :
+  // une acceptation rejouée après l'échéance revient en refus (409) et s'affiche comme tel.
+  | { kind: 'offer'; ref: string; offerId: string; decision: 'accept' | 'refuse'; idemKey: string };
 
 /** L'action telle que persistée, avec son identité et sa date de mise en file. */
 export type Pending = PendingAction & { id: string; at: number };
@@ -75,6 +78,7 @@ async function send(p: Pending): Promise<void> {
   const c = authedClient();
   if (p.kind === 'advance') await c.driverAdvance(p.ref, p.idemKey);
   else if (p.kind === 'fail') await c.driverFail(p.ref, p.reason, p.idemKey);
+  else if (p.kind === 'offer') await c.respondToOffer(p.offerId, p.decision, p.idemKey);
   else await c.driverProof(p.ref, { codCollected: p.codCollected, photo: p.photo, signature: p.signature }, p.idemKey);
 }
 
@@ -120,6 +124,8 @@ export function applyPending(orders: Order[], q: Pending[]): Order[] {
     let status = o.status as OrderStatus;
     let codPaid = o.codPaid;
     for (const p of q.filter((x) => x.ref === o.ref)) {
+      // Une réponse à une proposition ne change pas le statut d'une mission déjà à soi.
+      if (p.kind === 'offer') continue;
       if (p.kind === 'advance') {
         const i = LIFECYCLE.indexOf(status);
         const next = i >= 0 ? LIFECYCLE[i + 1] : undefined;

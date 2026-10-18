@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>Portrail — logiciel de livraison last-mile pour transporteurs</title>
-<meta name="description" content="Dispatch assisté, app livreur hors réseau, preuve de livraison et encaissements suivis jusqu’au reversement marchand : le logiciel des transporteurs last-mile.">
+<meta name="description" content="Affectation automatique et équitable, app livreur hors réseau, preuve de livraison et encaissements suivis jusqu’au reversement marchand : le logiciel des transporteurs last-mile.">
 <link rel="canonical" href="__SITE__/">
 <link rel="alternate" hreflang="fr" href="__SITE__/">
 <link rel="alternate" hreflang="en" href="__SITE__/en/">
@@ -89,7 +89,7 @@
       "operatingSystem": "Web, Android",
       "inLanguage": ["fr", "ar"],
       "url": "__SITE__/",
-      "description": "Logiciel d’exploitation pour sociétés de livraison last-mile : dispatch avec suggestion de livreur, app livreur hors réseau, preuve de livraison, encaissement à la livraison suivi jusqu’au reversement marchand, facturation, portail marchand, flotte et conformité.",
+      "description": "Logiciel d’exploitation pour sociétés de livraison last-mile : affectation automatique et équitable avec acceptation du livreur (le dispatcher traite les exceptions), app livreur hors réseau, preuve de livraison, encaissement à la livraison suivi jusqu’au reversement marchand, facturation, portail marchand, flotte et conformité.",
       "screenshot": [
         "__SITE__/medias/ecran-dashboard.webp",
         "__SITE__/medias/ecran-dispatch.webp",
@@ -131,6 +131,8 @@
           "acceptedAnswer": { "@type": "Answer", "text": "Oui. Changement de statut, preuve de livraison et encaissement se font hors connexion, se mettent en file et se rejouent au retour du réseau, sans jamais produire deux fois le même effet." } },
         { "@type": "Question", "name": "Comment l’argent encaissé à la livraison est-il suivi ?",
           "acceptedAnswer": { "@type": "Answer", "text": "De bout en bout : encaissement chez le client, caisse du livreur alimentée course par course, déclaration du livreur, dépôt en agence, écart motivé, puis reversement au marchand net de commission." } },
+        { "@type": "Question", "name": "Les commandes sont-elles affectées automatiquement ?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Si vous l’activez. L’affectation automatique propose chaque nouvelle commande au livreur le moins chargé de la zone qui couvre le point de retrait, au regard de sa capacité du jour. Le livreur accepte ou refuse dans le délai que vous fixez ; sans réponse, la course passe au suivant. Ce que le système ne peut pas placer — zone non couverte, personne de disponible, capacité atteinte, refusée par tous — arrive au dispatcher avec son motif, et l’affectation manuelle reste toujours possible." } },
         { "@type": "Question", "name": "Comment localiser un client qui n’a pas d’adresse précise ?",
           "acceptedAnswer": { "@type": "Answer", "text": "Collez le lien de position que le client a partagé — Google Maps, WhatsApp, Waze, Plans ou OpenStreetMap — ou posez une épingle sur la carte. Le lien d’origine est transmis au livreur, qui ouvre le point exact d’un geste dans son application de navigation." } },
         { "@type": "Question", "name": "Le logiciel est-il disponible en arabe ?",
@@ -336,7 +338,7 @@
           </figure>
           <div class="panneau__legende">
             <h3>Le dispatch</h3>
-            <p>La carte des livreurs en ligne et la file des commandes à affecter. Les livreurs candidats sont classés par zone, disponibilité et charge — et ceux qui sont écartés le sont avec leur motif.</p>
+            <p>La carte des livreurs en ligne et la file des exceptions. Affectation automatique activée, chaque commande part vers le livreur le moins chargé de sa zone, qui l’accepte ou la refuse ; le dispatcher ne reçoit que ce que le système n’a pas pu placer, avec le motif.</p>
           </div>
         </div>
 
@@ -366,7 +368,7 @@
       </div>
 
       <ul class="atouts" data-revele>
-        <li><strong>Affectation assistée</strong>Une suggestion de livreur, avec le motif d’exclusion des autres.</li>
+        <li><strong>Affectation automatique</strong>Équitable, acceptée par le livreur — et les exceptions motivées pour le dispatcher.</li>
         <li><strong>Rôles séparés</strong>Administrateur, dispatcher, comptable : bornés à l’écran comme dans l’API.</li>
         <li><strong>Temps réel</strong>Un statut changé sur le terrain apparaît au bureau.</li>
         <li><strong>Clair ou sombre</strong>Les interfaces suivent le thème choisi.</li>
@@ -400,7 +402,7 @@
           <div class="main__corps">
             <p class="main__n"><span>2</span>Dispatch</p>
             <h3 class="main__titre">Le dispatch affecte</h3>
-            <p class="main__texte">Les livreurs candidats sont classés par zone, disponibilité et charge — et ceux qui sont écartés le sont avec leur motif.</p>
+            <p class="main__texte">Chaque commande est proposée au livreur le moins chargé de sa zone, qui accepte ou refuse. Le dispatcher garde la main sur les exceptions.</p>
           </div>
         </li>
         <li class="main" data-revele>
@@ -674,7 +676,7 @@
         <li><svg width="28" height="28" aria-hidden="true"><use href="#i-journal"/></svg><h3>Un journal d’audit</h3><p>Les actions sensibles sont tracées : qui a fait quoi, et quand.</p></li>
         <li><svg width="28" height="28" aria-hidden="true"><use href="#i-cadenas"/></svg><h3>Consentement et données personnelles</h3><p>Aucun SMS ni WhatsApp sans accord du destinataire. Données personnelles exportables et anonymisables ; la position du domicile n’est jamais exposée par le suivi public.</p></li>
         <li><svg width="28" height="28" aria-hidden="true"><use href="#i-langues"/></svg><h3>Français et arabe</h3><p>Interfaces bilingues, avec une mise en page entièrement inversée en arabe — pas une simple traduction.</p></li>
-        <li><svg width="28" height="28" aria-hidden="true"><use href="#i-balance"/></svg><h3>La machine propose, vous décidez</h3><p>Elle suggère un livreur, signale un risque, bloque un envoi non consenti. Elle ne sanctionne personne et n’affecte rien à votre place.</p></li>
+        <li><svg width="28" height="28" aria-hidden="true"><use href="#i-balance"/></svg><h3>Automatique, et sous contrôle</h3><p>Une fois activée, l’affectation répartit les courses équitablement et le livreur reste libre de refuser. Ce qu’elle ne peut pas placer vous revient avec son motif. Elle signale un risque sans sanctionner personne et bloque tout envoi non consenti.</p></li>
       </ul>
     </div>
   </section>
@@ -741,6 +743,10 @@
         <details>
           <summary>Comment l’argent encaissé à la livraison est-il suivi ?</summary>
           <p class="faq__reponse">De bout en bout : encaissement chez le client, caisse du livreur alimentée course par course, déclaration du livreur, dépôt en agence, écart motivé, puis reversement au marchand net de commission.</p>
+        </details>
+        <details>
+          <summary>Les commandes sont-elles affectées automatiquement ?</summary>
+          <p class="faq__reponse">Si vous l’activez. L’affectation automatique propose chaque nouvelle commande au livreur le moins chargé de la zone qui couvre le point de retrait, au regard de sa capacité du jour. Le livreur accepte ou refuse dans le délai que vous fixez ; sans réponse, la course passe au suivant. Ce que le système ne peut pas placer — zone non couverte, personne de disponible, capacité atteinte, refusée par tous — arrive au dispatcher avec son motif, et l’affectation manuelle reste toujours possible.</p>
         </details>
         <details>
           <summary>Comment localiser un client qui n’a pas d’adresse précise ?</summary>

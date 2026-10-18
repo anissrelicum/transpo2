@@ -14,6 +14,9 @@ import type { NotificationRow, NotifTemplate } from '@transpo/api-client';
 import { PageHeader, KPI } from './ui';
 
 const CHANNELS = ['SMS', 'WHATSAPP', 'PUSH', 'EMAIL'];
+// CONSOLE : alertes internes (exceptions de l'affectation automatique). Filtrable dans le
+// journal, mais pas proposé à l'envoi manuel — ce n'est pas un canal vers l'extérieur.
+const FILTER_CHANNELS = [...CHANNELS, 'CONSOLE'];
 const STATUS_COLOR: Record<string, 'green' | 'blue' | 'red' | 'gray'> = { SENT: 'green', QUEUED: 'blue', BLOCKED: 'red' };
 const STATUS_LABEL: Record<string, string> = { SENT: 'Envoyée', QUEUED: 'En file', BLOCKED: 'Bloquée' };
 
@@ -94,7 +97,7 @@ export function NotificationsView({ notifications, templates, canWrite }: {
           <Select.Trigger />
           <Select.Content>
             <Select.Item value="all">Tous canaux</Select.Item>
-            {CHANNELS.map((c) => <Select.Item key={c} value={c}>{c}</Select.Item>)}
+            {FILTER_CHANNELS.map((c) => <Select.Item key={c} value={c}>{c}</Select.Item>)}
           </Select.Content>
         </Select.Root>
         {canWrite && <ConsentDialog onSave={(b) => call('/consent', 'POST', b)} busy={busy} />}

@@ -17,9 +17,12 @@ import Svg, { Path, Circle } from 'react-native-svg';
 import { router, useFocusEffect } from 'expo-router';
 import type { Order, OrderStatus } from '@transpo/domain';
 import { STATUS_META, money } from '@transpo/domain';
-import { authedClient, getSession } from '../../lib/api';
+import type { DriverOffer } from '@transpo/api-client';
+import { authedClient, getSession, idemKey } from '../../lib/api';
 import { readJson, writeJson } from '../../lib/storage';
-import { applyPending } from '../../lib/outbox';
+import { applyPending, enqueue } from '../../lib/outbox';
+import { ecouterPropositions } from '../../lib/offer-signal';
+import { OfferCard } from '../../components/OfferCard';
 import { useOutbox } from '../../lib/useOutbox';
 import { useTheme, statusColorHex } from '../../lib/theme';
 import { useLanguage } from '../../lib/i18n';
@@ -30,6 +33,9 @@ const CACHE_KEY = 'transpo.missions.v1';
 // partagé via le stockage local plutôt que recalculé ici, pour ne pas dupliquer
 // la liste de démo NOTIFS dans deux fichiers.
 const NOTIF_UNREAD_KEY = 'transpo.notifs.unreadCount';
+// Relecture des propositions tant que l'écran est affiché : sans push (Expo Go, appareil
+// non enregistré), c'est elle qui fait apparaître une course proposée.
+const OFFERS_POLL_MS = 15000;
 
 // -----------------------------------------------------------------------------
 // Icônes propres à cet écran (cf. app/index.tsx pour la justification : le
@@ -114,6 +120,10 @@ export default function MissionsScreen() {
   const [serverError, setServerError] = React.useState<string | null>(null);
   const [unread, setUnread] = React.useState(0);
   const [showPush, setShowPush] = React.useState(false);
+  // Courses proposées par l'affectation automatique. Jamais servies depuis le cache : une
+  // proposition vit quelques minutes, une copie hors ligne serait presque toujours échue.
+  const [offers, setOffers] = React.useState<DriverOffer[]>([]);
+  const [offsetMs, setOffsetMs] = React.useState(0);
   const name = getSession()?.name ?? '';
 
   const { pending, online, syncing, sync } = useOutbox((r) => {
@@ -126,7 +136,18 @@ export default function MissionsScreen() {
     loadData();
   });
 
+  const loadOffers = React.useCallback(async () => {
+    try {
+      const fresh = await authedClient().getMyOffers();
+      setOffers(fresh);
+      if (fresh[0]) setOffsetMs(new Date(fresh[0].serverNow).getTime() - Date.now());
+    } catch {
+      setOffers([]);
+    }
+  }, []);
+
   const loadData = React.useCallback(async () => {
+    void loadOffers();
     try {
       const fresh = await authedClient().getMissions();
       setOrders(fresh);
@@ -148,15 +169,34 @@ export default function MissionsScreen() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [loadOffers]);
 
   useFocusEffect(
     React.useCallback(() => {
       loadData();
       sync();
       readJson<number>(NOTIF_UNREAD_KEY, 0).then((n) => { setUnread(n); setShowPush(n > 0); });
-    }, [loadData, sync]),
+      const id = setInterval(() => { void loadOffers(); }, OFFERS_POLL_MS);
+      const off = ecouterPropositions(() => { void loadOffers(); });
+      return () => { clearInterval(id); off(); };
+    }, [loadData, loadOffers, sync]),
   );
+
+  /**
+   * Réponse à une proposition : écrite dans la file d'abord (hors ligne compris), puis
+   * envoyée. La clé d'idempotence est stable par (proposition, décision) : un rejeu après
+   * coupure ne produit qu'un effet. Un refus du serveur (échéance dépassée, course déjà
+   * prise) remonte par l'alerte « Action refusée » de la file.
+   */
+  const respond = React.useCallback(async (f: DriverOffer, decision: 'accept' | 'refuse') => {
+    await enqueue({ kind: 'offer', ref: f.ref, offerId: f.id, decision, idemKey: idemKey(f.id, `offer-${decision}`) });
+    await sync();
+    await loadData();
+  }, [sync, loadData]);
+  const onOfferExpired = React.useCallback(() => {
+    // Laisser le serveur réattribuer, puis relire : la carte disparaît d'elle-même.
+    setTimeout(() => { void loadOffers(); }, 3000);
+  }, [loadOffers]);
 
   // Les missions affichées intègrent les actions encore en file.
   const view = applyPending(orders, pending);
@@ -260,6 +300,19 @@ export default function MissionsScreen() {
         </View>
 
       )}
+
+      {offers.map((f) => (
+        <OfferCard
+          key={f.id}
+          offer={f}
+          offsetMs={offsetMs}
+          lang={lang}
+          rtl={rtl}
+          queued={pending.some((p) => p.kind === 'offer' && p.offerId === f.id)}
+          onRespond={(d) => { void respond(f, d); }}
+          onExpired={onOfferExpired}
+        />
+      ))}
 
       <FlatList
         data={view}

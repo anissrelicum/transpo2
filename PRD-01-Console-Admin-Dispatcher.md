@@ -49,6 +49,13 @@ Carte Leaflet (Casablanca par défaut) avec marqueurs livreurs (couleur = statut
 ### 3.2 Suggestion automatique
 Reprend le même algorithme de scoring que le détail commande, présenté en plein écran avec carte estompée en fond. Section **« Exclus de la suggestion »** listant les livreurs disponibles mais écartés avec motif explicite (en congé, compte inactif, véhicule incompatible avec la taille du colis) — **transparence de l'algorithme obligatoire**, pas une boîte noire.
 
+### 3.2 bis Affectation automatique et file d'exceptions (ADR 0004)
+Interrupteur d'entreprise **« Affectation automatique »** (Paramètres, désactivé par défaut ; délai d'acceptation, 3 min par défaut ; capacité journalière par défaut, 20, modifiable par chauffeur). Actif, chaque commande `NOUVELLE` (et chaque programmée arrivée à échéance) est **proposée** au livreur éligible **le moins chargé au regard de sa capacité du jour** dont la **zone couvre le point de retrait** (polygone si le retrait est géolocalisé, sinon ville) ; égalité → le plus proche (dernière position GPS) → ordre alphabétique. Éligible = disponible, compte d'app actif, permis et visite valides, pas déjà sollicité pour cette commande, sous sa capacité. Le livreur reçoit un push et **accepte ou refuse** dans le délai ; refus ou silence → livreur suivant. La commande reste `NOUVELLE` pendant la proposition.
+- **Dispatch → onglets Exceptions / À affecter / Propositions.** Onglet par défaut = Exceptions quand l'automate est actif. Une exception porte son motif : `AUCUN_LIVREUR_DISPONIBLE`, `ZONE_NON_COUVERTE`, `CAPACITE_ATTEINTE`, `REFUSEE_PAR_TOUS`, avec le nombre de refus. Actions : **Affecter** (dialogue de suggestion ci-dessus) et **Relancer l'auto** (nouveau tour, les refus précédents ne comptent plus). Les propositions en cours affichent le livreur sollicité et le compte à rebours.
+- **Alertes** : badge rouge sur l'entrée Dispatch et sur la cloche de l'en-tête (liste des exceptions, liens vers le dispatch et le centre de notifications) ; chaque nouvelle exception écrit une notification interne (canal `CONSOLE`).
+- **Historique** de la commande : proposition (livreur, charge/capacité, distance), acceptation, refus, expiration, exception (motif), relance.
+- L'**affectation manuelle reste toujours possible** ; elle retire la proposition en cours.
+
 ### 3.3 Éditeur de zones
 Découpage géographique en polygones dessinables sur carte (Région → Province/préfecture → Commune, données administratives marocaines réelles en placeholder). Chaque zone a un nom bilingue FR/AR, une couleur, une liste de livreurs affectés (ajout/retrait via popover). Actions : créer, dessiner un polygone, supprimer une zone, enregistrer.
 
@@ -135,7 +142,7 @@ KPI : alertes ouvertes, montant à risque, dépôts en retard, taux de faux éch
 
 **Utilisateurs** : liste avec rôle (Administrateur/Dispatcher/Comptable), permissions par rôle affichées à droite. Le dernier administrateur ne peut pas être désactivé (protection contre le verrouillage total). Actions : inviter, changer de rôle, réinitialiser mot de passe, désactiver.
 
-**Paramètres entreprise** : identité légale (raison sociale, ICE, RC — identifiants fiscaux marocains), adresse, devise (MAD), fuseau horaire (Africa/Casablanca), langue par défaut, **commission plateforme** (15% éditable) et TVA (20% éditable) — ce sont les paramètres qui pilotent la cascade tarifaire et la facturation dans toute la console.
+**Paramètres entreprise** : identité légale (raison sociale, ICE, RC — identifiants fiscaux marocains), adresse, devise (MAD), fuseau horaire (Africa/Casablanca), langue par défaut, **commission plateforme** (15% éditable) et TVA (20% éditable) — ce sont les paramètres qui pilotent la cascade tarifaire et la facturation dans toute la console. Carte **Affectation automatique** (ADMIN) : interrupteur, délai d'acceptation (1-60 min), capacité journalière par défaut (1-500) — cf. §3.2 bis. La capacité propre d'un chauffeur se règle dans sa fiche (Chauffeurs → Modifier la fiche) ; la liste affiche aussi l'état de son compte d'app (sans compte actif : aucune proposition).
 
 ## 17. Objectifs & primes — vue admin (`goals`)
 

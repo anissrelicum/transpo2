@@ -47,7 +47,28 @@ export const orders = pgTable('orders', {
   priceHt: doublePrecision('price_ht'),
   priceVat: doublePrecision('price_vat'),
   priceTtc: doublePrecision('price_ttc'),
+  // Affectation automatique (cf. migration 0029, ADR 0004).
+  assignedAt: timestamp('assigned_at', { withTimezone: true }),
+  dispatchException: text('dispatch_exception'),
+  dispatchExceptionAt: timestamp('dispatch_exception_at', { withTimezone: true }),
+  dispatchRound: integer('dispatch_round').notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * Proposition d'une commande à un livreur (affectation automatique, cf. migration 0029).
+ * Au plus une ligne `PROPOSEE` par commande (index unique partiel).
+ */
+export const orderOffers = pgTable('order_offers', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  ref: text('ref').notNull(),
+  driver: text('driver').notNull(),
+  round: integer('round').notNull().default(0),
+  status: text('status').notNull().default('PROPOSEE'),
+  reason: text('reason'),
+  offeredAt: timestamp('offered_at', { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  respondedAt: timestamp('responded_at', { withTimezone: true }),
 });
 
 /**
@@ -98,6 +119,8 @@ export const drivers = pgTable('drivers', {
   licenseDue: text('license_due'),
   medicalDue: text('medical_due'),
   vehicleId: uuid('vehicle_id'),
+  // Capacité journalière propre ; NULL = capacité par défaut de l'entreprise (migration 0029).
+  dailyCapacity: integer('daily_capacity'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -317,6 +340,10 @@ export const companySettings = pgTable('company_settings', {
   currency: text('currency').notNull().default('MAD'),
   timezone: text('timezone').notNull().default('Africa/Casablanca'),
   defaultLang: text('default_lang').notNull().default('fr'),
+  // Affectation automatique (migration 0029) : désactivée par défaut.
+  autoDispatch: boolean('auto_dispatch').notNull().default(false),
+  offerTimeoutMin: integer('offer_timeout_min').notNull().default(3),
+  defaultDailyCapacity: integer('default_daily_capacity').notNull().default(20),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

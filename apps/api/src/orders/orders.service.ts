@@ -5,6 +5,7 @@ import { withTenantDb, orders as ordersTable, orderEvents as orderEventsTable, d
 import { desc, eq } from 'drizzle-orm';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { BillingService } from '../billing/billing.service.js';
+import { AutoDispatchService } from '../dispatch/auto-dispatch.service.js';
 import { normaliserLocalisation } from './localisation.js';
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -74,6 +75,7 @@ export class OrdersService {
   constructor(
     @Inject(NotificationsService) private readonly notifs: NotificationsService,
     @Inject(BillingService) private readonly billing: BillingService,
+    @Inject(AutoDispatchService) private readonly auto: AutoDispatchService,
   ) {}
 
   /** Liste (filtre statut optionnel). */
@@ -157,6 +159,9 @@ export class OrdersService {
       await this.notifs.notifierEvenement(schema, 'order.created', {
         recipient: creee.dropPhone, vars: { code: creee.code },
       });
+      // Affectation automatique (ADR 0004) : sans effet si l'interrupteur est coupé. La
+      // réponse rend la commande telle qu'enregistrée (NOUVELLE) : la proposition vit à côté.
+      if (creee.status === 'NOUVELLE') await this.auto.onOrderReady(schema, creee.ref);
       return creee;
     });
   }
@@ -216,16 +221,28 @@ export class OrdersService {
           recipient: avancee.dropPhone, vars: { code: avancee.code },
         });
       }
+      // Une commande programmée arrivée à échéance entre dans la file de l'automate.
+      if (avancee.status === 'NOUVELLE') await this.auto.onOrderReady(schema, avancee.ref);
       return avancee;
     });
   }
 
+  /**
+   * Affectation MANUELLE — toujours possible, automate actif ou non. Elle retire la
+   * proposition en cours éventuelle (le livreur sollicité ne pourra plus l'accepter) et
+   * sort la commande de la file d'exceptions.
+   */
   assign(schema: string, ref: string, driverName: string, actor?: string): Promise<Order> {
-    return withTenantDb(schema, async (db) => {
+    return withTenantDb(schema, async (db, client) => {
       const [cur] = await db.select().from(ordersTable).where(eq(ordersTable.ref, ref));
       if (!cur) throw new NotFoundException(`Commande introuvable : ${ref}`);
       const status = (cur.status === 'NOUVELLE' || cur.status === 'PROGRAMMEE') ? 'ASSIGNEE' : cur.status;
-      const [r] = await db.update(ordersTable).set({ driver: driverName, status }).where(eq(ordersTable.ref, ref)).returning();
+      // `assigned_at` fonde la capacité journalière : il bouge quand le porteur change.
+      const set = cur.driver === driverName
+        ? { driver: driverName, status }
+        : { driver: driverName, status, assignedAt: new Date() };
+      const [r] = await db.update(ordersTable).set(set).where(eq(ordersTable.ref, ref)).returning();
+      await AutoDispatchService.retirerDeLaFile(client, ref, `affectée à la main à ${driverName}`);
       await journaliser(db, ref, status, actor, `Affectée à ${driverName}`);
       return rowToOrder(r);
     }).then(async (commande) => {
@@ -240,11 +257,12 @@ export class OrdersService {
   }
 
   cancel(schema: string, ref: string, actor?: string): Promise<Order> {
-    return withTenantDb(schema, async (db) => {
+    return withTenantDb(schema, async (db, client) => {
       const [cur] = await db.select().from(ordersTable).where(eq(ordersTable.ref, ref));
       if (!cur) throw new NotFoundException(`Commande introuvable : ${ref}`);
       if (!canTransition(cur.status as OrderStatus, 'ANNULEE')) throw new BadRequestException('Annulation impossible.');
       const [r] = await db.update(ordersTable).set({ status: 'ANNULEE' }).where(eq(ordersTable.ref, ref)).returning();
+      await AutoDispatchService.retirerDeLaFile(client, ref, 'commande annulée');
       await journaliser(db, ref, 'ANNULEE', actor);
       return rowToOrder(r);
     });

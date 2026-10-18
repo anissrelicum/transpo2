@@ -48,6 +48,8 @@ services:
       NOMINATIM_URL: ${NOMINATIM_URL-https://nominatim.openstreetmap.org}
       NOMINATIM_USER_AGENT: ${NOMINATIM_USER_AGENT:-Portrail/1.0 (livraison du dernier kilometre; https://portrail.ma)}
       NOMINATIM_EMAIL: ${NOMINATIM_EMAIL:-}
+      # Passe de l'affectation automatique (cf. docs/adr/0004).
+      AUTO_DISPATCH_INTERVAL_MS: ${AUTO_DISPATCH_INTERVAL_MS:-15000}
     ports:
       - "${API_PORT:-3000}:3000"
     depends_on:

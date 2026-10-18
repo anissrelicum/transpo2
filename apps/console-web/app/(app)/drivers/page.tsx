@@ -5,6 +5,7 @@ import { Box } from '@radix-ui/themes';
 import type { Driver, Vehicle } from '@transpo/api-client';
 import { serverClient } from '../../../lib/server';
 import { DriversView } from '../../../components/DriversView';
+import { currentLang } from '../../../lib/i18n';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +18,9 @@ export default async function DriversPage() {
   } catch {
     redirect('/login');
   }
+  // Capacité par défaut affichée pour les chauffeurs sans capacité propre.
+  let defaultCapacity = 20;
+  try { defaultCapacity = (await serverClient().getDispatchSettings()).defaultDailyCapacity; } catch { /* défaut */ }
   // Parc réservé ADMIN : le rattachement véhicule n'est proposé qu'à ce rôle.
   let vehicles: Vehicle[] = [];
   if (isAdmin) {
@@ -29,6 +33,8 @@ export default async function DriversPage() {
         vehicles={vehicles}
         isAdmin={isAdmin}
         canDispatch={isAdmin || role === 'DISPATCHER'}
+        defaultCapacity={defaultCapacity}
+        lang={currentLang()}
       />
     </Box>
   );

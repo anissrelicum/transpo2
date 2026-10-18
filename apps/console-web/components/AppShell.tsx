@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   Flex, Box, Text, Heading, Button, IconButton, TextField, Avatar, Tooltip,
-  Separator, DropdownMenu, Kbd,
+  Separator, DropdownMenu, Kbd, Popover, Badge,
 } from '@radix-ui/themes';
 import {
   DashboardIcon, ArchiveIcon, BarChartIcon, LockClosedIcon, SewingPinFilledIcon,
@@ -17,6 +17,30 @@ import { useAppTheme } from './theme-provider';
 import { LangSwitch } from './LangSwitch';
 import { t, type Lang, type Key, type Translate } from '@transpo/i18n';
 import { Marque } from './Marque';
+import type { DispatchExceptionRow } from '@transpo/api-client';
+import { dispatchT, exceptionLabel, EXCEPTION_COLOR } from '../lib/dispatch-i18n';
+
+/**
+ * Exceptions de l'affectation automatique, relues toutes les 30 s et à chaque navigation.
+ * Réservé aux rôles qui les traitent (ADMIN/DISPATCHER) : l'API refuserait les autres.
+ */
+function useDispatchAlerts(enabled: boolean, pathname: string | null): DispatchExceptionRow[] {
+  const [rows, setRows] = React.useState<DispatchExceptionRow[]>([]);
+  const load = React.useCallback(async () => {
+    if (!enabled) return;
+    try {
+      const res = await fetch('/api/proxy/v1/dispatch/exceptions', { cache: 'no-store' });
+      if (res.ok) setRows(await res.json());
+    } catch { /* réseau : on garde le dernier état connu */ }
+  }, [enabled]);
+  React.useEffect(() => { void load(); }, [load, pathname]);
+  React.useEffect(() => {
+    if (!enabled) return;
+    const id = setInterval(() => { void load(); }, 30000);
+    return () => clearInterval(id);
+  }, [enabled, load]);
+  return rows;
+}
 
 type Item = { id: string; key: Key; icon: React.ComponentType<any>; href?: string };
 type Group = { key: Key; items: Item[] };
@@ -57,7 +81,7 @@ const NAV: Group[] = [
   ]},
 ];
 
-function NavItem({ item, active, tr }: { item: Item; active: boolean; tr: Translate }) {
+function NavItem({ item, active, tr, count }: { item: Item; active: boolean; tr: Translate; count?: number }) {
   const enabled = !!item.href;
   const Icon = item.icon;
   const btn = (
@@ -70,6 +94,7 @@ function NavItem({ item, active, tr }: { item: Item; active: boolean; tr: Transl
     >
       <Icon width={16} height={16} />
       <Text size="2">{tr(item.key)}</Text>
+      {count ? <Badge color="red" radius="full" size="1" style={{ marginInlineStart: 'auto' }}>{count}</Badge> : null}
     </Button>
   );
   if (!enabled) {
@@ -82,7 +107,7 @@ function NavItem({ item, active, tr }: { item: Item; active: boolean; tr: Transl
   return <Link href={item.href!} style={{ display: 'block', width: '100%' }}>{btn}</Link>;
 }
 
-function Sidebar({ active, tr }: { active: string; tr: Translate }) {
+function Sidebar({ active, tr, exceptions }: { active: string; tr: Translate; exceptions: number }) {
   return (
     <Box
       p="3"
@@ -103,7 +128,8 @@ function Sidebar({ active, tr }: { active: string; tr: Translate }) {
           </Text>
           <Flex direction="column" gap="1">
             {grp.items.map((it) => (
-              <NavItem key={it.id} item={it} active={active === it.id} tr={tr} />
+              <NavItem key={it.id} item={it} active={active === it.id} tr={tr}
+                count={it.id === 'dispatch' ? exceptions : undefined} />
             ))}
           </Flex>
         </Box>
@@ -112,7 +138,8 @@ function Sidebar({ active, tr }: { active: string; tr: Translate }) {
   );
 }
 
-function Topbar({ name, role, lang, tr }: { name: string; role: string; lang: Lang; tr: Translate }) {
+function Topbar({ name, role, lang, tr, alerts }: { name: string; role: string; lang: Lang; tr: Translate; alerts: DispatchExceptionRow[] }) {
+  const dt = dispatchT(lang);
   const { appearance, toggle } = useAppTheme();
   const router = useRouter();
   const [q, setQ] = React.useState('');
@@ -153,9 +180,51 @@ function Topbar({ name, role, lang, tr }: { name: string; role: string; lang: La
             {appearance === 'dark' ? <SunIcon /> : <MoonIcon />}
           </IconButton>
         </Tooltip>
-        <Tooltip content={tr('nav.notifications')}>
-          <IconButton size="2" variant="ghost" color="gray" aria-label={tr('nav.notifications')}><BellIcon /></IconButton>
-        </Tooltip>
+        {/* La cloche était un bouton sans effet : elle ouvre désormais les alertes de
+            l'exploitation (exceptions de l'affectation automatique) et mène au centre de
+            notifications. */}
+        <Popover.Root>
+          <Popover.Trigger>
+            <IconButton size="2" variant="ghost" color="gray" aria-label={tr('nav.notifications')} style={{ position: 'relative' }}>
+              <BellIcon />
+              {alerts.length > 0 && (
+                <Box style={{
+                  position: 'absolute', top: 2, insetInlineEnd: 2, minWidth: 16, height: 16, borderRadius: 8,
+                  background: 'var(--red-9)', color: 'white', fontSize: 10, fontWeight: 700, lineHeight: '16px',
+                  textAlign: 'center', paddingInline: 3,
+                }} data-testid="bell-count">{alerts.length > 9 ? '9+' : alerts.length}</Box>
+              )}
+            </IconButton>
+          </Popover.Trigger>
+          <Popover.Content width="340px" align="end">
+            <Text as="div" size="2" weight="bold" mb="2">{dt('bellTitle')}</Text>
+            {alerts.length === 0 ? (
+              <Text as="div" size="2" color="gray" mb="2">{dt('bellNone')}</Text>
+            ) : (
+              <Box mb="2">
+                <Text as="div" size="1" color="gray" mb="2">{dt('bellCount', { n: alerts.length })}</Text>
+                <Flex direction="column" gap="1">
+                  {alerts.slice(0, 5).map((a) => (
+                    <Flex key={a.ref} align="center" justify="between" gap="2">
+                      <Link href={`/orders/${encodeURIComponent(a.ref)}`}><Text size="2">{a.ref}</Text></Link>
+                      <Badge size="1" variant="soft" color={EXCEPTION_COLOR[a.reason]}>{exceptionLabel(a.reason, lang).label}</Badge>
+                    </Flex>
+                  ))}
+                </Flex>
+              </Box>
+            )}
+            <Flex gap="2" justify="end" wrap="wrap">
+              <Popover.Close>
+                <Button size="1" variant="soft" color="gray" onClick={() => router.push('/notifications')}>{dt('bellSeeAll')}</Button>
+              </Popover.Close>
+              {alerts.length > 0 && (
+                <Popover.Close>
+                  <Button size="1" onClick={() => router.push('/dispatch?vue=exceptions')}>{dt('bellSeeExceptions')}</Button>
+                </Popover.Close>
+              )}
+            </Flex>
+          </Popover.Content>
+        </Popover.Root>
         <LangSwitch lang={lang} label={tr('common.language')} />
         <Separator orientation="vertical" size="1" />
         <DropdownMenu.Root>
@@ -181,18 +250,19 @@ function Topbar({ name, role, lang, tr }: { name: string; role: string; lang: La
 }
 
 /** Coquille applicative : sidebar + topbar autour du contenu de page. */
-export function AppShell({ name, role, lang, children }: {
-  name: string; role: string; lang: Lang; children: React.ReactNode;
+export function AppShell({ name, role, lang, canDispatch = false, children }: {
+  name: string; role: string; lang: Lang; canDispatch?: boolean; children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const alerts = useDispatchAlerts(canDispatch, pathname);
   // id de nav actif dérivé du 1er segment de l'URL (/orders → orders, etc.)
   const active = (pathname || '/').split('/')[1] || 'dashboard';
   const tr = t(lang);
   return (
     <Flex align="stretch" style={{ minHeight: '100vh' }}>
-      <Sidebar active={active} tr={tr} />
+      <Sidebar active={active} tr={tr} exceptions={alerts.length} />
       <Flex direction="column" style={{ flex: 1, minWidth: 0 }}>
-        <Topbar name={name} role={role} lang={lang} tr={tr} />
+        <Topbar name={name} role={role} lang={lang} tr={tr} alerts={alerts} />
         <Box p={{ initial: '4', md: '5' }} style={{ flex: 1 }}>
           {children}
         </Box>

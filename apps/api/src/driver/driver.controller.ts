@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Param, Body, Req, Headers, UseGuards, Inject, HttpCode } from '@nestjs/common';
 import { DriverService, type ProofInput } from './driver.service.js';
+import { AutoDispatchService } from '../dispatch/auto-dispatch.service.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { TenantGuard } from '../tenant/tenant.guard.js';
 import { RolesGuard } from '../auth/roles.guard.js';
@@ -9,10 +10,35 @@ import { Roles } from '../auth/roles.decorator.js';
 @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
 @Roles('DRIVER') // app livreur : scope = claim `driver`
 export class DriverController {
-  constructor(@Inject(DriverService) private readonly svc: DriverService) {}
+  constructor(
+    @Inject(DriverService) private readonly svc: DriverService,
+    @Inject(AutoDispatchService) private readonly auto: AutoDispatchService,
+  ) {}
 
   @Get('missions')
   missions(@Req() req: any) { return this.svc.missions(req.tenantSchema, req.user?.driver); }
+
+  /** Courses proposées par l'affectation automatique, en attente de sa réponse. */
+  @Get('offers')
+  offers(@Req() req: any) { return this.auto.driverOffers(req.tenantSchema, req.user?.driver); }
+
+  /**
+   * Accepter / refuser une proposition. Idempotent par nature (rejouer la même décision
+   * rend le même résultat) : l'en-tête `Idempotency-Key` de la file hors ligne est accepté
+   * sans qu'aucun stockage supplémentaire soit nécessaire. Le livreur n'agit que sur SES
+   * propositions (claim `driver` du JWT).
+   */
+  @Post('offers/:id/accept')
+  @HttpCode(200)
+  accept(@Req() req: any, @Param('id') id: string) {
+    return this.auto.respond(req.tenantSchema, req.user?.driver, id, 'accept');
+  }
+
+  @Post('offers/:id/refuse')
+  @HttpCode(200)
+  refuse(@Req() req: any, @Param('id') id: string) {
+    return this.auto.respond(req.tenantSchema, req.user?.driver, id, 'refuse');
+  }
 
   @Post('orders/:ref/advance')
   @HttpCode(200)

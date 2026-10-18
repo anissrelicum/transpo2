@@ -8,9 +8,10 @@ import { ReturnsModule } from '../returns/returns.module.js';
 import { FraudModule } from '../fraud/fraud.module.js';
 import { TrackingModule } from '../tracking/tracking.module.js';
 import { NotificationsModule } from '../notifications/notifications.module.js';
+import { DispatchModule } from '../dispatch/dispatch.module.js';
 
 @Module({
-  imports: [ReturnsModule, FraudModule, TrackingModule, NotificationsModule],
+  imports: [ReturnsModule, FraudModule, TrackingModule, NotificationsModule, DispatchModule],
   controllers: [DriverController],
   providers: [DriverService, JwtAuthGuard, TenantGuard, RolesGuard],
 })

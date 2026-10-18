@@ -4,8 +4,10 @@ import {
   drivers as driversTable,
   vehicles as vehiclesTable,
   orders as ordersTable,
+  users as usersTable,
 } from '@transpo/db';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
+import { DAILY_CAPACITY_BOUNDS } from '@transpo/domain';
 
 const OPEN_STATUSES = ['NOUVELLE', 'ASSIGNEE', 'RETRAIT', 'RECUPEREE', 'LIVRAISON'];
 // 9 à 15 CHIFFRES, espaces et tirets de présentation ignorés : « +212 6 00 00 00 00 », le
@@ -15,13 +17,26 @@ const PHONE_RE = { test: (v: string) => /^\+?[0-9\s-]+$/.test(v) && /^\d{9,15}$/
 type DriverRow = typeof driversTable.$inferSelect;
 type VehicleRow = typeof vehiclesTable.$inferSelect;
 type OrderRow = typeof ordersTable.$inferSelect;
+type UserRow = typeof usersTable.$inferSelect;
+
+/**
+ * État du compte d'app du livreur, tel que l'affectation automatique le lit : sans compte
+ * actif, personne ne peut accepter une proposition — le livreur n'en reçoit donc pas.
+ * `null` quand l'information n'a pas été chargée (réponses d'actions unitaires).
+ */
+function appAccountOf(name: string, users?: UserRow[]): 'ACTIF' | 'SUSPENDU' | 'AUCUN' | null {
+  if (!users) return null;
+  const siens = users.filter((u) => u.role === 'DRIVER' && u.driver === name);
+  if (!siens.length) return 'AUCUN';
+  return siens.some((u) => u.active) ? 'ACTIF' : 'SUSPENDU';
+}
 
 /**
  * Enrichit un chauffeur : conformité (permis, visite médicale), véhicule rattaché
  * et performance dérivée des commandes. `assignable` est la règle métier utilisée
  * par le dispatch : un permis ou une visite expirés interdisent l'affectation.
  */
-function enrich(d: DriverRow, vehicles: VehicleRow[], orders: OrderRow[]) {
+function enrich(d: DriverRow, vehicles: VehicleRow[], orders: OrderRow[], users?: UserRow[]) {
   const today = new Date().toISOString().slice(0, 10);
   const licenseExpired = d.licenseDue != null && d.licenseDue < today;
   const medicalExpired = d.medicalDue != null && d.medicalDue < today;
@@ -38,6 +53,7 @@ function enrich(d: DriverRow, vehicles: VehicleRow[], orders: OrderRow[]) {
     licenseExpired,
     medicalExpired,
     assignable: d.available && !licenseExpired && !medicalExpired,
+    appAccount: appAccountOf(d.name, users),
     vehiclePlate: linked?.plate ?? null,
     vehicleState: linked?.state ?? null,
     stats: {
@@ -53,12 +69,13 @@ function enrich(d: DriverRow, vehicles: VehicleRow[], orders: OrderRow[]) {
 export class DriversService {
   list(schema: string) {
     return withTenantDb(schema, async (db) => {
-      const [rows, vehicles, orders] = await Promise.all([
+      const [rows, vehicles, orders, users] = await Promise.all([
         db.select().from(driversTable).orderBy(driversTable.name),
         db.select().from(vehiclesTable),
         db.select().from(ordersTable),
+        db.select().from(usersTable).where(eq(usersTable.role, 'DRIVER')),
       ]);
-      return rows.map((d) => enrich(d, vehicles, orders));
+      return rows.map((d) => enrich(d, vehicles, orders, users));
     });
   }
 
@@ -99,9 +116,19 @@ export class DriversService {
    */
   update(schema: string, id: string, input: {
     name?: string; city?: string; vehicle?: string; phone?: string; licenseNo?: string;
+    /** Capacité journalière propre (affectation automatique) ; `null` = défaut d'entreprise. */
+    dailyCapacity?: number | null;
   }) {
     if (input?.phone && !PHONE_RE.test(input.phone.trim())) {
       throw new BadRequestException('Téléphone invalide.');
+    }
+    if (input?.dailyCapacity !== undefined && input.dailyCapacity !== null) {
+      const n = Number(input.dailyCapacity);
+      if (!Number.isInteger(n) || n < DAILY_CAPACITY_BOUNDS.min || n > DAILY_CAPACITY_BOUNDS.max) {
+        throw new BadRequestException(
+          `Capacité journalière : entier entre ${DAILY_CAPACITY_BOUNDS.min} et ${DAILY_CAPACITY_BOUNDS.max}, ou vide pour le défaut de l’entreprise.`,
+        );
+      }
     }
     return withTenantDb(schema, async (db) => {
       const [cible] = await db.select().from(driversTable).where(eq(driversTable.id, id));
@@ -112,6 +139,7 @@ export class DriversService {
       if (input.vehicle !== undefined) patch.vehicle = input.vehicle || null;
       if (input.phone !== undefined) patch.phone = input.phone.trim() || null;
       if (input.licenseNo !== undefined) patch.licenseNo = input.licenseNo.trim() || null;
+      if (input.dailyCapacity !== undefined) patch.dailyCapacity = input.dailyCapacity === null ? null : Number(input.dailyCapacity);
 
       const nom = input.name?.trim();
       if (nom && nom !== cible.name) {
@@ -131,7 +159,8 @@ export class DriversService {
       const [d] = await db.update(driversTable).set(patch).where(eq(driversTable.id, id)).returning();
       const vehicles = await db.select().from(vehiclesTable);
       const orders = await db.select().from(ordersTable);
-      return enrich(d, vehicles, orders);
+      const users = await db.select().from(usersTable).where(and(eq(usersTable.role, 'DRIVER'), eq(usersTable.driver, d.name)));
+      return enrich(d, vehicles, orders, users);
     });
   }
 

@@ -1,6 +1,6 @@
 // @transpo/api-client — client HTTP typé, partagé par les fronts (Next.js + Expo).
 // S'appuie sur les types de @transpo/domain. Gère token JWT + tenant. Cf. skill transpo-api.
-import type { Order, Role } from '@transpo/domain';
+import type { Order, Role, AutoDispatchSettings, DispatchException, OfferStatus } from '@transpo/domain';
 
 export interface ClientOptions {
   baseUrl: string;
@@ -51,7 +51,45 @@ export interface Driver {
   phone: string | null; licenseNo: string | null; licenseDue: string | null; medicalDue: string | null;
   vehicleId: string | null; vehiclePlate: string | null; vehicleState: string | null;
   licenseExpired: boolean; medicalExpired: boolean; assignable: boolean;
+  /** Capacité journalière propre (affectation automatique) ; `null` = défaut d'entreprise. */
+  dailyCapacity: number | null;
+  /** Compte de l'app livreur : sans compte actif, aucune proposition automatique. */
+  appAccount: 'ACTIF' | 'SUSPENDU' | 'AUCUN' | null;
   stats: DriverStats; createdAt: string;
+}
+
+/* ---------------- Affectation automatique (ADR 0004) ---------------- */
+export type DispatchSettings = AutoDispatchSettings & { timezone: string };
+/** Commande que l'automate n'a pas pu placer. */
+export interface DispatchExceptionRow {
+  ref: string; code: string; status: string; merchant: string | null;
+  fromCity: string; toCity: string; cod: number; size: string | null; createdAt: string;
+  reason: DispatchException; since: string | null; round: number;
+  /** Livreurs ayant refusé ou laissé expirer la proposition dans le tour courant. */
+  declined: number;
+}
+/** Proposition en attente (vue exploitation). */
+export interface PendingOffer {
+  id: string; ref: string; driver: string; reason: string | null;
+  offeredAt: string; expiresAt: string; serverNow: string;
+}
+/** Proposition d'une commande, tous tours confondus. */
+export interface OfferHistoryRow {
+  id: string; driver: string; round: number; status: OfferStatus; reason: string | null;
+  offeredAt: string; expiresAt: string; respondedAt: string | null;
+}
+export type DispatchOutcome =
+  | { kind: 'offer'; ref: string; driver: string; offerId: string; expiresAt: string }
+  | { kind: 'exception'; ref: string; reason: DispatchException }
+  | { kind: 'skip'; ref: string; why: string };
+/** Proposition reçue par le livreur (sans données personnelles du destinataire). */
+export interface DriverOffer {
+  id: string; ref: string; status: OfferStatus; offeredAt: string; expiresAt: string; serverNow: string;
+  order: {
+    ref: string; code: string; fromCity: string; toCity: string; cod: number; size: string;
+    merchant: string | null; pickupAddress: string | null; dropAddress: string | null;
+    distanceKm: number | null; fragile: boolean;
+  };
 }
 export interface Vehicle {
   id: string; plate: string; type: string; city: string | null; state: string;
@@ -384,6 +422,23 @@ export class TranspoClient {
   suggestDrivers(ref: string): Promise<{ order: string; suggestions: Suggestion[] }> {
     return this.req(`/v1/dispatch/suggest/${encodeURIComponent(ref)}`);
   }
+  // --- Affectation automatique (ADR 0004) ---
+  getDispatchSettings(): Promise<DispatchSettings> { return this.req('/v1/dispatch/settings'); }
+  /** ADMIN. */
+  saveDispatchSettings(input: Partial<AutoDispatchSettings>): Promise<AutoDispatchSettings> {
+    return this.req('/v1/dispatch/settings', { method: 'PUT', body: input });
+  }
+  getDispatchExceptions(): Promise<DispatchExceptionRow[]> { return this.req('/v1/dispatch/exceptions'); }
+  getPendingOffers(): Promise<PendingOffer[]> { return this.req('/v1/dispatch/offers'); }
+  getOrderOffers(ref: string): Promise<OfferHistoryRow[]> {
+    return this.req(`/v1/dispatch/offers/${encodeURIComponent(ref)}`);
+  }
+  retryAutoDispatch(ref: string): Promise<DispatchOutcome> {
+    return this.req(`/v1/dispatch/auto/${encodeURIComponent(ref)}/retry`, { method: 'POST', body: {} });
+  }
+  runAutoDispatch(): Promise<{ expired: number; dispatched: DispatchOutcome[] }> {
+    return this.req('/v1/dispatch/auto/run', { method: 'POST', body: {} });
+  }
   getFleetLive(): Promise<FleetLive[]> { return this.req('/v1/tracking/live'); }
   getFleetAlerts(): Promise<FleetLive[]> { return this.req('/v1/tracking/alerts'); }
 
@@ -568,6 +623,14 @@ export class TranspoClient {
 
   // --- App livreur (rôle DRIVER) ---
   getMissions(): Promise<Order[]> { return this.req('/v1/driver/missions'); }
+  /** Courses proposées par l'affectation automatique, en attente de réponse. */
+  getMyOffers(): Promise<DriverOffer[]> { return this.req('/v1/driver/offers'); }
+  /** Accepter / refuser une proposition. Idempotent (rejouable depuis la file hors ligne). */
+  respondToOffer(id: string, decision: 'accept' | 'refuse', idemKey: string): Promise<{ id: string; ref: string; status: OfferStatus }> {
+    return this.req(`/v1/driver/offers/${encodeURIComponent(id)}/${decision}`, {
+      method: 'POST', body: {}, headers: { 'idempotency-key': idemKey },
+    });
+  }
   driverAdvance(ref: string, idemKey: string): Promise<Order> {
     return this.req(`/v1/driver/orders/${encodeURIComponent(ref)}/advance`, {
       method: 'POST', body: {}, headers: { 'idempotency-key': idemKey },

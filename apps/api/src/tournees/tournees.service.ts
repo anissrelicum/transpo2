@@ -49,7 +49,11 @@ export class TourneesService {
       for (const o of found) {
         const status = (o.status === 'NOUVELLE' || o.status === 'PROGRAMMEE')
           ? 'ASSIGNEE' as OrderStatus : (o.status as OrderStatus);
-        await db.update(ordersTable).set({ driver: input.driver, status })
+        // `assigned_at` fonde la capacité journalière de l'affectation automatique ; une
+        // course reprise dans une tournée sort aussi de la file d'exceptions.
+        await db.update(ordersTable).set(o.driver === input.driver
+          ? { driver: input.driver, status, dispatchException: null, dispatchExceptionAt: null }
+          : { driver: input.driver, status, assignedAt: new Date(), dispatchException: null, dispatchExceptionAt: null })
           .where(eq(ordersTable.ref, o.ref));
       }
       const [t] = await db.insert(tourTable).values({

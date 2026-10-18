@@ -15,5 +15,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { lang, tr } = i18n();
   const name = jar.get('name')?.value || 'Utilisateur';
   const roleKey = (raw ? `roles.${raw}` : 'roles.UNKNOWN') as Key;
-  return <AppShell name={name} role={tr(roleKey)} lang={lang}>{children}</AppShell>;
+  // Alertes de dispatch (cloche) : seuls les rôles qui traitent les exceptions les chargent.
+  const canDispatch = raw === 'ADMIN' || raw === 'DISPATCHER';
+  return <AppShell name={name} role={tr(roleKey)} lang={lang} canDispatch={canDispatch}>{children}</AppShell>;
 }

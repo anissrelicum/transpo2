@@ -17,6 +17,7 @@ import type { DeliveryProof } from '@transpo/api-client';
 import type { Lang } from '@transpo/i18n';
 import { OrderActions } from './OrderActions';
 import { Map } from './Map';
+import { dispatchEventLabel } from '../lib/dispatch-i18n';
 
 /** Libellés de la carte des deux points (le reste de la fiche reste à traduire). */
 const TL = {
@@ -282,7 +283,10 @@ export function OrderDetailClient({ order, drivers, proof, events, canWrite, com
                         </Box>
                         <Box>
                           <Text as="div" size="2">
-                            Statut → {STATUS_META[e.status as OrderStatus]?.fr ?? e.status}
+                            {/* Les faits de l'affectation automatique (proposition, refus,
+                                expiration, exception) ne sont pas des statuts de commande. */}
+                            {dispatchEventLabel(e.status, lang)
+                              ?? <>Statut → {STATUS_META[e.status as OrderStatus]?.fr ?? e.status}</>}
                             {e.note ? ` · ${e.note}` : ''}
                           </Text>
                           <Text as="div" size="1" color="gray">

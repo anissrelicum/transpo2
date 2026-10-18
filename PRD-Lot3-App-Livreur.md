@@ -71,6 +71,7 @@ Contraintes UI transverses : cibles tactiles **≥ 44–48px**, thème clair/som
 - 3 tuiles résumé : À livrer / Livrées / COD total du jour.
 - Bandeau poussé (« Nouvelle mission assignée ») dismissible, menant aux notifications.
 - Liste de cartes mission : n° d'ordre, référence commande, `StatusBadge`, adresse retrait (icône maison) et livraison (icône pin), distance, taille de colis, badge COD (montant) ou « Prépayé ».
+- **Courses proposées** (affectation automatique, ADR 0004) : carte en tête de liste avec trajet, taille, COD, compte à rebours (heure du serveur) et deux actions pleine largeur **Refuser / Accepter** (≥ 48 px). La réponse passe par la file hors ligne (clé d'idempotence stable) ; une acceptation arrivée après l'échéance est refusée par le serveur et signalée. Le push « Course proposée » ouvre l'app sur cet écran ; sans push, l'écran relit les propositions toutes les 15 s.
 - État `loading` : squelettes ; état vide/erreur gérés par le harnais (à répliquer côté app réelle).
 
 ### 5.3 Notifications
@@ -201,7 +202,7 @@ LIVRAISON → LIVREE (« Marquer comme livrée »)
 ### 5.21 Paramètres (`settings`)
 - Notifications : push, son, vibration (switches indépendants).
 - Affichage : langue (FR/AR), thème (clair/sombre).
-- Missions : acceptation automatique des missions de sa zone (switch), partage de position (statut lecture seule, actif pendant le shift).
+- Missions : acceptation automatique des missions de sa zone (switch), partage de position (statut lecture seule, actif pendant le shift). *Non implémenté (affiché « Bientôt disponible ») : avec l'affectation automatique (ADR 0004), chaque proposition se répond explicitement — un livreur qui n'est pas en état de rouler ne doit pas se retrouver affecté sans l'avoir dit.*
 - À propos : version app, lien confidentialité (référence loi marocaine 09-08 sur la protection des données personnelles).
 
 ### 5.22 Aide / FAQ (`help`)

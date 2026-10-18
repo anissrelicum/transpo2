@@ -7,7 +7,12 @@ import { NOTIF_CHANNELS, NOTIF_TEMPLATES, renderTemplate, type NotifChannel } fr
 export interface SendInput {
   event: string; recipient: string; channel: NotifChannel;
   lang?: 'fr' | 'ar'; vars?: Record<string, string>;
+  /** Données jointes au push (ouvrir l'app sur la bonne proposition). Jamais stockées. */
+  data?: Record<string, string>;
 }
+
+/** Destinataire des alertes internes (canal CONSOLE) : l'équipe d'exploitation du tenant. */
+export const DESTINATAIRE_EXPLOITATION = 'exploitation';
 
 interface ResolvedTemplate { event: string; fr: string; ar: string; transactional: boolean; active: boolean }
 
@@ -136,7 +141,7 @@ export class NotificationsService {
     if (!input.recipient) throw new BadRequestException('Destinataire requis.');
     const lang = input.lang === 'ar' ? 'ar' : 'fr';
     const body = renderTemplate(lang === 'ar' ? tpl.ar : tpl.fr, input.vars);
-    return this.deliver(schema, { event: input.event, channel, recipient: input.recipient, lang, body }, tpl);
+    return this.deliver(schema, { event: input.event, channel, recipient: input.recipient, lang, body }, tpl, input.data);
   }
 
   /**
@@ -161,6 +166,7 @@ export class NotificationsService {
     schema: string,
     msg: { event: string; channel: NotifChannel; recipient: string; lang: 'fr' | 'ar'; body: string },
     tpl: ResolvedTemplate,
+    data?: Record<string, string>,
   ) {
     let status = 'SENT';
     let reason: string | null = null;
@@ -175,13 +181,15 @@ export class NotificationsService {
     // contractée, et leur statut « SENT » ne dit donc que « prêt à partir ». Ici on peut
     // faire mieux : si OneSignal refuse, on consigne un ÉCHEC motivé plutôt qu'un envoi
     // qui n'a pas eu lieu. Un centre de notifications qui ment ne sert à rien.
+    // Le canal CONSOLE n'a pas de passerelle : la ligne écrite ci-dessous EST la
+    // notification (cloche de la console, centre de notifications). « SENT » est exact.
     if (status === 'SENT' && msg.channel === 'PUSH') {
       if (!this.push.configure) {
         status = 'QUEUED';
         reason = 'Push non configuré sur cette instance (ONESIGNAL_APP_ID / ONESIGNAL_API_KEY).';
       } else {
         try {
-          await this.push.envoyer(msg.recipient, { fr: msg.body });
+          await this.push.envoyer(msg.recipient, { fr: msg.body }, data);
         } catch (e) {
           status = 'FAILED';
           reason = (e as Error).message.slice(0, 500);
@@ -208,13 +216,14 @@ export class NotificationsService {
     chauffeur: string | null | undefined,
     event: string,
     vars: Record<string, string> = {},
+    data?: Record<string, string>,
   ) {
     if (!chauffeur) return null;
     try {
       return await this.send(schema, {
         event, channel: 'PUSH',
         recipient: OneSignalService.idExterne(tenantSlug, chauffeur),
-        lang: 'fr', vars,
+        lang: 'fr', vars, data,
       } as SendInput);
     } catch {
       return null;
@@ -241,6 +250,21 @@ export class NotificationsService {
         event, channel: 'SMS', recipient: input.recipient,
         lang: input.lang ?? 'fr', vars: input.vars,
       } as SendInput);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Alerte l'équipe d'exploitation dans la console (cloche + centre de notifications).
+   * Les dispatchers n'ont pas d'appareil enregistré pour le push : la console est leur
+   * poste. Tolérant, comme les autres envois.
+   */
+  async notifierConsole(schema: string, event: string, vars: Record<string, string> = {}) {
+    try {
+      return await this.send(schema, {
+        event, channel: 'CONSOLE', recipient: DESTINATAIRE_EXPLOITATION, lang: 'fr', vars,
+      });
     } catch {
       return null;
     }

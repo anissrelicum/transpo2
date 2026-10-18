@@ -1,10 +1,13 @@
 'use client';
 import * as React from 'react';
 import { useSafeRefresh } from '../lib/safe-refresh';
-import { Card, Flex, Box, Grid, Text, Heading, Badge, Button, TextField, TextArea, Select, Callout } from '@radix-ui/themes';
-import { CheckIcon, InfoCircledIcon, GlobeIcon } from '@radix-ui/react-icons';
-import type { CompanySettings, PriceConfig } from '@transpo/api-client';
+import { Card, Flex, Box, Grid, Text, Heading, Badge, Button, TextField, TextArea, Select, Callout, Switch } from '@radix-ui/themes';
+import { CheckIcon, InfoCircledIcon, GlobeIcon, LightningBoltIcon } from '@radix-ui/react-icons';
+import type { CompanySettings, PriceConfig, DispatchSettings } from '@transpo/api-client';
+import type { Lang } from '@transpo/i18n';
+import { OFFER_TIMEOUT_BOUNDS, DAILY_CAPACITY_BOUNDS } from '@transpo/domain';
 import { PageHeader } from './ui';
+import { dispatchT } from '../lib/dispatch-i18n';
 
 const CURRENCIES = ['MAD'];
 const TIMEZONES = ['Africa/Casablanca'];
@@ -14,7 +17,9 @@ function SaveButton({ busy, saved, onClick }: { busy: boolean; saved: boolean; o
   return <Button size="2" disabled={busy} onClick={onClick}><CheckIcon /> {saved ? 'Enregistré ✓' : 'Enregistrer'}</Button>;
 }
 
-export function SettingsView({ tenant, company, pricing, isAdmin }: { tenant: string; company: CompanySettings; pricing: PriceConfig; isAdmin: boolean }) {
+export function SettingsView({ tenant, company, pricing, dispatch, isAdmin, lang = 'fr' }: {
+  tenant: string; company: CompanySettings; pricing: PriceConfig; dispatch: DispatchSettings; isAdmin: boolean; lang?: Lang;
+}) {
   const refresh = useSafeRefresh();
 
   const [identity, setIdentity] = React.useState({
@@ -166,6 +171,10 @@ export function SettingsView({ tenant, company, pricing, isAdmin }: { tenant: st
         </Box>
 
         <Box style={{ gridColumn: '1 / -1' }}>
+          <AutoDispatchCard initial={dispatch} isAdmin={isAdmin} lang={lang} onSaved={refresh} />
+        </Box>
+
+        <Box style={{ gridColumn: '1 / -1' }}>
           <Card size="2" variant="surface">
             <Flex align="center" gap="3">
               <GlobeIcon />
@@ -175,5 +184,84 @@ export function SettingsView({ tenant, company, pricing, isAdmin }: { tenant: st
         </Box>
       </Grid>
     </>
+  );
+}
+
+/**
+ * Affectation automatique (ADR 0004) : interrupteur d'entreprise, délai d'acceptation du
+ * livreur, capacité journalière par défaut. Enregistré à part (PUT /v1/dispatch/settings) :
+ * l'identité légale et l'automate n'ont ni le même rythme ni les mêmes conséquences.
+ */
+function AutoDispatchCard({ initial, isAdmin, lang, onSaved }: {
+  initial: DispatchSettings; isAdmin: boolean; lang: Lang; onSaved: () => void;
+}) {
+  const dt = dispatchT(lang);
+  const [on, setOn] = React.useState(initial.autoDispatch);
+  const [timeout, setTimeoutMin] = React.useState(String(initial.offerTimeoutMin));
+  const [capacity, setCapacity] = React.useState(String(initial.defaultDailyCapacity));
+  const [busy, setBusy] = React.useState(false);
+  const [saved, setSaved] = React.useState(false);
+  const entier = (v: string, b: { min: number; max: number }) => /^\d+$/.test(v) && Number(v) >= b.min && Number(v) <= b.max;
+  const timeoutOk = entier(timeout, OFFER_TIMEOUT_BOUNDS);
+  const capacityOk = entier(capacity, DAILY_CAPACITY_BOUNDS);
+
+  async function save() {
+    setBusy(true);
+    const res = await fetch('/api/proxy/v1/dispatch/settings', {
+      method: 'PUT', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ autoDispatch: on, offerTimeoutMin: Number(timeout), defaultDailyCapacity: Number(capacity) }),
+    });
+    setBusy(false);
+    if (res.ok) {
+      setSaved(true); onSaved();
+      setTimeout(() => setSaved(false), 2000);
+    } else {
+      const e = await res.json().catch(() => null);
+      alert(e?.error ?? dt('saveFailed'));
+    }
+  }
+
+  return (
+    <Card size="3">
+      <Flex align="center" justify="between" gap="3" mb="1" wrap="wrap">
+        <Flex align="center" gap="2">
+          <LightningBoltIcon />
+          <Heading size="4">{dt('settingsTitle')}</Heading>
+        </Flex>
+        <Badge color={on ? 'green' : 'gray'} variant="soft">{on ? dt('settingsOn') : dt('settingsOff')}</Badge>
+      </Flex>
+      <Text as="p" size="2" color="gray" mb="3">{dt('settingsIntro')}</Text>
+      <Grid columns={{ initial: '1', sm: '3' }} gap="3" align="end">
+        <Text as="label" size="2">
+          <Flex align="center" gap="2" style={{ minHeight: 44 }}>
+            <Switch checked={on} disabled={!isAdmin || busy} onCheckedChange={setOn} />
+            {dt('settingsSwitch')}
+          </Flex>
+        </Text>
+        <Box>
+          <Text as="label" htmlFor="ad-timeout" size="1" color="gray" mb="1" style={{ display: 'block' }}>{dt('settingsTimeout')}</Text>
+          <TextField.Root id="ad-timeout" type="number" min={OFFER_TIMEOUT_BOUNDS.min} max={OFFER_TIMEOUT_BOUNDS.max}
+            disabled={!isAdmin} value={timeout} onChange={(e) => setTimeoutMin(e.target.value)} color={!timeoutOk ? 'red' : undefined}>
+            <TextField.Slot side="right"><Text size="1" color="gray">{dt('minutes')}</Text></TextField.Slot>
+          </TextField.Root>
+          <Text as="div" size="1" color={timeoutOk ? 'gray' : 'red'} mt="1">{dt('settingsTimeoutHint')}</Text>
+        </Box>
+        <Box>
+          <Text as="label" htmlFor="ad-capacity" size="1" color="gray" mb="1" style={{ display: 'block' }}>{dt('settingsCapacity')}</Text>
+          <TextField.Root id="ad-capacity" type="number" min={DAILY_CAPACITY_BOUNDS.min} max={DAILY_CAPACITY_BOUNDS.max}
+            disabled={!isAdmin} value={capacity} onChange={(e) => setCapacity(e.target.value)} color={!capacityOk ? 'red' : undefined}>
+            <TextField.Slot side="right"><Text size="1" color="gray">{dt('perDay')}</Text></TextField.Slot>
+          </TextField.Root>
+          <Text as="div" size="1" color={capacityOk ? 'gray' : 'red'} mt="1">{dt('settingsCapacityHint')}</Text>
+        </Box>
+      </Grid>
+      {isAdmin && (
+        <Flex justify="end" mt="4">
+          <Button size="2" disabled={busy || !timeoutOk || !capacityOk} onClick={save}>
+            <CheckIcon /> {saved ? dt('saved') : dt('save')}
+          </Button>
+        </Flex>
+      )}
+    </Card>
   );
 }

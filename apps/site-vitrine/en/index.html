@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>Portrail — last-mile delivery software for courier companies</title>
-<meta name="description" content="Assisted dispatch, an offline driver app, proof of delivery and cash on delivery tracked to the merchant payout. Software for last-mile carriers.">
+<meta name="description" content="Automatic, fair dispatch, an offline driver app, proof of delivery and cash on delivery tracked to the merchant payout. Software for last-mile carriers.">
 <link rel="canonical" href="__SITE__/en/">
 <link rel="alternate" hreflang="fr" href="__SITE__/">
 <link rel="alternate" hreflang="en" href="__SITE__/en/">
@@ -89,7 +89,7 @@
       "operatingSystem": "Web, Android",
       "inLanguage": ["fr", "ar"],
       "url": "__SITE__/en/",
-      "description": "Operations software for last-mile delivery companies: dispatch with driver suggestions, an offline driver app, proof of delivery, cash on delivery tracked to the merchant payout, invoicing, merchant portal, fleet and compliance.",
+      "description": "Operations software for last-mile delivery companies: automatic, fair dispatch with driver acceptance (the dispatcher handles the exceptions), an offline driver app, proof of delivery, cash on delivery tracked to the merchant payout, invoicing, merchant portal, fleet and compliance.",
       "screenshot": [
         "__SITE__/medias/ecran-dashboard.webp",
         "__SITE__/medias/ecran-dispatch.webp",
@@ -131,6 +131,8 @@
           "acceptedAnswer": { "@type": "Answer", "text": "Yes. Status changes, proof of delivery and cash collection all work offline: they are queued and replayed when the network comes back, without ever applying the same action twice." } },
         { "@type": "Question", "name": "How is cash collected on delivery tracked?",
           "acceptedAnswer": { "@type": "Answer", "text": "End to end: collection at the customer’s door, the driver’s cash float updated delivery by delivery, the driver’s declaration, the deposit at the branch, any discrepancy explained, then the payout to the merchant net of commission." } },
+        { "@type": "Question", "name": "Are orders assigned automatically?",
+          "acceptedAnswer": { "@type": "Answer", "text": "If you switch it on. Automatic assignment offers each new order to the least-loaded driver whose zone covers the pickup point, relative to their capacity for the day. The driver accepts or declines within the time limit you set; with no answer, the job moves on to the next driver. Whatever the system cannot place — zone not covered, nobody available, capacity reached, declined by everyone — goes to the dispatcher with the reason, and manual assignment is always available." } },
         { "@type": "Question", "name": "How do you locate a customer without a precise address?",
           "acceptedAnswer": { "@type": "Answer", "text": "Paste the location link the customer shared — Google Maps, WhatsApp, Waze, Apple Maps or OpenStreetMap — or drop a pin on the map. The original link is forwarded to the driver, who opens the exact spot in their navigation app with one tap." } },
         { "@type": "Question", "name": "Is the software available in Arabic?",
@@ -336,7 +338,7 @@
           </figure>
           <div class="panneau__legende">
             <h3>Dispatch</h3>
-            <p>The map of online drivers and the queue of orders to assign. Candidate drivers are ranked by zone, availability and workload — and those ruled out come with the reason why.</p>
+            <p>The map of online drivers and the exceptions queue. With automatic assignment on, each order goes to the least-loaded driver in its zone, who accepts or declines; the dispatcher only gets what the system could not place, with the reason why.</p>
           </div>
         </div>
 
@@ -366,7 +368,7 @@
       </div>
 
       <ul class="atouts" data-revele>
-        <li><strong>Assisted assignment</strong>A suggested driver, with the reason the others were ruled out.</li>
+        <li><strong>Automatic assignment</strong>Fair, accepted by the driver — and exceptions explained for the dispatcher.</li>
         <li><strong>Separate roles</strong>Admin, dispatcher, accountant: enforced on screen and in the API.</li>
         <li><strong>Real time</strong>A status changed in the field shows up at the office.</li>
         <li><strong>Light or dark</strong>Interfaces follow the theme you choose.</li>
@@ -400,7 +402,7 @@
           <div class="main__corps">
             <p class="main__n"><span>2</span>Dispatch</p>
             <h3 class="main__titre">Dispatch assigns</h3>
-            <p class="main__texte">Candidate drivers are ranked by zone, availability and workload — and those ruled out come with the reason why.</p>
+            <p class="main__texte">Each order is offered to the least-loaded driver in its zone, who accepts or declines. The dispatcher stays in control of the exceptions.</p>
           </div>
         </li>
         <li class="main" data-revele>
@@ -673,7 +675,7 @@
         <li><svg width="28" height="28" aria-hidden="true"><use href="#i-journal"/></svg><h3>An audit log</h3><p>Sensitive actions are recorded: who did what, and when.</p></li>
         <li><svg width="28" height="28" aria-hidden="true"><use href="#i-cadenas"/></svg><h3>Consent and personal data</h3><p>No SMS or WhatsApp without the recipient’s consent. Personal data can be exported and anonymised; home locations are never exposed on public tracking.</p></li>
         <li><svg width="28" height="28" aria-hidden="true"><use href="#i-langues"/></svg><h3>French and Arabic</h3><p>Bilingual interfaces, with a fully mirrored right-to-left layout in Arabic — not just a translation.</p></li>
-        <li><svg width="28" height="28" aria-hidden="true"><use href="#i-balance"/></svg><h3>The software suggests, you decide</h3><p>It suggests a driver, flags a risk, blocks a message without consent. It never penalises anyone and never assigns anything on your behalf.</p></li>
+        <li><svg width="28" height="28" aria-hidden="true"><use href="#i-balance"/></svg><h3>Automatic, and under control</h3><p>Once switched on, assignment spreads jobs fairly and drivers remain free to decline. Whatever it cannot place comes back to you with the reason. It flags risks without penalising anyone and blocks any message sent without consent.</p></li>
       </ul>
     </div>
   </section>
@@ -740,6 +742,10 @@
         <details>
           <summary>How is cash collected on delivery tracked?</summary>
           <p class="faq__reponse">End to end: collection at the customer’s door, the driver’s cash float updated delivery by delivery, the driver’s declaration, the deposit at the branch, any discrepancy explained, then the payout to the merchant net of commission.</p>
+        </details>
+        <details>
+          <summary>Are orders assigned automatically?</summary>
+          <p class="faq__reponse">If you switch it on. Automatic assignment offers each new order to the least-loaded driver whose zone covers the pickup point, relative to their capacity for the day. The driver accepts or declines within the time limit you set; with no answer, the job moves on to the next driver. Whatever the system cannot place — zone not covered, nobody available, capacity reached, declined by everyone — goes to the dispatcher with the reason, and manual assignment is always available.</p>
         </details>
         <details>
           <summary>How do you locate a customer without a precise address?</summary>
