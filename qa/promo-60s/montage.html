@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Portrail — vidéo 60 s</title>
+<style>
+  @font-face { font-family: Inter; src: url(inter-latin-var.woff2) format("woff2"); font-weight: 100 900; }
+  :root { --navy:#0B1537; --navy2:#16245A; --amber:#F5A524; --blanc:#fff; --gris:#C3CADF; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { width:1920px; height:1080px; overflow:hidden; background:var(--navy); font-family:Inter, system-ui, sans-serif; color:#fff; }
+  .scene { position:absolute; inset:0; opacity:0; overflow:hidden;
+    background: radial-gradient(110% 90% at 70% 35%, #1B2B6B 0%, #0B1537 58%, #070D26 100%); }
+  .kicker { font-size:24px; font-weight:800; letter-spacing:.2em; text-transform:uppercase; color:var(--amber); }
+  h2 { font-size:72px; line-height:1.04; font-weight:800; letter-spacing:-.035em; }
+  .sous { font-size:32px; line-height:1.35; color:var(--gris); font-weight:500; margin-top:22px; }
+  .bloc { position:absolute; left:130px; top:50%; transform:translateY(-50%); width:880px; }
+  .ligne-t { opacity:0; transform:translateY(24px); }
+  /* Navigateur */
+  .ecran { position:absolute; border-radius:22px; overflow:hidden; background:#fff; box-shadow:0 50px 120px rgba(0,0,0,.55); }
+  .ecran .barre { height:40px; background:#EEF0F5; display:flex; align-items:center; gap:9px; padding:0 18px; }
+  .ecran .barre i { width:13px; height:13px; border-radius:50%; background:#D3D7E2; display:block; }
+  .ecran .barre span { margin-left:18px; font-size:16px; color:#5B6478; font-weight:600; }
+  .ecran img { display:block; width:100%; }
+  /* Téléphone */
+  .tel { position:absolute; width:430px; height:944px; border-radius:58px; background:#05091A; padding:14px;
+    box-shadow:0 60px 140px rgba(0,0,0,.6), 0 0 0 2px #2A3666 inset; }
+  .tel .vitre { width:100%; height:100%; border-radius:46px; overflow:hidden; position:relative; background:#fff; }
+  .tel .vitre img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  /* Légende sur capture */
+  .legende { position:absolute; left:110px; bottom:84px; padding:26px 34px; border-radius:22px; background:rgba(11,21,55,.92);
+    box-shadow:0 30px 80px rgba(0,0,0,.45); }
+  .legende h3 { font-size:54px; font-weight:800; letter-spacing:-.03em; margin-top:8px; }
+  /* Bulles WhatsApp */
+  .bulle { position:absolute; right:150px; max-width:620px; padding:22px 28px 26px; border-radius:26px 26px 26px 8px; background:#fff; color:#111B21;
+    font-size:30px; font-weight:600; box-shadow:0 24px 60px rgba(0,0,0,.4); opacity:0; }
+  .bulle small { display:block; font-size:19px; color:#1FA971; font-weight:800; margin-bottom:6px; }
+  .rouge { color:#E5484D; }
+  #finale { background: radial-gradient(90% 90% at 50% 45%, #18265F 0%, #0B1537 60%, #070D26 100%); }
+  #logo { position:absolute; left:50%; top:330px; display:flex; align-items:center; gap:34px; transform:translateX(-50%); }
+  #logo img { width:150px; height:150px; }
+  #logo .mot { font-size:150px; font-weight:800; letter-spacing:-.05em; line-height:1; }
+  #signature { position:absolute; left:0; right:0; top:540px; text-align:center; font-size:50px; font-weight:600; color:#E8ECFF; letter-spacing:-.01em; }
+  #cta { position:absolute; left:50%; top:670px; transform:translateX(-50%); padding:22px 44px; border-radius:999px; background:var(--amber);
+    color:var(--navy); font-size:34px; font-weight:800; white-space:nowrap; }
+  #cta2 { position:absolute; left:0; right:0; top:790px; text-align:center; font-size:28px; color:var(--gris); font-weight:500; }
+  .marque { position:absolute; right:60px; top:48px; display:flex; align-items:center; gap:14px; font-size:30px; font-weight:800; letter-spacing:-.03em; opacity:.92; }
+  .marque img { width:42px; height:42px; }
+</style>
+</head>
+<body>
+
+<!-- 1 · Le quotidien -->
+<section class="scene" id="s1">
+  <div class="bloc" style="width:900px">
+    <h2 class="ligne-t" id="s1a">Vos livreurs<br>sont dehors.</h2>
+    <p class="sous ligne-t" id="s1b" style="font-size:40px;color:#fff;font-weight:700;margin-top:34px">Vos marchands attendent leur argent.</p>
+    <p class="sous ligne-t" id="s1c" style="font-size:40px;color:#fff;font-weight:700;margin-top:14px">Et vous, vous êtes au téléphone.</p>
+    <p class="kicker ligne-t" id="s1d" style="font-size:44px;letter-spacing:.02em;text-transform:none;margin-top:56px">Ça vous parle ?</p>
+  </div>
+  <div class="bulle" id="b1" style="top:150px"><small>Boutique Nour</small>Il est où mon colis ?? 😤</div>
+  <div class="bulle" id="b2" style="top:310px;right:260px"><small>Livreur Yassine</small>Client absent, je fais quoi ?</div>
+  <div class="bulle" id="b3" style="top:470px"><small>Maison Argane</small>Tu me dois combien cette semaine ?</div>
+  <div class="bulle" id="b4" style="top:630px;right:230px"><small>Client</small>Le livreur ne répond pas…</div>
+  <div class="bulle" id="b5" style="top:790px"><small>Comptabilité</small><span class="rouge">Il manque 200 DH dans la caisse.</span></div>
+</section>
+
+<!-- 2 · La flotte en direct -->
+<section class="scene" id="s2">
+  <div class="ecran" id="s2e" style="left:150px;top:70px;width:1620px">
+    <div class="barre"><i></i><i></i><i></i><span>Portrail · PC flotte</span></div>
+    <img id="s2i" alt="">
+  </div>
+  <div class="legende" id="s2l"><div class="kicker">En direct</div><h3>Toute votre flotte, sur une carte.</h3></div>
+</section>
+
+<!-- 3 · Un livreur -->
+<section class="scene" id="s3">
+  <div class="ecran" id="s3e" style="left:150px;top:70px;width:1620px">
+    <div class="barre"><i></i><i></i><i></i><span>Portrail · PC flotte</span></div>
+    <img id="s3i" alt="">
+  </div>
+  <div class="legende" id="s3l"><div class="kicker">Un clic</div><h3>Ses commandes, son itinéraire, son retard.</h3></div>
+</section>
+
+<!-- 4 · Dispatch automatique -->
+<section class="scene" id="s4">
+  <div class="bloc">
+    <div class="kicker ligne-t" id="s4k">Dispatch automatique</div>
+    <h2 class="ligne-t" id="s4t" style="margin-top:18px">Chaque course part seule au livreur le plus proche.</h2>
+    <p class="sous ligne-t" id="s4s">Il accepte en un geste. Sans réponse, elle passe au suivant. Personne au téléphone.</p>
+  </div>
+  <div class="tel" id="s4p" style="right:250px;top:68px"><div class="vitre"><img id="s4i" alt=""></div></div>
+</section>
+
+<!-- 5 · La journée du livreur -->
+<section class="scene" id="s5">
+  <div class="bloc">
+    <div class="kicker">L'app livreur</div>
+    <h2 class="ligne-t" id="s5t" style="margin-top:18px">Sa journée sur une carte, dans le bon ordre.</h2>
+    <h2 class="ligne-t" id="s5u" style="margin-top:30px;color:var(--amber)">Les urgences passent devant.</h2>
+  </div>
+  <div class="tel" style="right:250px;top:68px"><div class="vitre"><img id="s5a" src="st/j2.jpg" alt=""><img id="s5b" src="st/t2.jpg" alt="" style="opacity:0"></div></div>
+</section>
+
+<!-- 6 · Livré, encaissé -->
+<section class="scene" id="s6">
+  <div class="bloc">
+    <div class="kicker">À la porte</div>
+    <h2 class="ligne-t" id="s6t" style="margin-top:18px">Livré. Prouvé. Encaissé.</h2>
+    <p class="sous ligne-t" id="s6s">Chaque dirham suivi, de la main du livreur jusqu'au reversement du marchand.</p>
+  </div>
+  <div class="tel" style="right:250px;top:68px"><div class="vitre">
+    <img class="r" src="st/remise-1.jpg" alt=""><img class="r" src="st/remise-5.jpg" alt="" style="opacity:0">
+    <img class="r" src="st/remise-15.jpg" alt="" style="opacity:0"><img class="r" src="st/remise-29.6.jpg" alt="" style="opacity:0">
+    <img class="r" src="st/r3.jpg" alt="" style="opacity:0"><img class="r" src="st/caisse.jpg" alt="" style="opacity:0">
+  </div></div>
+</section>
+
+<!-- 7 · Le bureau, en arabe -->
+<section class="scene" id="s7">
+  <div class="ecran" id="s7e" style="left:150px;top:70px;width:1620px">
+    <div class="barre"><i></i><i></i><i></i><span>Portrail · Console</span></div>
+    <img id="s7a" src="st/c-cash.jpg" alt="">
+    <img id="s7b" src="st/c-ar-dashboard.jpg" alt="" style="position:absolute;left:0;top:40px;opacity:0">
+  </div>
+  <div class="legende" id="s7l"><div class="kicker">Au bureau</div><h3 id="s7h">Caisses rapprochées, reversements prêts.</h3></div>
+</section>
+
+<!-- 8 · Finale -->
+<section class="scene" id="finale">
+  <div id="logo"><img src="symbole.svg" alt=""><span class="mot">Portrail</span></div>
+  <div id="signature">Votre livraison, sur les rails.</div>
+  <div id="cta">Essai gratuit 30 jours</div>
+  <div id="cta2">Demandez votre démonstration</div>
+</section>
+
+<div class="marque" id="marque"><img src="symbole.svg" alt="">Portrail</div>
+
+<script>
+const DUREE = 60; window.DUREE = DUREE;
+const $ = (s) => document.querySelector(s), $$ = (s) => [...document.querySelectorAll(s)];
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const ease = (x) => { x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+// Fenêtre d'une scène : fondu 0,5 s à l'entrée et à la sortie.
+function fen(t, a, b, f = .5) { return Math.min(prog(t, a, a + f), 1 - prog(t, b - f, b)); }
+function apparait(el, t, a, d = .6) { const p = ease(prog(t, a, a + d)); el.style.opacity = p; el.style.transform = `translateY(${(1 - p) * 24}px)`; }
+const pad = (n) => String(n).padStart(4, '0');
+async function img(el, src) { if (el.getAttribute('src') !== src) { el.src = src; await el.decode().catch(() => {}); } }
+
+const SCENES = [['#s1', 0, 6.2], ['#s2', 5.8, 15.2], ['#s3', 14.8, 22.2], ['#s4', 21.8, 31.2], ['#s5', 30.8, 39.2], ['#s6', 38.8, 49.2], ['#s7', 48.8, 55.2], ['#finale', 54.8, 61]];
+
+window.rendu = async function (t) {
+  for (const [id, a, b] of SCENES) $(id).style.opacity = fen(t, a, b, id === '#s1' ? .01 : .4);
+  $('#marque').style.opacity = .92 * Math.min(fen(t, 21.8, 49.2), 1);
+
+  // 1
+  apparait($('#s1a'), t, .3); apparait($('#s1b'), t, 1.6); apparait($('#s1c'), t, 2.8); apparait($('#s1d'), t, 4.3);
+  ['#b1', '#b2', '#b3', '#b4', '#b5'].forEach((b, i) => { const p = ease(prog(t, .5 + i * .75, .9 + i * .75)); const e = $(b); e.style.opacity = p; e.style.transform = `scale(${.85 + .15 * p})`; });
+
+  // 2 : séquence 0..480 (16 s filmées) en 9,4 s
+  if (t > 5.5 && t < 15.5) {
+    const k = Math.round(prog(t, 5.8, 15.2) * 479) + 1; await img($('#s2i'), `flotte/${pad(k)}.jpg`);
+    const z = 1 + .04 * prog(t, 5.8, 15.2); $('#s2e').style.transform = `scale(${z})`;
+    apparait($('#s2l'), t, 6.6);
+  }
+  // 3 : séquence 600..960 (clic + itinéraire) en 7,4 s
+  if (t > 14.5 && t < 22.5) {
+    const k = 600 + Math.round(prog(t, 14.8, 22.2) * 359) + 1; await img($('#s3i'), `flotte/${pad(Math.min(k, 960))}.jpg`);
+    const z = 1.02 + .05 * prog(t, 14.8, 22.2); $('#s3e').style.transform = `scale(${z})`; $('#s3e').style.transformOrigin = '75% 60%';
+    apparait($('#s3l'), t, 15.6);
+  }
+  // 4 : proposition, compte à rebours, acceptation (157 images ≈ 5,2 s), jouée à partir de 24,6 s
+  if (t > 21.5 && t < 31.5) {
+    const k = clamp(Math.round((t - 24.6) * 30), 0, 156) + 1; await img($('#s4i'), `offre/${pad(k)}.jpg`);
+    apparait($('#s4k'), t, 22.4); apparait($('#s4t'), t, 22.7); apparait($('#s4s'), t, 23.6);
+    $('#s4p').style.transform = `translateY(${(1 - ease(prog(t, 21.8, 22.8))) * 80}px)`;
+  }
+  // 5
+  apparait($('#s5t'), t, 31.4); apparait($('#s5u'), t, 35.2);
+  $('#s5b').style.opacity = ease(prog(t, 34.8, 35.5));
+  // 6 : six écrans fondus
+  const T6 = [39, 40.6, 42.2, 43.8, 45.4, 47.2];
+  $$('#s6 .r').forEach((e, i) => { e.style.opacity = i === 0 ? 1 : ease(prog(t, T6[i], T6[i] + .35)); });
+  apparait($('#s6t'), t, 39.4); apparait($('#s6s'), t, 41);
+  // 7
+  $('#s7b').style.opacity = ease(prog(t, 51.8, 52.4));
+  $('#s7h').textContent = t < 52 ? 'Caisses rapprochées, reversements prêts.' : 'En français et en arabe.';
+  apparait($('#s7l'), t, 49.6);
+  $('#s7e').style.transform = `scale(${1 + .03 * prog(t, 48.8, 55.2)})`;
+  // 8
+  const f = ease(prog(t, 55.2, 56.2)); $('#logo').style.opacity = f; $('#logo').style.transform = `translateX(-50%) scale(${.92 + .08 * f})`;
+  apparait($('#signature'), t, 56.2); apparait($('#cta'), t, 57); apparait($('#cta2'), t, 57.4);
+  $('#cta').style.transform = `translateX(-50%) translateY(${(1 - ease(prog(t, 57, 57.6))) * 24}px)`;
+};
+window.pret = document.fonts.ready.then(() => Promise.all([...document.images].map((i) => i.decode().catch(() => {}))));
+</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+import { createRequire } from 'node:module';
+const { chromium } = createRequire('/Volumes/workspace/transpo2/apps/e2e-web/package.json')('@playwright/test');
+const b = await chromium.launch();
+const ctx0 = await b.newContext({ viewport: { width: 1920, height: 1080 } });
+const p0 = await ctx0.newPage();
+await p0.goto('https://app.wedowonders.com/login', { waitUntil: 'networkidle' });
+await p0.fill('input[name=email]', 'admin@portraildemo.ma'); await p0.fill('input[name=password]', 'bQD1JSGVCgN1');
+await p0.keyboard.press('Enter'); await p0.waitForURL(/dashboard|fleet|orders/, { timeout: 30000 });
+const etat = await ctx0.storageState(); await ctx0.close();
+const ctx = await b.newContext({ viewport: { width: 1920, height: 1080 }, storageState: etat, recordVideo: { dir: 'brut', size: { width: 1920, height: 1080 } } });
+const p = await ctx.newPage();
+await p.addInitScript(() => {
+  const nettoie = () => { const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) if (/\+212\s?\d/.test(n.nodeValue)) n.nodeValue = n.nodeValue.replace(/\s*·?\s*\+212[\d\s]+/g, ''); };
+  setInterval(() => document.body && nettoie(), 100);
+});
+const t0 = Date.now(); const marque = (m) => console.log(m, ((Date.now() - t0) / 1000).toFixed(1));
+await p.goto('https://app.wedowonders.com/fleet', { waitUntil: 'networkidle' });
+marque('charge'); await p.waitForTimeout(1500);
+await p.mouse.move(880, 640); for (let i=0;i<2;i++){ await p.mouse.wheel(0,-120); await p.waitForTimeout(350);} marque('zoom');
+await p.waitForTimeout(20000); marque('clic');
+await p.getByText('Mehdi Lahlou').first().click();
+await p.waitForTimeout(14000); marque('fin');
+await ctx.close(); await b.close();
