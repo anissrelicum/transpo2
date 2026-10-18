@@ -167,7 +167,8 @@ export class CashService {
 
   /** Aperçu de reversement marchand : brut (COD encaissés) − commission = net. */
   async merchantPayouts(schema: string) {
-    const { commissionRate } = await this.billing.pricingConfig(schema);
+    // Commission négociée par marchand, à défaut celle de l'entreprise (même source que la facture).
+    const { rateFor } = await this.billing.commissionRates(schema);
     return withTenantDb(schema, async (db) => {
       const rows = await db.select().from(ordersTable);
       const byMerchant = new Map<string, { merchant: string; brut: number; orders: number }>();
@@ -179,8 +180,8 @@ export class CashService {
       }
       return [...byMerchant.values()].map((m) => ({
         ...m,
-        commissionRate,
-        net: merchantPayoutNet(m.brut, commissionRate),
+        commissionRate: rateFor(m.merchant),
+        net: merchantPayoutNet(m.brut, rateFor(m.merchant)),
       }));
     });
   }

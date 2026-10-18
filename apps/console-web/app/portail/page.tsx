@@ -7,7 +7,7 @@ import {
 } from '@radix-ui/react-icons';
 import { StatusBadge, CodChip, money } from '@transpo/ui-web';
 import type { Order } from '@transpo/domain';
-import type { MerchantDashboard } from '@transpo/api-client';
+import type { MerchantDashboard, MerchantConditions } from '@transpo/api-client';
 import { serverClient } from '../../lib/server';
 import { PageHeader, KPI } from '../../components/ui';
 
@@ -22,6 +22,9 @@ export default async function MerchantHomePage() {
   } catch {
     redirect('/login');
   }
+  // Conditions négociées avec le transporteur (lecture seule) ; absentes → bloc masqué.
+  let conditions: MerchantConditions | null = null;
+  try { conditions = await serverClient().getMyConditions(); } catch { /* compte sans fiche */ }
 
   const recent = orders.slice(0, 6);
   const today = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
@@ -79,6 +82,31 @@ export default async function MerchantHomePage() {
               <Text size="2" weight="medium">{kpi.cancelled}</Text>
             </Flex>
           </Card>
+
+          {conditions && (
+            <Card size="3" mb="4">
+              <Heading size="4" mb="1">Mes conditions tarifaires</Heading>
+              <Text as="div" size="1" color="gray" mb="3">Négociées avec votre transporteur</Text>
+              <Text as="div" size="3" weight="bold">
+                {conditions.mode === 'forfait' ? `Forfait de ${money(conditions.flatPrice ?? 0)} HT par livraison`
+                  : conditions.mode === 'remise' ? `Grille à la distance, −${Math.round((conditions.discountRate ?? 0) * 100)} %`
+                  : 'Grille à la distance'}
+              </Text>
+              {conditions.mode === 'forfait' && (
+                <Text as="div" size="1" color="gray" mt="1">Suppléments : fragile +{money(conditions.fragileSurcharge)}, programmé +{money(conditions.scheduledSurcharge)}.</Text>
+              )}
+              <Separator size="4" my="3" />
+              <Flex justify="between" mb="2">
+                <Text size="2" color="gray">Commission sur le COD</Text>
+                <Text size="2" weight="medium">{Math.round(conditions.commissionRate * 1000) / 10} %</Text>
+              </Flex>
+              <Flex gap="4" wrap="wrap">
+                {conditions.examples.map((e) => (
+                  <Box key={e.km}><Text as="div" size="1" color="gray">{e.km} km</Text><Text as="div" size="2" weight="bold">{money(e.ttc)} TTC</Text></Box>
+                ))}
+              </Flex>
+            </Card>
+          )}
 
           <Callout.Root color="blue">
             <Callout.Icon><InfoCircledIcon /></Callout.Icon>

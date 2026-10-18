@@ -37,7 +37,39 @@ export const orders = pgTable('orders', {
   dropMapUrl: text('drop_map_url'),
   description: text('description'),
   vehicleType: text('vehicle_type'),
+  fragile: boolean('fragile').notNull().default(false),
+  // Prix figé à la création, aux conditions du marchand (cf. migration 0028). NULL pour
+  // les commandes antérieures : la facturation les recalcule à la grille.
+  pricingMode: text('pricing_mode'),
+  distanceKm: doublePrecision('distance_km'),
+  priceBase: doublePrecision('price_base'),
+  priceSurcharges: doublePrecision('price_surcharges'),
+  priceHt: doublePrecision('price_ht'),
+  priceVat: doublePrecision('price_vat'),
+  priceTtc: doublePrecision('price_ttc'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * Fiche marchand et conditions tarifaires négociées (cf. migration 0028, ADR 0003).
+ * `name` = clé de rattachement texte des commandes, comptes portail, factures, reversements.
+ */
+export const merchants = pgTable('merchants', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull().unique(),
+  legalName: text('legal_name'),
+  contactName: text('contact_name'),
+  email: text('email'),
+  phone: text('phone'),
+  address: text('address'),
+  taxId: text('tax_id'),
+  pricingMode: text('pricing_mode').notNull().default('standard'),
+  discountRate: doublePrecision('discount_rate'),
+  flatPrice: doublePrecision('flat_price'),
+  commissionRate: doublePrecision('commission_rate'),
+  active: boolean('active').notNull().default(true),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
 /**

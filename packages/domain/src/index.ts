@@ -526,41 +526,147 @@ function gridPrice(distanceKm: number): number {
   return gridPriceFor(distanceKm, PRICE_TIERS);
 }
 
+/* ============ Conditions tarifaires par marchand (cf. docs/adr/0003) ============
+ * Un transporteur travaille avec plusieurs marchands aux conditions commerciales
+ * différentes : l'un paie la grille de distance de l'entreprise, l'autre une remise
+ * négociée sur cette grille, un troisième un forfait par livraison quelle que soit la
+ * distance. Ces conditions sont portées par la fiche marchand ; le moteur ci-dessous est
+ * le SEUL endroit où elles se traduisent en prix (devis, création de commande, facture).
+ */
+export const PRICING_MODES = ['standard', 'remise', 'forfait'] as const;
+export type PricingMode = (typeof PRICING_MODES)[number];
+
+/** Conditions tarifaires d'un marchand (sous-ensemble de la fiche marchand). */
+export interface MerchantPricing {
+  mode: PricingMode;
+  /** Remise sur la grille, en fraction (0,1 = −10 %). Requise en mode `remise`. */
+  discountRate?: number | null;
+  /** Montant fixe HT par livraison (DH). Requis en mode `forfait`. */
+  flatPrice?: number | null;
+}
+
+export function isPricingMode(v: unknown): v is PricingMode {
+  return typeof v === 'string' && (PRICING_MODES as readonly string[]).includes(v);
+}
+
+/**
+ * Cohérence des conditions avec leur mode. Retourne le message d'erreur, ou `null`.
+ * Mêmes règles que les CHECK de la table `merchants` (migration 0028) : la base est le
+ * dernier rempart, ce contrôle donne un message lisible avant d'y arriver.
+ */
+export function validateMerchantPricing(p: MerchantPricing): string | null {
+  if (!isPricingMode(p.mode)) return `Mode tarifaire invalide (attendu : ${PRICING_MODES.join(', ')}).`;
+  const has = (v: unknown) => v !== null && v !== undefined;
+  if (p.mode === 'remise') {
+    const r = p.discountRate;
+    if (typeof r !== 'number' || !Number.isFinite(r) || r <= 0 || r >= 1) {
+      return 'Remise : un pourcentage strictement compris entre 0 et 100 % est requis.';
+    }
+    if (has(p.flatPrice)) return 'Remise : pas de forfait à renseigner.';
+  }
+  if (p.mode === 'forfait') {
+    const f = p.flatPrice;
+    if (typeof f !== 'number' || !Number.isFinite(f) || f <= 0) return 'Forfait : un montant strictement positif est requis.';
+    if (has(p.discountRate)) return 'Forfait : pas de remise à renseigner.';
+  }
+  if (p.mode === 'standard' && (has(p.discountRate) || has(p.flatPrice))) {
+    return 'Grille standard : ni remise ni forfait à renseigner.';
+  }
+  return null;
+}
+
+/** Commission COD applicable : celle négociée avec le marchand, à défaut celle de l'entreprise. */
+export function effectiveCommissionRate(merchantRate: number | null | undefined, companyRate: number): number {
+  return merchantRate == null ? companyRate : merchantRate;
+}
+
+/** Origine de la distance facturée : deux épingles posées, ou ville à ville. */
+export type DistanceSource = 'points' | 'villes';
+
+/**
+ * Distance facturée d'une course. UNE seule règle, partagée par l'assistant (devis affiché)
+ * et l'API (prix enregistré) : sans quoi le prix montré au marchand et le prix facturé
+ * divergeraient dès qu'un des deux évolue.
+ *  - deux points localisés → distance routière estimée entre les épingles ;
+ *  - sinon → distance de ville à ville du référentiel.
+ */
+export function courseDistanceKm(input: {
+  fromCity: string; toCity: string;
+  pickup?: LatLng | null; drop?: LatLng | null;
+}): { km: number; source: DistanceSource } {
+  if (input.pickup && input.drop) return { km: roadDistanceKm(input.pickup, input.drop), source: 'points' };
+  return { km: cityDistanceKm(input.fromCity, input.toCity), source: 'villes' };
+}
+
 export interface QuoteInput {
   distanceKm: number;
   fragile?: boolean;
   scheduled?: boolean;
-  merchantFixedPrice?: number | null; // ① prix négocié marchand
-  discountRate?: number;              // ② remise contractuelle (ex. 0.1)
+  /**
+   * Conditions du marchand. Quand elles sont fournies, elles DÉCIDENT seules du mode
+   * (les deux champs historiques ci-dessous sont alors ignorés).
+   */
+  merchant?: MerchantPricing | null;
+  merchantFixedPrice?: number | null; // historique : ① prix négocié marchand
+  discountRate?: number;              // historique : ② remise contractuelle (ex. 0.1)
   tiers?: PriceTier[];                // grille configurée par tenant (défaut : PRICE_TIERS)
   fragileSurcharge?: number;          // supplément fragile configuré
   scheduledSurcharge?: number;        // supplément programmé configuré
   vatRate?: number;                   // TVA configurée par tenant (défaut : VAT_RATE)
 }
 export interface Quote {
+  /** Libellé historique du niveau de cascade retenu (conservé pour les appelants existants). */
   applied: 'fixe_marchand' | 'remise' | 'grille';
+  /** Mode tarifaire effectivement appliqué (vocabulaire de la fiche marchand). */
+  mode: PricingMode;
+  /** Prix grille avant remise, pour la distance — affiché à titre de comparaison. */
+  gridBase: number;
+  /** Remise appliquée (fraction), `null` hors mode remise. */
+  discountRate: number | null;
   base: number; surcharges: number; ht: number; tva: number; ttc: number;
 }
 
+const r2 = (n: number) => Math.round(n * 100) / 100;
+const MODE_OF_APPLIED: Record<Quote['applied'], PricingMode> = { fixe_marchand: 'forfait', remise: 'remise', grille: 'standard' };
+
 /**
- * Cascade tarifaire à PRIORITÉ STRICTE : ① prix fixe marchand → ② remise → ③ grille standard.
- * Le 1er niveau applicable l'emporte. Majorations fragile/programmée + TVA ajoutées ensuite.
- * Cf. transpo-domain / PRD-01 Tarification.
+ * Prix d'une course. Trois modes, calculés ici et nulle part ailleurs :
+ *  - standard : grille de distance + suppléments ;
+ *  - remise   : grille × (1 − remise) + suppléments ;
+ *  - forfait  : montant fixe + suppléments (fragile/programmé AJOUTÉS au forfait, décision
+ *               produit — un colis fragile coûte plus cher à manipuler, quel que soit le contrat).
+ * La TVA s'applique au HT dans tous les modes.
+ *
+ * Sans conditions marchand, la cascade historique reste valable : ① prix fixe → ② remise
+ * → ③ grille standard, le premier niveau applicable l'emporte (cf. PRD-01 Tarification).
  */
 export function quote(input: QuoteInput): Quote {
   const fragileS = input.fragileSurcharge ?? FRAGILE_SURCHARGE;
   const scheduledS = input.scheduledSurcharge ?? SCHEDULED_SURCHARGE;
   const surcharges = (input.fragile ? fragileS : 0) + (input.scheduled ? scheduledS : 0);
   const gp = gridPriceFor(input.distanceKm, input.tiers ?? PRICE_TIERS);
+
+  let fixed: number | null = null;
+  let rate: number | null = null;
+  if (input.merchant) {
+    const m = input.merchant;
+    if (m.mode === 'forfait' && m.flatPrice != null) fixed = m.flatPrice;
+    else if (m.mode === 'remise' && m.discountRate) rate = m.discountRate;
+  } else if (input.merchantFixedPrice != null) {
+    fixed = input.merchantFixedPrice;
+  } else if (input.discountRate) {
+    rate = input.discountRate;
+  }
+
   let base: number;
   let applied: Quote['applied'];
-  if (input.merchantFixedPrice != null) { base = input.merchantFixedPrice; applied = 'fixe_marchand'; }
-  else if (input.discountRate) { base = Math.round(gp * (1 - input.discountRate) * 100) / 100; applied = 'remise'; }
+  if (fixed != null) { base = r2(fixed); applied = 'fixe_marchand'; }
+  else if (rate != null) { base = r2(gp * (1 - rate)); applied = 'remise'; }
   else { base = gp; applied = 'grille'; }
-  const ht = Math.round((base + surcharges) * 100) / 100;
-  const tva = Math.round(ht * (input.vatRate ?? VAT_RATE) * 100) / 100;
-  const ttc = Math.round((ht + tva) * 100) / 100;
-  return { applied, base, surcharges, ht, tva, ttc };
+  const ht = r2(base + surcharges);
+  const tva = r2(ht * (input.vatRate ?? VAT_RATE));
+  const ttc = r2(ht + tva);
+  return { applied, mode: MODE_OF_APPLIED[applied], gridBase: gp, discountRate: applied === 'remise' ? rate : null, base, surcharges, ht, tva, ttc };
 }
 
 /* ====================== Format monétaire ====================== */
@@ -611,5 +717,38 @@ export interface Order {
   dropMapUrl?: string | null;
   description?: string | null;
   vehicleType?: string | null;
+  fragile?: boolean;
+  // Prix figé à la création (cf. migration 0028) : c'est lui que la facture reprend. Absent
+  // (null) pour les commandes antérieures, que la facturation recalcule à la grille.
+  pricingMode?: PricingMode | null;
+  distanceKm?: number | null;
+  priceBase?: number | null;
+  priceSurcharges?: number | null;
+  priceHt?: number | null;
+  priceVat?: number | null;
+  priceTtc?: number | null;
   createdAt: string;
+}
+
+/* ====================== Marchand (contrat partagé) ====================== */
+/**
+ * Fiche marchand. `name` est la clé de rattachement historique : c'est la même chaîne que
+ * `orders.merchant` et `users.merchant`, d'où son caractère non modifiable.
+ */
+export interface Merchant extends MerchantPricing {
+  id: string;
+  name: string;
+  legalName: string | null;
+  contactName: string | null;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  taxId: string | null;
+  discountRate: number | null;
+  flatPrice: number | null;
+  /** Commission COD négociée (fraction) ; `null` = taux de l'entreprise. */
+  commissionRate: number | null;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
 }

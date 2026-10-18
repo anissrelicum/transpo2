@@ -1,11 +1,50 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { withTenantDb, orders as ordersTable, invoices as invoicesTable, merchantBilling, pricingConfig } from '@transpo/db';
-import { quote, cityDistanceKm, type QuoteInput, type PriceTier, PRICE_TIERS, FRAGILE_SURCHARGE, SCHEDULED_SURCHARGE, COMMISSION_RATE, VAT_RATE } from '@transpo/domain';
+import { withTenantDb, orders as ordersTable, invoices as invoicesTable, merchantBilling, pricingConfig, merchants as merchantsTable } from '@transpo/db';
+import {
+  quote, cityDistanceKm, effectiveCommissionRate,
+  type QuoteInput, type Quote, type PriceTier, type MerchantPricing, type PricingMode, type Merchant,
+  PRICE_TIERS, FRAGILE_SURCHARGE, SCHEDULED_SURCHARGE, COMMISSION_RATE, VAT_RATE,
+} from '@transpo/domain';
 import { eq, asc } from 'drizzle-orm';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 const STATUS_COLOR: Record<string, string> = {
   BROUILLON: 'gray', ENVOYEE: 'blue', PAYEE: 'green', LITIGE: 'red',
 };
+
+/** Ligne `merchants` → contrat partagé `Merchant`. */
+export function rowToMerchant(r: typeof merchantsTable.$inferSelect): Merchant {
+  return {
+    id: r.id, name: r.name, legalName: r.legalName, contactName: r.contactName,
+    email: r.email, phone: r.phone, address: r.address, taxId: r.taxId,
+    mode: r.pricingMode as PricingMode, discountRate: r.discountRate, flatPrice: r.flatPrice,
+    commissionRate: r.commissionRate, active: r.active,
+    createdAt: r.createdAt.toISOString(), updatedAt: r.updatedAt.toISOString(),
+  };
+}
+
+/** Conditions tarifaires d'une fiche marchand, sous la forme attendue par le moteur. */
+export const pricingOf = (m: Pick<Merchant, 'mode' | 'discountRate' | 'flatPrice'>): MerchantPricing =>
+  ({ mode: m.mode, discountRate: m.discountRate, flatPrice: m.flatPrice });
+
+/** Fiche marchand par nom (clé de rattachement), ou `null`. */
+export async function findMerchantByName(db: NodePgDatabase, name: string): Promise<Merchant | null> {
+  const [r] = await db.select().from(merchantsTable).where(eq(merchantsTable.name, name));
+  return r ? rowToMerchant(r) : null;
+}
+
+/**
+ * Fiche marchand par nom, créée aux conditions standard si elle manque. Les commandes et
+ * comptes portail désignent un marchand par son nom : tout nom en circulation doit avoir
+ * sa fiche, sans quoi ses conditions ne pourraient jamais être négociées.
+ */
+export async function ensureMerchant(db: NodePgDatabase, name: string): Promise<Merchant> {
+  await db.insert(merchantsTable).values({ name }).onConflictDoNothing({ target: merchantsTable.name });
+  return (await findMerchantByName(db, name))!;
+}
+
+/** Prix d'une course, prêt à être figé sur la commande. */
+export interface CoursePrice extends Quote { distanceKm: number }
 
 @Injectable()
 export class BillingService {
@@ -48,8 +87,8 @@ export class BillingService {
     });
   }
 
-  /** Devis tarifaire (cascade à 3 niveaux + TVA), en appliquant la grille configurée du tenant. */
-  async quote(schema: string, input: QuoteInput) {
+  /** Devis tarifaire (conditions marchand ou cascade historique + TVA), à la grille configurée du tenant. */
+  async quote(schema: string, input: QuoteInput): Promise<Quote> {
     const cfg = await this.pricingConfig(schema);
     return quote({
       ...input,
@@ -64,6 +103,56 @@ export class BillingService {
       // cochée par défaut : c'est ce défaut d'écran qui trompe, pas le moteur.
       vatRate: input.vatRate ?? cfg.vatRate,
     });
+  }
+
+  /**
+   * Devis aux conditions d'un marchand désigné par son nom. Marchand inconnu ou absent →
+   * grille standard (un devis ne crée jamais de fiche). Retourne aussi la fiche trouvée,
+   * pour que l'appelant puisse afficher le mode appliqué.
+   */
+  async quoteForMerchant(
+    schema: string,
+    merchant: string | null | undefined,
+    input: Omit<QuoteInput, 'merchant' | 'merchantFixedPrice' | 'discountRate'>,
+  ): Promise<Quote & { merchant: string | null }> {
+    const fiche = merchant ? await withTenantDb(schema, (db) => findMerchantByName(db, merchant)) : null;
+    const q = await this.quote(schema, { ...input, merchant: fiche ? pricingOf(fiche) : { mode: 'standard' } });
+    return { ...q, merchant: fiche?.name ?? null };
+  }
+
+  /**
+   * Prix d'une course à sa création, aux conditions du marchand (fiche créée aux conditions
+   * standard si elle manque). C'est CE prix qui est figé sur la commande puis facturé.
+   * Un marchand désactivé ne peut plus passer commande.
+   */
+  async priceCourse(
+    schema: string,
+    input: { merchant: string | null; distanceKm: number; fragile: boolean; scheduled: boolean },
+  ): Promise<CoursePrice> {
+    let conditions: MerchantPricing = { mode: 'standard' };
+    if (input.merchant) {
+      const fiche = await withTenantDb(schema, (db) => ensureMerchant(db, input.merchant!));
+      if (!fiche.active) throw new BadRequestException(`Marchand désactivé : ${fiche.name}.`);
+      conditions = pricingOf(fiche);
+    }
+    const q = await this.quote(schema, {
+      distanceKm: input.distanceKm, fragile: input.fragile, scheduled: input.scheduled, merchant: conditions,
+    });
+    return { ...q, distanceKm: input.distanceKm };
+  }
+
+  /**
+   * Commission COD applicable à chaque marchand : son taux négocié, à défaut celui de
+   * l'entreprise. Une seule source pour la facture, le reversement et le portefeuille.
+   */
+  async commissionRates(schema: string): Promise<{ companyRate: number; rateFor: (merchant: string) => number }> {
+    const { commissionRate } = await this.pricingConfig(schema);
+    const rows = await withTenantDb(schema, (db) => db.select().from(merchantsTable));
+    const negocie = new Map(rows.map((r) => [r.name, r.commissionRate]));
+    return {
+      companyRate: commissionRate,
+      rateFor: (merchant: string) => effectiveCommissionRate(negocie.get(merchant), commissionRate),
+    };
   }
 
   /** Factures marchand persistées, triées de la plus récente à la plus ancienne. */
@@ -111,10 +200,17 @@ export class BillingService {
 
   /**
    * Génère des factures BROUILLON pour les marchands ayant des livraisons non encore facturées
-   * sur la période courante. Montant livraisons dérivé du barème (quote) par commande livrée.
+   * sur la période courante.
+   *
+   * Montant livraisons = prix HT FIGÉ sur chaque commande à sa création, aux conditions du
+   * marchand (grille, remise ou forfait). Les commandes antérieures au figeage (prix NULL)
+   * sont recalculées à la grille standard du tenant, distance de ville à ville — ce qui
+   * s'appliquait à l'époque, faute de conditions par marchand.
+   * Commission = taux négocié du marchand, à défaut celui de l'entreprise.
    */
   async generate(schema: string, period: string) {
     const cfg = await this.pricingConfig(schema);
+    const { rateFor } = await this.commissionRates(schema);
     return withTenantDb(schema, async (db) => {
       const existing = await db.select().from(invoicesTable);
       const already = new Set(existing.filter((i) => i.period === period).map((i) => i.merchant));
@@ -122,7 +218,9 @@ export class BillingService {
       const agg = new Map<string, { deliveries: number; cod: number; orders: number }>();
       for (const o of rows) {
         if (!o.merchant || o.status !== 'LIVREE' || already.has(o.merchant)) continue;
-        const ht = quote({ distanceKm: cityDistanceKm(o.fromCity, o.toCity) }).ht;
+        const ht = o.priceHt ?? quote({
+          distanceKm: cityDistanceKm(o.fromCity, o.toCity), tiers: cfg.tiers, merchant: { mode: 'standard' },
+        }).ht;
         const e = agg.get(o.merchant) ?? { deliveries: 0, cod: 0, orders: 0 };
         e.deliveries += ht;
         e.cod += o.codPaid ? o.cod : 0;
@@ -134,7 +232,7 @@ export class BillingService {
       let seq = existing.length + 1;
       for (const [merchant, e] of agg) {
         const deliveries = Math.round(e.deliveries);
-        const commission = Math.round(deliveries * cfg.commissionRate);
+        const commission = Math.round(deliveries * rateFor(merchant));
         const netHt = deliveries - commission;
         const tva = Math.round(netHt * cfg.vatRate);
         const ref = `FCT-${yr}-${mo}-${String(seq++).padStart(4, '0')}`;

@@ -4,6 +4,7 @@ import { and, eq, ne } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { randomBytes } from 'node:crypto';
 import { AuditService } from '../audit/audit.service.js';
+import { ensureMerchant } from '../billing/billing.service.js';
 import type { JwtUser } from '../auth/jwt.js';
 
 const CONSOLE_ROLES = ['ADMIN', 'DISPATCHER', 'COMPTABLE'];
@@ -71,6 +72,9 @@ export class UsersService {
         const fiche = await db.select().from(driversTable).where(eq(driversTable.name, driver!));
         if (!fiche.length) throw new BadRequestException(`Chauffeur inconnu : ${driver}.`);
       }
+      // Un compte portail désigne son marchand par son nom : la fiche doit exister pour que
+      // ses conditions tarifaires puissent être négociées (créée à la grille sinon).
+      if (input.role === 'MERCHANT') await ensureMerchant(db, merchant!);
       const [u] = await db.insert(usersTable).values({
         email, name, role: input.role!, passwordHash,
         ...(input.role === 'MERCHANT' ? { merchant } : {}),

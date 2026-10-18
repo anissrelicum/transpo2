@@ -1,9 +1,10 @@
 import { Injectable, BadRequestException, NotFoundException, Inject } from '@nestjs/common';
 import type { Order, OrderStatus, ParcelSize, ProofLevel } from '@transpo/domain';
-import { LIFECYCLE, canTransition, PARCEL_SIZES, PROOF_LEVELS } from '@transpo/domain';
+import { LIFECYCLE, canTransition, PARCEL_SIZES, PROOF_LEVELS, courseDistanceKm } from '@transpo/domain';
 import { withTenantDb, orders as ordersTable, orderEvents as orderEventsTable, deliveryProofs } from '@transpo/db';
 import { desc, eq } from 'drizzle-orm';
 import { NotificationsService } from '../notifications/notifications.service.js';
+import { BillingService } from '../billing/billing.service.js';
 import { normaliserLocalisation } from './localisation.js';
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -23,6 +24,9 @@ function nextRef(): string {
 export interface CreateOrderInput {
   merchant?: string; fromCity: string; toCity: string;
   cod?: number; size?: ParcelSize; proofLevel?: ProofLevel; scheduled?: boolean;
+  // Supplément fragile : l'assistant le proposait et l'affichait dans le devis, mais la
+  // création l'ignorait. Il entre désormais dans le prix figé de la commande.
+  fragile?: boolean;
   // Coordonnées des deux points de la course. L'assistant les demandait déjà ; elles
   // n'étaient simplement transmises nulle part.
   pickupContact?: string; pickupPhone?: string; pickupAddress?: string; pickupNotes?: string;
@@ -67,7 +71,10 @@ function rowToOrder(r: any): Order {
 @Injectable()
 export class OrdersService {
   // @Inject explicite : requis sous tsx/esbuild (pas de métadonnée de type émise).
-  constructor(@Inject(NotificationsService) private readonly notifs: NotificationsService) {}
+  constructor(
+    @Inject(NotificationsService) private readonly notifs: NotificationsService,
+    @Inject(BillingService) private readonly billing: BillingService,
+  ) {}
 
   /** Liste (filtre statut optionnel). */
   list(schema: string, status?: OrderStatus): Promise<Order[]> {
@@ -87,7 +94,7 @@ export class OrdersService {
     });
   }
 
-  create(schema: string, input: CreateOrderInput, actor?: string): Promise<Order> {
+  async create(schema: string, input: CreateOrderInput, actor?: string): Promise<Order> {
     // Validation du corps avant tout accès SQL : un corps vide ou incomplet
     // renvoie 400, pas une erreur de contrainte NOT NULL (500).
     const missing: string[] = [];
@@ -107,11 +114,22 @@ export class OrdersService {
     }
     const retraitLoc = normaliserLocalisation('retrait', input.pickupLat, input.pickupLng, input.pickupMapUrl);
     const livraisonLoc = normaliserLocalisation('livraison', input.dropLat, input.dropLng, input.dropMapUrl);
+    const merchant = texte(input.merchant);
+    const fragile = input.fragile === true;
+    const scheduled = input.scheduled === true;
+    // Prix calculé ICI, aux conditions du marchand, et jamais reçu du client : c'est le
+    // prix qui sera facturé. Même règle de distance que le devis de l'assistant.
+    const { km } = courseDistanceKm({
+      fromCity: input.fromCity, toCity: input.toCity,
+      pickup: retraitLoc.lat != null && retraitLoc.lng != null ? { lat: retraitLoc.lat, lng: retraitLoc.lng } : null,
+      drop: livraisonLoc.lat != null && livraisonLoc.lng != null ? { lat: livraisonLoc.lat, lng: livraisonLoc.lng } : null,
+    });
+    const prix = await this.billing.priceCourse(schema, { merchant, distanceKm: km, fragile, scheduled });
     return withTenantDb(schema, async (db) => {
       const row = {
         ref: nextRef(), code: rndCode(),
-        status: (input.scheduled ? 'PROGRAMMEE' : 'NOUVELLE') as OrderStatus,
-        merchant: input.merchant ?? null,
+        status: (scheduled ? 'PROGRAMMEE' : 'NOUVELLE') as OrderStatus,
+        merchant,
         fromCity: input.fromCity, toCity: input.toCity,
         driver: null as string | null,
         cod: input.cod ?? 0, codPaid: false,
@@ -124,6 +142,10 @@ export class OrdersService {
         description: texte(input.description), vehicleType: texte(input.vehicleType),
         pickupLat: retraitLoc.lat, pickupLng: retraitLoc.lng, pickupMapUrl: retraitLoc.mapUrl,
         dropLat: livraisonLoc.lat, dropLng: livraisonLoc.lng, dropMapUrl: livraisonLoc.mapUrl,
+        fragile,
+        pricingMode: prix.mode, distanceKm: prix.distanceKm,
+        priceBase: prix.base, priceSurcharges: prix.surcharges,
+        priceHt: prix.ht, priceVat: prix.tva, priceTtc: prix.ttc,
       };
       const [r] = await db.insert(ordersTable).values(row).returning();
       await journaliser(db, r.ref, r.status, actor, 'Commande créée');

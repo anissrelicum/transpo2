@@ -5,9 +5,10 @@ import { TenantGuard } from '../tenant/tenant.guard.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { RolesGuard } from '../auth/roles.guard.js';
 import { NotificationsModule } from '../notifications/notifications.module.js';
+import { BillingModule } from '../billing/billing.module.js';
 
 @Module({
-  imports: [NotificationsModule],
+  imports: [NotificationsModule, BillingModule],
   controllers: [OrdersController],
   providers: [OrdersService, TenantGuard, JwtAuthGuard, RolesGuard],
 })

@@ -25,6 +25,13 @@ const TW = {
 
 const VEHICLES = ['Moto', 'Voiture', 'Fourgon', 'Fourgon frigorifique'];
 const APPLIED_LABEL: Record<string, string> = { grille: 'Grille standard', remise: 'Remise contractuelle', fixe_marchand: 'Prix marchand' };
+/** Libellé du tarif appliqué : conditions du marchand quand l'API les renvoie. */
+function libelleMode(q: QuoteResult): string {
+  if (q.mode === 'forfait') return 'Forfait marchand';
+  if (q.mode === 'remise') return q.discountRate ? `Grille −${Math.round(q.discountRate * 100)} %` : 'Grille remisée';
+  if (q.mode === 'standard') return 'Grille standard';
+  return APPLIED_LABEL[q.applied] ?? q.applied;
+}
 const STEPS = [
   { n: 1, label: 'Point de retrait', icon: HomeIcon },
   { n: 2, label: 'Point de livraison', icon: SewingPinFilledIcon },
@@ -145,13 +152,14 @@ export function CreateWizard({ merchants, espace = 'console', lang = 'fr' }: { m
     setQuoting(true);
     fetch('/api/proxy/v1/pricing/quote', {
       method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ distanceKm, fragile, scheduled }),
+      // Conditions du marchand choisi (console). Au portail, l'API impose celles du compte.
+      body: JSON.stringify({ distanceKm, fragile, scheduled, merchant: merchant || undefined }),
     })
       .then((r) => r.ok ? r.json() : null)
       .then((data) => { if (!cancelled) { setQ(data); setQuoting(false); } })
       .catch(() => { if (!cancelled) setQuoting(false); });
     return () => { cancelled = true; };
-  }, [distanceKm, fragile, scheduled]);
+  }, [distanceKm, fragile, scheduled, merchant]);
 
   async function submit() {
     setBusy(true); setError(null);
@@ -159,7 +167,7 @@ export function CreateWizard({ merchants, espace = 'console', lang = 'fr' }: { m
       method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         merchant: merchant || undefined, fromCity, toCity, cod: Number(cod) || 0,
-        size, proofLevel: proof, scheduled,
+        size, proofLevel: proof, scheduled, fragile,
         pickupContact: retrait.contact, pickupPhone: retrait.phone,
         pickupAddress: retrait.address, pickupNotes: retrait.notes,
         dropContact: livraison.contact, dropPhone: livraison.phone,
@@ -300,9 +308,9 @@ export function CreateWizard({ merchants, espace = 'console', lang = 'fr' }: { m
               <Flex direction="column" gap="2">
                 <Flex justify="between" align="center">
                   <Text size="1" color="gray">Tarification</Text>
-                  <Badge color="gray" variant="soft">{APPLIED_LABEL[q.applied] ?? q.applied}</Badge>
+                  <Badge color={q.mode && q.mode !== 'standard' ? 'indigo' : 'gray'} variant="soft">{libelleMode(q)}</Badge>
                 </Flex>
-                <PriceRow label={`Base · ${distanceKm.toLocaleString('fr-FR')} km`} value={money(q.base)} />
+                <PriceRow label={q.mode === 'forfait' ? 'Forfait par livraison' : `Base · ${distanceKm.toLocaleString('fr-FR')} km`} value={money(q.base)} />
                 {q.surcharges > 0 && <PriceRow label="Suppléments (fragile/programmé)" value={money(q.surcharges)} />}
                 <PriceRow label="HT" value={money(q.ht)} />
                 <PriceRow label="TVA 20 %" value={money(q.tva)} />

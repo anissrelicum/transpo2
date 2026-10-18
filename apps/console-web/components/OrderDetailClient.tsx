@@ -301,6 +301,22 @@ export function OrderDetailClient({ order, drivers, proof, events, canWrite, com
 
                 <Tabs.Content value="billing">
                   <Flex direction="column" gap="2">
+                    {order.priceTtc != null && (
+                      <>
+                        <Flex justify="between" align="center">
+                          <Text size="2" weight="bold">Prix de la course</Text>
+                          <Badge color={order.pricingMode && order.pricingMode !== 'standard' ? 'indigo' : 'gray'} variant="soft">
+                            {order.pricingMode === 'forfait' ? 'Forfait marchand' : order.pricingMode === 'remise' ? 'Grille remisée' : 'Grille standard'}
+                          </Badge>
+                        </Flex>
+                        <Flex justify="between"><Text size="2" color="gray">{order.pricingMode === 'forfait' ? 'Forfait' : `Base · ${order.distanceKm != null ? Math.round(order.distanceKm * 10) / 10 : '—'} km`}</Text><Text size="2">{money(order.priceBase ?? 0)}</Text></Flex>
+                        {(order.priceSurcharges ?? 0) > 0 && <Flex justify="between"><Text size="2" color="gray">Suppléments</Text><Text size="2">{money(order.priceSurcharges ?? 0)}</Text></Flex>}
+                        <Flex justify="between"><Text size="2" color="gray">HT · TVA</Text><Text size="2">{money(order.priceHt ?? 0)} · {money(order.priceVat ?? 0)}</Text></Flex>
+                        <Flex justify="between"><Text size="2" weight="medium">Prix TTC facturé au marchand</Text><Text size="2" weight="bold">{money(order.priceTtc)}</Text></Flex>
+                        <Text size="1" color="gray">Prix figé à la création de la commande, aux conditions du marchand.</Text>
+                        <Separator size="4" my="2" />
+                      </>
+                    )}
                     <Flex justify="between"><Text size="2" color="gray">COD encaissé</Text><Text size="2" weight="medium">{money(codCollected)}</Text></Flex>
                     <Flex justify="between"><Text size="2" color="gray">Commission ({Math.round(commissionRate * 100)} %)</Text><Text size="2" weight="medium">−{money(commission)}</Text></Flex>
                     <Separator size="4" />

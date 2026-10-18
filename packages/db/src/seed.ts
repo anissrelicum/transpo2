@@ -377,6 +377,17 @@ async function main() {
           [p.merchant, p.period, p.orders, p.cod, p.status, p.method ?? null, p.reference ?? null, p.status === 'VERSE' ? new Date() : null],
         );
       }
+      // Fiches marchand : la reprise de la migration 0028 a tourné au provisioning, sur un
+      // schéma encore vide. Même requête, rejouée une fois les données de démo posées.
+      await client.query(
+        `INSERT INTO merchants (name)
+         SELECT DISTINCT s.m FROM (
+           SELECT merchant AS m FROM orders UNION SELECT merchant FROM users
+           UNION SELECT merchant FROM invoices UNION SELECT merchant FROM payouts
+           UNION SELECT merchant FROM merchant_billing
+         ) s WHERE s.m IS NOT NULL AND btrim(s.m) <> ''
+         ON CONFLICT (name) DO NOTHING`,
+      );
       for (const cs of CASH[t.slug] ?? []) {
         const res = await client.query(
           `INSERT INTO cash_sessions (driver, ini, session_date, theorique, declared, deposited, deliveries, cap, status)

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, Query, Req, UseGuards, Inject, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, Query, Req, UseGuards, Inject, HttpCode, ForbiddenException } from '@nestjs/common';
 import type { OrderStatus } from '@transpo/domain';
 import { OrdersService, type CreateOrderInput, type UpdateLocationsInput } from './orders.service.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
@@ -38,14 +38,17 @@ export class OrdersController {
    * Création d'une commande.
    * Un compte MERCHANT ne choisit pas le marchand : il est celui de son compte. Sans cette
    * contrainte, un marchand pouvait déposer des commandes au nom d'un concurrent du même
-   * tenant — et les retrouver dans SA facturation.
+   * tenant — et les retrouver dans SA facturation. Le marchand fixe aussi le PRIX (ses
+   * conditions tarifaires) : un compte sans marchand rattaché est refusé, sans repli sur le
+   * corps de la requête, qui permettait de commander au tarif d'un autre.
    */
   @Post()
   @Roles('ADMIN', 'DISPATCHER', 'MERCHANT')
   create(@Req() req: any, @Body() body: CreateOrderInput) {
-    const input = req.user?.role === 'MERCHANT'
-      ? { ...body, merchant: req.user?.merchant ?? body.merchant }
-      : body;
+    if (req.user?.role === 'MERCHANT' && !req.user?.merchant) {
+      throw new ForbiddenException('Compte marchand non rattaché à un marchand.');
+    }
+    const input = req.user?.role === 'MERCHANT' ? { ...body, merchant: req.user.merchant } : body;
     return this.orders.create(req.tenantSchema, input, req.user?.sub);
   }
 

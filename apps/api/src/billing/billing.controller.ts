@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Param, Body, Req, UseGuards, Inject, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Req, UseGuards, Inject, HttpCode, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { validateMerchantPricing } from '@transpo/domain';
 import { BillingService } from './billing.service.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { TenantGuard } from '../tenant/tenant.guard.js';
@@ -11,16 +12,46 @@ import { Roles, CONSOLE_ROLES } from '../auth/roles.decorator.js';
 export class BillingController {
   constructor(@Inject(BillingService) private readonly billing: BillingService) {}
 
-  // Devis tarifaire (accessible à tous les rôles authentifiés du tenant) : l'assistant de
-  // commande du portail marchand l'appelle aussi, d'où MERCHANT en plus des rôles console.
+  /**
+   * Devis tarifaire. L'assistant de commande du portail marchand l'appelle aussi, d'où
+   * MERCHANT en plus des rôles console.
+   *
+   * - `merchant` (nom) : applique les conditions de ce marchand (grille, remise, forfait).
+   *   Pour un compte MERCHANT, c'est TOUJOURS son marchand (claim du JWT) : le corps est
+   *   ignoré, et les surcharges ad hoc ci-dessous aussi — un marchand ne peut ni lire les
+   *   conditions d'un concurrent ni s'en inventer.
+   * - `conditions` (console) : simule des conditions non encore enregistrées (dialogue de
+   *   la fiche marchand, exemples de prix).
+   * - `merchantFixedPrice` / `discountRate` (console) : simulation historique de la cascade.
+   */
   @Post('pricing/quote')
   @Roles(...CONSOLE_ROLES, 'MERCHANT')
   @HttpCode(200)
   quote(@Req() req: any, @Body() body: any) {
-    return this.billing.quote(req.tenantSchema, {
-      distanceKm: Number(body?.distanceKm) || 0,
+    const base = {
+      distanceKm: Math.max(0, Number(body?.distanceKm) || 0),
       fragile: !!body?.fragile,
       scheduled: !!body?.scheduled,
+    };
+    if (req.user?.role === 'MERCHANT') {
+      if (!req.user?.merchant) throw new ForbiddenException('Compte marchand non rattaché à un marchand.');
+      return this.billing.quoteForMerchant(req.tenantSchema, req.user.merchant, base);
+    }
+    if (body?.conditions) {
+      const conditions = {
+        mode: body.conditions.mode,
+        discountRate: body.conditions.discountRate ?? null,
+        flatPrice: body.conditions.flatPrice ?? null,
+      };
+      const err = validateMerchantPricing(conditions);
+      if (err) throw new BadRequestException(err);
+      return this.billing.quote(req.tenantSchema, { ...base, merchant: conditions });
+    }
+    if (typeof body?.merchant === 'string' && body.merchant.trim()) {
+      return this.billing.quoteForMerchant(req.tenantSchema, body.merchant.trim(), base);
+    }
+    return this.billing.quote(req.tenantSchema, {
+      ...base,
       merchantFixedPrice: body?.merchantFixedPrice ?? null,
       discountRate: body?.discountRate ?? undefined,
     });

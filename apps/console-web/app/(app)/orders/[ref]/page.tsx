@@ -36,6 +36,13 @@ export default async function OrderDetailPage({ params }: { params: { ref: strin
       commissionRate = cfg.commissionRate;
       vatRate = cfg.vatRate;
     } catch { /* garde les défauts */ }
+    // Commission négociée avec le marchand de la commande, s'il en a une.
+    if (order.merchant) {
+      try {
+        const fiche = (await c.listMerchants()).find((m) => m.name === order.merchant);
+        if (fiche) commissionRate = fiche.effectiveCommissionRate;
+      } catch { /* lecture des fiches réservée à la console : garde le taux de l'entreprise */ }
+    }
   } catch (e) {
     if (e instanceof ApiError && e.status === 404) notFound();
     redirect('/login');

@@ -193,7 +193,45 @@ export interface OrderLocationsInput {
   dropLat?: number | null; dropLng?: number | null; dropMapUrl?: string | null;
 }
 
-export interface QuoteResult { applied: 'grille' | 'remise' | 'fixe_marchand'; base: number; surcharges: number; ht: number; tva: number; ttc: number }
+export interface QuoteResult {
+  applied: 'grille' | 'remise' | 'fixe_marchand';
+  /** Mode tarifaire appliqué (vocabulaire de la fiche marchand). */
+  mode?: PricingMode;
+  gridBase?: number; discountRate?: number | null;
+  base: number; surcharges: number; ht: number; tva: number; ttc: number;
+  /** Marchand dont les conditions ont été appliquées, s'il est connu. */
+  merchant?: string | null;
+}
+
+/* ---------- Fiches marchand et conditions tarifaires (cf. docs/adr/0003) ---------- */
+export type PricingMode = 'standard' | 'remise' | 'forfait';
+export interface MerchantAccount { id: string; name: string; email: string; active: boolean }
+export interface MerchantRecord {
+  id: string; name: string;
+  legalName: string | null; contactName: string | null; email: string | null;
+  phone: string | null; address: string | null; taxId: string | null;
+  mode: PricingMode; discountRate: number | null; flatPrice: number | null;
+  /** Commission négociée (fraction) ; `null` = taux de l'entreprise. */
+  commissionRate: number | null;
+  /** Commission réellement appliquée. */
+  effectiveCommissionRate: number;
+  active: boolean; createdAt: string; updatedAt: string;
+  accounts: MerchantAccount[];
+}
+export interface MerchantInput {
+  name?: string;
+  legalName?: string | null; contactName?: string | null; email?: string | null;
+  phone?: string | null; address?: string | null; taxId?: string | null;
+  mode?: PricingMode; discountRate?: number | null; flatPrice?: number | null;
+  commissionRate?: number | null; active?: boolean;
+}
+/** Conditions du marchand connecté (portail, lecture seule). */
+export interface MerchantConditions {
+  name: string; mode: PricingMode; discountRate: number | null; flatPrice: number | null;
+  commissionRate: number; commissionNegotiated: boolean;
+  fragileSurcharge: number; scheduledSurcharge: number; vatRate: number;
+  examples: { km: number; ht: number; ttc: number }[];
+}
 export interface PriceTier { from: number; to: number | null; base?: number; perKm?: number }
 export interface PriceConfig { tiers: PriceTier[]; fragileSurcharge: number; scheduledSurcharge: number; discountRate: number; commissionRate: number; vatRate: number }
 export interface CompanySettings { legalName: string | null; ice: string | null; rc: string | null; address: string | null; currency: string; timezone: string; defaultLang: 'fr' | 'ar' }
@@ -421,6 +459,15 @@ export class TranspoClient {
   getMerchantDashboard(): Promise<MerchantDashboard> { return this.req('/v1/merchant/dashboard'); }
   getMerchantWallet(): Promise<MerchantWallet> { return this.req('/v1/merchant/wallet'); }
   getMerchantInvoice(): Promise<MerchantInvoice> { return this.req('/v1/merchant/invoice'); }
+  getMyConditions(): Promise<MerchantConditions> { return this.req('/v1/merchants/me'); }
+
+  // --- Fiches marchand (console : lecture ADMIN/DISPATCHER/COMPTABLE, écriture ADMIN/COMPTABLE) ---
+  listMerchants(): Promise<MerchantRecord[]> { return this.req('/v1/merchants'); }
+  getMerchant(id: string): Promise<MerchantRecord> { return this.req(`/v1/merchants/${encodeURIComponent(id)}`); }
+  createMerchant(input: MerchantInput): Promise<MerchantRecord> { return this.req('/v1/merchants', { method: 'POST', body: input }); }
+  updateMerchant(id: string, input: MerchantInput): Promise<MerchantRecord> {
+    return this.req(`/v1/merchants/${encodeURIComponent(id)}`, { method: 'PATCH', body: input });
+  }
 
   // --- Console SaaS (SUPER_ADMIN, realm plateforme) ---
   listTenants(): Promise<Tenant[]> { return this.req('/v1/saas/tenants'); }

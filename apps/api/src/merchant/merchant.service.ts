@@ -48,7 +48,7 @@ export class MerchantService {
   /** Portefeuille : COD encaissé net de commission (ce que la plateforme doit reverser). */
   async wallet(schema: string, merchant?: string) {
     const rows = await this.orders(schema, merchant);
-    const { commissionRate } = await this.billing.pricingConfig(schema);
+    const commissionRate = await this.tauxCommission(schema, merchant);
     const codCollected = rows.filter((o) => o.codPaid).reduce((s, o) => s + o.cod, 0);
     const commission = round2(codCollected * commissionRate);
     const net = round2(codCollected - commission);
@@ -59,12 +59,19 @@ export class MerchantService {
   async invoice(schema: string, merchant?: string) {
     const m = this.ensure(merchant);
     const rows = (await this.orders(schema, merchant)).filter((o) => o.status === 'LIVREE');
-    const { commissionRate, vatRate } = await this.billing.pricingConfig(schema);
+    const { vatRate } = await this.billing.pricingConfig(schema);
+    const commissionRate = await this.tauxCommission(schema, m);
     const deliveries = rows.length;
     const codCollected = rows.filter((o) => o.codPaid).reduce((s, o) => s + o.cod, 0);
     const commission = round2(codCollected * commissionRate);
     const netHt = round2(codCollected - commission);
     const tva = round2(netHt * vatRate);
     return { merchant: m, deliveries, codCollected, commission, netHt, tva, ttc: round2(netHt + tva) };
+  }
+
+  /** Commission du marchand : son taux négocié, à défaut celui de l'entreprise. */
+  private async tauxCommission(schema: string, merchant?: string): Promise<number> {
+    const { companyRate, rateFor } = await this.billing.commissionRates(schema);
+    return merchant ? rateFor(merchant) : companyRate;
   }
 }
