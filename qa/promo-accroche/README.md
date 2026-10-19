@@ -18,3 +18,10 @@ Voix Deepgram `aura-2-hector-fr` (une prise par phrase, silences rognés), dossi
 sur sa phrase ; `node rendu-voix.mjs` (1 410 images dans `images5/`), puis mixage : voix posées à
 0,6 / 6,2 / 13,1 / 17,3 / 25,0 / 31,9 / 36,9 / 43,0 s, musique à 18 % abaissée sous la voix
 (`sidechaincompress`), `loudnorm` à −14 LUFS. Deepgram n'a pas de voix arabe : pas de version darija parlée.
+
+## Version darija avec voix off (47 s)
+
+Voix ElevenLabs « Rachid » (bibliothèque partagée, ar-MA, `0Up3glsGKvZx3M5JI0XB`), modèle
+`eleven_multilingual_v2`, une prise par phrase (`darija/t-r-N.wav`, chiffres écrits en toutes lettres
+pour qu'ils soient dits en darija). Même calage que la version française (`montage-darija-voix.html`).
+Contrôle : transcription Deepgram nova-3 (arabe) de chaque prise. Pas sur le site.
