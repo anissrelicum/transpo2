@@ -91,7 +91,6 @@
   <div class="centre">
     <div class="l t" id="G1">Essayez Portrail 30 jours.</div>
     <div class="m t" id="G2" style="margin-top:28px">Gratuitement. On installe tout avec vous. Sans engagement.</div>
-    <div class="pilule" id="G3">Offre fondateurs · 10 places</div>
   </div>
 </section>
 
@@ -145,7 +144,7 @@ window.rendu = async function (t) {
   [['#N1', 23.9], ['#N2', 25.3], ['#N3', 27]].forEach(([id, a]) => { const e = $(id), p = ease(prog(t, a, a + .6)); e.style.opacity = p; e.style.transform = `translateX(${(1 - p) * 120}px)`; });
   $('#Ff').style.transform = `scale(${1.02 + .06 * prog(t, 29.9, 35.1)})`;
   app('#F1', t, 30.4); app('#F2', t, 32.2);
-  app('#G1', t, 35.4); app('#G2', t, 36.6); app('#G3', t, 38.2, .6, 16);
+  app('#G1', t, 35.4); app('#G2', t, 36.6);
   const f = ease(prog(t, 41.2, 42.2)); $('#logo').style.opacity = f; $('#logo').style.transform = `translateX(-50%) scale(${.92 + .08 * f})`;
   app('#H1', t, 42.2); app('#H2', t, 42.9, .6, 16);
 };

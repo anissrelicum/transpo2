@@ -21,10 +21,12 @@ l'envie d'essayer. Le produit, le prospect le découvre en démonstration ou pen
    qui le produit.
 5. **L'identité** — « Moins d'appels. Plus de contrôle. Et vous rentrez à l'heure. » On vend la
    soirée retrouvée, pas un logiciel.
-6. **Le risque à zéro + la rareté** — 30 jours gratuits, on installe avec vous, sans engagement ;
-   « Offre fondateurs · 10 places » (vrai : prix bloqué pour les 10 premiers clients).
+6. **Le risque à zéro** — 30 jours gratuits, on installe avec vous, sans engagement. (Pas d'« offre
+   fondateurs » dans la communication : décision du 19/10/2026.)
 
-**Format** : 45 s, 16:9, sous-titres incrustés + musique (regardable sans le son, comme la plupart
+**Versions** : français (site FR), anglais (site EN), darija en écriture arabe (envoi direct aux prospects, pas sur le site).
+
+**Format** : 45 s, 16:9, sans voix, sous-titres incrustés + musique (regardable sans le son, comme la plupart
 des vidéos reçues sur WhatsApp). Images : photos Unsplash et animation abstraite, aucun écran réel.
 
 ## Le découpage
@@ -37,7 +39,7 @@ des vidéos reçues sur WhatsApp). Images : photos Unsplash et animation abstrai
 | 15–23 s | Carte floue, points qui bougent (animation, pas une capture) | Vous voyez chaque livreur. Où il est. Ce qu'il porte. S'il sort de sa zone. *Sans appeler personne.* |
 | 23–30 s | Trois notifications stylisées | Les courses partent seules. *Chaque dirham a une trace.* — « Course acceptée » · « Livré · 550 DH encaissés » · « Reversement prêt » |
 | 30–35 s | Deux associés qui se tapent dans la main | Moins d'appels. Plus de contrôle. *Et vous rentrez à l'heure.* |
-| 35–41 s | Fond marine | Essayez Portrail 30 jours. Gratuitement. On installe tout avec vous. Sans engagement. **Offre fondateurs · 10 places** |
+| 35–41 s | Fond marine | Essayez Portrail 30 jours. Gratuitement. On installe tout avec vous. Sans engagement. |
 | 41–45 s | Logo | Votre livraison, sur les rails. **Demandez votre essai** |
 
 ## Ce qu'on ne montre jamais

@@ -21,8 +21,6 @@ par un devis réel.
 - **Paiement annuel** : 10 mois payés pour 12 (−17 %).
 - **Mise en route** : offerte pour les 10 premiers clients ; ensuite 1 500 DH (import des marchands et
   livreurs, formation des livreurs sur place), offerte sur un engagement annuel.
-- **Offre fondateurs (10 premiers clients)** : essai de 30 jours, mise en route offerte, **prix bloqué 24 mois**,
-  en échange d'un témoignage (vidéo, logo, chiffres avant/après).
 - **Options futures** (quand elles existeront) : SMS et WhatsApp refacturés au coût + 30 %, marque blanche.
 
 **Pourquoi ce découpage** : un patron de société de livraison raisonne en **nombre de livreurs**, pas en
@@ -145,7 +143,7 @@ la caisse et la facturation, 7 jours sur 7, sans erreur de calcul et sans arrêt
 
 ## 6. Ce qu'il faut décider
 
-1. **Valider la grille** (390 / 990 / 2 490 DH, essai 30 jours, offre fondateurs) — ou garder
+1. **Valider la grille** (390 / 990 / 2 490 DH, essai 30 jours) — ou garder
    l'actuelle (299 / 899 / 2 499 DH).
 2. **Créer la SARL AU** avant la première facture (TVA, contrats, CNDP).
 3. **Remplacer CARTO par un fond de carte auto-hébergé** avant le 30 novembre 2026.
