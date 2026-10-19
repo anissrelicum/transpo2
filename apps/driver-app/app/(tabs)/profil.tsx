@@ -13,7 +13,7 @@ import { useLanguage } from '../../lib/i18n';
 import { getSession, clearSession, authedClient } from '../../lib/api';
 import { clear as clearOutbox } from '../../lib/outbox';
 import { useOutbox } from '../../lib/useOutbox';
-import { useService, terminerJournee, conduiteMs, amplitudeMs, formatDuree } from '../../lib/service';
+import { useService, demarrerJournee, terminerJournee, conduiteMs, amplitudeMs, formatDuree } from '../../lib/service';
 import { Bouton, Carte, Libelle, Pastille, Bandeau, useTon } from '../../components/ui';
 
 const MAX_MS = EU561_MAX_DRIVE_HOURS * 3_600_000;
@@ -21,13 +21,14 @@ const MAX_MS = EU561_MAX_DRIVE_HOURS * 3_600_000;
 const T = {
   fr: {
     titre: 'Profil', dispo: 'Disponible pour des missions',
-    dispoAide: 'Désactivez pour une pause : plus aucune mission proposée.', dispoKo: 'Disponibilité non enregistrée — vérifiez votre connexion.',
-    horsJournee: 'Démarrez votre journée pour recevoir des missions.',
+    dispoAide: 'Vous recevez des missions. Désactivez pour faire une pause.', enPause: 'En pause : aucune mission ne vous est proposée.',
+    dispoKo: 'Disponibilité non enregistrée — vérifiez votre connexion.',
+    horsJournee: 'Activez pour démarrer votre journée et recevoir des missions.',
     conduite: 'Temps de conduite', sur: (a: string, b: string) => `${a} sur ${b}`,
     pause: 'Pause de 45 min obligatoire avant de reprendre la route.', bientot: 'Moins de 30 min avant la limite de conduite du jour.',
     limite: 'Limite de conduite du jour atteinte : terminez votre journée.',
     historique: 'Historique et gains', documents: 'Mes documents (permis, visite)', aJour: 'À jour', expire: 'Expiré',
-    reglages: 'Langue · Thème', aide: 'Aide', support: 'Écrire à l’agence', incident: 'Signaler un incident',
+    reglages: 'Paramètres', reglagesAide: 'Langue, thème, notifications', aide: 'Aide', support: 'Écrire à l’agence', incident: 'Signaler un incident',
     terminer: 'Terminer ma journée', terminerTitre: 'Terminer la journée ?',
     terminerCorps: 'Vous ne recevrez plus de missions et le partage de position s’arrête. Pensez à déclarer votre caisse.',
     annuler: 'Annuler', deconnexion: 'Se déconnecter',
@@ -36,13 +37,14 @@ const T = {
   },
   ar: {
     titre: 'الملف', dispo: 'متاح لاستقبال المهام',
-    dispoAide: 'عطّله للاستراحة: لن تُقترح عليك أي مهمة.', dispoKo: 'لم يُسجَّل التوفر — تحقق من اتصالك.',
-    horsJournee: 'ابدأ يومك لاستقبال المهام.',
+    dispoAide: 'تصلك المهام. عطّله لأخذ استراحة.', enPause: 'في استراحة: لن تُقترح عليك أي مهمة.',
+    dispoKo: 'لم يُسجَّل التوفر — تحقق من اتصالك.',
+    horsJournee: 'فعّله لبدء يومك واستقبال المهام.',
     conduite: 'وقت القيادة', sur: (a: string, b: string) => `${a} من ${b}`,
     pause: 'استراحة 45 دقيقة إلزامية قبل مواصلة الطريق.', bientot: 'أقل من 30 دقيقة قبل حد القيادة اليومي.',
     limite: 'تم بلوغ حد القيادة اليومي: أنهِ يومك.',
     historique: 'السجل والأرباح', documents: 'مستنداتي (الرخصة، الفحص)', aJour: 'سارية', expire: 'منتهية',
-    reglages: 'اللغة · المظهر', aide: 'مساعدة', support: 'مراسلة الوكالة', incident: 'الإبلاغ عن حادث',
+    reglages: 'الإعدادات', reglagesAide: 'اللغة، المظهر، الإشعارات', aide: 'مساعدة', support: 'مراسلة الوكالة', incident: 'الإبلاغ عن حادث',
     terminer: 'إنهاء يومي', terminerTitre: 'إنهاء اليوم؟',
     terminerCorps: 'لن تستقبل مهاماً بعد الآن وستتوقف مشاركة الموقع. لا تنسَ التصريح بصندوقك.',
     annuler: 'إلغاء', deconnexion: 'تسجيل الخروج',
@@ -69,11 +71,21 @@ export default function Profil() {
     authedClient().getDriverProfile().then((p) => { setFiche(p); setDispo(p.available); }).catch(() => undefined);
   }, [etat.active]);
 
-  /** Si le serveur refuse ou ne répond pas, l'interrupteur REVIENT : il ne doit jamais mentir au dispatch. */
+  /**
+   * Hors journée, l'activer DÉMARRE la journée (position partagée, missions proposées).
+   * En journée, il met en pause ou reprend. Si le serveur refuse ou ne répond pas,
+   * l'interrupteur REVIENT : il ne doit jamais mentir au dispatch.
+   */
   async function basculer(v: boolean) {
     const avant = dispo;
     setDispo(v);
     try {
+      if (!etat.active) {
+        if (!v) return;
+        await demarrerJournee();
+        setDispo((await authedClient().getDriverProfile()).available);
+        return;
+      }
       const r = await authedClient().setMyAvailability(v);
       setDispo(r.available);
     } catch {
@@ -115,10 +127,10 @@ export default function Profil() {
     ? [fiche.licenseDue, fiche.medicalDue].every((d) => !d || d >= new Date().toISOString().slice(0, 10))
     : null;
 
-  const liens: { label: string; href: string; droite?: React.ReactNode }[] = [
+  const liens: { label: string; href: string; aide?: string; droite?: React.ReactNode }[] = [
+    { label: t.reglages, href: '/settings', aide: t.reglagesAide },
     { label: t.historique, href: '/gains' },
     { label: t.documents, href: '/docs', droite: docsOk === null ? null : <Pastille ton={docsOk ? 'vert' : 'rouge'}>{docsOk ? t.aJour : t.expire}</Pastille> },
-    { label: t.reglages, href: '/settings' },
     { label: t.support, href: '/support' },
     { label: t.incident, href: '/incidents' },
     { label: t.aide, href: '/help' },
@@ -141,10 +153,10 @@ export default function Profil() {
       <Carte>
         <View style={[row, s.entre]}>
           <Text style={[{ color: colors.text, fontWeight: '700', fontSize: 16, flex: 1 }, align]}>{t.dispo}</Text>
-          <Switch testID="disponibilite" value={etat.active && dispo} disabled={!etat.active} onValueChange={(v) => { void basculer(v); }}
+          <Switch testID="disponibilite" value={etat.active && dispo} onValueChange={(v) => { void basculer(v); }}
             trackColor={{ true: resolveColor('green', 9, mode), false: colors.border }} />
         </View>
-        <Text style={[{ color: colors.muted, fontSize: 13, marginTop: 6 }, align]}>{etat.active ? t.dispoAide : t.horsJournee}</Text>
+        <Text style={[{ color: colors.muted, fontSize: 13, marginTop: 6 }, align]}>{!etat.active ? t.horsJournee : dispo ? t.dispoAide : t.enPause}</Text>
       </Carte>
 
       <Carte>
@@ -162,7 +174,10 @@ export default function Profil() {
         {liens.map((l, i) => (
           <Pressable key={l.href} onPress={() => router.push(l.href as never)} accessibilityRole="button"
             style={[row, s.lien, i > 0 && { borderTopWidth: 1, borderTopColor: colors.border }]}>
-            <Text style={[{ color: colors.text, fontSize: 16, flex: 1 }, align]}>{l.label}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[{ color: colors.text, fontSize: 16 }, align]}>{l.label}</Text>
+              {l.aide ? <Text style={[{ color: colors.muted, fontSize: 13, marginTop: 2 }, align]}>{l.aide}</Text> : null}
+            </View>
             {l.droite ?? <Text style={{ color: colors.muted, fontSize: 18 }}>{rtl ? '‹' : '›'}</Text>}
           </Pressable>
         ))}

@@ -11,6 +11,7 @@ import { useTheme } from '../lib/theme';
 import { Bouton, Libelle, Pastille, MARQUE, useTon } from './ui';
 import { IcCheck } from './icones';
 import { Echeance } from './Echeance';
+import { preferences } from '../lib/preferences';
 
 const L = {
   fr: {
@@ -42,8 +43,8 @@ export function PropositionMission({ offre, decalage, lang, rtl, enAttente, onRe
   const [reste, setReste] = React.useState(() => echeance - (Date.now() + decalage));
   const signale = React.useRef(false);
 
-  // Une vibration à l'arrivée : le livreur a souvent le téléphone dans un support.
-  React.useEffect(() => { Vibration.vibrate([0, 250, 150, 250]); }, [offre.id]);
+  // Une vibration à l'arrivée (désactivable dans Paramètres) : le téléphone est souvent dans un support.
+  React.useEffect(() => { if (preferences().vibration) Vibration.vibrate([0, 250, 150, 250]); }, [offre.id]);
 
   React.useEffect(() => {
     const id = setInterval(() => {

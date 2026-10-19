@@ -1,7 +1,6 @@
 // Aide / FAQ — contenu statique, recherche locale (cf. plan §5 : « Toujours
 // statique »). Les réponses reflètent le domaine réel : 5 types d'incident
-// (@transpo/domain), pas de « Ma caisse » (écran retiré du périmètre, cf.
-// plan §1 ligne 25) — la question COD renvoie vers l'écran de preuve réel.
+// (@transpo/domain), la question COD décrit l'écran Encaissement et la Caisse.
 import * as React from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, StyleSheet } from 'react-native';
 import { router, Stack } from 'expo-router';
@@ -16,22 +15,22 @@ const FAQ: FaqItem[] = [
   {
     q: { fr: 'Comment accepter une mission ?', ar: 'كيف أقبل مهمة؟' },
     a: {
-      fr: "Ouvrez l'onglet Missions, sélectionnez la mission puis suivez les étapes affichées jusqu'à la livraison.",
-      ar: 'افتح تبويب المهام، اختر المهمة ثم اتبع الخطوات المعروضة حتى التسليم.',
+      fr: "Une nouvelle mission s'affiche par-dessus la carte avec un compte à rebours : touchez « Accepter ». Elle rejoint votre journée, dans l'ordre de la tournée. Sans réponse, elle passe à un autre livreur.",
+      ar: 'تظهر المهمة الجديدة فوق الخريطة مع عدّ تنازلي: اضغط «قبول». تنضاف إلى يومك حسب ترتيب الجولة. بدون رد، تنتقل إلى سائق آخر.',
     },
   },
   {
     q: { fr: 'Que faire si le client est absent ?', ar: 'ماذا أفعل إذا كان العميل غائبًا؟' },
     a: {
-      fr: "Appelez le client depuis l'écran de mission. Sans réponse, signalez un échec en choisissant « Destinataire absent » ; la commande repart vers le marchand.",
-      ar: 'اتصل بالعميل من شاشة المهمة. إذا لم يُجب، أبلغ عن فشل التسليم باختيار «المستلم غائب»؛ تُعاد الطلبية إلى التاجر.',
+      fr: "Sur l'arrêt, touchez « Problème » puis choisissez « Destinataire absent ». L'agence est prévenue et la commande est replanifiée ou retournée au marchand.",
+      ar: 'في المحطة، اضغط «مشكلة» ثم اختر «المستلم غائب». تُبلَّغ الوكالة وتُعاد برمجة الطلبية أو إرجاعها إلى التاجر.',
     },
   },
   {
     q: { fr: 'Comment encaisser le COD ?', ar: 'كيف أُحصّل الدفع عند الاستلام؟' },
     a: {
-      fr: "Sur l'écran de preuve de livraison, saisissez le montant reçu avant de valider : il est enregistré avec la photo et la signature en un seul envoi.",
-      ar: 'في شاشة إثبات التسليم، أدخل المبلغ المُستلم قبل التأكيد: يُسجَّل مع الصورة والتوقيع في إرسال واحد.',
+      fr: "Après « Remettre le colis » et la preuve, l'écran Encaissement affiche le montant dû : indiquez le montant reçu, l'app calcule la monnaie à rendre. Tout s'ajoute à votre Caisse, à déclarer en fin de journée.",
+      ar: 'بعد «تسليم الطرد» والإثبات، تعرض شاشة التحصيل المبلغ المستحق: أدخل المبلغ المُستلم ويحسب التطبيق الباقي. يُضاف كل شيء إلى صندوقك للتصريح به في نهاية اليوم.',
     },
   },
   {
@@ -42,10 +41,10 @@ const FAQ: FaqItem[] = [
     },
   },
   {
-    q: { fr: 'Comment sont calculées mes primes ?', ar: 'كيف تُحتسب مكافآتي؟' },
+    q: { fr: 'Comment démarrer ma journée ou faire une pause ?', ar: 'كيف أبدأ يومي أو آخذ استراحة؟' },
     a: {
-      fr: 'Les objectifs et primes sont définis par votre transporteur. Suivez votre progression dans Profil › Objectifs & primes (barème indicatif).',
-      ar: 'يحدد الناقل الأهداف والمكافآت. تابع تقدمك في الملف الشخصي › الأهداف والمكافآت (بيانات إرشادية).',
+      fr: "Touchez « Démarrer ma journée » sur l'écran Journée, ou activez « Disponible » dans Profil. Pour une pause, désactivez « Disponible » : aucune mission ne vous est proposée. « Terminer ma journée » arrête le partage de position.",
+      ar: 'اضغط «ابدأ يومي» في شاشة اليوم، أو فعّل «متاح» في الملف. للاستراحة، عطّل «متاح»: لن تُقترح عليك أي مهمة. «إنهاء يومي» يوقف مشاركة الموقع.',
     },
   },
   {
