@@ -10,3 +10,11 @@ désaturé, illisible).
 
 Rendu : `node rendu2.mjs` (1 350 images dans `images2/`), puis
 `ffmpeg -framerate 30 -i images2/%05d.jpg -ss 4 -t 45 -i m2/musique-motivating-mornings.mp3 -filter_complex "[1:a]afade=t=in:d=1.5,afade=t=out:st=41.5:d=3.5,loudnorm=I=-14:TP=-1.5:LRA=11[a]" -map 0:v -map "[a]" -c:v libx264 -crf 20 -pix_fmt yuv420p -movflags +faststart -c:a aac portrail-accroche-45s.mp4`.
+
+## Version française avec voix off (47 s)
+
+Voix Deepgram `aura-2-hector-fr` (une prise par phrase, silences rognés), dossier `voix/t-hector-N.wav`.
+`montage-voix.html` étire la chronologie par morceaux (tableaux `REEL` / `ORIG`) pour caler chaque scène
+sur sa phrase ; `node rendu-voix.mjs` (1 410 images dans `images5/`), puis mixage : voix posées à
+0,6 / 6,2 / 13,1 / 17,3 / 25,0 / 31,9 / 36,9 / 43,0 s, musique à 18 % abaissée sous la voix
+(`sidechaincompress`), `loudnorm` à −14 LUFS. Deepgram n'a pas de voix arabe : pas de version darija parlée.
