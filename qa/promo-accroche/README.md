@@ -21,7 +21,7 @@ sur sa phrase ; `node rendu-voix.mjs` (1 410 images dans `images5/`), puis mixag
 
 ## Version darija avec voix off (47 s)
 
-Voix ElevenLabs « Rachid » (bibliothèque partagée, ar-MA, `0Up3glsGKvZx3M5JI0XB`), modèle
+Voix ElevenLabs `cmKBJhn5ff8n45De3l6e` (choisie par le client ; « Rachid » `0Up3glsGKvZx3M5JI0XB` en première version), modèle
 `eleven_multilingual_v2`, une prise par phrase (`darija/t-r-N.wav`, chiffres écrits en toutes lettres
 pour qu'ils soient dits en darija). Même calage que la version française (`montage-darija-voix.html`).
 Contrôle : transcription Deepgram nova-3 (arabe) de chaque prise. Pas sur le site.
