@@ -42,7 +42,7 @@
 
 <link rel="preload" href="/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/medias/hero.webp?v=2" as="image" type="image/webp" fetchpriority="high" imagesrcset="/medias/hero-600.webp?v=2 600w, /medias/hero.webp?v=2 928w" imagesizes="(max-width: 1023px) min(440px, calc(100vw - 40px)), 480px">
-<link rel="stylesheet" href="/styles.css?v=2">
+<link rel="stylesheet" href="/styles.css?v=3">
 
 <script type="application/ld+json">
 {
@@ -91,10 +91,10 @@
       "url": "__SITE__/en/",
       "description": "Operations software for last-mile delivery companies: automatic, fair dispatch with driver acceptance (the dispatcher handles the exceptions), an offline driver app, proof of delivery, cash on delivery tracked to the merchant payout, invoicing, merchant portal, fleet and compliance.",
       "screenshot": [
-        "__SITE__/medias/ecran-dashboard.webp",
-        "__SITE__/medias/ecran-dispatch.webp",
-        "__SITE__/medias/ecran-cash.webp",
-        "__SITE__/medias/ecran-portail.webp"
+        "__SITE__/medias/ecran-dashboard.webp?v=3",
+        "__SITE__/medias/ecran-dispatch.webp?v=3",
+        "__SITE__/medias/ecran-cash.webp?v=3",
+        "__SITE__/medias/ecran-portail.webp?v=3"
       ],
       "publisher": { "@id": "__SITE__/#organisation" },
       "audience": { "@type": "BusinessAudience", "audienceType": "Last-mile delivery and courier companies" },
@@ -105,7 +105,7 @@
         "priceCurrency": "EUR",
         "availability": "https://schema.org/InStock",
         "url": "__SITE__/en/#demo",
-        "eligibleDuration": { "@type": "QuantitativeValue", "value": 14, "unitCode": "DAY" }
+        "eligibleDuration": { "@type": "QuantitativeValue", "value": 30, "unitCode": "DAY" }
       }
     },
     {
@@ -324,8 +324,9 @@
         <div class="panneau" id="panneau-flotte" role="tabpanel" aria-labelledby="onglet-flotte" data-revele>
           <figure class="cadre">
             <div class="cadre__barre" aria-hidden="true"><span class="cadre__points"><span></span><span></span><span></span></span><span class="cadre__adresse">Courier console · Live fleet</span></div>
-            <img src="/medias/ecran-flotte.webp" srcset="/medias/ecran-flotte-800.webp 800w, /medias/ecran-flotte.webp 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
+            <img src="/medias/ecran-flotte.webp?v=3" srcset="/medias/ecran-flotte-800.webp?v=3 800w, /medias/ecran-flotte.webp?v=3 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
                  alt="Live fleet: the city map with every courier moving in real time, counters (on duty, on the road, out of zone, late orders, cash collected today) and one courier's card with the suggested route.">
+            <span class="cadre__flou">Blurred preview · live demo on request</span>
           </figure>
           <div class="panneau__legende">
             <h3>Your fleet, live</h3>
@@ -336,8 +337,9 @@
         <div class="panneau" id="panneau-tableau" role="tabpanel" aria-labelledby="onglet-tableau">
           <figure class="cadre">
             <div class="cadre__barre" aria-hidden="true"><span class="cadre__points"><span></span><span></span><span></span></span><span class="cadre__adresse">Operations console · Dashboard</span></div>
-            <img src="/medias/ecran-dashboard.webp" srcset="/medias/ecran-dashboard-800.webp 800w, /medias/ecran-dashboard.webp 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
+            <img src="/medias/ecran-dashboard.webp?v=3" srcset="/medias/ecran-dashboard-800.webp?v=3 800w, /medias/ecran-dashboard.webp?v=3 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
                  alt="Console dashboard (in French): counters for orders in progress, delivered and failed, cash collected today, hourly activity, fleet compliance and urgent orders.">
+            <span class="cadre__flou">Blurred preview · live demo on request</span>
           </figure>
           <div class="panneau__legende">
             <h3>The dashboard</h3>
@@ -348,8 +350,9 @@
         <div class="panneau" id="panneau-dispatch" role="tabpanel" aria-labelledby="onglet-dispatch">
           <figure class="cadre">
             <div class="cadre__barre" aria-hidden="true"><span class="cadre__points"><span></span><span></span><span></span></span><span class="cadre__adresse">Operations console · Dispatch</span></div>
-            <img src="/medias/ecran-dispatch.webp" srcset="/medias/ecran-dispatch-800.webp 800w, /medias/ecran-dispatch.webp 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
+            <img src="/medias/ecran-dispatch.webp?v=3" srcset="/medias/ecran-dispatch-800.webp?v=3 800w, /medias/ecran-dispatch.webp?v=3 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
                  alt="Dispatch screen (in French): live map of online drivers and the queue of unassigned orders, each with an Assign button.">
+            <span class="cadre__flou">Blurred preview · live demo on request</span>
           </figure>
           <div class="panneau__legende">
             <h3>Dispatch</h3>
@@ -360,8 +363,9 @@
         <div class="panneau" id="panneau-caisse" role="tabpanel" aria-labelledby="onglet-caisse">
           <figure class="cadre">
             <div class="cadre__barre" aria-hidden="true"><span class="cadre__points"><span></span><span></span><span></span></span><span class="cadre__adresse">Operations console · Cash reconciliation</span></div>
-            <img src="/medias/ecran-cash.webp" srcset="/medias/ecran-cash-800.webp 800w, /medias/ecran-cash.webp 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
+            <img src="/medias/ecran-cash.webp?v=3" srcset="/medias/ecran-cash-800.webp?v=3 800w, /medias/ecran-cash.webp?v=3 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
                  alt="Cash reconciliation screen (in French): for each driver, expected and declared amounts, the discrepancy and the deposit status, with cash in circulation and the amount to deposit.">
+            <span class="cadre__flou">Blurred preview · live demo on request</span>
           </figure>
           <div class="panneau__legende">
             <h3>Cash</h3>
@@ -372,8 +376,9 @@
         <div class="panneau" id="panneau-portail" role="tabpanel" aria-labelledby="onglet-portail">
           <figure class="cadre">
             <div class="cadre__barre" aria-hidden="true"><span class="cadre__points"><span></span><span></span><span></span></span><span class="cadre__adresse">Merchant space · Dashboard</span></div>
-            <img src="/medias/ecran-portail.webp" srcset="/medias/ecran-portail-800.webp 800w, /medias/ecran-portail.webp 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
+            <img src="/medias/ecran-portail.webp?v=3" srcset="/medias/ecran-portail-800.webp?v=3 800w, /medias/ecran-portail.webp?v=3 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
                  alt="Merchant portal (in French): orders, successful deliveries, cash to be paid out, latest orders with their status and success rate.">
+            <span class="cadre__flou">Blurred preview · live demo on request</span>
           </figure>
           <div class="panneau__legende">
             <h3>The merchant portal</h3>
@@ -522,8 +527,9 @@
       <div class="argent__grille">
         <figure class="cadre" data-revele>
           <div class="cadre__barre" aria-hidden="true"><span class="cadre__points"><span></span><span></span><span></span></span><span class="cadre__adresse">Operations console · Cash reconciliation</span></div>
-          <img src="/medias/ecran-cash.webp" srcset="/medias/ecran-cash-800.webp 800w, /medias/ecran-cash.webp 1440w" sizes="(max-width: 959px) calc(100vw - 40px), 790px" width="1440" height="900" loading="lazy" decoding="async"
+          <img src="/medias/ecran-cash.webp?v=3" srcset="/medias/ecran-cash-800.webp?v=3 800w, /medias/ecran-cash.webp?v=3 1440w" sizes="(max-width: 959px) calc(100vw - 40px), 790px" width="1440" height="900" loading="lazy" decoding="async"
                alt="Cash reconciliation (in French): for each driver, the expected amount, the declared amount, the discrepancy and the deposit status.">
+          <span class="cadre__flou">Blurred preview · live demo on request</span>
         </figure>
         <div class="argent__cartes">
           <div class="carte-sombre" data-revele>

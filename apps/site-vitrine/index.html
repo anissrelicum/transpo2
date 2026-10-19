@@ -24,7 +24,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Portrail — votre exploitation, sur les rails. Logiciel de livraison last-mile.">
-<meta property="og:video" content="__SITE__/medias/portrail-presentation.mp4">
+<meta property="og:video" content="__SITE__/medias/portrail-accroche.mp4">
 <meta property="og:video:type" content="video/mp4">
 <meta property="og:video:width" content="1920">
 <meta property="og:video:height" content="1080">
@@ -42,7 +42,7 @@
 
 <link rel="preload" href="/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/medias/hero.webp?v=2" as="image" type="image/webp" fetchpriority="high" imagesrcset="/medias/hero-600.webp?v=2 600w, /medias/hero.webp?v=2 928w" imagesizes="(max-width: 1023px) min(440px, calc(100vw - 40px)), 480px">
-<link rel="stylesheet" href="/styles.css?v=2">
+<link rel="stylesheet" href="/styles.css?v=3">
 
 <script type="application/ld+json">
 {
@@ -91,10 +91,10 @@
       "url": "__SITE__/",
       "description": "Logiciel d’exploitation pour sociétés de livraison last-mile : affectation automatique et équitable avec acceptation du livreur (le dispatcher traite les exceptions), app livreur hors réseau, preuve de livraison, encaissement à la livraison suivi jusqu’au reversement marchand, facturation, portail marchand, flotte et conformité.",
       "screenshot": [
-        "__SITE__/medias/ecran-dashboard.webp",
-        "__SITE__/medias/ecran-dispatch.webp",
-        "__SITE__/medias/ecran-cash.webp",
-        "__SITE__/medias/ecran-portail.webp"
+        "__SITE__/medias/ecran-dashboard.webp?v=3",
+        "__SITE__/medias/ecran-dispatch.webp?v=3",
+        "__SITE__/medias/ecran-cash.webp?v=3",
+        "__SITE__/medias/ecran-portail.webp?v=3"
       ],
       "publisher": { "@id": "__SITE__/#organisation" },
       "audience": { "@type": "BusinessAudience", "audienceType": "Sociétés de livraison et de transport last-mile" },
@@ -105,18 +105,18 @@
         "priceCurrency": "EUR",
         "availability": "https://schema.org/InStock",
         "url": "__SITE__/#demo",
-        "eligibleDuration": { "@type": "QuantitativeValue", "value": 14, "unitCode": "DAY" }
+        "eligibleDuration": { "@type": "QuantitativeValue", "value": 30, "unitCode": "DAY" }
       }
     },
     {
       "@type": "VideoObject",
       "@id": "__SITE__/#video",
-      "name": "Portrail en 30 secondes",
-      "description": "Présentation de Portrail : le marchand dépose, le dispatch affecte, le livreur exécute et la comptabilité rapproche — votre exploitation, sur les rails.",
-      "thumbnailUrl": "__SITE__/medias/presentation-affiche.webp",
-      "contentUrl": "__SITE__/medias/portrail-presentation.mp4",
-      "uploadDate": "2026-10-15",
-      "duration": "PT31S",
+      "name": "Portrail en 45 secondes",
+      "description": "21 h, vos livreurs sont rentrés et vous comptez encore. Portrail : vous voyez chaque livreur, les courses partent seules, chaque dirham a une trace.",
+      "thumbnailUrl": "__SITE__/medias/accroche-affiche.webp",
+      "contentUrl": "__SITE__/medias/portrail-accroche.mp4",
+      "uploadDate": "2026-10-19",
+      "duration": "PT45S",
       "inLanguage": "fr",
       "publisher": { "@id": "__SITE__/#organisation" }
     },
@@ -251,7 +251,7 @@
             </a>
             <a class="bouton bouton--fantome bouton--grand" href="#video" data-video-ouvrir aria-haspopup="dialog">
               <span class="bouton__lecture" aria-hidden="true"><svg width="16" height="16"><use href="#i-play"/></svg></span>
-              Voir la vidéo (30 s)
+              Voir la vidéo (45 s)
             </a>
           </div>
           <ul class="heros__points">
@@ -324,8 +324,9 @@
         <div class="panneau" id="panneau-flotte" role="tabpanel" aria-labelledby="onglet-flotte" data-revele>
           <figure class="cadre">
             <div class="cadre__barre" aria-hidden="true"><span class="cadre__points"><span></span><span></span><span></span></span><span class="cadre__adresse">Console transport · PC flotte</span></div>
-            <img src="/medias/ecran-flotte.webp" srcset="/medias/ecran-flotte-800.webp 800w, /medias/ecran-flotte.webp 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
+            <img src="/medias/ecran-flotte.webp?v=3" srcset="/medias/ecran-flotte-800.webp?v=3 800w, /medias/ecran-flotte.webp?v=3 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
                  alt="PC flotte : la carte de la ville avec tous les livreurs en direct, les compteurs (en service, en route, hors zone, commandes en retard, encaissé du jour) et la fiche d’un livreur avec son itinéraire conseillé.">
+            <span class="cadre__flou">Aperçu flouté · démonstration sur demande</span>
           </figure>
           <div class="panneau__legende">
             <h3>La flotte en direct</h3>
@@ -336,8 +337,9 @@
         <div class="panneau" id="panneau-tableau" role="tabpanel" aria-labelledby="onglet-tableau">
           <figure class="cadre">
             <div class="cadre__barre" aria-hidden="true"><span class="cadre__points"><span></span><span></span><span></span></span><span class="cadre__adresse">Console transport · Tableau de bord</span></div>
-            <img src="/medias/ecran-dashboard.webp" srcset="/medias/ecran-dashboard-800.webp 800w, /medias/ecran-dashboard.webp 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
+            <img src="/medias/ecran-dashboard.webp?v=3" srcset="/medias/ecran-dashboard-800.webp?v=3 800w, /medias/ecran-dashboard.webp?v=3 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
                  alt="Tableau de bord de la console : compteurs de commandes en cours, livrées et échouées, encaissements du jour, activité par heure, conformité de la flotte et commandes urgentes.">
+            <span class="cadre__flou">Aperçu flouté · démonstration sur demande</span>
           </figure>
           <div class="panneau__legende">
             <h3>Le tableau de bord</h3>
@@ -348,8 +350,9 @@
         <div class="panneau" id="panneau-dispatch" role="tabpanel" aria-labelledby="onglet-dispatch">
           <figure class="cadre">
             <div class="cadre__barre" aria-hidden="true"><span class="cadre__points"><span></span><span></span><span></span></span><span class="cadre__adresse">Console transport · Dispatch</span></div>
-            <img src="/medias/ecran-dispatch.webp" srcset="/medias/ecran-dispatch-800.webp 800w, /medias/ecran-dispatch.webp 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
+            <img src="/medias/ecran-dispatch.webp?v=3" srcset="/medias/ecran-dispatch-800.webp?v=3 800w, /medias/ecran-dispatch.webp?v=3 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
                  alt="Écran de dispatch : carte en temps réel des livreurs en ligne et file des commandes non affectées, chacune avec un bouton Affecter.">
+            <span class="cadre__flou">Aperçu flouté · démonstration sur demande</span>
           </figure>
           <div class="panneau__legende">
             <h3>Le dispatch</h3>
@@ -360,8 +363,9 @@
         <div class="panneau" id="panneau-caisse" role="tabpanel" aria-labelledby="onglet-caisse">
           <figure class="cadre">
             <div class="cadre__barre" aria-hidden="true"><span class="cadre__points"><span></span><span></span><span></span></span><span class="cadre__adresse">Console transport · Réconciliation cash</span></div>
-            <img src="/medias/ecran-cash.webp" srcset="/medias/ecran-cash-800.webp 800w, /medias/ecran-cash.webp 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
+            <img src="/medias/ecran-cash.webp?v=3" srcset="/medias/ecran-cash-800.webp?v=3 800w, /medias/ecran-cash.webp?v=3 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
                  alt="Écran de réconciliation cash : par livreur, montants théorique, déclaré, écart et statut de dépôt, avec le cash en circulation et le montant à déposer.">
+            <span class="cadre__flou">Aperçu flouté · démonstration sur demande</span>
           </figure>
           <div class="panneau__legende">
             <h3>La caisse</h3>
@@ -372,8 +376,9 @@
         <div class="panneau" id="panneau-portail" role="tabpanel" aria-labelledby="onglet-portail">
           <figure class="cadre">
             <div class="cadre__barre" aria-hidden="true"><span class="cadre__points"><span></span><span></span><span></span></span><span class="cadre__adresse">Espace marchand · Tableau de bord</span></div>
-            <img src="/medias/ecran-portail.webp" srcset="/medias/ecran-portail-800.webp 800w, /medias/ecran-portail.webp 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
+            <img src="/medias/ecran-portail.webp?v=3" srcset="/medias/ecran-portail-800.webp?v=3 800w, /medias/ecran-portail.webp?v=3 1440w" sizes="(max-width: 1120px) calc(100vw - 40px), 1080px" width="1440" height="900" loading="lazy" decoding="async"
                  alt="Portail marchand : commandes, livraisons réussies, encaissements à reverser, dernières commandes avec leur statut et taux de réussite.">
+            <span class="cadre__flou">Aperçu flouté · démonstration sur demande</span>
           </figure>
           <div class="panneau__legende">
             <h3>Le portail marchand</h3>
@@ -444,19 +449,19 @@
   <section class="section sombre" id="video" aria-labelledby="video-titre">
     <div class="conteneur video-bloc">
       <div data-revele>
-        <p class="sur-titre">En 30 secondes</p>
-        <h2 class="section__titre" id="video-titre">Portrail, raconté par ceux qui l’utilisent</h2>
+        <p class="sur-titre">En 45 secondes</p>
+        <h2 class="section__titre" id="video-titre">Votre journée, sans les appels du soir</h2>
         <p class="section__chapo">
-          Le marchand, la dispatcheuse, le livreur et le comptable : une même commande, de la
-          préparation du colis jusqu’au rapprochement de la caisse.
+          Vous voyez chaque livreur, les courses partent seules et chaque dirham a une trace.
+          Le détail, nous vous le montrons en démonstration.
         </p>
-        <p class="video-bloc__note">Durée : 31 secondes · voix off en français.</p>
+        <p class="video-bloc__note">Durée : 45 secondes · se regarde sans le son.</p>
       </div>
       <div class="video-cadre" data-revele>
         <video controls preload="none" playsinline width="1920" height="1080"
-               poster="/medias/presentation-affiche.webp" aria-label="Vidéo de présentation de Portrail">
-          <source src="/medias/portrail-presentation.mp4" type="video/mp4">
-          <a href="/medias/portrail-presentation.mp4">Télécharger la vidéo de présentation (MP4)</a>
+               poster="/medias/accroche-affiche.webp" aria-label="Vidéo de présentation de Portrail">
+          <source src="/medias/portrail-accroche.mp4" type="video/mp4">
+          <a href="/medias/portrail-accroche.mp4">Télécharger la vidéo de présentation (MP4)</a>
         </video>
       </div>
     </div>
@@ -522,8 +527,9 @@
       <div class="argent__grille">
         <figure class="cadre" data-revele>
           <div class="cadre__barre" aria-hidden="true"><span class="cadre__points"><span></span><span></span><span></span></span><span class="cadre__adresse">Console transport · Réconciliation cash</span></div>
-          <img src="/medias/ecran-cash.webp" srcset="/medias/ecran-cash-800.webp 800w, /medias/ecran-cash.webp 1440w" sizes="(max-width: 959px) calc(100vw - 40px), 790px" width="1440" height="900" loading="lazy" decoding="async"
+          <img src="/medias/ecran-cash.webp?v=3" srcset="/medias/ecran-cash-800.webp?v=3 800w, /medias/ecran-cash.webp?v=3 1440w" sizes="(max-width: 959px) calc(100vw - 40px), 790px" width="1440" height="900" loading="lazy" decoding="async"
                alt="Réconciliation cash : pour chaque livreur, le montant théorique, le montant déclaré, l’écart et le statut du dépôt.">
+          <span class="cadre__flou">Aperçu flouté · démonstration sur demande</span>
         </figure>
         <div class="argent__cartes">
           <div class="carte-sombre" data-revele>
@@ -910,8 +916,8 @@
   <button class="fenetre-video__fermer" type="button" data-video-fermer>
     <svg width="18" height="18" aria-hidden="true"><use href="#i-fermer"/></svg>Fermer
   </button>
-  <video controls preload="none" playsinline width="1920" height="1080" poster="/medias/presentation-affiche.webp">
-    <source src="/medias/portrail-presentation.mp4" type="video/mp4">
+  <video controls preload="none" playsinline width="1920" height="1080" poster="/medias/accroche-affiche.webp">
+    <source src="/medias/portrail-accroche.mp4" type="video/mp4">
   </video>
 </dialog>
 
