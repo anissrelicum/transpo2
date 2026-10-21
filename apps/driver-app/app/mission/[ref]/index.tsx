@@ -24,6 +24,7 @@ import { Echeance } from '../../../components/Echeance';
 import { useItineraire, formatDuree } from '../../../lib/itineraire';
 import { Bouton, Carte, Libelle, Pastille, Bandeau } from '../../../components/ui';
 import { IcNaviguer, IcTel, IcPin, IcRetour, IcAlerte } from '../../../components/icones';
+import { retourJournee } from '../../../lib/navigation';
 
 const T = {
   fr: {
@@ -92,7 +93,7 @@ export default function ArretScreen() {
         <Stack.Screen options={{ headerShown: false }} />
         <Text style={{ color: colors.text, fontSize: 18, fontWeight: '700' }}>{t.introuvable}</Text>
         <Text style={{ color: colors.muted, textAlign: 'center' }}>{t.introuvableSub}</Text>
-        <Bouton onPress={() => router.replace('/(tabs)/journee')} style={{ alignSelf: 'stretch' }}>{t.retour}</Bouton>
+        <Bouton onPress={() => retourJournee()} style={{ alignSelf: 'stretch' }}>{t.retour}</Bouton>
       </View>
     );
   }
@@ -124,7 +125,7 @@ export default function ArretScreen() {
         await j.sync();
         // Colis en main : l'ordre de la tournée change (on part livrer). « Ma journée »
         // montre le vrai prochain arrêt — pas la livraison de la 1re commande du groupe.
-        router.replace('/(tabs)/journee');
+        retourJournee();
       }
     } finally {
       setOccupe(false);

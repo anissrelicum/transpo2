@@ -8,9 +8,14 @@
 //  - rend le livreur DISPONIBLE côté serveur (c'est ce que lit l'affectation automatique) ;
 //  - active le partage de position (`useTracking`, monté dans le layout des onglets) ;
 //  - lance le compteur de conduite (100 % local : aucun endpoint serveur ne le tient).
+//
+// Le temps de conduite ne compte que les DÉPLACEMENTS mesurés par le GPS (vitesse ≥ 7 km/h
+// entre deux points) : un livreur en service mais arrêté (attente, pause, client) ne se
+// voit plus imposer une pause de 45 min qu'il n'a pas méritée.
 import * as React from 'react';
 import { readJson, writeJson } from './storage';
 import { authedClient } from './api';
+import { dureeEnMouvement } from './journee';
 
 const KEY = 'transpo.shift.v1';
 
@@ -20,7 +25,7 @@ export interface EtatService {
   date: string;
   /** Premier démarrage du jour (ISO). */
   startedAt: string | null;
-  /** Conduite cumulée jusqu'à la dernière reprise. */
+  /** Conduite cumulée du jour : temps passé en mouvement (GPS). */
   drivenMs: number;
   /** Dernière reprise (ISO), `null` à l'arrêt. */
   resumedAt: string | null;
@@ -71,14 +76,25 @@ export async function demarrerJournee(): Promise<void> {
 
 export async function terminerJournee(): Promise<void> {
   await chargerService();
-  const delta = etat.resumedAt ? Date.now() - new Date(etat.resumedAt).getTime() : 0;
-  publier({ ...etat, active: false, drivenMs: etat.drivenMs + delta, resumedAt: null });
+  dernierPoint = null;
+  publier({ ...etat, active: false, resumedAt: null });
   await disponibilite(false);
+}
+
+let dernierPoint: { lat: number; lng: number; at: number } | null = null;
+
+/** Appelé à chaque point GPS du suivi : ajoute le temps écoulé s'il y a eu déplacement. */
+export function noterPosition(p: { lat: number; lng: number; at: number }): void {
+  const avant = dernierPoint;
+  dernierPoint = p;
+  if (!etat.active || !avant) return;
+  const dt = dureeEnMouvement(avant, p);
+  if (dt > 0) publier({ ...etat, drivenMs: etat.drivenMs + dt });
 }
 
 
 export function conduiteMs(e: EtatService): number {
-  return e.drivenMs + (e.active && e.resumedAt ? Date.now() - new Date(e.resumedAt).getTime() : 0);
+  return e.drivenMs;
 }
 
 export function amplitudeMs(e: EtatService): number {

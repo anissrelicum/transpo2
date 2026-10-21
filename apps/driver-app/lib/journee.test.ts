@@ -4,7 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { Order } from '@transpo/domain';
-import { arretDe, grouper, ordonnerArrets, estArrive, distanceKm, minutesEstimees, formatDistance } from './journee.ts';
+import { arretDe, grouper, ordonnerArrets, estArrive, distanceKm, minutesEstimees, formatDistance, dureeEnMouvement } from './journee.ts';
 
 const ATELIER = { pickupLat: 33.5869, pickupLng: -7.6328 };
 
@@ -92,4 +92,15 @@ test('au retrait, le retrait limite compte ; un arrêt groupé prend l’échéa
   assert.equal(arretDe(a).echeance, '2026-10-18T10:20:00.000Z');
   const [g] = grouper([a, b].map(arretDe));
   assert.equal(g!.echeance, '2026-10-18T10:10:00.000Z');
+});
+
+test('temps de conduite : compté en mouvement seulement', () => {
+  const t0 = 1_000_000;
+  const a = { lat: 33.5869, lng: -7.6328, at: t0 };
+  // ~300 m en 30 s ≈ 36 km/h : on roule
+  assert.equal(dureeEnMouvement(a, { lat: 33.5896, lng: -7.6328, at: t0 + 30_000 }), 30_000);
+  // 5 m en 30 s : arrêté (attente chez le client)
+  assert.equal(dureeEnMouvement(a, { lat: 33.58695, lng: -7.6328, at: t0 + 30_000 }), 0);
+  // trou de 20 min (app en arrière-plan) : rien n'est compté
+  assert.equal(dureeEnMouvement(a, { lat: 33.62, lng: -7.6328, at: t0 + 20 * 60_000 }), 0);
 });

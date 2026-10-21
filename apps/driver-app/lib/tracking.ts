@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as Location from 'expo-location';
 import { AppState } from 'react-native';
+import { noterPosition } from './service';
 import { authedClient } from './api';
 
 /**
@@ -73,6 +74,7 @@ export function useTracking(enabled: boolean) {
           { accuracy: Location.Accuracy.High /* GPS : la détection d’arrivée (120 m) en dépend */, timeInterval: MIN_INTERVAL_MS, distanceInterval: MIN_DISTANCE_M },
           async (pos) => {
             publierPosition(pos.coords.latitude, pos.coords.longitude);
+            noterPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude, at: pos.timestamp || Date.now() });
             try {
               const r = await authedClient().pushDriverPosition(pos.coords.latitude, pos.coords.longitude);
               setLastAt(r.at);

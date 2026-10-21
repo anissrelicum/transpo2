@@ -207,3 +207,15 @@ export function formatDistance(km: number, lang: 'fr' | 'ar'): string {
   if (km < 1) return `${Math.round(km * 1000)} ${lang === 'ar' ? 'م' : 'm'}`;
   return `${km.toFixed(1).replace('.', ',')} ${lang === 'ar' ? 'كم' : 'km'}`;
 }
+
+/** Seuils du temps de conduite : au-dessus de 7 km/h on roule ; un trou de plus de 5 min
+ *  entre deux points (app en arrière-plan, GPS perdu) n'est pas compté. */
+export const VITESSE_CONDUITE_KMH = 7;
+export const TROU_GPS_MAX_MS = 5 * 60_000;
+
+/** Temps de conduite entre deux points GPS : l'écart de temps s'il y a eu déplacement, sinon 0. */
+export function dureeEnMouvement(a: { lat: number; lng: number; at: number }, b: { lat: number; lng: number; at: number }): number {
+  const dt = b.at - a.at;
+  if (dt <= 0 || dt > TROU_GPS_MAX_MS) return 0;
+  return distanceKm(a, b) / (dt / 3_600_000) >= VITESSE_CONDUITE_KMH ? dt : 0;
+}

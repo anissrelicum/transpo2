@@ -25,6 +25,7 @@ import { useTheme } from '../../../lib/theme';
 import { useLanguage } from '../../../lib/i18n';
 import { Bouton, Carte, Libelle, Pastille, useTon } from '../../../components/ui';
 import { IcRetour, IcPhoto } from '../../../components/icones';
+import { retourJournee } from '../../../lib/navigation';
 
 const SIGN_H = 180;
 
@@ -176,7 +177,7 @@ export default function Preuve() {
     return (
       <View style={[s.centre, { backgroundColor: colors.bg, padding: 24, gap: 12 }]}>
         <Text style={{ color: colors.text, fontSize: 18, fontWeight: '700' }}>{t.introuvable}</Text>
-        <Bouton onPress={() => router.replace('/(tabs)/journee')} style={{ alignSelf: 'stretch' }}>{t.retour}</Bouton>
+        <Bouton onPress={() => retourJournee()} style={{ alignSelf: 'stretch' }}>{t.retour}</Bouton>
       </View>
     );
   }

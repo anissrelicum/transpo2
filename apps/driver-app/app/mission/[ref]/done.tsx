@@ -1,17 +1,19 @@
 // Livraison réussie (maquette validée, acte 4) : un écran plein, lisible d'un coup d'œil,
-// qui montre déjà l'arrêt suivant. Un toucher et la navigation repart.
+// qui montre déjà l'arrêt suivant. Un toucher ramène à « Ma journée », sur cet arrêt :
+// la navigation GPS ne s'ouvre que si le livreur touche « Naviguer » (pas d'app de cartes
+// imposée à la sortie d'une livraison).
 //
 // La commande sort de la liste des missions actives dès que le serveur l'a traitée : le
 // montant vient donc des paramètres passés par l'écran de preuve, pas d'une relecture.
 import * as React from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
-import { useLocalSearchParams, router, Stack } from 'expo-router';
+import { View, Text, StyleSheet } from 'react-native';
+import { useLocalSearchParams, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { money } from '@transpo/domain';
 import { useLanguage } from '../../../lib/i18n';
 import { useJournee } from '../../../lib/useJournee';
 import { distanceKm, minutesEstimees } from '../../../lib/journee';
-import { ouvrirItineraire, partirEnRoute } from '../../../lib/etapes';
+import { retourJournee } from '../../../lib/navigation';
 import { Bouton } from '../../../components/ui';
 import { IcCheck } from '../../../components/icones';
 
@@ -22,13 +24,11 @@ const T = {
     titre: 'Livraison réussie', encaisse: (m: string) => `${m} encaissés · preuve enregistrée`, preuve: 'Preuve enregistrée',
     ensuite: 'Ensuite', retrait: 'Retrait', livraison: 'Livraison', minutes: (n: number) => `~${n} min`,
     suivant: 'Arrêt suivant →', fini: 'Plus d’arrêt pour le moment', journee: 'Retour à ma journée',
-    navKo: 'Aucune application de carte n’a pu ouvrir cet itinéraire.',
   },
   ar: {
     titre: 'تم التسليم بنجاح', encaisse: (m: string) => `تم تحصيل ${m} · الإثبات مسجَّل`, preuve: 'الإثبات مسجَّل',
     ensuite: 'التالي', retrait: 'استلام', livraison: 'تسليم', minutes: (n: number) => `~${n} د`,
     suivant: '← المحطة التالية', fini: 'لا توجد محطات حالياً', journee: 'العودة إلى يومي',
-    navKo: 'لم يتمكن أي تطبيق خرائط من فتح هذا المسار.',
   },
 };
 
@@ -43,14 +43,8 @@ export default function Reussi() {
   const moi = j.moi ? { lat: j.moi.lat, lng: j.moi.lng } : null;
   const min = suivant?.pos && moi ? minutesEstimees(distanceKm(moi, suivant.pos)) : null;
 
-  async function continuer() {
-    if (!suivant) { router.replace('/(tabs)/journee'); return; }
-    router.replace('/(tabs)/journee');
-    let parti = false;
-    for (const c of suivant.commandes) parti = (await partirEnRoute(c)) || parti;
-    if (parti) void j.sync();
-    const ok = await ouvrirItineraire(suivant.pos?.lat ?? null, suivant.pos?.lng ?? null, suivant.lienCarte, suivant.adresse);
-    if (!ok) Alert.alert(t.suivant, t.navKo);
+  function continuer() {
+    retourJournee();
   }
 
   return (

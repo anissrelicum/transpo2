@@ -3,6 +3,13 @@ import * as React from 'react';
 import { describeDelay, type DelayMode } from '@transpo/domain';
 import { Pastille } from './ui';
 
+/** « 45 min », « 2 h 05 », « 3 j 4 h » : un retard de plusieurs jours reste lisible. */
+function duree(min: number, lang: 'fr' | 'ar'): string {
+  const [j, h, m] = [Math.floor(min / 1440), Math.floor((min % 1440) / 60), min % 60];
+  if (lang === 'ar') return j > 0 ? `${j} ي ${h} س` : h > 0 ? `${h} س ${m} د` : `${m} د`;
+  return j > 0 ? `${j} j ${h} h` : h > 0 ? `${h} h ${String(m).padStart(2, '0')}` : `${m} min`;
+}
+
 /** Heure courante rafraîchie toutes les 20 s. */
 export function useMaintenant(): number {
   const [t, setT] = React.useState(Date.now());
@@ -14,8 +21,8 @@ export function useMaintenant(): number {
 }
 
 const L = {
-  fr: { avant: (h: string) => `Avant ${h}`, retard: (m: number) => `En retard de ${m} min`, min: (m: number) => `${m} min`, auRetrait: 'Délai au retrait' },
-  ar: { avant: (h: string) => `قبل ${h}`, retard: (m: number) => `متأخر ${m} د`, min: (m: number) => `${m} د`, auRetrait: 'المهلة عند الاستلام' },
+  fr: { avant: (h: string) => `Avant ${h}`, retard: (m: number) => `En retard de ${duree(m, 'fr')}`, min: (m: number) => `${m} min`, auRetrait: 'Délai au retrait' },
+  ar: { avant: (h: string) => `قبل ${h}`, retard: (m: number) => `متأخر ${duree(m, 'ar')}`, min: (m: number) => `${m} د`, auRetrait: 'المهلة عند الاستلام' },
 };
 
 /**
