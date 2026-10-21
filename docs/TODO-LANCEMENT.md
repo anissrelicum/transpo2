@@ -13,7 +13,7 @@
 
 ### 1. Un vrai serveur, pas le homelab
 
-- [ ] 👤 **Compte Scaleway.** Crée un serveur DEV1-L (≈ 350 DH/mois), ou donne-moi une clé d'accès que tu pourras révoquer.
+- [ ] 👤 **Compte Scaleway** : existe déjà. Il manque une clé d'accès pour que je crée le serveur (le CLI `scw` est installé sans clé).
 - [ ] 👤 **Acheter le domaine** `portrail.app`. Prévoir aussi `getportrail.com` pour le protéger.
 - [ ] 🤖 **Installer la production.**
   - Site, API, console, base de données et moteur d'itinéraires sur ce serveur.
@@ -35,18 +35,18 @@
 
 ### 2. L'app livreur installable proprement
 
-- [ ] 👤 **Compte développeur Google Play** (25 $, une fois), au nom de la société.
+- [x] 👤 **Compte développeur Google Play** : existe déjà (à confirmer : au nom de la société).
 - [ ] 🤖 **Fiche Play Store** : nom, description, captures, icône, politique de confidentialité en ligne, catégorie, classification.
 - [ ] 🤖 **Clé de signature de l'app sauvegardée en lieu sûr.** La perdre empêche toute mise à jour. Numérotation des versions.
 - [ ] 🤖 **Bugs connus à corriger** :
-  - [ ] « Arrêt suivant » ouvre Google Maps au lieu de ramener à la journée ;
-  - [ ] « Arrêt introuvable » en revenant de Google Maps ;
-  - [ ] le temps de conduite compte même à l'arrêt (le compter seulement quand le GPS montre un déplacement).
+  - [x] « Arrêt suivant » ouvre Google Maps au lieu de ramener à la journée (corrigé le 21/10) ;
+  - [x] « Arrêt introuvable » en revenant de Google Maps (corrigé le 21/10) ;
+  - [x] le temps de conduite compte même à l'arrêt : il ne compte plus que les déplacements mesurés par le GPS (corrigé le 21/10).
 - [ ] 👤🤖 **Tester sur 2 ou 3 vrais téléphones Android bas de gamme**, en 3G et hors réseau. C'est le matériel réel des livreurs.
 
 ### 3. Le minimum juridique
 
-- [ ] 👤 **Créer la SARL AU** avec une fiduciaire : RC, ICE, identifiant fiscal, compte bancaire pro.
+- [x] 👤 **Société** : existe déjà. Il me faut ses informations (raison sociale, ICE, RC, IF, adresse) pour les contrats, factures et mentions légales.
 - [ ] 🤖 **Contrat d'abonnement (conditions générales)**, à faire relire par un juriste.
   - Ce que comprend chaque offre.
   - Disponibilité visée de 99 %, sans garantie absolue.
@@ -90,7 +90,7 @@
 ## P2 — Quand les clients le demandent (mois 3 et plus)
 
 - [ ] 🤖 **Intégrations** : Shopify, YouCan, eGrow, API publique documentée et notifications automatiques vers les outils des marchands (webhooks).
-- [ ] 🤖 **App livreur sur iPhone** (compte Apple : 99 $/an).
+- [ ] 🤖 **App livreur sur iPhone** : compte Apple déjà actif, peut être avancé.
 - [ ] 🤖 **Assistant IA** (copilote du dispatcher, saisie d'une commande depuis un message WhatsApp) : c'est à ce moment-là qu'on pourra parler d'« IA ».
 - [ ] 🤖 **Deuxième serveur et base de données gérée** au-delà de 15 à 20 clients.
 - [ ] 🤖 **Confirmation de commande avant expédition** (WhatsApp interactif).
